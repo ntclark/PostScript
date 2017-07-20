@@ -2,7 +2,6 @@
 #include "PostScript.h"
 
 #include "PostScript_i.c"
-#include "Properties_i.c"
 
    CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
    bool PStoPDF::logPaintPending = false;
@@ -12,8 +11,6 @@
    char PStoPDF::szErrorMessage[1024];
 
    PStoPDF::PStoPDF(IUnknown *pUnknownOuter) :
-
-      pIGProperties(NULL),
 
       pIConnectionPointContainer(NULL),
       pIConnectionPoint(NULL),
@@ -43,12 +40,6 @@
    pIConnectionPointContainer = new _IConnectionPointContainer(this);
    pIConnectionPoint = new _IConnectionPoint(this);
 
-   HRESULT rc = CoCreateInstance(CLSID_InnoVisioNateProperties,NULL,CLSCTX_ALL,IID_IGProperties,reinterpret_cast<void **>(&pIGProperties));
-
-   if ( ! pIGProperties ) {
-      exit(0);
-   }
-
    INITCOMMONCONTROLSEX icex;
    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
    icex.dwICC = ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_TAB_CLASSES | ICC_LISTVIEW_CLASSES | ICC_PROGRESS_CLASS;
@@ -67,9 +58,6 @@
    delete pIOleInPlaceObject;
    delete pIConnectionPointContainer;
    delete pIConnectionPoint;
-
-   if ( pIGProperties )
-      pIGProperties -> Release();
 
    if ( pIOleInPlaceSite )
       pIOleInPlaceSite -> Release();

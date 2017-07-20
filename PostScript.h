@@ -18,7 +18,6 @@
 
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
-#include "Properties_i.h"
 #include "PostScript_i.h"
 
 #undef ADVANCE_THRU_EOL
@@ -253,7 +252,6 @@
 
       int initWindows();
 
-      IGProperties *pIGProperties;
       IOleClientSite *pIOleClientSite;
       IOleInPlaceSite *pIOleInPlaceSite;
 

@@ -20,14 +20,6 @@
       return pIOleObject -> QueryInterface(riid,ppv);
    else 
 
-   if ( IID_IPersistStreamInit == riid ) 
-      return pIGProperties -> QueryInterface(riid,ppv);
-   else
-
-   if ( IID_IPersistPropertyBag == riid ) 
-      return pIGProperties -> QueryInterface(riid,ppv);
-   else
-
    if ( IID_IConnectionPointContainer == riid ) 
       return pIConnectionPointContainer -> QueryInterface(riid,ppv);
    else
