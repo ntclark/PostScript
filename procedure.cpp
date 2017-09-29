@@ -123,7 +123,7 @@
 
    long n = 0L;
    for ( std::list<object *>::iterator ih = entries.begin(); ih != entries.end(); ih++ )
-      n += strlen((*ih) -> ToString());
+      n += (long)strlen((*ih) -> ToString());
 
    n += 4 * entries.size();
    n += 4;

@@ -7,7 +7,7 @@
    if ( pJob )
       delete pJob;
 
-   long n = wcslen(wsFileName) + 1;
+   long n = (DWORD)wcslen(wsFileName) + 1;
    char *pszFileName = new char[n];
    memset(pszFileName,0,n * sizeof(char));
 
@@ -32,7 +32,7 @@
    if ( pJob )
       delete pJob;
 
-   long n = wcslen(wsFileName) + 1;
+   long n = (DWORD)wcslen(wsFileName) + 1;
    char *pszFileName = new char[n];
    memset(pszFileName,0,n * sizeof(char));
 

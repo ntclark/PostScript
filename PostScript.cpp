@@ -103,11 +103,11 @@
    hwndStack = CreateWindowEx(WS_EX_CLIENTEDGE,"RICHEDIT50W","",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
                                           0,0,0,0,hwndClient,NULL,NULL,reinterpret_cast<void *>(this));
 
-   nativeRichEditHandler = (WNDPROC)SetWindowLongPtr(hwndLog,GWL_WNDPROC,(long)PStoPDF::richEditHandler);
+   nativeRichEditHandler = (WNDPROC)SetWindowLongPtr(hwndLog,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
 
-   SetWindowLongPtr(hwndStack,GWL_WNDPROC,(long)PStoPDF::richEditHandler);
+   SetWindowLongPtr(hwndStack,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
 
-   SetWindowLongPtr(hwndLog,GWL_USERDATA,reinterpret_cast<long>(this));
+   SetWindowLongPtr(hwndLog,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(this));
 
    CHARFORMAT charFormat;
    memset(&charFormat,0,sizeof(CHARFORMAT));
@@ -144,6 +144,7 @@
    return 0;
    }
 
+#if 0
 
    long HashCode(char *pszInput) {
    long hashCode = 0L;
@@ -161,7 +162,6 @@
    delete [] psz;
    return hashCode;
    }
-
 
    void ASCIIHexDecodeInPlace(char *pszInput) {
 
@@ -257,4 +257,5 @@
 
    return TRUE;
    }
+#endif
 

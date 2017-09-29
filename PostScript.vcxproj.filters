@@ -168,6 +168,9 @@
     <ClCompile Include="font_FontFile.cpp">
       <Filter>Source Files\fonts</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\source\utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="PostScript.odl">
@@ -194,9 +197,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resourceIdentifiers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dictionaryStack.h">

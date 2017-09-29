@@ -8,9 +8,7 @@
       array(pj,po -> Name(),object::colorSpace)
    {
    if ( object::matrix == po -> ObjectType() ) {
-_asm {
-int 3;
-}
+      __debugbreak();
    }
    parameterCount = size() - 1;
    return;

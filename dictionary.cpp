@@ -162,9 +162,7 @@ int 3;
       k++;
       it++;
       if ( it == keys.end() ) {
-_asm {
-int 3;
-}
+         __debugbreak();
          return NULL;
       }
    }

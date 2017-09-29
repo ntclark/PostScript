@@ -5,7 +5,7 @@
       pszStringRepresentation(NULL),
       object(pStart,pEnd,object::literal,object::string)
    {
-   long n = strlen(Contents()) + 2;
+   long n = (DWORD)strlen(Contents()) + 2;
    pszStringRepresentation = new char[n];
    memset(pszStringRepresentation,0,n * sizeof(char));
    pszStringRepresentation[0] = '/';
@@ -22,7 +22,7 @@
    char *literal::ToString() {
    if ( pszStringRepresentation )
       delete [] pszStringRepresentation;
-   long n = strlen(Contents()) + 4;
+   long n = (DWORD)strlen(Contents()) + 4;
    pszStringRepresentation = new char[n];
    memset(pszStringRepresentation,0,n * sizeof(char));
    pszStringRepresentation[0] = '/';

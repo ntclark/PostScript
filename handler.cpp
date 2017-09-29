@@ -6,13 +6,13 @@
 
    LRESULT CALLBACK PStoPDF::handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
-   PStoPDF *p = (PStoPDF *)GetWindowLong(hwnd,GWL_USERDATA);
+   PStoPDF *p = (PStoPDF *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
 
    switch ( msg ) {
    case WM_CREATE: {
       CREATESTRUCT *pc = reinterpret_cast<CREATESTRUCT *>(lParam);
       p = reinterpret_cast<PStoPDF *>(pc -> lpCreateParams);
-      SetWindowLong(hwnd,GWL_USERDATA,reinterpret_cast<long>(p));
+      SetWindowLongPtr(hwnd,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(p));
       }
       break;
 

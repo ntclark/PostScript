@@ -426,7 +426,7 @@
 
       if ( px && px < *ppEnd ) {
 
-         long n = *ppEnd - p + 1;
+         long n = (long)(*ppEnd - p + 1);
          char *pTemp = new char[n];
          char *pTarget = new char[n];
          memset(pTemp,0,n * sizeof(char));
@@ -472,7 +472,7 @@
       char c = **ppEnd;
       **ppEnd = '\0';
 
-      long n = strlen((char *)p) + 1;
+      long n = (DWORD)strlen((char *)p) + 1;
       char *pszNew = new char[n];
       pszNew[n - 1] = '\0';
       strcpy(pszNew,(char *)p);

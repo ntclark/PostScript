@@ -3,7 +3,7 @@
 
    LRESULT CALLBACK PStoPDF::richEditHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
-   PStoPDF *p = (PStoPDF *)GetWindowLong(hwnd,GWL_USERDATA);
+   PStoPDF *p = (PStoPDF *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
 
    switch ( msg ) {
    case WM_PAINT: {
@@ -22,7 +22,7 @@
       }
 
    case WM_FLUSH_LOG: {
-      long lineCount = SendMessage(hwnd,EM_GETLINECOUNT,0L,0L);
+      LONG_PTR lineCount = SendMessage(hwnd,EM_GETLINECOUNT,0L,0L);
       SendMessage(hwnd,EM_LINESCROLL,0L,lineCount - 32);
       ReleaseSemaphore(PStoPDF::hRichEditSemaphore,1,NULL);
       }

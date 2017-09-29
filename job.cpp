@@ -427,7 +427,7 @@
 
    void job::addProcedure(procedure *pProcedure) {
    char szTemp[32];
-   sprintf(szTemp,"procedure%ld",procedureList.size() + 1);
+   sprintf(szTemp,"procedure%ld",(long)procedureList.size() + 1);
    pProcedure -> Name(szTemp);
    procedureList.insert(procedureList.end(),pProcedure);
    return;

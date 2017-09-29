@@ -16,6 +16,8 @@
 #include <list>
 #include <queue>
 
+#include "utilities.h"
+
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
 #include "PostScript_i.h"

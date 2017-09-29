@@ -31,7 +31,7 @@ class job;
 
       void remove(char *pszKey);
 
-      long size() { return entries.size(); };
+      long size() { return (long)entries.size(); };
 
    private:
 

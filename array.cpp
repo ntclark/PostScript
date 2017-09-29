@@ -52,7 +52,7 @@
    }
 
    void array::insert(object *p) {
-   entries[entries.size()] = p;
+   entries[(long)entries.size()] = p;
    return;
    }
 

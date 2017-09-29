@@ -29,9 +29,9 @@
    long n = 0L;
 
    if ( pEnd )
-      n = pEnd - pszOutput;
+      n = (long)(pEnd - pszOutput);
    else
-      n = strlen(pszOutput);
+      n = (long)strlen(pszOutput);
 
    if ( 0 == n ) {
       LeaveCriticalSection(&theQueueCriticalSection);
@@ -98,7 +98,7 @@
 
    theLog.pop();
 
-   long n = strlen((char *)p);
+   long n = (long)strlen((char *)p);
 
    if ( n > bufferSize ) {
       p[bufferSize - 1] = '\0';

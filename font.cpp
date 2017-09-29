@@ -223,7 +223,7 @@
    pValue = pFontDescriptorDictionary -> Value("CharSet");
 
    if ( pValue ) {
-      long n = strlen((char *)pValue) + 1;
+      long n = (DWORD)strlen((char *)pValue) + 1;
       pszCharSet = new char[n];
       memset(pszCharSet,0,n * sizeof(char));
       strcpy(pszCharSet,(char *)pValue);

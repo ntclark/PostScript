@@ -86,9 +86,7 @@
          push(new object(v));
 
       } else {
-         _asm {
-         int 3;
-         }
+         __debugbreak();
       }
 
    }
@@ -512,9 +510,7 @@
       break;
 
    default:
-_asm {
-int 3;
-}
+      __debugbreak();
       break;
    }
 
@@ -724,7 +720,7 @@ int 3;
 //
    object *pTop = pop();
 
-   long n = strlen(pTop -> Name()) + 2;
+   long n = (DWORD)strlen(pTop -> Name()) + 2;
    char *pszTemp = new char[n];
 
    sprintf(pszTemp,"/%s",pTop -> Name());
@@ -774,9 +770,7 @@ int 3;
    }
 
    void job::operatorDebug() {
-   _asm {
-   int 3;
-   }
+   __debugbreak();
    return;
    }
 
@@ -889,9 +883,7 @@ int 3;
       break;
 
    default:
-_asm {
-int 3;
-}
+      __debugbreak();
       break;
    }
 
@@ -1277,9 +1269,7 @@ int 3;
       return;
 
    default:
-_asm {
-int 3;
-}
+      __debugbreak();
       push(pFalseConstant);
    }
 
@@ -1711,16 +1701,12 @@ int 3;
       break;
 
    case object::string: {
-_asm {
-int 3;
-}
+      __debugbreak();
       }
       break;
 
    default:
-_asm {
-int 3;
-}
+      __debugbreak();
       break;
    }
 
@@ -1801,9 +1787,7 @@ int 3;
       return;
 
    case object::packedarray: {
-_asm {
-int 3;
-}
+      __debugbreak();
       }
       break;
 
@@ -1821,9 +1805,7 @@ int 3;
       }
 
    case object::string: {
-_asm {
-int 3;
-}
+      __debugbreak();
       break;
       }
 
@@ -2164,7 +2146,7 @@ void job::operatorIdtransform() {
       switch ( pItem -> ValueType() ) {
       case object::string:
       case object::character:
-         length = strlen(pItem -> Contents());
+         length = (DWORD)strlen(pItem -> Contents());
          break;
       default: 
          char szError[1024];
@@ -2792,9 +2774,7 @@ void job::operatorIdtransform() {
       break;
 
    default:
-_asm {
-int 3;
-}
+      __debugbreak();
       break;
    }
    return;
@@ -3336,7 +3316,7 @@ int 3;
    selectfont combines the effects of findfont and scalefont.
 
 */
-   long sf = atol(pop() -> Name());
+   float sf = (float)atol(pop() -> Name());
    font *pFont = reinterpret_cast<font *>(pop());
    pFont -> scalefont(sf);
    push(pFont);

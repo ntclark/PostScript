@@ -211,7 +211,7 @@
          strncpy(szValue,szCurrentText,255);
       
 #if 1
-      ASCIIHexEncode(szValue,strlen(szValue),&pszEncodedValue);
+      ASCIIHexEncode(szValue,(DWORD)strlen(szValue),&pszEncodedValue);
       pJob -> pIPostScriptTakeText -> TakeText(&rcTextObjectPDF,pszEncodedValue);
       delete [] pszEncodedValue;
 #else

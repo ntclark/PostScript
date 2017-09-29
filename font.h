@@ -40,7 +40,7 @@ class job;
       p -= offsetByteCount;
       data = p + 1;
       pEnd = data + offsets[objectCount] - 1;
-      dataSize = pEnd - data;
+      dataSize = (long)(pEnd - data);
       return;
       };
 

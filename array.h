@@ -28,7 +28,7 @@ class job;
 
       bool find(long index) { return entries.find(index) != entries.end() ; };
 
-      long size() { return entries.size(); };
+      long size() { return (long)entries.size(); };
 
    private:
 

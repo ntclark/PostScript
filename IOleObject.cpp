@@ -94,7 +94,7 @@
    GetWindowRect(pParent -> hwndHost,&rcParent);
    pSizel -> cx = rcParent.right - rcParent.left;
    pSizel -> cy = rcParent.bottom - rcParent.top;
-   pixelsToHiMetric(pSizel,pSizel);
+   pixelToHiMetric(pSizel,pSizel);
    return S_OK;
    }
  

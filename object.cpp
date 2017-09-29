@@ -62,7 +62,7 @@
       theValueType(string)
    {
 
-   long n = strlen(contents) + 1;
+   long n = (DWORD)strlen(contents) + 1;
 
    pszContents = new char[n];
    pszContents[n - 1] = '\0';
@@ -97,7 +97,7 @@
       theValueType(vt)
    {
 
-   long n = strlen(contents) + 1;
+   long n = (DWORD)strlen(contents) + 1;
 
    pszContents = new char[n];
    pszContents[n - 1] = '\0';
@@ -120,7 +120,7 @@
       theValueType(unspecified)
    {
 
-   long n = pEnd - pStart;
+   long n = (long)(pEnd - pStart);
 
    pszContents = new char[n + 1];
    pszContents[n] = '\0';
@@ -143,7 +143,7 @@
       theValueType(string)
    {
 
-   long n = pEnd - pStart + 1;
+   long n = (long)(pEnd - pStart + 1);
 
    pszContents = new char[n];
    pszContents[n - 1] = '\0';
@@ -166,7 +166,7 @@
       theValueType(vt)
    {
 
-   long n = pEnd - pStart + 1;
+   long n = (long)(pEnd - pStart + 1);
 
    pszContents = new char[n];
    pszContents[n - 1] = '\0';
