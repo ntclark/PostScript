@@ -96,7 +96,6 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>\Common\include;\Visio Logger\Common\include;\Common\include\pdfEnabler</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -105,6 +104,8 @@
       <PrecompiledHeaderFile />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -131,7 +132,6 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>\Common\include;\Visio Logger\Common\include;\Common\include\pdfEnabler</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -141,6 +141,8 @@
       </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -171,7 +173,8 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>\Common\include;\Visio Logger\Common\include;\Common\include\pdfEnabler</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -205,7 +208,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>\Common\include;\Visio Logger\Common\include;\Common\include\pdfEnabler</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -224,103 +228,85 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\source\utilities.cpp" />
-    <ClCompile Include="array.cpp" />
-    <ClCompile Include="booleanObject.cpp" />
-    <ClCompile Include="colorSpace.cpp" />
-    <ClCompile Include="dictionary.cpp" />
-    <ClCompile Include="dictionaryStack.cpp" />
-    <ClCompile Include="dllMain.cpp" />
-    <ClCompile Include="font.cpp" />
-    <ClCompile Include="font_FontFile.cpp" />
-    <ClCompile Include="graphicsState.cpp" />
-    <ClCompile Include="graphicsStateStack.cpp" />
-    <ClCompile Include="graphicsState_Fonts.cpp" />
+    <ClCompile Include="COM Events\IConnectionPoint.cpp" />
+    <ClCompile Include="COM Events\IConnectionPointContainer.cpp" />
+    <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
+    <ClCompile Include="COM Events\IEnumerateConnections.cpp" />
+    <ClCompile Include="COM Implementation\dllMain.cpp" />
+    <ClCompile Include="COM Interfaces\Being Hosted\IOleInPlaceObject.cpp" />
+    <ClCompile Include="COM Interfaces\Being Hosted\IOleObject.cpp" />
+    <ClCompile Include="COM Interfaces\IPostScript.cpp" />
+    <ClCompile Include="COM Interfaces\IUnknown.cpp" />
+    <ClCompile Include="Fonts\font.cpp" />
+    <ClCompile Include="Fonts\font_FontFile.cpp" />
     <ClCompile Include="handler.cpp" />
-    <ClCompile Include="IConnectionPoint.cpp" />
-    <ClCompile Include="IConnectionPointContainer.cpp" />
-    <ClCompile Include="IEnumConnectionPoints.cpp" />
-    <ClCompile Include="IEnumerateConnections.cpp" />
-    <ClCompile Include="IOleInPlaceObject.cpp" />
-    <ClCompile Include="IOleObject.cpp" />
-    <ClCompile Include="IPostScript.cpp" />
-    <ClCompile Include="IUnknown.cpp" />
     <ClCompile Include="job.cpp" />
-    <ClCompile Include="literal.cpp" />
-    <ClCompile Include="mark.cpp" />
-    <ClCompile Include="matrix.cpp" />
-    <ClCompile Include="name.cpp" />
-    <ClCompile Include="object.cpp" />
-    <ClCompile Include="objectStack.cpp" />
     <ClCompile Include="operators.cpp" />
     <ClCompile Include="parse.cpp" />
     <ClCompile Include="parseJob.cpp" />
-    <ClCompile Include="pattern.cpp" />
     <ClCompile Include="pdfOperators.cpp" />
+    <ClCompile Include="PostScript objects\array.cpp" />
+    <ClCompile Include="PostScript objects\booleanObject.cpp" />
+    <ClCompile Include="PostScript objects\colorSpace.cpp" />
+    <ClCompile Include="PostScript objects\dictionary.cpp" />
+    <ClCompile Include="PostScript objects\graphicsState.cpp" />
+    <ClCompile Include="PostScript objects\graphicsState_Fonts.cpp" />
+    <ClCompile Include="PostScript objects\literal.cpp" />
+    <ClCompile Include="PostScript objects\mark.cpp" />
+    <ClCompile Include="PostScript objects\matrix.cpp" />
+    <ClCompile Include="PostScript objects\name.cpp" />
+    <ClCompile Include="PostScript objects\object.cpp" />
+    <ClCompile Include="PostScript objects\pattern.cpp" />
+    <ClCompile Include="PostScript objects\procedure.cpp" />
+    <ClCompile Include="PostScript objects\resource.cpp" />
+    <ClCompile Include="PostScript objects\save.cpp" />
+    <ClCompile Include="PostScript objects\string.cpp" />
+    <ClCompile Include="PostScript objects\structureSpec.cpp" />
     <ClCompile Include="PostScript.cpp" />
     <ClCompile Include="PostScript_DisplayStack.cpp" />
     <ClCompile Include="PostScript_Log.cpp" />
-    <ClCompile Include="procedure.cpp" />
-    <ClCompile Include="resource.cpp" />
     <ClCompile Include="richEditHandler.cpp" />
-    <ClCompile Include="save.cpp" />
-    <ClCompile Include="string.cpp" />
-    <ClCompile Include="structureSpec.cpp" />
+    <ClCompile Include="Stacks\dictionaryStack.cpp" />
+    <ClCompile Include="Stacks\graphicsStateStack.cpp" />
+    <ClCompile Include="Stacks\objectStack.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="PostScript.odl">
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SuppressStartupBanner>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SuppressStartupBanner>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </TypeLibraryName>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </TypeLibraryName>
-      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)</OutputDirectory>
-      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)</OutputDirectory>
-      <DllDataFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </DllDataFileName>
-      <DllDataFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </DllDataFileName>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\PostScript.tlb</TypeLibraryName>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\PostScript.tlb</TypeLibraryName>
-      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)</OutputDirectory>
-      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)</OutputDirectory>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="array.h" />
-    <ClInclude Include="booleanObject.h" />
-    <ClInclude Include="colorSpace.h" />
-    <ClInclude Include="comment.h" />
-    <ClInclude Include="dictionary.h" />
-    <ClInclude Include="dictionaryStack.h" />
-    <ClInclude Include="directExec.h" />
-    <ClInclude Include="error.h" />
-    <ClInclude Include="font.h" />
-    <ClInclude Include="graphicsState.h" />
-    <ClInclude Include="graphicsStateStack.h" />
-    <ClInclude Include="job.h" />
-    <ClInclude Include="literal.h" />
-    <ClInclude Include="mark.h" />
-    <ClInclude Include="matrix.h" />
-    <ClInclude Include="name.h" />
-    <ClInclude Include="object.h" />
-    <ClInclude Include="objectStack.h" />
-    <ClInclude Include="pattern.h" />
-    <ClInclude Include="PostScript.h" />
-    <ClInclude Include="PostScript_Log.h" />
-    <ClInclude Include="procedure.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="resourceIdentifiers.h" />
-    <ClInclude Include="save.h" />
-    <ClInclude Include="string.h" />
-    <ClInclude Include="structureSpec.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="fms.txt" />
     <Text Include="resources\glyphList.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PostScript.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="COM Implementation\PostScript.odl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\comment.h" />
+    <ClInclude Include="include\error.h" />
+    <ClInclude Include="include\Fonts\font.h" />
+    <ClInclude Include="include\job.h" />
+    <ClInclude Include="include\PostScript objects\array.h" />
+    <ClInclude Include="include\PostScript objects\booleanObject.h" />
+    <ClInclude Include="include\PostScript objects\colorSpace.h" />
+    <ClInclude Include="include\PostScript objects\dictionary.h" />
+    <ClInclude Include="include\PostScript objects\directExec.h" />
+    <ClInclude Include="include\PostScript objects\graphicsState.h" />
+    <ClInclude Include="include\PostScript objects\literal.h" />
+    <ClInclude Include="include\PostScript objects\mark.h" />
+    <ClInclude Include="include\PostScript objects\matrix.h" />
+    <ClInclude Include="include\PostScript objects\name.h" />
+    <ClInclude Include="include\PostScript objects\object.h" />
+    <ClInclude Include="include\PostScript objects\pattern.h" />
+    <ClInclude Include="include\PostScript objects\procedure.h" />
+    <ClInclude Include="include\PostScript objects\resource.h" />
+    <ClInclude Include="include\PostScript objects\save.h" />
+    <ClInclude Include="include\PostScript objects\string.h" />
+    <ClInclude Include="include\PostScript objects\structureSpec.h" />
+    <ClInclude Include="include\PostScript.h" />
+    <ClInclude Include="include\PostScript_Log.h" />
+    <ClInclude Include="include\resourceIdentifiers.h" />
+    <ClInclude Include="include\Stacks\dictionaryStack.h" />
+    <ClInclude Include="include\Stacks\graphicsStateStack.h" />
+    <ClInclude Include="include\Stacks\objectStack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

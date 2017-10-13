@@ -1,10 +1,10 @@
 
 #include "utilities.h"
 
-#include "matrix.h"
+#include "PostScript objects\matrix.h"
 #include "job.h"
-#include "font.h"
-#include "graphicsState.h"
+#include "Fonts\font.h"
+#include "PostScript objects\graphicsState.h"
 
    long loggingOff = 0L;
 

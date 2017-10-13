@@ -2,9 +2,9 @@
 #include "utilities.h"
 
 #include "job.h"
-#include "directExec.h"
-#include "literal.h"
-#include "string.h"
+#include "PostScript objects\directExec.h"
+#include "PostScript objects\literal.h"
+#include "PostScript objects\string.h"
 
    long job::parseJob(bool useThread) {
 

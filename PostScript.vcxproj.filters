@@ -17,38 +17,38 @@
     <Filter Include="Source Files\COM Events">
       <UniqueIdentifier>{50ec6253-d34d-4c60-ab24-a5c8ff1ad4f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\stacks">
-      <UniqueIdentifier>{cce96c05-3587-4609-9a8f-1849a5c5cebe}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\PostScript objects">
       <UniqueIdentifier>{c27cfe2c-c496-4fed-827d-ee3f7ed2d3db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\fonts">
-      <UniqueIdentifier>{f6350541-f26c-4e24-8561-cee9a9062ae8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Header Files\stacks">
-      <UniqueIdentifier>{359318e9-d6f8-488d-977f-7c68a033ba27}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\PostScript objects">
       <UniqueIdentifier>{ebb7cdf3-6aa1-4430-9254-7ae63fc2aa0e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\fonts">
-      <UniqueIdentifier>{db734db7-852a-4c26-b698-9b5049ebc8c9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Source Files\Fonts">
+      <UniqueIdentifier>{f6350541-f26c-4e24-8561-cee9a9062ae8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Stacks">
+      <UniqueIdentifier>{cce96c05-3587-4609-9a8f-1849a5c5cebe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Fonts">
+      <UniqueIdentifier>{db734db7-852a-4c26-b698-9b5049ebc8c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Stacks">
+      <UniqueIdentifier>{359318e9-d6f8-488d-977f-7c68a033ba27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="graphicsState.cpp">
+    <ClCompile Include="PostScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphicsState_Fonts.cpp">
+    <ClCompile Include="..\Common\source\utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="handler.cpp">
@@ -69,206 +69,203 @@
     <ClCompile Include="pdfOperators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript_DisplayStack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PostScript_Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="resource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="richEditHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="save.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="COM Events\IConnectionPoint.cpp">
+      <Filter>Source Files\COM Events</Filter>
     </ClCompile>
-    <ClCompile Include="dllMain.cpp">
+    <ClCompile Include="COM Events\IConnectionPointContainer.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Events\IEnumConnectionPoints.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Events\IEnumerateConnections.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Implementation\dllMain.cpp">
       <Filter>Source Files\COM Implementation</Filter>
     </ClCompile>
-    <ClCompile Include="IPostScript.cpp">
-      <Filter>Source Files\COM Interfaces</Filter>
-    </ClCompile>
-    <ClCompile Include="IUnknown.cpp">
-      <Filter>Source Files\COM Interfaces</Filter>
-    </ClCompile>
-    <ClCompile Include="IOleInPlaceObject.cpp">
+    <ClCompile Include="COM Interfaces\Being Hosted\IOleInPlaceObject.cpp">
       <Filter>Source Files\COM Interfaces\Being Hosted</Filter>
     </ClCompile>
-    <ClCompile Include="IOleObject.cpp">
+    <ClCompile Include="COM Interfaces\Being Hosted\IOleObject.cpp">
       <Filter>Source Files\COM Interfaces\Being Hosted</Filter>
     </ClCompile>
-    <ClCompile Include="IConnectionPoint.cpp">
-      <Filter>Source Files\COM Events</Filter>
+    <ClCompile Include="COM Interfaces\IUnknown.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="IConnectionPointContainer.cpp">
-      <Filter>Source Files\COM Events</Filter>
+    <ClCompile Include="COM Interfaces\IPostScript.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="IEnumConnectionPoints.cpp">
-      <Filter>Source Files\COM Events</Filter>
+    <ClCompile Include="Fonts\font.cpp">
+      <Filter>Source Files\Fonts</Filter>
     </ClCompile>
-    <ClCompile Include="IEnumerateConnections.cpp">
-      <Filter>Source Files\COM Events</Filter>
+    <ClCompile Include="Fonts\font_FontFile.cpp">
+      <Filter>Source Files\Fonts</Filter>
     </ClCompile>
-    <ClCompile Include="dictionaryStack.cpp">
-      <Filter>Source Files\stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="graphicsStateStack.cpp">
-      <Filter>Source Files\stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="objectStack.cpp">
-      <Filter>Source Files\stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="array.cpp">
+    <ClCompile Include="PostScript objects\array.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="booleanObject.cpp">
+    <ClCompile Include="PostScript objects\booleanObject.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="colorSpace.cpp">
+    <ClCompile Include="PostScript objects\colorSpace.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="dictionary.cpp">
+    <ClCompile Include="PostScript objects\dictionary.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="literal.cpp">
+    <ClCompile Include="PostScript objects\literal.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="mark.cpp">
+    <ClCompile Include="PostScript objects\mark.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="matrix.cpp">
+    <ClCompile Include="PostScript objects\matrix.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="name.cpp">
+    <ClCompile Include="PostScript objects\name.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="object.cpp">
+    <ClCompile Include="PostScript objects\object.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="pattern.cpp">
+    <ClCompile Include="PostScript objects\pattern.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="procedure.cpp">
+    <ClCompile Include="PostScript objects\procedure.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="string.cpp">
+    <ClCompile Include="PostScript objects\string.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="structureSpec.cpp">
+    <ClCompile Include="PostScript objects\structureSpec.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="font.cpp">
-      <Filter>Source Files\fonts</Filter>
+    <ClCompile Include="Stacks\dictionaryStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
     </ClCompile>
-    <ClCompile Include="font_FontFile.cpp">
-      <Filter>Source Files\fonts</Filter>
+    <ClCompile Include="Stacks\graphicsStateStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\source\utilities.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Stacks\objectStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="PostScript.odl">
-      <Filter>Source Files\COM Implementation</Filter>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="error.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="graphicsState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="job.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PostScript.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PostScript_Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resourceIdentifiers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dictionaryStack.h">
-      <Filter>Header Files\stacks</Filter>
-    </ClInclude>
-    <ClInclude Include="graphicsStateStack.h">
-      <Filter>Header Files\stacks</Filter>
-    </ClInclude>
-    <ClInclude Include="objectStack.h">
-      <Filter>Header Files\stacks</Filter>
-    </ClInclude>
-    <ClInclude Include="array.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="booleanObject.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="colorSpace.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="comment.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="dictionary.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="directExec.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="literal.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="mark.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="matrix.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="name.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="object.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="pattern.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="procedure.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="save.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="string.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="structureSpec.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="font.h">
-      <Filter>Header Files\fonts</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="resources\glyphList.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="fms.txt" />
+    <ClCompile Include="PostScript objects\graphicsState.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\resource.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\save.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicsState_Fonts.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PostScript.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\glyphList.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="COM Implementation\PostScript.odl">
+      <Filter>Source Files\COM Implementation</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\PostScript objects\array.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\booleanObject.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\colorSpace.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\dictionary.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\directExec.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\graphicsState.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\literal.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\mark.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\matrix.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\name.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\object.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\pattern.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\procedure.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\resource.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\save.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\structureSpec.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Fonts\font.h">
+      <Filter>Header Files\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Stacks\dictionaryStack.h">
+      <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Stacks\graphicsStateStack.h">
+      <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Stacks\objectStack.h">
+      <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\comment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\job.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript_Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resourceIdentifiers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\string.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,11 +1,13 @@
 
 #include "job.h"
-#include "graphicsState.h"
-#include "string.h"
-#include "font.h"
-#include "pattern.h"
-#include "mark.h"
-#include "save.h"
+#include "PostScript objects\graphicsState.h"
+
+#include "PostScript objects\string.h"
+#include "Fonts\font.h"
+#include "PostScript objects\pattern.h"
+#include "PostScript objects\mark.h"
+
+#include "PostScript objects\save.h"
 
    void job::operatorStdout() {
 /*
