@@ -23,12 +23,14 @@
    case WM_TIMER: 
       break;
 
+#if 0
    case WM_COMMAND: {
       switch ( LOWORD(wParam) ) {
       }
       
       }
       break;
+#endif
 
    case WM_PAINT: {
 
