@@ -81,7 +81,9 @@
 
    SIZEL tempSizel;
    RECT rect = {0,0,0,0};
-   hiMetricToPixel(pSizel,&tempSizel);
+
+   hiMetricToPixels(pSizel,&tempSizel);
+
    rect.right = tempSizel.cx;
    rect.bottom = tempSizel.cy;
 
@@ -97,7 +99,9 @@
    GetWindowRect(pParent -> hwndHost,&rcParent);
    pSizel -> cx = rcParent.right - rcParent.left;
    pSizel -> cy = rcParent.bottom - rcParent.top;
-   pixelToHiMetric(pSizel,pSizel);
+
+   pixelsToHiMetric(pSizel,pSizel);
+
    return S_OK;
    }
  
