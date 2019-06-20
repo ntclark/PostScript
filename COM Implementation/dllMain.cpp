@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <windows.h>
-#include <shlwapi.h>
 
 #include <olectl.h>
 #include <stdio.h>
@@ -16,7 +15,7 @@
 
 #define DEFINE_DATA
 
-#include "\Common\include\utilities.h"
+#include "utilities.h"
 
 #include "PostScript.h"
 
