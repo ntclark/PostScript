@@ -59,19 +59,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\Common\Compiler Options.props" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\Common\Compiler Options.props" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\Common\Compiler Options.props" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\Common\Compiler Options.props" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -86,7 +86,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(USERNAME)' == 'Nate' (
+      <Command>
+if '$(BUILDER)' == 'JENKINS' (
+    Exit 0
+)
+
+if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
       copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -116,7 +121,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(USERNAME)' == 'Nate' (
+      <Command>
+if '$(BUILDER)' == 'JENKINS' (
+    Exit 0
+)
+
+if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
       copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -150,7 +160,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(USERNAME)' == 'Nate' (
+      <Command>
+if '$(BUILDER)' == 'JENKINS' (
+    Exit 0
+)
+
+if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
       copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -184,7 +199,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(USERNAME)' == 'Nate' (
+      <Command>
+if '$(BUILDER)' == 'JENKINS' (
+    Exit 0
+)
+
+if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
       copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
