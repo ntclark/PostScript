@@ -1,0 +1,30 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+#include <olectl.h>
+
+[ 
+   uuid(D734A734-368C-4C8D-ACF2-E5CCFCE1C7E0),
+   helpstring("InnoVisioNate Postscript to PDF converter"), 
+   lcid(0x0),control, 
+   version(3.0)
+] 
+
+library CVPostscriptConverter { 
+
+    [uuid(D734A734-368C-4C8D-ACF2-E5CCFCE1C7E1),
+      helpstring("ICVPostScriptConverter COM interface")] 
+
+    interface ICVPostscriptConverter : IUnknown {
+
+        BOOL ConvertToPDF(char *pszPostscriptFilename);
+
+    }
+
+   [uuid(D734A734-368C-4C8D-ACF2-E5CCFCE1C7E2),helpstring("InnoVisioNate CVPostscriptConverter COM object"),control]
+   coclass CVPostscriptConverter {
+      [default] interface ICVPostscriptConverter;
+      //[source] interface ICVPostScriptConverterEvents;
+   };
+
+}
