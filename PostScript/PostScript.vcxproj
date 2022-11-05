@@ -1,0 +1,314 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3F55E01B-7491-42CA-9936-5969C84FB14E}</ProjectGuid>
+    <RootNamespace>PostScript</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(GSYSTEM_HOME)\Common\Compiler Options.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.24720.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <WarningLevel>0</WarningLevel>
+      <DefaultCharType>Ascii</DefaultCharType>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <PrecompiledHeaderFile />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <WarningLevel>0</WarningLevel>
+      <DefaultCharType>Ascii</DefaultCharType>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <DefaultCharType>Ascii</DefaultCharType>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>   if '$(PlatformTarget)' == 'x64' (
+      echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      if '$(Configuration)' == 'Debug' (
+         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      )
+   )
+   if '$(Platform)' == 'Win32' (
+      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      if '$(Configuration)' == 'Debug' (
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      )
+   )</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <DefaultCharType>Ascii</DefaultCharType>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
+    <ClCompile Include="COM Events\IConnectionPoint.cpp" />
+    <ClCompile Include="COM Events\IConnectionPointContainer.cpp" />
+    <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
+    <ClCompile Include="COM Events\IEnumerateConnections.cpp" />
+    <ClCompile Include="COM Implementation\dllMain.cpp" />
+    <ClCompile Include="COM Interfaces\Being Hosted\IOleInPlaceObject.cpp" />
+    <ClCompile Include="COM Interfaces\Being Hosted\IOleObject.cpp" />
+    <ClCompile Include="COM Interfaces\IPostScript.cpp" />
+    <ClCompile Include="COM Interfaces\IUnknown.cpp" />
+    <ClCompile Include="Fonts\font.cpp" />
+    <ClCompile Include="Fonts\font_FontFile.cpp" />
+    <ClCompile Include="handler.cpp" />
+    <ClCompile Include="job.cpp" />
+    <ClCompile Include="operators.cpp" />
+    <ClCompile Include="parse.cpp" />
+    <ClCompile Include="parseJob.cpp" />
+    <ClCompile Include="pdfOperators.cpp" />
+    <ClCompile Include="PostScript objects\array.cpp" />
+    <ClCompile Include="PostScript objects\booleanObject.cpp" />
+    <ClCompile Include="PostScript objects\colorSpace.cpp" />
+    <ClCompile Include="PostScript objects\dictionary.cpp" />
+    <ClCompile Include="PostScript objects\graphicsState.cpp" />
+    <ClCompile Include="PostScript objects\graphicsState_Fonts.cpp" />
+    <ClCompile Include="PostScript objects\literal.cpp" />
+    <ClCompile Include="PostScript objects\mark.cpp" />
+    <ClCompile Include="PostScript objects\matrix.cpp" />
+    <ClCompile Include="PostScript objects\name.cpp" />
+    <ClCompile Include="PostScript objects\object.cpp" />
+    <ClCompile Include="PostScript objects\pattern.cpp" />
+    <ClCompile Include="PostScript objects\procedure.cpp" />
+    <ClCompile Include="PostScript objects\resource.cpp" />
+    <ClCompile Include="PostScript objects\save.cpp" />
+    <ClCompile Include="PostScript objects\string.cpp" />
+    <ClCompile Include="PostScript objects\structureSpec.cpp" />
+    <ClCompile Include="PostScript.cpp" />
+    <ClCompile Include="PostScript_DisplayStack.cpp" />
+    <ClCompile Include="PostScript_Log.cpp" />
+    <ClCompile Include="richEditHandler.cpp" />
+    <ClCompile Include="Stacks\dictionaryStack.cpp" />
+    <ClCompile Include="Stacks\graphicsStateStack.cpp" />
+    <ClCompile Include="Stacks\objectStack.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\glyphList.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PostScript.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="COM Implementation\PostScript.odl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\comment.h" />
+    <ClInclude Include="include\error.h" />
+    <ClInclude Include="include\Fonts\font.h" />
+    <ClInclude Include="include\job.h" />
+    <ClInclude Include="include\PostScript objects\array.h" />
+    <ClInclude Include="include\PostScript objects\booleanObject.h" />
+    <ClInclude Include="include\PostScript objects\colorSpace.h" />
+    <ClInclude Include="include\PostScript objects\dictionary.h" />
+    <ClInclude Include="include\PostScript objects\directExec.h" />
+    <ClInclude Include="include\PostScript objects\graphicsState.h" />
+    <ClInclude Include="include\PostScript objects\literal.h" />
+    <ClInclude Include="include\PostScript objects\mark.h" />
+    <ClInclude Include="include\PostScript objects\matrix.h" />
+    <ClInclude Include="include\PostScript objects\name.h" />
+    <ClInclude Include="include\PostScript objects\object.h" />
+    <ClInclude Include="include\PostScript objects\pattern.h" />
+    <ClInclude Include="include\PostScript objects\procedure.h" />
+    <ClInclude Include="include\PostScript objects\resource.h" />
+    <ClInclude Include="include\PostScript objects\save.h" />
+    <ClInclude Include="include\PostScript objects\string.h" />
+    <ClInclude Include="include\PostScript objects\structureSpec.h" />
+    <ClInclude Include="include\PostScript.h" />
+    <ClInclude Include="include\PostScript_Log.h" />
+    <ClInclude Include="include\resourceIdentifiers.h" />
+    <ClInclude Include="include\Stacks\dictionaryStack.h" />
+    <ClInclude Include="include\Stacks\graphicsStateStack.h" />
+    <ClInclude Include="include\Stacks\objectStack.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
