@@ -2,15 +2,7 @@
 #include <windows.h>
 #include "resource.h"
 
-#ifndef CV_VERSION_MAJOR
-#define CV_VERSION_MAJOR 5
-#endif
-#ifndef CV_VERSION_MINOR
-#define CV_VERSION_MINOR 1
-#endif
-#ifndef CV_VERSION_BUILD
-#define CV_VERSION_BUILD 1
-#endif
+#include "versionInfo.h"
 
 VS_VERSION_INFO VERSIONINFO
 
