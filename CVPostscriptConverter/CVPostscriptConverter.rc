@@ -4,15 +4,7 @@
 
 #include "versionInfo.h"
 
-VS_VERSION_INFO VERSIONINFO
-
- FILEVERSION CV_VERSION_MAJOR,CV_VERSION_MINOR,0,CV_VERSION_BUILD
- PRODUCTVERSION CV_VERSION_MAJOR,CV_VERSION_MINOR,0,CV_VERSION_BUILD
- FILEFLAGSMASK 0x3fL
- FILEFLAGS 0x0L
- FILEOS 0x40004L
- FILETYPE 0x2L
- FILESUBTYPE 0x0
+VINFO(VFT_DLL)
 
 BEGIN
     BLOCK "StringFileInfo"
@@ -22,14 +14,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "InnoVisioNate\0"
             VALUE "FileDescription", "A COM object that can convert PS output from the CursiVision Print driver to PDF\0"
-            VALUE "FileVersion", CV_VERSION_MAJOR "," CV_VERSION_MINOR "," CV_VERSION_BUILD"\0"
+            VALUE "FileVersion", CV_PRODUCT_VERSION
             VALUE "InternalName", "CVPostscriptCOnverter.dll\0"
             VALUE "LegalCopyright", "Copyright © 2009-2023 InnoVisioNate Inc.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "CVPostscriptCOnverter.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "CVPostscriptCOnverter\0"
-            VALUE "ProductVersion", CV_VERSION_MAJOR "," CV_VERSION_MINOR "," CV_VERSION_BUILD"\0"
+            VALUE "ProductVersion", CV_PRODUCT_VERSION
             VALUE "SpecialBuild", "\0"
         END
     END
