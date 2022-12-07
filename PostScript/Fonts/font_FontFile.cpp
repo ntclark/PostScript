@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "job.h"
 
@@ -184,7 +181,7 @@ be preceded by up to a maximum of 48 operands.
 
    pGlobalSubroutineIndex = new INDEX(pStringIndex -> pEnd);
 
-   if ( -LONG_MAX != encodingOffset ) {
+   if ( ! ( -LONG_MAX == encodingOffset ) ) {
 
       BYTE *pEncodingData = pFontData + encodingOffset;
 
@@ -225,12 +222,19 @@ be preceded by up to a maximum of 48 operands.
 
    }
 
-   if ( -1L != charStringsOffset ) {
+   if ( ! ( -1L == charStringsOffset ) ) {
       pCharStringsIndex = new INDEX(pFontData + charStringsOffset);
       pSID = new long[pCharStringsIndex -> objectCount];
    }
 
-   if ( -1L == charsetOffset ) 
+   //NTC: 12-06-2022
+   //
+   // The federal f1040 throws an exception here when charsetOffset is not getting 
+   // set and retains it's initial value of -LONG_MAX
+   // Setting the value to 0, as in the case of = -1L, just causes a postscript
+   // operand stack underflow.
+   //
+   if ( -1L == charsetOffset ) //|| -LONG_MAX == charsetOffset ) 
       charsetOffset = 0L;
 
    if ( 0 == charsetOffset ) {
