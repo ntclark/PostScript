@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostScript", "PostScript\Po
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformPostscript", "TransformPostscript\TransformPostscript.vcxproj", "{5F63389A-7FEB-48CD-8463-1B11145C826B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CVPostscriptConverter", "CVPostscriptConverter\CVPostscriptConverter.vcxproj", "{FCD3A238-382C-437E-B76D-BC2CA675225B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,14 +31,6 @@ Global
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|Win32.Build.0 = Release|Win32
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|x64.ActiveCfg = Release|x64
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|x64.Build.0 = Release|x64
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Debug|Win32.Build.0 = Debug|Win32
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Debug|x64.ActiveCfg = Debug|x64
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Debug|x64.Build.0 = Debug|x64
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Release|Win32.ActiveCfg = Release|Win32
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Release|Win32.Build.0 = Release|Win32
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Release|x64.ActiveCfg = Release|x64
-		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
