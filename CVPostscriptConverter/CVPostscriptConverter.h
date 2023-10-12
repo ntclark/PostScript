@@ -36,13 +36,13 @@
 
 #endif
 
-    extern "C" {
+extern "C" {
     int __stdcall Initialize(void *instance,char *pszPostscriptFileName);
     void __stdcall newInterpreter(void **,void *);
     void __stdcall gsapi_delete_instance(void *);
     void __stdcall gsapi_exit(void *);
     int __stdcall gsapi_init_with_args(void *,int,char **);
-    }
+}
 
 #ifdef DEFINE_DATA
 

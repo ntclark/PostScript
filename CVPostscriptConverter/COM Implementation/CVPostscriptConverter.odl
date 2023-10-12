@@ -24,7 +24,6 @@ library CVPostscriptConverter {
    [uuid(D734A734-368C-4C8D-ACF2-E5CCFCE1C7E2),helpstring("InnoVisioNate CVPostscriptConverter COM object"),control]
    coclass CVPostscriptConverter {
       [default] interface ICVPostscriptConverter;
-      //[source] interface ICVPostScriptConverterEvents;
    };
 
 }

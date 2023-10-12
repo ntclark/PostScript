@@ -11,10 +11,9 @@
 
    char graphicsState::szCurrentText[4096];
 
-   graphicsState::graphicsState(job *pj,HDC dc,RECT *prcWindowsClip) :
+   graphicsState::graphicsState(job *pj,RECT *prcWindowsClip) :
       pJob(pj),
       pFont(NULL),
-      hdcTarget(dc),
       oldFont(NULL),
       textLeading(0.0f),
       fontSize(1.0f),
@@ -40,9 +39,10 @@
 
    memset(&lastMove,0,sizeof(POINTL));
    memset(&lastPoint,0,sizeof(POINTL));
+
    memset(&rcTextObjectWindows,0,sizeof(RECT));
 
-   if ( hdcTarget && pJob && pJob -> pPdfPage ) {
+   if ( pJob && pJob -> pPdfPage ) {
 
       RECT rcPDFPage;
       double rotation = 0.0;
@@ -64,9 +64,11 @@
       tx = (float)(prcWindowsClip -> left);
       ty = (float)(prcWindowsClip -> bottom);
 
-      SetGraphicsMode(hdcTarget,GM_ADVANCED);
-      SetMapMode(hdcTarget,MM_ANISOTROPIC);
-      SetWorldTransform(hdcTarget,pTransform());
+#if USE_ANISOTROPIC
+      SetGraphicsMode(pJob -> GetDC(),GM_ADVANCED);
+      SetMapMode(pJob -> GetDC(),MM_ANISOTROPIC);
+      SetWorldTransform(pJob -> GetDC(),pTransform());
+#endif
 
       textMatrixRotation.a = (float)cos(rotation);
       textMatrixRotation.b = (float)sin(rotation);
@@ -77,7 +79,7 @@
 
       textMatrix = textMatrixIdentity;
 
-      oldFont = SelectObject(hdcTarget,GetStockObject(DEFAULT_GUI_FONT));
+      oldFont = SelectObject(pJob -> GetDC(),GetStockObject(DEFAULT_GUI_FONT));
 
    }
 
@@ -119,9 +121,12 @@
    }
 
    void graphicsState::translateTextMatrixTJ(float ptx,float pty) {
+
    float pValues[] = {1.0, 0.0, 0.0, 1.0, -ptx * fontSize / 1000.0f, pty};
+
    textMatrix.concat(pValues);
    textMatrixPDF.concat(pValues);
+
    if ( 0.0f > ptx && 0.0f == pty ) {
       RECT rcText;
       float deltaX = measureText(" ",&rcText);
@@ -133,6 +138,7 @@
       for ( long k = 0; k < count; k++ )
          sprintf(szCurrentText + strlen(szCurrentText)," ");
    }
+
    return;
    }
 
@@ -194,51 +200,55 @@
    }
 
    if ( ! ( 0.0 == textMatrixRotation.b ) ) {
-
       long t = rcTextObjectPDF.left;
       rcTextObjectPDF.left = rcTextObjectPDF.top;
       rcTextObjectPDF.bottom = cxPDFPage - t;
       rcTextObjectPDF.right = rcTextObjectPDF.left + cy;
       rcTextObjectPDF.top = rcTextObjectPDF.bottom + cx;
-
    }
 
    if ( pJob -> pIPostScriptTakeText ) {
    
-      char szValue[256];
+      long n = strlen(szCurrentText) + 1;
+
+      char *pszValue = new char[n];
+
       char *pszEncodedValue = NULL;
 
-      memset(szValue,0,sizeof(szValue));
-
-      if ( pFont )
-         strncpy(szValue,pFont -> translateText(szCurrentText),255);
-      else
-         strncpy(szValue,szCurrentText,255);
-      
 #if 1
-      ASCIIHexEncode(szValue,(DWORD)strlen(szValue),&pszEncodedValue);
-      pJob -> pIPostScriptTakeText -> TakeText(&rcTextObjectPDF,pszEncodedValue);
-      delete [] pszEncodedValue;
+      strncpy(pszValue,szCurrentText,n);
 #else
-      pJob -> pIPostScriptTakeText -> TakeText(&rcTextObjectPDF,szValue);
+      if ( pFont )
+         strncpy(pszValue,pFont -> translateText(szCurrentText),255);
+      else
+         strncpy(pszValue,szCurrentText,n);
 #endif
+
+      ASCIIHexEncode(pszValue,(DWORD)n,&pszEncodedValue);
+
+      pJob -> pIPostScriptTakeText -> TakeText(&rcTextObjectPDF,pszEncodedValue);
+
+      delete [] pszValue;
+      delete [] pszEncodedValue;
 
    }
 
    memset(szCurrentText,0,sizeof(szCurrentText));
    rcTextObjectWindows.left = 0L;
    rcTextObjectWindows.top = 0L;
-
    return;
    }
 
    void graphicsState::startLine(float tx,float ty) {
+
    sendText();
+
    textMatrix = textLineMatrix;
    textMatrixPDF = textLineMatrixPDF;
    translateTextMatrix(tx,ty);
    textLineMatrix = textMatrix;
    textLineMatrixPDF = textMatrixPDF;
+
    return;
    }
 
@@ -277,34 +287,34 @@
 
    void graphicsState::concat(matrix *pSource) {
    matrix::concat(pSource);
-   if ( hdcTarget )
-      SetWorldTransform(hdcTarget,pTransform());
+   if ( pJob && pJob -> GetDC() )
+      SetWorldTransform(pJob -> GetDC(),pTransform());
    return;
    }
 
 
    void graphicsState::concat(XFORM &winXForm) {
    matrix::concat(winXForm);
-   if ( hdcTarget )
-      SetWorldTransform(hdcTarget,pTransform());
+   if ( pJob && pJob -> GetDC() )
+      SetWorldTransform(pJob -> GetDC(),pTransform());
    return;
    }
 
 
    void graphicsState::concat(float *pValues) {
    matrix::concat(pValues);
-   if ( hdcTarget )
-      SetWorldTransform(hdcTarget,pTransform());
+   if ( pJob && pJob -> GetDC() )
+      SetWorldTransform(pJob -> GetDC(),pTransform());
    return;
    }
 
    void graphicsState::restored() {
-   SetWorldTransform(hdcTarget,pTransform());
+   SetWorldTransform(pJob -> GetDC(),pTransform());
    return;
    }
 
    void graphicsState::moveto() {
-   if ( ! hdcTarget ) 
+   if ( ! ( pJob && pJob -> GetDC() ) )
       return;
    object *pY = pJob -> pop();
    object *pX = pJob -> pop();
@@ -317,7 +327,7 @@
    }
 
    void graphicsState::lineto() {
-   if ( ! hdcTarget ) 
+   if ( ! ( pJob && pJob -> GetDC() ) )
       return;
    object *pY = pJob -> pop();
    object *pX = pJob -> pop();
@@ -330,7 +340,7 @@
    }
 
    void graphicsState::closepath() {
-   if ( ! hdcTarget )
+   if ( ! ( pJob && pJob -> GetDC() ) )
       return;
    if ( 0 == lastPoint.x )
       return;
@@ -370,7 +380,7 @@
    else
       textMatrix.d = -textMatrix.d;
 
-   SetWorldTransform(hdcTarget,pTextTransform());
+   SetWorldTransform(pJob -> GetDC(),pTextTransform());
 
    if ( 0.0 == textMatrix.a )
       textMatrix.c = -textMatrix.c;
@@ -383,9 +393,9 @@
 
 #if DRAW_RECTANGLES
    HBRUSH hBrush = CreateSolidBrush(RGB(0,0,0));
-   HGDIOBJ oldBrush = SelectObject(hdcTarget,hBrush);
-   FrameRect(hdcTarget,&rcText,hBrush);
-   DeleteObject(SelectObject(hdcTarget,oldBrush));
+   HGDIOBJ oldBrush = SelectObject(pJob -> GetDC(),hBrush);
+   FrameRect(pJob -> GetDC(),&rcText,hBrush);
+   DeleteObject(SelectObject(pJob -> GetDC(),oldBrush));
 #endif
 
    float pValues[] = {1.0, 0.0, 0.0, 1.0, deltaX, 0.0f};
@@ -402,7 +412,7 @@
    rcTextObjectWindows.right += rcText.right - rcText.left;
    rcTextObjectWindows.bottom = rcTextObjectWindows.top + max(rcTextObjectWindows.bottom - rcTextObjectWindows.top,rcText.bottom - rcText.top);
 
-   SetWorldTransform(hdcTarget,pTransform());
+   SetWorldTransform(pJob -> GetDC(),pTransform());
 
    return;
    }
@@ -417,24 +427,23 @@
    else
       textMatrix.d = -textMatrix.d;
 
-   SetWorldTransform(hdcTarget,pTextTransform());
+   SetWorldTransform(pJob -> GetDC(),pTextTransform());
 
    if ( 0.0 == textMatrix.a )
       textMatrix.c = -textMatrix.c;
    else
       textMatrix.d = -textMatrix.d;
 
-   DrawTextEx(hdcTarget,pszText,-1,pResult,DT_CALCRECT,NULL);
+   DrawTextEx(pJob -> GetDC(),pszText,-1,pResult,DT_CALCRECT,NULL);
    
    long cy = pResult -> bottom - pResult -> top;
    pResult -> top -= cy;
    pResult -> bottom -= cy;
    
-   SetWorldTransform(hdcTarget,pTransform());
+   SetWorldTransform(pJob -> GetDC(),pTransform());
 
    return (float)(pResult -> right - pResult -> left);
    }
-
 
    void graphicsState::setGraphicsStateDict(char *pszDictName) {
 

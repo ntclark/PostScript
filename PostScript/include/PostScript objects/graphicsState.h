@@ -13,7 +13,7 @@ class font;
    class graphicsState : public matrix {
    public:
 
-      graphicsState(job *pJob,HDC hdc,RECT *prcWindowsClip);
+      graphicsState(job *pJob,RECT *prcWindowsClip);
       graphicsState(graphicsState &);
       ~graphicsState();
 
@@ -101,12 +101,12 @@ class font;
       class font *pFont;
 
       job *pJob;
-      HDC hdcTarget;
       HGDIOBJ oldFont;
 
       long cxPDFPage,cyPDFPage;
 
       POINTL lastMove,lastPoint;
+
       RECT rcTextObjectWindows;
       RECT rcTextObjectPDF;
 

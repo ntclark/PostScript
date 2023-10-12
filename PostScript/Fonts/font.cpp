@@ -68,7 +68,7 @@
    }
 
 
-   font::font(job *pj,PdfDictionary *pFontDict) : 
+   font::font(job *pj,PdfDictionary *pFontDict,float fontSize) : 
 
       pJob(pj),
       dictionary(NULL,"",object::font),
@@ -140,17 +140,24 @@
 
    PdfObject *pFontDescriptor = pFontDict -> Object("FontDescriptor");
 
-   if ( ! pFontDescriptor )
-      return;
+   BYTE *pValue = NULL;
+   PdfDictionary *pFontDescriptorDictionary = NULL;
 
-   PdfDictionary *pFontDescriptorDictionary = pFontDescriptor -> Dictionary();
+   if ( ! pFontDescriptor ) {
 
-   FontFile(pFontDescriptorDictionary);
+      pValue = pFontDict -> Value("BaseFont");
 
-   BYTE *pValue = pFontDescriptorDictionary -> Value("FontName");
+   } else {
+
+      pFontDescriptorDictionary = pFontDescriptor -> Dictionary();
+
+      FontFile(pFontDescriptorDictionary);
+
+      pValue = pFontDescriptorDictionary -> Value("FontName");
+   }
 
    if ( pValue )
-      strcpy(szFamily,(char *)pValue);
+      strcpy(szFamily,(char *)(pValue + 1));     // discard '/'
 
    PdfObject *pFontEncoding = pFontDict -> Object("Encoding");
 
@@ -212,6 +219,9 @@
    if ( pValue )
       lastChar = atol((char *)pValue);
 
+#if 1
+
+#else
    pValue = pFontDescriptorDictionary -> Value("FontBBox");
 
    if ( pValue )
@@ -231,10 +241,36 @@
       strcpy(pszCharSet,(char *)pValue);
    }
 
+#endif
+
    pValue = pFontDict -> Value("Widths");
 
    if ( pValue )
       pWidths = new class array(pJob,"Widths",(char *)pValue);
+
+   //if ( '\0' == szFamily[0] )
+   //   return;
+
+   LOGFONT logFont = {0};
+
+   HFONT currentFont = (HFONT)GetCurrentObject(pJob -> GetDC(),OBJ_FONT);
+
+   GetObject(currentFont,sizeof(LOGFONT),&logFont);
+
+   if ( ! ( '\0' == szFamily[0] ))
+      strcpy(logFont.lfFaceName,szFamily);
+
+#if USE_ANISOTROPIC
+   logFont.lfHeight = fontSize;
+#else
+   logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(pJob -> GetDC(), LOGPIXELSY), 72);
+#endif
+
+   DeleteObject(currentFont);
+
+   HFONT newFont = CreateFontIndirect(&logFont);
+
+   HGDIOBJ oldFont = SelectObject(pJob -> GetDC(),newFont);
 
    return;
    }

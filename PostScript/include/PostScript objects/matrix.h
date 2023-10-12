@@ -19,7 +19,7 @@
       virtual void concat(float *);
       virtual void concat(XFORM &);
 
-   private:
+   public:
 
       union {
          struct { float a,b,c,d,tx,ty; };

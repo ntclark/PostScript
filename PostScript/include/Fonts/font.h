@@ -66,7 +66,7 @@ class job;
    public:
 
       font(job *pJob,char *fontName);
-      font(job *pJob,PdfDictionary *pFontDict);
+      font(job *pJob,PdfDictionary *pFontDict,float fontSize);
       ~font();
 
       void scalefont(float sv) { scale = sv; };
@@ -92,7 +92,7 @@ class job;
       void FontFile(PdfDictionary *pDescriptorDictionary);
       void FontFile3(PdfObject *pFontFile);
 
-      char szFamily[64];
+      char szFamily[64]{'\0'};
       enum fontType fontType;
       float scale;
 

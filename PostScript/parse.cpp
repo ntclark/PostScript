@@ -131,7 +131,7 @@
 
    *ppEnd -= totalMotion;
 
-//   pPStoPDF -> queueLog((char *)pStart);
+   //pPStoPDF -> queueLog((char *)pStart);
 
    return;
    }

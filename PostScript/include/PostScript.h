@@ -24,6 +24,8 @@
 
 #undef ADVANCE_THRU_EOL
 
+#define USE_ANISOTROPIC 1
+
 #include "resourceIdentifiers.h"
 
 #include "job.h"
@@ -163,15 +165,15 @@
 
       private:
 
-		  PStoPDF *pParent;
+         PStoPDF *pParent;
 
      } *pIConnectionPointContainer;
 
      struct _IConnectionPoint : IConnectionPoint {
-	  public:
+     public:
 
         _IConnectionPoint(PStoPDF *pp);
-		  ~_IConnectionPoint();
+        ~_IConnectionPoint();
 
         STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
         STDMETHOD_ (ULONG, AddRef)();
@@ -180,30 +182,30 @@
         STDMETHOD (GetConnectionInterface)(IID *);
         STDMETHOD (GetConnectionPointContainer)(IConnectionPointContainer **ppCPC);
         STDMETHOD (Advise)(IUnknown *pUnk,DWORD *pdwCookie);
-   	  STDMETHOD (Unadvise)(DWORD);
+        STDMETHOD (Unadvise)(DWORD);
         STDMETHOD (EnumConnections)(IEnumConnections **ppEnum);
 
-		  IUnknown *AdviseSink() { return adviseSink; };
+        IUnknown *AdviseSink() { return adviseSink; };
 
      private:
 
         int getSlot();
         int findSlot(DWORD dwCookie);
 
-		  IUnknown *adviseSink;
-		  PStoPDF *pParent;
+        IUnknown *adviseSink;
+        PStoPDF *pParent;
         DWORD nextCookie;
-		  int countConnections,countLiveConnections;
+        int countConnections,countLiveConnections;
 
         CONNECTDATA *connections;
 
      } *pIConnectionPoint;
 
 
-	  struct _IEnumConnectionPoints : IEnumConnectionPoints {
-	  public:
+    struct _IEnumConnectionPoints : IEnumConnectionPoints {
+    public:
 
-	     _IEnumConnectionPoints(PStoPDF *pp,_IConnectionPoint **cp,int connectionPointCount);
+       _IEnumConnectionPoints(PStoPDF *pp,_IConnectionPoint **cp,int connectionPointCount);
        ~_IEnumConnectionPoints();
 
         STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
@@ -218,8 +220,8 @@
      private:
 
         int cpCount,enumeratorIndex;
-		  PStoPDF *pParent;
-		  _IConnectionPoint **connectionPoints;
+        PStoPDF *pParent;
+        _IConnectionPoint **connectionPoints;
 
      } *pIEnumConnectionPoints;
 

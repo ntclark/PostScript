@@ -21,9 +21,7 @@
       return;
    }
 
-   pFont = new class font(pJob,pDict);
-
-   setFontSize(fs);
+   pFont = new class font(pJob,pDict,fs);
 
    return;
    }
@@ -45,22 +43,26 @@
    if ( 1.0 == fontSize )
       fontSize = 10.0;
 
-   if ( ! hdcTarget )
+   if ( ! pJob -> GetDC() )
       return;
 
-   HFONT currentFont = (HFONT)SelectObject(hdcTarget,oldFont);
+   HFONT currentFont = (HFONT)GetCurrentObject(pJob -> GetDC(),OBJ_FONT);
 
    LOGFONT logFont = {0};
 
    GetObject(currentFont,sizeof(LOGFONT),&logFont);
 
-   logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(hdcTarget, LOGPIXELSY), 72);
+#if USE_ANISOTROPIC
+   logFont.lfHeight = fontSize;
+#else
+   logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(pJob -> GetDC(), LOGPIXELSY), 72);
+#endif
 
    DeleteObject(currentFont);
 
    HFONT newFont = CreateFontIndirect(&logFont);
 
-   oldFont = SelectObject(hdcTarget,newFont);
+   oldFont = SelectObject(pJob -> GetDC(),newFont);
 
    return;
    }

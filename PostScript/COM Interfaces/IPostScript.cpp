@@ -16,8 +16,8 @@
 
    WideCharToMultiByte(CP_ACP,0,wsFileName,-1,pszFileName,n,0,0);
 
-#if 0
-   pJob = new job(pszFileName,NULL,NULL,NULL,NULL,NULL);
+#if 1
+   pJob = new job(pszFileName,NULL,NULL,NULL,NULL);
 #else
    pJob = new job("D:\\CursiVision\\PStoPDF\\Test Page.ps",NULL,NULL,NULL,NULL);
 #endif
@@ -41,8 +41,8 @@
 
    WideCharToMultiByte(CP_ACP,0,wsFileName,-1,pszFileName,n,0,0);
 
-#if 0
-   pJob = new job(pszFileName);
+#if 1
+   pJob = new job(pszFileName,NULL,NULL,NULL,NULL);
 #else
    pJob = new job("D:\\CursiVision\\PStoPDF\\Test Page.ps",NULL,NULL,NULL,NULL);
 #endif

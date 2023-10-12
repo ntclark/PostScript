@@ -60,6 +60,12 @@
    char *p = new char[pEnd - pStart + 2];
    memcpy((BYTE *)p,pStart,pEnd - pStart);
    p[pEnd - pStart] = '\0';
+
+   if ( NULL == hwndLog ) {
+      OutputDebugStringA(p);
+      return 0;
+   }
+
    theLog.push(p);
 
    hRichEditSemaphore = CreateSemaphore(NULL,0,1,NULL);

@@ -377,7 +377,7 @@
    systemDict.insert("DeviceGray",&defaultColorSpace);
    systemDict.insert("DeviceRGB",new colorSpace(this,"DeviceRGB"));
 
-   graphicsStateStack.push(new graphicsState(this,GetDC(),WindowsClipArea()));
+   graphicsStateStack.push(new graphicsState(this,WindowsClipArea()));
 
    return;
    }

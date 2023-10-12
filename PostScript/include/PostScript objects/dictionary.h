@@ -6,7 +6,6 @@
 
 #include <list>
 #include <map>
-//#include "PostScript.h"
 
 class job;
 
