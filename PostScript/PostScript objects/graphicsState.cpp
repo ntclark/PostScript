@@ -212,7 +212,6 @@
       long n = strlen(szCurrentText) + 1;
 
       char *pszValue = new char[n];
-
       char *pszEncodedValue = NULL;
 
 #if 1
@@ -223,6 +222,13 @@
       else
          strncpy(pszValue,szCurrentText,n);
 #endif
+
+      RECT rc{0,0,0,0};
+
+      measureText(szCurrentText,&rc);
+
+      rcTextObjectPDF.top = rcTextObjectPDF.bottom + rc.bottom - rc.top;
+      //rcTextObjectPDF.right = rcTextObjectPDF.left + rc.right - rc.left;
 
       ASCIIHexEncode(pszValue,(DWORD)n,&pszEncodedValue);
 
@@ -240,15 +246,12 @@
    }
 
    void graphicsState::startLine(float tx,float ty) {
-
    sendText();
-
    textMatrix = textLineMatrix;
    textMatrixPDF = textLineMatrixPDF;
    translateTextMatrix(tx,ty);
    textLineMatrix = textMatrix;
    textLineMatrixPDF = textMatrixPDF;
-
    return;
    }
 
@@ -321,7 +324,7 @@
    lastMove.x = pX -> IntValue();
    lastMove.y = pY -> IntValue();
 #if DRAW_GRAPHICS
-   MoveToEx(hdcTarget,lastMove.x,lastMove.y,NULL);
+   MoveToEx(pJob -> GetDC(),lastMove.x,lastMove.y,NULL);
 #endif
    return;
    }
@@ -334,7 +337,7 @@
    lastPoint.x = pX -> IntValue();
    lastPoint.y = pY -> IntValue();
 #if DRAW_GRAPHICS
-   LineTo(hdcTarget,lastPoint.x,lastPoint.y);
+   LineTo(pJob -> GetDC(),lastPoint.x,lastPoint.y);
 #endif
    return;
    }
@@ -345,7 +348,7 @@
    if ( 0 == lastPoint.x )
       return;
 #if DRAW_GRAPHICS
-   LineTo(hdcTarget,lastMove.x,lastMove.y);
+   LineTo(pJob -> GetDC(),lastMove.x,lastMove.y);
 #endif
    return;
    }
@@ -353,13 +356,11 @@
 
    void graphicsState::show(char *pszxText) {
 
-   RECT rcText = {0,0,0,0};
-
+#if 0
    char *pszTranslatedText = pszxText;
    if ( pFont )
       pszTranslatedText = pFont -> translateText(pszxText);
-
-   float deltaX = measureText(pszTranslatedText,&rcText);
+#endif
 
    if ( 0 == rcTextObjectWindows.left && 0 == rcTextObjectWindows.top ) {
 
@@ -390,6 +391,9 @@
 #if DRAW_TEXT
    DrawTextEx(hdcTarget,pszTranslatedText,-1,&rcText,DT_NOCLIP | DT_BOTTOM,NULL);
 #endif
+
+   RECT rcText = {0,0,0,0};
+   float deltaX = measureText(pszxText,&rcText);
 
 #if DRAW_RECTANGLES
    HBRUSH hBrush = CreateSolidBrush(RGB(0,0,0));
@@ -444,6 +448,7 @@
 
    return (float)(pResult -> right - pResult -> left);
    }
+
 
    void graphicsState::setGraphicsStateDict(char *pszDictName) {
 

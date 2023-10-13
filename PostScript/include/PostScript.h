@@ -36,7 +36,7 @@
 
 #define DRAW_TEXT       0
 
-#define DRAW_RECTANGLES 1
+#define DRAW_RECTANGLES 0
 
 #define DRAW_GRAPHICS   0
 
