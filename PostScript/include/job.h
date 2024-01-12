@@ -299,9 +299,9 @@
       dictionary statusDict;
       dictionary pdfDict;
 
-      booleanObject *pTrueConstant;
-      booleanObject *pFalseConstant;
-      object *pNullConstant;
+      booleanObject *pTrueConstant{NULL};
+      booleanObject *pFalseConstant{NULL};
+      object *pNullConstant{NULL};
 
       font *pCourier;
 

@@ -1,7 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include "utilities.h"
 
 #include "PostScript objects\matrix.h"
@@ -388,13 +384,16 @@
    if ( pStorage )
       delete [] pStorage;
 
-   for ( std::list<comment *>::iterator it = commentStack.begin(); it != commentStack.end(); it++ ) 
-      delete (*it);
+   for ( comment *pComment : commentStack) 
+      delete pComment;
 
    commentStack.clear();
 
-   while ( operandStack.size() ) 
-      delete pop();
+   while ( operandStack.size() ) {
+      object *pObj = pop();
+      if ( ! (pObj == pTrueConstant ) && ! ( pObj == pFalseConstant) )
+         delete pObj;
+   }
 
    delete pTrueConstant;
    delete pFalseConstant;

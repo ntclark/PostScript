@@ -109,8 +109,7 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>
-if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -121,11 +120,13 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       )
-   )</Command>
+   )
+
+Exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -159,8 +160,7 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -171,11 +171,13 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       )
-   )</Command>
+   )
+
+Exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -207,8 +209,7 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>
-if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -219,11 +220,13 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       )
-   )</Command>
+   )
+
+Exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -255,8 +258,7 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       <DataExecutionPrevention>true</DataExecutionPrevention>
     </Link>
     <PostBuildEvent>
-      <Command>
-if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -267,11 +269,13 @@ if '$(BUILDER)' == 'JENKINS' Exit 0
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(MSBuildProgramFiles32)\InnoVisioNate\CursiVision"
       )
-   )</Command>
+   )
+
+Exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
