@@ -20,7 +20,7 @@
    if ( twoCharDelimiter ) {
 
       while ( *p && ( n || *p != pszEndDelimiter[0] || *(p + 1) != pszEndDelimiter[1] ) ) {
-    
+
          if ( 0x0A == *p || 0x0D == *p ) {
             while ( *p && ( 0x0A == *p || 0x0D == *p ) )
                p++;
@@ -125,8 +125,6 @@
 
       totalMotion += cntSpaces;
 
-//      *ppEnd -= cntSpaces;
-      
    }
 
    *ppEnd -= totalMotion;
