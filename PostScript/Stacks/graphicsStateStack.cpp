@@ -1,12 +1,9 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "Stacks\graphicsStateStack.h"
 
 #include "PostScript objects\graphicsState.h"
 
-   graphicsStateStack::graphicsStateStack(job *pJob) {
+   graphicsStateStack::graphicsStateStack(job *pj) : pJob(pj) {
    return;
    }
 
@@ -28,7 +25,7 @@
    }
 
    void graphicsStateStack::save() {
-   std::stack<graphicsState *>::push(new graphicsState(*current()));
+   std::stack<graphicsState *>::push(new (pJob -> CurrentObjectHeap()) graphicsState(*current()));
    return;
    }
 

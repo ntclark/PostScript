@@ -9,7 +9,7 @@
    class save : public object {
    public:
 
-      save();
+      save(job *pJob);
       ~save();
 
    private:

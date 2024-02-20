@@ -33,7 +33,6 @@ class job;
 
    private:
 
-      job *pJob;
       bool isBound;
       std::list<object *> entries;
       char *pszStringRepresentation;

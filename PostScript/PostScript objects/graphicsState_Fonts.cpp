@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\graphicsState.h"
 #include "job.h"
@@ -8,6 +5,13 @@
 #include "Fonts\font.h"
 
    void graphicsState::setFont(char *pszFontDictName,float fs) {
+
+#ifndef IMPLEMENT_PS_FONTS
+    // There is a significant memory leak if the font gets created.
+    // Until fonts really work, I will ignore fonts
+    setFontSize(fs);
+    return;
+#endif
 
 #ifdef NDEBUG
    setFontSize(fs);
@@ -21,7 +25,10 @@
       return;
    }
 
-   pFont = new class font(pJob,pDict,fs);
+   if ( ! ( NULL == pFont ) ) 
+      delete pFont;
+
+   pFont = new (pJob -> CurrentObjectHeap()) class font(pJob,pDict,fs);
 
    return;
    }

@@ -9,7 +9,7 @@
    class name : public object {
    public:
 
-      name(char *pszValue); 
+      name(job *pJob,char *pszValue); 
       ~name();
 
    private:

@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript.h"
 #include "job.h"
@@ -58,7 +55,7 @@
     HRESULT PStoPDF::ParseText(char *pszStream,long length,void *pv_pipage,void *pvIPostScriptTakeText,HDC hdcTarget,RECT *prcWindowsClip) {
 
     if ( pJob )
-        delete pJob;   
+        delete pJob;
 
     loggingOff = 32768L;
 
@@ -88,6 +85,10 @@
         return E_FAIL;
 
     }
+
+    delete pJob;
+
+    pJob = NULL;
 
     return S_OK;
    }

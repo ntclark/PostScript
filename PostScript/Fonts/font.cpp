@@ -5,219 +5,163 @@
 
 #include "job.h"
 
-   class array *font::pStandardEncoding = NULL;
+class array *font::pStandardEncoding = NULL;
 
-   font::font(job *pj,char *pszName) :
-      pJob(pj),
-      dictionary(NULL,pszName,object::font),
-      privateDictionary(NULL,"private"),
-      charStrings(NULL,"CharStrings"),
-      encoding(pj,"Encoding",256),
-      pFontBBox(NULL),
-      firstChar(1),
-      lastChar(1),
-      missingWidth(0.0f),
-      pWidths(NULL),
+    font::font(job *pj,char *pszName) :
+        dictionary(pj,pszName,object::font)
+    {
 
-      pDifferencesArray(NULL),
-      pCharsetArray(NULL),
+    if ( pszName )
+        strcpy(szFamily,pszName);
+    else
+        memset(szFamily,0,sizeof(szFamily));
 
-      pszCharSet(NULL),
-      fontType(fontType::ftypeUnspecified),
-      scale(0),
+    pPrivateDictionary = new (pJob -> CurrentObjectHeap()) dictionary(pj,"private");
+    pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pj,"CharStrings");
+    pEncoding = new (pJob -> CurrentObjectHeap()) class array(pj,"Encoding",256);
 
-      pNameIndex(NULL),
-      pTopDictIndex(NULL),
-      pStringIndex(NULL),
-      pGlobalSubroutineIndex(NULL),
-      pCharStringsIndex(NULL),
+    insert("FID",pszName);
+    //   insert("FontType",pFontType);
+    insert("Encoding",pEncoding);
+    //   insert("FontBBox",&fontBBox);
+    insert("Private",pPrivateDictionary);
+    insert("CharStrings",pCharStrings);
 
-      pSID(NULL),
-      pEncoding(NULL),
-      codeCount(0L),
+    #if 0
+    fontBBox.insert(new object(0L));
+    fontBBox.insert(new object(0L));
+    fontBBox.insert(new object(0L));
+    fontBBox.insert(new object(0L));
+    #endif
 
-      charStringType(2L),
+    pJob -> addFont(this);
 
-      pFontData(NULL)
-   {
-
-   if ( pszName )
-      strcpy(szFamily,pszName);
-   else
-      memset(szFamily,0,sizeof(szFamily));
-
-//   pFontType = new object((long)ftype0);
-
-   insert("FID",pszName);
-//   insert("FontType",pFontType);
-   insert("Encoding",&encoding);
-//   insert("FontBBox",&fontBBox);
-   insert("Private",&privateDictionary);
-   insert("CharStrings",&charStrings);
-
-#if 0
-   fontBBox.insert(new object(0L));
-   fontBBox.insert(new object(0L));
-   fontBBox.insert(new object(0L));
-   fontBBox.insert(new object(0L));
-#endif
-
-   pJob -> addFont(this);
-
-   return;
-   }
+    return;
+    }
 
 
-   font::font(job *pj,PdfDictionary *pFontDict,float fontSize) : 
+    font::font(job *pj,PdfDictionary *pFontDict,float fontSize) : 
+        dictionary(pj,"",object::font)
+    {
 
-      pJob(pj),
-      dictionary(NULL,"",object::font),
-      privateDictionary(NULL,"private"),
-      charStrings(NULL,"CharStrings"),
-      encoding(pj,"Encoding",256),
-      pFontBBox(NULL),
-      firstChar(1),
-      lastChar(1),
-      missingWidth(0.0f),
-      pWidths(NULL),
+    pPrivateDictionary = new (pJob -> CurrentObjectHeap()) dictionary(pj,"private");
+    pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pj,"CharStrings");
+    pEncoding = new (pJob -> CurrentObjectHeap()) class array(pj,"Encoding",256);
 
-      pDifferencesArray(NULL),
-      pCharsetArray(NULL),
+    if ( NULL == pStandardEncoding ) {
 
-      pszCharSet(NULL),
-      fontType(fontType::ftypeUnspecified),
-      scale(0),
+        pStandardEncoding = new (pJob -> CurrentObjectHeap())class array(pJob,"StandardEncoding");
 
-      pNameIndex(NULL),
-      pTopDictIndex(NULL),
-      pStringIndex(NULL),
-      pGlobalSubroutineIndex(NULL),
-      pCharStringsIndex(NULL),
+        HRSRC hrsrc = FindResource(hModule,MAKEINTRESOURCE(ID_GLYPH_LIST),"#256");
 
-      pSID(NULL),
-      pEncoding(NULL),
-      codeCount(0L),
+        HGLOBAL hResource = LoadResource(hModule,hrsrc);
 
-      charStringType(2L),
+        char szTemp[MAX_PATH];
+        strcpy(szTemp,_tempnam(NULL,NULL));
+        FILE *fGlyphList= fopen(szTemp,"wb");
 
-      pFontData(NULL)
+        SIZE_T sizeData = SizeofResource(hModule,hrsrc);
+        void *pData = LockResource(hResource);
+        fwrite(pData,sizeData,1,fGlyphList);
+        fclose(fGlyphList);
 
-   {
+        fGlyphList = fopen(szTemp,"rt");
 
-   if ( NULL == pStandardEncoding ) {
+        char szInput[128];
+        while ( fgets(szInput,128,fGlyphList) ) {
+            char *p = strtok(szInput,";");
+            char *pHex = &p[strlen(p) + 1];
+            long index;
+            sscanf(pHex,"%x",&index);
+            pStandardEncoding -> put(index,new (pJob -> CurrentObjectHeap()) object(pJob,p));
+        }
 
-      pStandardEncoding = new class array(pJob,"StandardEncoding");
+        fclose(fGlyphList);
 
-      HRSRC hrsrc = FindResource(hModule,MAKEINTRESOURCE(ID_GLYPH_LIST),"#256");
+        DeleteFile(szTemp);
 
-      HGLOBAL hResource = LoadResource(hModule,hrsrc);
+    }
 
-      char szTemp[MAX_PATH];
-      strcpy(szTemp,_tempnam(NULL,NULL));
-      FILE *fGlyphList= fopen(szTemp,"wb");
+    PdfObject *pFontDescriptor = pFontDict -> Object("FontDescriptor");
 
-      SIZE_T sizeData = SizeofResource(hModule,hrsrc);
-      void *pData = LockResource(hResource);
-      fwrite(pData,sizeData,1,fGlyphList);
-      fclose(fGlyphList);
+    BYTE *pValue = NULL;
+    PdfDictionary *pFontDescriptorDictionary = NULL;
 
-      fGlyphList = fopen(szTemp,"rt");
+    if ( ! pFontDescriptor ) {
 
-      char szInput[128];
-      while ( fgets(szInput,128,fGlyphList) ) {
-         char *p = strtok(szInput,";");
-         char *pHex = &p[strlen(p) + 1];
-         long index;
-         sscanf(pHex,"%x",&index);
-         pStandardEncoding -> put(index,new object(p));
-      }
+        pValue = pFontDict -> Value("BaseFont");
 
-      fclose(fGlyphList);
+    } else {
 
-      DeleteFile(szTemp);
+        pFontDescriptorDictionary = pFontDescriptor -> Dictionary();
 
-   }
+        FontFile(pFontDescriptorDictionary);
 
-   PdfObject *pFontDescriptor = pFontDict -> Object("FontDescriptor");
+        pValue = pFontDescriptorDictionary -> Value("FontName");
+    }
 
-   BYTE *pValue = NULL;
-   PdfDictionary *pFontDescriptorDictionary = NULL;
+    if ( pValue )
+        strcpy(szFamily,(char *)(pValue + 1));     // discard '/'
 
-   if ( ! pFontDescriptor ) {
+    PdfObject *pFontEncoding = pFontDict -> Object("Encoding");
 
-      pValue = pFontDict -> Value("BaseFont");
+    PdfDictionary *pEncodingDictionary = NULL;
 
-   } else {
+    if ( pFontEncoding )
+        pEncodingDictionary = pFontEncoding -> Dictionary();
 
-      pFontDescriptorDictionary = pFontDescriptor -> Dictionary();
+    if ( pEncodingDictionary ) {
 
-      FontFile(pFontDescriptorDictionary);
+        pValue = pEncodingDictionary -> Value("Differences");
 
-      pValue = pFontDescriptorDictionary -> Value("FontName");
-   }
+        if ( pValue ) {
 
-   if ( pValue )
-      strcpy(szFamily,(char *)(pValue + 1));     // discard '/'
+            pDifferencesArray = new (pJob -> CurrentObjectHeap()) class array(pJob,"Differences");//,(char *)pValue);
 
-   PdfObject *pFontEncoding = pFontDict -> Object("Encoding");
+            char *p = (char *)pValue;
 
-   PdfDictionary *pEncodingDictionary = NULL;
+            p = strtok((char *)pValue,"[ /\0x0D\0x0D]");
 
-   if ( pFontEncoding )
-      pEncodingDictionary = pFontEncoding -> Dictionary();
+            long startIndex = 0;
 
-   if ( pEncodingDictionary ) {
+            while ( p ) {
 
-      pValue = pEncodingDictionary -> Value("Differences");
-
-      if ( pValue ) {
-
-         pDifferencesArray = new class array(pJob,"Differences");//,(char *)pValue);
-
-         char *p = (char *)pValue;
-
-         p = strtok((char *)pValue,"[ /\0x0D\0x0D]");
-
-         long startIndex = 0;
-
-         while ( p ) {
-
-            object *pItem = new object(p);
+            object *pItem = new (pJob -> CurrentObjectHeap()) object(pJob,p);
 
             if ( object::integer == pItem -> ValueType() )
-               startIndex = pItem -> IntValue();
+                startIndex = pItem -> IntValue();
             else {
-               pDifferencesArray -> put(startIndex,pItem);
-               startIndex++;
+                pDifferencesArray -> put(startIndex,pItem);
+                startIndex++;
             }
 
             p = strtok(NULL," /]");
 
-         }
+            }
 
-      }
+        }
 
-   }
+    }
 
-   pValue = pFontDict -> Value("Subtype");
+    pValue = pFontDict -> Value("Subtype");
 
-   if ( pValue ) {
+    if ( pValue ) {
 
-      if ( 0 == strcmp("/Type1",(char *)pValue) ) 
-         fontType = font::ftype1;
+        if ( 0 == strcmp("/Type1",(char *)pValue) ) 
+            fontType = font::ftype1;
 
-      else if ( 0 == strcmp("/Type2",(char *)pValue) )
-         fontType = font::ftype2;
+        else if ( 0 == strcmp("/Type2",(char *)pValue) )
+            fontType = font::ftype2;
 
-   }
+    }
 
-   pValue = pFontDict -> Value("FirstChar");
-   if ( pValue )
-      firstChar = atol((char *)pValue);
+    pValue = pFontDict -> Value("FirstChar");
+    if ( pValue )
+        firstChar = atol((char *)pValue);
 
-   pValue = pFontDict -> Value("LastChar");
-   if ( pValue )
-      lastChar = atol((char *)pValue);
+    pValue = pFontDict -> Value("LastChar");
+    if ( pValue )
+        lastChar = atol((char *)pValue);
 
 #if 1
 
@@ -243,72 +187,102 @@
 
 #endif
 
-   pValue = pFontDict -> Value("Widths");
+    pValue = pFontDict -> Value("Widths");
 
-   if ( pValue )
-      pWidths = new class array(pJob,"Widths",(char *)pValue);
+    if ( pValue )
+        pWidths = new (pJob -> CurrentObjectHeap()) class array(pJob,"Widths",(char *)pValue);
 
-   //if ( '\0' == szFamily[0] )
-   //   return;
+    //if ( '\0' == szFamily[0] )
+    //   return;
 
-   LOGFONT logFont = {0};
+    LOGFONT logFont = {0};
 
-   HFONT currentFont = (HFONT)GetCurrentObject(pJob -> GetDC(),OBJ_FONT);
+    HFONT currentFont = (HFONT)GetCurrentObject(pJob -> GetDC(),OBJ_FONT);
 
-   GetObject(currentFont,sizeof(LOGFONT),&logFont);
+    GetObject(currentFont,sizeof(LOGFONT),&logFont);
 
-   if ( ! ( '\0' == szFamily[0] ))
-      strcpy(logFont.lfFaceName,szFamily);
+    if ( ! ( '\0' == szFamily[0] ))
+        strcpy(logFont.lfFaceName,szFamily);
 
 #if USE_ANISOTROPIC
-   logFont.lfHeight = fontSize;
+    logFont.lfHeight = (long)fontSize;
 #else
-   logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(pJob -> GetDC(), LOGPIXELSY), 72);
+    logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(pJob -> GetDC(), LOGPIXELSY), 72);
 #endif
 
-   DeleteObject(currentFont);
+    DeleteObject(currentFont);
 
-   HFONT newFont = CreateFontIndirect(&logFont);
+    HFONT newFont = CreateFontIndirect(&logFont);
 
-   HGDIOBJ oldFont = SelectObject(pJob -> GetDC(),newFont);
+    HGDIOBJ oldFont = SelectObject(pJob -> GetDC(),newFont);
 
-   return;
-   }
-
-
-   font::~font() {
-   return;
-   }
+    return;
+    }
 
 
-   char *font::translateText(char *pszText) {
+    font::~font() {
 
+    pJob -> deleteObject(pEncoding);
+    pJob -> deleteObject(pFontBBox);
+    pJob -> deleteObject(pPrivateDictionary);
+    pJob -> deleteObject(pCharStrings);
+
+    pJob -> deleteObject(pWidths);
+    pJob -> deleteObject(pDifferencesArray);
+    pJob -> deleteObject(pCharsetArray);
+
+    if ( ! ( NULL == pszCharSet ) )
+        delete [] pszCharSet;
+
+    if ( ! ( NULL == pFontData ) )
+        delete [] pFontData;
+
+    if ( ! ( NULL == pNameIndex ) )
+        delete [] pNameIndex;
+
+    if ( ! ( NULL == pTopDictIndex ) )
+        delete [] pTopDictIndex;
+
+    if ( ! ( NULL == pStringIndex ) )
+        delete [] pStringIndex;
+
+    if ( ! ( NULL == pGlobalSubroutineIndex ) )
+        delete [] pGlobalSubroutineIndex;
+
+    if ( ! ( NULL == pCharStringsIndex ) )
+        delete [] pCharStringsIndex;
+
+    return;
+    }
+
+
+    char *font::translateText(char *pszText) {
 
 // 10-12-2022 This is where the text capture outlines seem to be sized incorrectly.
 // removing the return, they seem to be too wide. noting that with monospaced fonts
 // they seem to be mostly correct.
 return pszText;
 
-   static char szResult[2048];
+    static char szResult[2048];
 
-   memset(szResult,0,sizeof(szResult));
+    memset(szResult,0,sizeof(szResult));
 
-   char *p = pszText;
-   while ( *p ) {
+    char *p = pszText;
+    while ( *p ) {
 
-      long index = (long)*p;
-      char *pGlyphName = p;
+        long index = (long)*p;
+        char *pGlyphName = p;
 
-      if ( pDifferencesArray && pDifferencesArray -> find(index - 1) )
-         pGlyphName = pDifferencesArray -> get(index - 1) -> Contents();
+        if ( pDifferencesArray && pDifferencesArray -> find(index - 1) )
+            pGlyphName = pDifferencesArray -> get(index - 1) -> Contents();
 
-      else if ( pStandardEncoding -> find(index - 1) )
-         pGlyphName = pStandardEncoding -> get(index - 1) -> Contents();
+        else if ( pStandardEncoding -> find(index - 1) )
+            pGlyphName = pStandardEncoding -> get(index - 1) -> Contents();
 
-      sprintf(szResult + strlen(szResult),"%s",pGlyphName);
+        sprintf(szResult + strlen(szResult),"%s",pGlyphName);
 
-      p++;
-   }
+        p++;
+    }
 
-   return szResult;
-   }
+    return szResult;
+    }

@@ -9,7 +9,7 @@
    class structureSpec : public object {
    public:
 
-      structureSpec(char *pStart,char *pEnd);
+      structureSpec(job *pJob,char *pStart,char *pEnd);
       ~structureSpec();
 
    };

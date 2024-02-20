@@ -147,7 +147,7 @@ be preceded by up to a maximum of 48 operands.
 
          pNext = p;
 
-         pJob -> push(new object(szNumber));
+         pJob -> push(new (pJob -> CurrentObjectHeap()) object(pJob,szNumber));
 
       } else if ( 32 <= b0 && b0 <= 246 ) {
          v = b0 - 139;
@@ -171,7 +171,7 @@ be preceded by up to a maximum of 48 operands.
       }
 
       if ( -LONG_MAX != v )
-         pJob -> push(new object(v));
+         pJob -> push(new (pJob -> CurrentObjectHeap()) object(pJob,v));
 
       p = pNext;
 
@@ -192,16 +192,16 @@ be preceded by up to a maximum of 48 operands.
       pEncoding = NULL;
 
       if ( 0 == *p ) {
-   
+
          p++;
          codeCount = (long)p[0];
-         pEncoding = new long[codeCount + 1];
+         pEncodingGlyphs = new long[codeCount + 1];
 
          p++;
          for ( long k = 0; k < codeCount; k++ ) 
-            pEncoding[k] = (long)p[k];
+            pEncodingGlyphs[k] = (long)p[k];
 
-         pEncoding[codeCount] = pEncoding[codeCount - 1];
+         pEncodingGlyphs[codeCount] = pEncodingGlyphs[codeCount - 1];
 
       } else if ( 1 == *p ) {
 

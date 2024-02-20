@@ -1,3 +1,4 @@
+
 #include "utilities.h"
 
 #include "PostScript objects\matrix.h"
@@ -19,19 +20,6 @@
         pPdfPage(pPage),
         pIPostScriptTakeText(pIPSTT),
 
-        userDict(this,"userdict"),
-        systemDict(this,"systemdict"),
-        globalDict(this,"globaldict"),
-        statusDict(this,"statusdict"),
-        errorDict(this,"errordict"),
-        pdfDict(this,"pdfdict"),
-
-        pTrueConstant(NULL),
-        pFalseConstant(NULL),
-        pNullConstant(NULL),
-
-        pCourier(NULL),
-
         isGlobalVM(true),
         hasExited(false),
 
@@ -39,22 +27,33 @@
         inputLineNumber(1L),
         procedureDefinitionLevel(0L),
 
-        defaultMatrix(),
-        pCurrentMatrix(&defaultMatrix),
-
-        defaultColorSpace(this,"DeviceGray"),
-        pCurrentColorSpace(&defaultColorSpace),
-
-        languageLevel(2L),
-        StandardEncoding(this,"StandardEncoding",256),
-        ISOLatin1Encoding(this,"ISOLatin1Encoding",256),
-
         graphicsStateStack(this)
 
     {
 
+    object::isCreatingSystemObjects = true;
+
     if ( ! pPdfUtility )
         pPdfUtility = new PdfUtility();
+
+    pLanguageLevel = new (CurrentObjectHeap()) object(this,2L);
+
+    pUserDict = new (CurrentObjectHeap()) dictionary(this,"userdict",true);
+
+    pSystemDict = new (CurrentObjectHeap()) dictionary(this,"systemdict",true);
+    pGlobalDict = new (CurrentObjectHeap()) dictionary(this,"globaldict",true);
+    pStatusDict = new (CurrentObjectHeap()) dictionary(this,"statusdict",true);
+    pErrorDict = new (CurrentObjectHeap()) dictionary(this,"errordict",true);
+    pPdfDict = new (CurrentObjectHeap()) dictionary(this,"pdfdict",true);
+
+    pStandardEncoding = new (CurrentObjectHeap()) array(this,"StandardEncoding",256);
+    pISOLatin1Encoding = new (CurrentObjectHeap()) array(this,"ISOLatin1Encoding",256);
+
+    pDefaultMatrix = new (CurrentObjectHeap()) matrix(this);
+    pCurrentMatrix = pDefaultMatrix;
+
+    pDefaultColorSpace = new (CurrentObjectHeap()) colorSpace(this,"DeviceGray");
+    pCurrentColorSpace = pDefaultColorSpace;
 
     if ( pszFileName ) {
         FILE *f = fopen(pszFileName,"rb");
@@ -74,29 +73,19 @@
         memcpy(&rcWindowsClip,prcWindowsClip,sizeof(RECT));
     else
         memset(&rcWindowsClip,0,sizeof(RECT));
-   
-    initialize();
 
-    return;
-    }
-
-
-    void job::initialize() {
-
-    std::map<object::valueType,object *> innerMap;
-
-    pStringType = new name("stringtype");
-    pArrayType = new name("arraytype");
-    pIntegerType = new name("integertype");
-    pRealType = new name("realtype");
-    pBooleanType = new name("booleantype");
-    pDictType = new name("dicttype");
-    pMarkType = new name("marktype");
-    pNullType = new name("nulltype");
-    pSaveType = new name("savetype");
-    pFontType = new name("fonttype");
-    pOperatorType = new name("operatortype");
-    pNameType = new name("nametype");
+    pStringType = new (CurrentObjectHeap()) name(this,"stringtype");
+    pArrayType = new (CurrentObjectHeap()) name(this,"arraytype");
+    pIntegerType = new (CurrentObjectHeap()) name(this,"integertype");
+    pRealType = new (CurrentObjectHeap()) name(this,"realtype");
+    pBooleanType = new (CurrentObjectHeap()) name(this,"booleantype");
+    pDictType = new (CurrentObjectHeap()) name(this,"dicttype");
+    pMarkType = new (CurrentObjectHeap()) name(this,"marktype");
+    pNullType = new (CurrentObjectHeap()) name(this,"nulltype");
+    pSaveType = new (CurrentObjectHeap()) name(this,"savetype");
+    pFontType = new (CurrentObjectHeap()) name(this,"fonttype");
+    pOperatorType = new (CurrentObjectHeap()) name(this,"operatortype");
+    pNameType = new (CurrentObjectHeap()) name(this,"nametype");
 
     nameTypeMap[object::atom][object::container] = pArrayType;
     nameTypeMap[object::atom][object::string] = pStringType;
@@ -134,248 +123,247 @@
     antiDelimiters[HashCode(LITERAL_DELIMITER)] = "";
     antiDelimiters[HashCode(ARRAY_DELIMITER_BEGIN)] = ARRAY_DELIMITER_END;
 
-    systemDict.insert("languagelevel",&languageLevel);
+    pSystemDict -> insert("languagelevel",pLanguageLevel);
 
-    systemDict.insert(ARRAY_DELIMITER_BEGIN,&job::operatorMarkArrayBegin);
-    systemDict.insert(ARRAY_DELIMITER_END,&job::operatorMarkArrayEnd);
+    pSystemDict -> insert(ARRAY_DELIMITER_BEGIN,&job::operatorMarkArrayBegin);
+    pSystemDict -> insert(ARRAY_DELIMITER_END,&job::operatorMarkArrayEnd);
 
-    systemDict.insert(DICTIONARY_DELIMITER_BEGIN,&job::operatorMarkDictionaryBegin);
-    systemDict.insert(DICTIONARY_DELIMITER_END,&job::operatorMarkDictionaryEnd);
+    pSystemDict -> insert(DICTIONARY_DELIMITER_BEGIN,&job::operatorMarkDictionaryBegin);
+    pSystemDict -> insert(DICTIONARY_DELIMITER_END,&job::operatorMarkDictionaryEnd);
 
-    systemDict.insert(PROC_DELIMITER_BEGIN,&job::operatorMarkProcedureBegin);
-    systemDict.insert(PROC_DELIMITER_END,&job::operatorMarkProcedureEnd);
+    pSystemDict -> insert(PROC_DELIMITER_BEGIN,&job::operatorMarkProcedureBegin);
+    pSystemDict -> insert(PROC_DELIMITER_END,&job::operatorMarkProcedureEnd);
 
-    systemDict.insert("=",&job::operatorStdout);
+    pSystemDict -> insert("=",&job::operatorStdout);
 
-    systemDict.insert("add",&job::operatorAdd);
-    systemDict.insert("and",&job::operatorAnd);
-    systemDict.insert("arc",&job::operatorArc);
-    systemDict.insert("arcn",&job::operatorArcn);
-    systemDict.insert("array",&job::operatorArray);
-    systemDict.insert("ashow",&job::operatorAshow);
-    systemDict.insert("astore",&job::operatorAstore);
-    systemDict.insert("awidthshow",&job::operatorAwidthshow);
-    systemDict.insert("begin",&job::operatorBegin);
-    systemDict.insert("bind",&job::operatorBind);
-    systemDict.insert("cleartomark",&job::operatorCleartomark);
-    systemDict.insert("closepath",&job::operatorClosepath);
-    systemDict.insert("concat",&job::operatorConcat);
-    systemDict.insert("copy",&job::operatorCopy);
-    systemDict.insert("countdictstack",&job::operatorCountdictstack);
-    systemDict.insert("counttomark",&job::operatorCounttomark);
-    systemDict.insert("currentdict",&job::operatorCurrentdict);
-    systemDict.insert("currentglobal",&job::operatorCurrentglobal);
-    systemDict.insert("currentmatrix",&job::operatorCurrentmatrix);
-    systemDict.insert("currentscreen",&job::operatorCurrentscreen);
-    systemDict.insert("curveto",&job::operatorCurveto);
-    systemDict.insert("cvi",&job::operatorCvi);
-    systemDict.insert("cvn",&job::operatorCvn);
-    systemDict.insert("cvr",&job::operatorCvr);
-    systemDict.insert("cvx",&job::operatorCvx);
-    systemDict.insert("debug",&job::operatorDebug);
-    systemDict.insert("def",&job::operatorDef);
-    systemDict.insert("definefont",&job::operatorDefinefont);
-    systemDict.insert("defineresource",&job::operatorDefineresource);
-    systemDict.insert("dtransform",&job::operatorDtransform);
-    systemDict.insert("dict",&job::operatorDict);
-    systemDict.insert("div",&job::operatorDiv);
-    systemDict.insert("dup",&job::operatorDup);
-    systemDict.insert("end",&job::operatorEnd);
-    systemDict.insert("errordict",&job::operatorErrordict);
-    systemDict.insert("eofill",&job::operatorEofill);
-    systemDict.insert("eq",&job::operatorEq);
-    systemDict.insert("exch",&job::operatorExch);
-    systemDict.insert("exec",&job::operatorExec);
-    systemDict.insert("executeonly",&job::operatorExecuteonly);
-    systemDict.insert("exit",&job::operatorExit);
-    systemDict.insert("findfont",&job::operatorFindfont);
-    systemDict.insert("findresource",&job::operatorFindresource);
-    systemDict.insert("fill",&job::operatorFill);
-    systemDict.insert("flush",&job::operatorFlush);
-    systemDict.insert("for",&job::operatorFor);
-    systemDict.insert("forall",&job::operatorForall);
-    systemDict.insert("ge",&job::operatorGe);
-    systemDict.insert("get",&job::operatorGet);
-    systemDict.insert("grestore",&job::operatorGrestore);
-    systemDict.insert("gsave",&job::operatorGsave);
-    systemDict.insert("gt",&job::operatorGt);
-    systemDict.insert("idtransform",&job::operatorIdtransform);
-    systemDict.insert("if",&job::operatorIf);
-    systemDict.insert("ifelse",&job::operatorIfelse);
-    systemDict.insert("index",&job::operatorIndex);
-    systemDict.insert("ISOLatin1Encoding",&job::operatorISOLatin1Encoding);
-    systemDict.insert("itransform",&job::operatorItransform);
-    systemDict.insert("known",&job::operatorKnown);
-    systemDict.insert("length",&job::operatorLength);
-    systemDict.insert("lineto",&job::operatorLineto);
-    systemDict.insert("load",&job::operatorLoad);
-    systemDict.insert("loop",&job::operatorLoop);
-    systemDict.insert("makefont",&job::operatorMakefont);
-    systemDict.insert("makepattern",&job::operatorMakepattern);
-    systemDict.insert("matrix",&job::operatorMatrix);
-    systemDict.insert("moveto",&job::operatorMoveto);
-    systemDict.insert("mul",&job::operatorMul);
-    systemDict.insert("ne",&job::operatorNe);
-    systemDict.insert("neg",&job::operatorNeg);
-    systemDict.insert("newpath",&job::operatorNewpath);
-    systemDict.insert("not",&job::operatorNot);
-    systemDict.insert("pop",&job::operatorPop);
-    systemDict.insert("print",&job::operatorPrint);
-    systemDict.insert("product",&job::operatorProduct);
-    systemDict.insert("pstack",&job::operatorPstack);
-    systemDict.insert("put",&job::operatorPut);
-    systemDict.insert("putinterval",&job::operatorPutinterval);
-    systemDict.insert("readonly",&job::operatorReadonly);
-    systemDict.insert("rectclip",&job::operatorRectclip);
-    systemDict.insert("rectfill",&job::operatorRectfill);
-    systemDict.insert("rectstroke",&job::operatorRectstroke);
-    systemDict.insert("repeat",&job::operatorRepeat);
-    systemDict.insert("rlineto",&job::operatorRlineto);
-    systemDict.insert("rmoveto",&job::operatorRmoveto);
-    systemDict.insert("roll",&job::operatorRoll);
-    systemDict.insert("rotate",&job::operatorRotate);
-    systemDict.insert("round",&job::operatorRound);
-    systemDict.insert("save",&job::operatorSave);
-    systemDict.insert("scale",&job::operatorScale);
-    systemDict.insert("scalefont",&job::operatorScalefont);
-    systemDict.insert("selectfont",&job::operatorSelectfont);
-    systemDict.insert("setcolor",&job::operatorSetcolor);
-    systemDict.insert("setcolorspace",&job::operatorSetcolorspace);
-    systemDict.insert("setdash",&job::operatorSetdash);
-    systemDict.insert("setfont",&job::operatorSetfont);
-    systemDict.insert("setglobal",&job::operatorSetglobal);
-    systemDict.insert("setgray",&job::operatorSetgray);
-    systemDict.insert("setlinecap",&job::operatorSetlinecap);
-    systemDict.insert("setlinejoin",&job::operatorSetlinejoin);
-    systemDict.insert("setlinewidth",&job::operatorSetlinewidth);
-    systemDict.insert("setmatrix",&job::operatorSetmatrix);
-    systemDict.insert("setmiterlimit",&job::operatorSetmiterlimit);
-    systemDict.insert("setpagedevice",&job::operatorSetpagedevice);
-    systemDict.insert("setuserparams",&job::operatorSetuserparams);
-    systemDict.insert("show",&job::operatorShow);
-    systemDict.insert("showpage",&job::operatorShowpage);
-    systemDict.insert("StandardEncoding",&job::operatorStandardEncoding);
-    systemDict.insert("stopped",&job::operatorStopped);
-    systemDict.insert("string",&job::operatorString);
-    systemDict.insert("stroke",&job::operatorStroke);
-    systemDict.insert("sub",&job::operatorSub);
-    systemDict.insert("transform",&job::operatorTransform);
-    systemDict.insert("translate",&job::operatorTranslate);
-    systemDict.insert("type",&job::operatorType);
-    systemDict.insert("undef",&job::operatorUndef);
-    systemDict.insert("version",&job::operatorVersion);
-    systemDict.insert("vmstatus",&job::operatorVmstatus);
-    systemDict.insert("where",&job::operatorWhere);
-    systemDict.insert("widthshow",&job::operatorWidthshow);
-    systemDict.insert("xshow",&job::operatorXshow);
-    systemDict.insert("xyshow",&job::operatorXyshow);
-    systemDict.insert("yshow",&job::operatorYshow);
+    pSystemDict -> insert("add",&job::operatorAdd);
+    pSystemDict -> insert("and",&job::operatorAnd);
+    pSystemDict -> insert("arc",&job::operatorArc);
+    pSystemDict -> insert("arcn",&job::operatorArcn);
+    pSystemDict -> insert("array",&job::operatorArray);
+    pSystemDict -> insert("ashow",&job::operatorAshow);
+    pSystemDict -> insert("astore",&job::operatorAstore);
+    pSystemDict -> insert("awidthshow",&job::operatorAwidthshow);
+    pSystemDict -> insert("begin",&job::operatorBegin);
+    pSystemDict -> insert("bind",&job::operatorBind);
+    pSystemDict -> insert("cleartomark",&job::operatorCleartomark);
+    pSystemDict -> insert("closepath",&job::operatorClosepath);
+    pSystemDict -> insert("concat",&job::operatorConcat);
+    pSystemDict -> insert("copy",&job::operatorCopy);
+    pSystemDict -> insert("countdictstack",&job::operatorCountdictstack);
+    pSystemDict -> insert("counttomark",&job::operatorCounttomark);
+    pSystemDict -> insert("currentdict",&job::operatorCurrentdict);
+    pSystemDict -> insert("currentglobal",&job::operatorCurrentglobal);
+    pSystemDict -> insert("currentmatrix",&job::operatorCurrentmatrix);
+    pSystemDict -> insert("currentscreen",&job::operatorCurrentscreen);
+    pSystemDict -> insert("curveto",&job::operatorCurveto);
+    pSystemDict -> insert("cvi",&job::operatorCvi);
+    pSystemDict -> insert("cvn",&job::operatorCvn);
+    pSystemDict -> insert("cvr",&job::operatorCvr);
+    pSystemDict -> insert("cvx",&job::operatorCvx);
+    pSystemDict -> insert("debug",&job::operatorDebug);
+    pSystemDict -> insert("def",&job::operatorDef);
+    pSystemDict -> insert("definefont",&job::operatorDefinefont);
+    pSystemDict -> insert("defineresource",&job::operatorDefineresource);
+    pSystemDict -> insert("dtransform",&job::operatorDtransform);
+    pSystemDict -> insert("dict",&job::operatorDict);
+    pSystemDict -> insert("div",&job::operatorDiv);
+    pSystemDict -> insert("dup",&job::operatorDup);
+    pSystemDict -> insert("end",&job::operatorEnd);
+    pSystemDict -> insert("errordict",&job::operatorErrordict);
+    pSystemDict -> insert("eofill",&job::operatorEofill);
+    pSystemDict -> insert("eq",&job::operatorEq);
+    pSystemDict -> insert("exch",&job::operatorExch);
+    pSystemDict -> insert("exec",&job::operatorExec);
+    pSystemDict -> insert("executeonly",&job::operatorExecuteonly);
+    pSystemDict -> insert("exit",&job::operatorExit);
+    pSystemDict -> insert("findfont",&job::operatorFindfont);
+    pSystemDict -> insert("findresource",&job::operatorFindresource);
+    pSystemDict -> insert("fill",&job::operatorFill);
+    pSystemDict -> insert("flush",&job::operatorFlush);
+    pSystemDict -> insert("for",&job::operatorFor);
+    pSystemDict -> insert("forall",&job::operatorForall);
+    pSystemDict -> insert("ge",&job::operatorGe);
+    pSystemDict -> insert("get",&job::operatorGet);
+    pSystemDict -> insert("grestore",&job::operatorGrestore);
+    pSystemDict -> insert("gsave",&job::operatorGsave);
+    pSystemDict -> insert("gt",&job::operatorGt);
+    pSystemDict -> insert("idtransform",&job::operatorIdtransform);
+    pSystemDict -> insert("if",&job::operatorIf);
+    pSystemDict -> insert("ifelse",&job::operatorIfelse);
+    pSystemDict -> insert("index",&job::operatorIndex);
+    pSystemDict -> insert("ISOLatin1Encoding",&job::operatorISOLatin1Encoding);
+    pSystemDict -> insert("itransform",&job::operatorItransform);
+    pSystemDict -> insert("known",&job::operatorKnown);
+    pSystemDict -> insert("length",&job::operatorLength);
+    pSystemDict -> insert("lineto",&job::operatorLineto);
+    pSystemDict -> insert("load",&job::operatorLoad);
+    pSystemDict -> insert("loop",&job::operatorLoop);
+    pSystemDict -> insert("makefont",&job::operatorMakefont);
+    pSystemDict -> insert("makepattern",&job::operatorMakepattern);
+    pSystemDict -> insert("matrix",&job::operatorMatrix);
+    pSystemDict -> insert("moveto",&job::operatorMoveto);
+    pSystemDict -> insert("mul",&job::operatorMul);
+    pSystemDict -> insert("ne",&job::operatorNe);
+    pSystemDict -> insert("neg",&job::operatorNeg);
+    pSystemDict -> insert("newpath",&job::operatorNewpath);
+    pSystemDict -> insert("not",&job::operatorNot);
+    pSystemDict -> insert("pop",&job::operatorPop);
+    pSystemDict -> insert("print",&job::operatorPrint);
+    pSystemDict -> insert("product",&job::operatorProduct);
+    pSystemDict -> insert("pstack",&job::operatorPstack);
+    pSystemDict -> insert("put",&job::operatorPut);
+    pSystemDict -> insert("putinterval",&job::operatorPutinterval);
+    pSystemDict -> insert("readonly",&job::operatorReadonly);
+    pSystemDict -> insert("rectclip",&job::operatorRectclip);
+    pSystemDict -> insert("rectfill",&job::operatorRectfill);
+    pSystemDict -> insert("rectstroke",&job::operatorRectstroke);
+    pSystemDict -> insert("repeat",&job::operatorRepeat);
+    pSystemDict -> insert("rlineto",&job::operatorRlineto);
+    pSystemDict -> insert("rmoveto",&job::operatorRmoveto);
+    pSystemDict -> insert("roll",&job::operatorRoll);
+    pSystemDict -> insert("rotate",&job::operatorRotate);
+    pSystemDict -> insert("round",&job::operatorRound);
+    pSystemDict -> insert("save",&job::operatorSave);
+    pSystemDict -> insert("scale",&job::operatorScale);
+    pSystemDict -> insert("scalefont",&job::operatorScalefont);
+    pSystemDict -> insert("selectfont",&job::operatorSelectfont);
+    pSystemDict -> insert("setcolor",&job::operatorSetcolor);
+    pSystemDict -> insert("setcolorspace",&job::operatorSetcolorspace);
+    pSystemDict -> insert("setdash",&job::operatorSetdash);
+    pSystemDict -> insert("setfont",&job::operatorSetfont);
+    pSystemDict -> insert("setglobal",&job::operatorSetglobal);
+    pSystemDict -> insert("setgray",&job::operatorSetgray);
+    pSystemDict -> insert("setlinecap",&job::operatorSetlinecap);
+    pSystemDict -> insert("setlinejoin",&job::operatorSetlinejoin);
+    pSystemDict -> insert("setlinewidth",&job::operatorSetlinewidth);
+    pSystemDict -> insert("setmatrix",&job::operatorSetmatrix);
+    pSystemDict -> insert("setmiterlimit",&job::operatorSetmiterlimit);
+    pSystemDict -> insert("setpagedevice",&job::operatorSetpagedevice);
+    pSystemDict -> insert("setuserparams",&job::operatorSetuserparams);
+    pSystemDict -> insert("show",&job::operatorShow);
+    pSystemDict -> insert("showpage",&job::operatorShowpage);
+    pSystemDict -> insert("StandardEncoding",&job::operatorStandardEncoding);
+    pSystemDict -> insert("stopped",&job::operatorStopped);
+    pSystemDict -> insert("string",&job::operatorString);
+    pSystemDict -> insert("stroke",&job::operatorStroke);
+    pSystemDict -> insert("sub",&job::operatorSub);
+    pSystemDict -> insert("transform",&job::operatorTransform);
+    pSystemDict -> insert("translate",&job::operatorTranslate);
+    pSystemDict -> insert("type",&job::operatorType);
+    pSystemDict -> insert("undef",&job::operatorUndef);
+    pSystemDict -> insert("version",&job::operatorVersion);
+    pSystemDict -> insert("vmstatus",&job::operatorVmstatus);
+    pSystemDict -> insert("where",&job::operatorWhere);
+    pSystemDict -> insert("widthshow",&job::operatorWidthshow);
+    pSystemDict -> insert("xshow",&job::operatorXshow);
+    pSystemDict -> insert("xyshow",&job::operatorXyshow);
+    pSystemDict -> insert("yshow",&job::operatorYshow);
 
-    pdfDict.insert("'",&job::pdfOperator_apostrophe);
-    pdfDict.insert("\"",&job::pdfOperator_quote);
-    pdfDict.insert("b",&job::pdfOperator_b);
-    pdfDict.insert("b*",&job::pdfOperator_bStar);
-    pdfDict.insert("B",&job::pdfOperator_B);
-    pdfDict.insert("B*",&job::pdfOperator_BStar);
-    pdfDict.insert("BDC",&job::pdfOperator_BDC);
-    pdfDict.insert("BI",&job::pdfOperator_BI);
-    pdfDict.insert("BMC",&job::pdfOperator_BMC);
-    pdfDict.insert("BT",&job::pdfOperator_BT);
-    pdfDict.insert("BX",&job::pdfOperator_BX);
-    pdfDict.insert("c",&job::pdfOperator_c);
-    pdfDict.insert("cm",&job::pdfOperator_cm);
-    pdfDict.insert("CS",&job::pdfOperator_CS);
-    pdfDict.insert("cs",&job::pdfOperator_cs);
-    pdfDict.insert("d",&job::pdfOperator_d);
-    pdfDict.insert("d0",&job::pdfOperator_d0);
-    pdfDict.insert("d1",&job::pdfOperator_d1);
-    pdfDict.insert("Do",&job::pdfOperator_Do);
-    pdfDict.insert("DP",&job::pdfOperator_DP);
-    pdfDict.insert("EI",&job::pdfOperator_EI);
-    pdfDict.insert("EMC",&job::pdfOperator_EMC);
-    pdfDict.insert("ET",&job::pdfOperator_ET);
-    pdfDict.insert("EX",&job::pdfOperator_EX);
-    pdfDict.insert("f*",&job::pdfOperator_fStar);
-    pdfDict.insert("f",&job::pdfOperator_f);
-    pdfDict.insert("F",&job::pdfOperator_F);
-    pdfDict.insert("g",&job::pdfOperator_g);
-    pdfDict.insert("G",&job::pdfOperator_G);
-    pdfDict.insert("gs",&job::pdfOperator_gs);
-    pdfDict.insert("h",&job::pdfOperator_h);
-    pdfDict.insert("i",&job::pdfOperator_i);
-    pdfDict.insert("ID",&job::pdfOperator_ID);
-    pdfDict.insert("j",&job::pdfOperator_j);
-    pdfDict.insert("J",&job::pdfOperator_J);
-    pdfDict.insert("k",&job::pdfOperator_k);
-    pdfDict.insert("K",&job::pdfOperator_K);
-    pdfDict.insert("l",&job::pdfOperator_l);
-    pdfDict.insert("m",&job::pdfOperator_m);
-    pdfDict.insert("M",&job::pdfOperator_M);
-    pdfDict.insert("MP",&job::pdfOperator_MP);
-    pdfDict.insert("n",&job::pdfOperator_n);
-    pdfDict.insert("q",&job::pdfOperator_q);
-    pdfDict.insert("Q",&job::pdfOperator_Q);
-    pdfDict.insert("re",&job::pdfOperator_re);
-    pdfDict.insert("rg",&job::pdfOperator_rg);
-    pdfDict.insert("RG",&job::pdfOperator_RG);
-    pdfDict.insert("ri",&job::pdfOperator_ri);
-    pdfDict.insert("s",&job::pdfOperator_s);
-    pdfDict.insert("S",&job::pdfOperator_S);
-    pdfDict.insert("sc",&job::pdfOperator_sc);
-    pdfDict.insert("SC",&job::pdfOperator_SC);
-    pdfDict.insert("SCN",&job::pdfOperator_SCN);
-    pdfDict.insert("scn",&job::pdfOperator_scn);
-    pdfDict.insert("sh",&job::pdfOperator_sh);
-    pdfDict.insert("T*",&job::pdfOperator_TStar);
-    pdfDict.insert("Tc",&job::pdfOperator_Tc);
-    pdfDict.insert("Td",&job::pdfOperator_Td);
-    pdfDict.insert("TD",&job::pdfOperator_TD);
-    pdfDict.insert("Tf",&job::pdfOperator_Tf);
-    pdfDict.insert("Th",&job::pdfOperator_Th);
-    pdfDict.insert("TJ",&job::pdfOperator_TJ);
-    pdfDict.insert("Tj",&job::pdfOperator_Tj);
-    pdfDict.insert("TL",&job::pdfOperator_TL);
-    pdfDict.insert("Tm",&job::pdfOperator_Tm);
-    pdfDict.insert("Tr",&job::pdfOperator_Tr);
-    pdfDict.insert("Ts",&job::pdfOperator_Ts);
-    pdfDict.insert("Tw",&job::pdfOperator_Tw);
-    pdfDict.insert("Tz",&job::pdfOperator_Tz);
-    pdfDict.insert("v",&job::pdfOperator_v);
-    pdfDict.insert("w",&job::pdfOperator_w);
-    pdfDict.insert("W",&job::pdfOperator_W);
-    pdfDict.insert("W*",&job::pdfOperator_WStar);
-    pdfDict.insert("y",&job::pdfOperator_y);
+    pPdfDict -> insert("'",&job::pdfOperator_apostrophe);
+    pPdfDict -> insert("\"",&job::pdfOperator_quote);
+    pPdfDict -> insert("b",&job::pdfOperator_b);
+    pPdfDict -> insert("b*",&job::pdfOperator_bStar);
+    pPdfDict -> insert("B",&job::pdfOperator_B);
+    pPdfDict -> insert("B*",&job::pdfOperator_BStar);
+    pPdfDict -> insert("BDC",&job::pdfOperator_BDC);
+    pPdfDict -> insert("BI",&job::pdfOperator_BI);
+    pPdfDict -> insert("BMC",&job::pdfOperator_BMC);
+    pPdfDict -> insert("BT",&job::pdfOperator_BT);
+    pPdfDict -> insert("BX",&job::pdfOperator_BX);
+    pPdfDict -> insert("c",&job::pdfOperator_c);
+    pPdfDict -> insert("cm",&job::pdfOperator_cm);
+    pPdfDict -> insert("CS",&job::pdfOperator_CS);
+    pPdfDict -> insert("cs",&job::pdfOperator_cs);
+    pPdfDict -> insert("d",&job::pdfOperator_d);
+    pPdfDict -> insert("d0",&job::pdfOperator_d0);
+    pPdfDict -> insert("d1",&job::pdfOperator_d1);
+    pPdfDict -> insert("Do",&job::pdfOperator_Do);
+    pPdfDict -> insert("DP",&job::pdfOperator_DP);
+    pPdfDict -> insert("EI",&job::pdfOperator_EI);
+    pPdfDict -> insert("EMC",&job::pdfOperator_EMC);
+    pPdfDict -> insert("ET",&job::pdfOperator_ET);
+    pPdfDict -> insert("EX",&job::pdfOperator_EX);
+    pPdfDict -> insert("f*",&job::pdfOperator_fStar);
+    pPdfDict -> insert("f",&job::pdfOperator_f);
+    pPdfDict -> insert("F",&job::pdfOperator_F);
+    pPdfDict -> insert("g",&job::pdfOperator_g);
+    pPdfDict -> insert("G",&job::pdfOperator_G);
+    pPdfDict -> insert("gs",&job::pdfOperator_gs);
+    pPdfDict -> insert("h",&job::pdfOperator_h);
+    pPdfDict -> insert("i",&job::pdfOperator_i);
+    pPdfDict -> insert("ID",&job::pdfOperator_ID);
+    pPdfDict -> insert("j",&job::pdfOperator_j);
+    pPdfDict -> insert("J",&job::pdfOperator_J);
+    pPdfDict -> insert("k",&job::pdfOperator_k);
+    pPdfDict -> insert("K",&job::pdfOperator_K);
+    pPdfDict -> insert("l",&job::pdfOperator_l);
+    pPdfDict -> insert("m",&job::pdfOperator_m);
+    pPdfDict -> insert("M",&job::pdfOperator_M);
+    pPdfDict -> insert("MP",&job::pdfOperator_MP);
+    pPdfDict -> insert("n",&job::pdfOperator_n);
+    pPdfDict -> insert("q",&job::pdfOperator_q);
+    pPdfDict -> insert("Q",&job::pdfOperator_Q);
+    pPdfDict -> insert("re",&job::pdfOperator_re);
+    pPdfDict -> insert("rg",&job::pdfOperator_rg);
+    pPdfDict -> insert("RG",&job::pdfOperator_RG);
+    pPdfDict -> insert("ri",&job::pdfOperator_ri);
+    pPdfDict -> insert("s",&job::pdfOperator_s);
+    pPdfDict -> insert("S",&job::pdfOperator_S);
+    pPdfDict -> insert("sc",&job::pdfOperator_sc);
+    pPdfDict -> insert("SC",&job::pdfOperator_SC);
+    pPdfDict -> insert("SCN",&job::pdfOperator_SCN);
+    pPdfDict -> insert("scn",&job::pdfOperator_scn);
+    pPdfDict -> insert("sh",&job::pdfOperator_sh);
+    pPdfDict -> insert("T*",&job::pdfOperator_TStar);
+    pPdfDict -> insert("Tc",&job::pdfOperator_Tc);
+    pPdfDict -> insert("Td",&job::pdfOperator_Td);
+    pPdfDict -> insert("TD",&job::pdfOperator_TD);
+    pPdfDict -> insert("Tf",&job::pdfOperator_Tf);
+    pPdfDict -> insert("Th",&job::pdfOperator_Th);
+    pPdfDict -> insert("TJ",&job::pdfOperator_TJ);
+    pPdfDict -> insert("Tj",&job::pdfOperator_Tj);
+    pPdfDict -> insert("TL",&job::pdfOperator_TL);
+    pPdfDict -> insert("Tm",&job::pdfOperator_Tm);
+    pPdfDict -> insert("Tr",&job::pdfOperator_Tr);
+    pPdfDict -> insert("Ts",&job::pdfOperator_Ts);
+    pPdfDict -> insert("Tw",&job::pdfOperator_Tw);
+    pPdfDict -> insert("Tz",&job::pdfOperator_Tz);
+    pPdfDict -> insert("v",&job::pdfOperator_v);
+    pPdfDict -> insert("w",&job::pdfOperator_w);
+    pPdfDict -> insert("W",&job::pdfOperator_W);
+    pPdfDict -> insert("W*",&job::pdfOperator_WStar);
+    pPdfDict -> insert("y",&job::pdfOperator_y);
 
-    dictionaryStack.push(&globalDict);
-    dictionaryStack.push(&systemDict);
-    dictionaryStack.push(&statusDict);
-    dictionaryStack.push(&userDict);
-    dictionaryStack.push(&pdfDict);
+    pSystemDict -> insert("globaldict",pGlobalDict);
+    pSystemDict -> insert("systemdict",pSystemDict);
+    pSystemDict -> insert("statusdict",pStatusDict);
+    pSystemDict -> insert("userdict",pUserDict);
+    pSystemDict -> insert("pdfdict",pPdfDict);
+    pSystemDict -> insert("errordict",pErrorDict);
 
-    systemDict.insert("globaldict",&globalDict);
-    systemDict.insert("systemdict",&systemDict);
-    systemDict.insert("statusdict",&statusDict);
-    systemDict.insert("userdict",&userDict);
-    systemDict.insert("pdfdict",&pdfDict);
+    pTrueConstant = new (CurrentObjectHeap()) booleanObject(this,"true");
+    pFalseConstant = new (CurrentObjectHeap()) booleanObject(this,"false");
+    pNullConstant = new (CurrentObjectHeap()) object(this,"");
+    pCourier = new (CurrentObjectHeap()) class font(this,"Courier");
 
-    systemDict.insert("errordict",&errorDict);
+    pSystemDict -> insert("true",pTrueConstant);
+    pSystemDict -> insert("false",pFalseConstant);
+    pSystemDict -> insert("null",pNullConstant);
+    pSystemDict -> insert("Courier",pCourier);
+    pSystemDict -> insert("DeviceGray",pDefaultColorSpace);
+    pSystemDict -> insert("DeviceRGB",new (CurrentObjectHeap()) colorSpace(this,"DeviceRGB"));
 
-    pTrueConstant = new booleanObject("true");
-    pFalseConstant = new booleanObject("false");
+    graphicsStateStack.push(new (CurrentObjectHeap()) graphicsState(this,WindowsClipArea()));
 
-    pNullConstant = new object("");
-
-    pCourier = new class font(this,"Courier");
-
-    systemDict.insert("true",pTrueConstant);
-    systemDict.insert("false",pFalseConstant);
-    systemDict.insert("null",pNullConstant);
-    systemDict.insert("DeviceGray",&defaultColorSpace);
-    systemDict.insert("DeviceRGB",new colorSpace(this,"DeviceRGB"));
-
-    graphicsStateStack.push(new graphicsState(this,WindowsClipArea()));
+    object::isCreatingSystemObjects = false;
 
     return;
+    }
+
+
+    void *job::CurrentObjectHeap() {
+    return object::pCurrentHeap;
     }
 
 
@@ -389,15 +377,6 @@
 
     commentStack.clear();
 
-    while ( operandStack.size() ) {
-        object *pObj = pop();
-        if ( ! (pObj == pTrueConstant ) && ! ( pObj == pFalseConstant) )
-            delete pObj;
-    }
-
-    delete pTrueConstant;
-    delete pFalseConstant;
-
     return;
     }
 
@@ -410,7 +389,6 @@
     object *pTop = top();
 
     switch ( pTop -> ObjectType() ) {
-
     case object::number:
         return;
 
@@ -422,10 +400,12 @@
     return;
     }
 
+
     void job::addFont(font *pFont) {
     fontList.insert(fontList.end(),pFont);
     return;
     }
+
 
     void job::addProcedure(procedure *pProcedure) {
     char szTemp[32];
@@ -434,3 +414,37 @@
     procedureList.insert(procedureList.end(),pProcedure);
     return;
     }
+
+
+    boolean job::deleteObject(object *pObj) {
+
+    if ( NULL == pObj )
+        return false;
+
+    if ( ! ( NULL == pObj -> pContainingDictionary ) ) 
+        return false;
+
+OutputDebugString("Deleting object: ");
+OutputDebugString(pObj -> pszName);
+OutputDebugString(" : ");
+OutputDebugString(pObj -> pszContents);
+OutputDebugString("\n");
+
+    delete pObj;
+
+    return true;
+    }
+
+    void job::deleteNonContainedObject(object *pObj) {
+
+OutputDebugString("Deleting Non-contained object: ");
+OutputDebugString(pObj -> pszName);
+OutputDebugString(" : ");
+OutputDebugString(pObj -> pszContents);
+OutputDebugString("\n");
+
+    delete pObj;
+
+    return;
+    }
+

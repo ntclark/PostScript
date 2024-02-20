@@ -17,7 +17,9 @@ class job;
       void save();
       graphicsState *restore();
       graphicsState *current();
-  
+
+      job *pJob{NULL};
+
    private:
 
    };

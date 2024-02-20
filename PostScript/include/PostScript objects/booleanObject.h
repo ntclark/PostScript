@@ -7,7 +7,7 @@
    class booleanObject : public object {
    public:
 
-      booleanObject(char *pszName);
+      booleanObject(job *pJob,char *pszName);
       ~booleanObject();
 
    private:

@@ -1,71 +1,80 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include "utilities.h"
 
 #include "PostScript objects\dictionary.h"
 #include "PostScript objects\directExec.h"
 
-   dictionary::dictionary(job *pj,char *pszContents) :
-      pJob(pj),
-      object(pszContents,object::dictionary)
-   {
-   return;
-   }
+    dictionary::dictionary(job *pj,char *pszContents,bool iso) :
+        object(pj,pszContents,object::dictionary)
+    {
+    isSystemObject = iso;
+    pJob -> dictionaryStack.push(this);
+    return;
+    }
 
-   dictionary::dictionary(job *pj,char *pszContents,object::objectType t) :
-      pJob(pj),
-      object(pszContents,t)
-   {
-   return;
-   }
+    dictionary::dictionary(job *pj,char *pszContents) :
+        object(pj,pszContents,object::dictionary)
+    {
+    pJob -> dictionaryStack.push(this);
+    return;
+    }
 
-   dictionary::dictionary(job *pj,object::objectType t) :
-      pJob(pj),
-      object(t)
-   {
-   return;
-   }
+    dictionary::dictionary(job *pj,char *pszContents,object::objectType t) :
+        object(pj,pszContents,t)
+    {
+    pJob -> dictionaryStack.push(this);
+    return;
+    }
+
+    dictionary::dictionary(job *pj,object::objectType t) :
+        object(pj,t)
+    {
+    pJob -> dictionaryStack.push(this);
+    return;
+    }
 
 
-   dictionary::~dictionary() {
+    dictionary::~dictionary() {
 
-//NTC: This loop is suspect of never exiting
-//
-//NTC: 12-17-2011: Commenting this out for now. 
-//
-#if 0
-   while ( entries.size() ) {
-      std::map<long,object *>::iterator it = entries.begin();
-      delete (*it).second;
-      entries.erase(it);
-   }
-#endif
+    long index = -1L;
 
-   operators.clear();
+    for ( std::pair<long,object *> pPair : entries ) {
 
-   for ( std::list<char *>::iterator it = keys.begin(); it != keys.end(); it++ ) 
-      delete [] (*it);
-   
-   keys.clear();
+        index++;
 
-   return;
-   }
+        object *pObject = pPair.second;
+
+        if ( this == pObject )
+            continue;
+
+        if ( ! ( NULL == pObject -> pContainingDictionary ) && ! ( pObject -> pContainingDictionary == this ) ) 
+            continue;
+
+        pJob -> deleteNonContainedObject(pObject);
+
+    }
+
+    for ( char *pszKey : keys )
+        delete [] pszKey;
+
+    keys.clear();
+    entries.clear();
+    operators.clear();
+
+    pJob -> dictionaryStack.remove(this);
+    }
 
 
    void dictionary::insert(char *pszName,void (job::*theProcedure)()) {
 
    long hc = HashCode(pszName);
 
-   operators[hc] = theProcedure;   
+   operators[hc] = theProcedure;
 
-   bool didExist = false;
+   bool didExist = ! ( entries.find(hc) == entries.end() );
 
-   if ( entries.find(hc) != entries.end() )
-      didExist = true;
+   entries[hc] = new (pJob -> CurrentObjectHeap()) directExec(pJob,pszName,theProcedure);
 
-   entries[hc] = new directExec(pszName,theProcedure);
+   entries[hc] -> pContainingDictionary = this;
 
    if ( didExist )
       return;
@@ -81,14 +90,16 @@
 
    void dictionary::insert(char *pszKey,object *pValue) {
 
+if ( strstr(pszName,"awidthshow") )
+printf("hello world");
+
    long hc = HashCode(pszKey);
 
-   bool didExist = false;
-
-   if ( entries.find(hc) != entries.end() )
-      didExist = true;
+   bool didExist = ! ( entries.find(hc) == entries.end() );
 
    entries[hc] = pValue;
+
+   pValue -> pContainingDictionary = this;
 
    if ( didExist )
       return;
@@ -101,96 +112,91 @@
    return;
    }
 
-   void dictionary::insert(char *pszKey,char *pszValue) {
 
-   object *pNewObject = new object(pszValue);
-   switch ( pNewObject -> ObjectType() ) {
-   case objectType::number:
-      return;
-   default:
-      break;
-   }
+    void dictionary::insert(char *pszKey,char *pszValue) {
 
-   insert(pszKey,pNewObject);
+    object *pNewObject = new (pJob -> CurrentObjectHeap()) object(pJob,pszValue);
 
-   return;
-   }
+    switch ( pNewObject -> ObjectType() ) {
+    // Why aren't numbers put in the dictionary, also, this orphans pNewObject I think (memory leadk)
+    case objectType::number:
+        return;
+    default:
+        break;
+    }
 
+    insert(pszKey,pNewObject);
 
-   void dictionary::retrieve(char *pszName,void (job::**ppProcedure)()) {
-   *ppProcedure = NULL;
-   if ( operators.find(HashCode(pszName)) != operators.end() ) 
-      *ppProcedure = operators[HashCode(pszName)];
-   return;
-   }
+    return;
+    }
 
 
-   object *dictionary::retrieve(char *pszName) {
-   std::map<long,object *>::iterator it = entries.find(HashCode(pszName));
-   if ( it != entries.end() )
-      return it -> second;
-   return NULL;
-   }
+    void dictionary::retrieve(char *pszName,void (job::**ppProcedure)()) {
+    *ppProcedure = NULL;
+    if ( operators.find(HashCode(pszName)) != operators.end() ) 
+        *ppProcedure = operators[HashCode(pszName)];
+    return;
+    }
 
 
-   boolean dictionary::exists(char *pszName) {
-   if ( entries.find(HashCode(pszName)) != entries.end() )
-      return 1L;
-   return 0L;
-   }
+    object *dictionary::retrieve(char *pszName) {
+    std::map<long,object *>::iterator it = entries.find(HashCode(pszName));
+    if ( ! ( entries.end() == it ) )
+        return it -> second;
+    return NULL;
+    }
 
 
-#if 0
-   object *dictionary::get(long index) {
-   std::map<long,object *>::iterator it = entries.begin();
-   long k = 0;
-   while ( k < index ) {
-      k++;
-      it++;
-      if ( it == entries.end() ) {
-_asm {
-int 3;
-}
-         return NULL;
-      }
-   }
-   return (*it).second;
-   }
-#endif
+    boolean dictionary::exists(object *pObject) {
+    for ( std::pair<long,object *> pPair : entries )
+        if ( pPair.second == pObject )
+            return true;
+    return false;
+    }
 
-   char *dictionary::getKey(long index) {
-   std::list<char *>::iterator it = keys.begin();
-   long k = 0;
-   while ( k < index ) {
-      k++;
-      it++;
-      if ( it == keys.end() ) {
-         __debugbreak();
-         return NULL;
-      }
-   }
-   return (*it);
-   }
 
-   void dictionary::remove(char *pszKey) {
+    boolean dictionary::exists(char *pszName) {
+    if ( ! ( entries.find(HashCode(pszName)) == entries.end() ) )
+        return true;
+    return false;
+    }
 
-   for ( std::list<char *>::iterator it = keys.begin(); it != keys.end(); it++ ) {
 
-      if ( strcmp((*it),pszKey) || strlen((*it)) != strlen(pszKey) )
-         continue;
+    char *dictionary::getKey(long index) {
+    return keys[index];
+    }
 
-      keys.remove((*it));
 
-//NTC: This may not be the right thing to do here.
-      object *pEntry = entries[HashCode(pszKey)];
-      delete pEntry;
+    void dictionary::remove(char *pszKey) {
 
-      entries.erase(HashCode(pszKey));
+    long index = -1L;
+    for ( char *pKey : keys ) {
+        index++;
+        if ( strcmp(pKey,pszKey) || ! ( strlen(pKey) == strlen(pszKey) ) )
+            continue;
+        delete [] keys[index];
+        keys.erase(keys.begin() + index);
+        long hc = HashCode(pszKey);
+        entries.erase(hc);
+        return;
+    }
 
-      return;
+    return;
+    }
 
-   }
 
-   return;
-   }
-   
+    void dictionary::remove(object *pObjRemove) {
+
+    long index = -1L;
+    for ( std::pair<long,object *> pPair : entries ) {
+        index++;
+        if ( ! ( pPair.second == pObjRemove ) )
+            continue;
+        delete [] keys[index];
+        keys.erase(keys.begin() + index);
+        entries.erase(pPair.first);
+        return;
+    }
+
+    return;
+    }

@@ -9,7 +9,7 @@
    class directExec : public object {
    public:
 
-      directExec(char *pszContents,void (__thiscall job::*pProc)()) : object(pszContents,object::directExecutable), pProcedure(pProc) {};
+      directExec(job *pJob,char *pszContents,void (__thiscall job::*pProc)()) : object(pJob,pszContents,object::directExecutable), pProcedure(pProc) {};
       ~directExec() {};
 
       void (__thiscall job::*Procedure())() { return pProcedure; };

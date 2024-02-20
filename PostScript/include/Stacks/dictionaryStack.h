@@ -17,7 +17,8 @@
       dictionary *find(char *pszName);
 
       void push(dictionary *);
-  
+      void remove(dictionary *);
+
    private:
 
    };

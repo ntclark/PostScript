@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "job.h"
 #include "PostScript objects\graphicsState.h"
@@ -44,9 +41,9 @@
    object *p1 = pop();
    object *p2 = pop();
    if ( object::integer == p1 -> ObjectType() && object::integer == p2 -> ObjectType() )
-      push(new object(p1 -> IntValue() + p2 -> IntValue()));
+      push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() + p2 -> IntValue()));
    else
-      push(new object(p1 -> Value() + p2 -> Value()));
+      push(new (CurrentObjectHeap()) object(this,p1 -> Value() + p2 -> Value()));
    return;
    }
 
@@ -88,7 +85,7 @@
 
          long v = p1 -> IntValue() & p2 -> IntValue();
 
-         push(new object(v));
+         push(new (CurrentObjectHeap()) object(this,v));
 
       } else {
          __debugbreak();
@@ -189,7 +186,7 @@
 */
 
    long count = pop() -> IntValue();
-   array *pArray = new array(this,"unnamed",count);
+   array *pArray = new (CurrentObjectHeap()) array(this,"unnamed",count);
    push(pArray);
    return;
    }
@@ -255,7 +252,7 @@
       object *pObject = pop();
 
       push(pArray);
-      push(new object(n - k - 1));
+      push(new (CurrentObjectHeap()) object(this,n - k - 1));
       push(pObject);
 
       operatorPut();
@@ -530,7 +527,7 @@
    counts the number of dictionaries currently on the dictionary stack and pushes
    this count on the operand stack.
 */
-   push(new object((long)dictionaryStack.size()));
+   push(new (CurrentObjectHeap()) object(this,(long)dictionaryStack.size()));
    return;
    }
 
@@ -557,7 +554,7 @@
    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
       push(*it);
 
-   push(new object(count));
+   push(new (CurrentObjectHeap()) object(this,count));
 
    entries.clear();
 
@@ -704,11 +701,11 @@
    object *pTop = pop();
    if ( object::number == pTop -> ObjectType() ) {
       if ( object::integer == pTop -> ValueType() || object::radix == pTop -> ValueType() )
-         push(new object(pTop -> IntValue()));
+         push(new (CurrentObjectHeap()) object(this,pTop -> IntValue()));
       else
-         push(new object(atol(pTop -> Contents())));
+         push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
    } else
-      push(new object(atol(pTop -> Contents())));
+      push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
    return;
    }
 
@@ -730,7 +727,7 @@
 
    sprintf(pszTemp,"/%s",pTop -> Name());
 
-   push(new string(pszTemp));
+   push(new (CurrentObjectHeap()) string(this,pszTemp));
 
    delete [] pszTemp;
 
@@ -756,9 +753,9 @@
 
    object *pTop = pop();
    if ( object::number == pTop -> ObjectType() )
-      push(new object(pTop -> DoubleValue()));
+      push(new (CurrentObjectHeap()) object(this,pTop -> DoubleValue()));
    else
-      push(new object(atof(pTop -> Contents())));
+      push(new (CurrentObjectHeap()) object(this,atof(pTop -> Contents())));
    return;
    }
 
@@ -956,7 +953,7 @@
    object *pInstance = pop();
    object *pKey = pop();
 
-   resource *pResource = new resource(pCategory,pInstance,pKey);
+   resource *pResource = new (CurrentObjectHeap()) resource(this,pCategory,pInstance,pKey);
 
    resourceList.insert(resourceList.end(),pResource);
 
@@ -996,7 +993,7 @@
 
    object *pCount = pop();
 
-   dictionary *pDictionary = new dictionary(this,"unnamed");
+   dictionary *pDictionary = new (CurrentObjectHeap()) dictionary(this,"unnamed");
 
 //   dictionaryList.insert(dictionaryList.end(),pDictionary);
 
@@ -1020,7 +1017,7 @@
    double v1 = p1 -> Value();
    double v2 = p2 -> Value();
 
-   push(new object(v1 / v2));
+   push(new (CurrentObjectHeap()) object(this,v1 / v2));
 
    return;
    }
@@ -1056,8 +1053,8 @@ useful for determining how distances map from user space to device space.
       y = pop() -> Value();
       x = pop() -> Value();
    }
-   push(new object(x));
-   push(new object(y));
+   push(new (CurrentObjectHeap()) object(this,x));
+   push(new (CurrentObjectHeap()) object(this,y));
    return;
    }
 
@@ -1291,7 +1288,7 @@ int 3;
    errordict is not an operator; it is a name in systemdict associated with the
    dictionary object.
 */
-   push(systemDict.retrieve("errordict"));
+   push(pSystemDict -> retrieve("errordict"));
    return;
    }
 
@@ -1625,7 +1622,7 @@ int 3;
    long limit = atol(pLimit -> Contents());
    long control = initial;
 
-   object *pControl = new object(control);
+   object *pControl = new (CurrentObjectHeap()) object(this,control);
 
    while ( ( increment > 0 && control <= limit ) || ( increment < 0 && control >= limit ) ) {
       push(pControl);
@@ -2022,8 +2019,8 @@ void job::operatorIdtransform() {
       y = pop() -> Value();
       x = pop() -> Value();
    }
-   push(new object(x));
-   push(new object(y));
+   push(new (CurrentObjectHeap()) object(this,x));
+   push(new (CurrentObjectHeap()) object(this,y));
    return;
    }
 
@@ -2047,7 +2044,7 @@ void job::operatorIdtransform() {
    Errors: stackoverflow
    See Also: StandardEncoding, findencoding
 */
-   push(&ISOLatin1Encoding);
+   push(pISOLatin1Encoding);
    return;
    }
 
@@ -2077,8 +2074,8 @@ void job::operatorIdtransform() {
       y = pop() -> Value();
       x = pop() -> Value();
    }
-   push(new object(x));
-   push(new object(y));
+   push(new (CurrentObjectHeap()) object(this,x));
+   push(new (CurrentObjectHeap()) object(this,y));
    return;
    }
 
@@ -2169,7 +2166,7 @@ void job::operatorIdtransform() {
 
    }
 
-   push(new object(length));
+   push(new (CurrentObjectHeap()) object(this,length));
 
    return;
    }
@@ -2342,7 +2339,7 @@ void job::operatorIdtransform() {
    setpattern or as a color value in a Pattern color space.
 */
    pop();
-   push(new pattern(this));
+   push(new (CurrentObjectHeap()) pattern(this));
    return;
    }
 
@@ -2357,7 +2354,7 @@ void job::operatorIdtransform() {
    object by a matching ] operator. See the discussion of array syntax in Section 3.2,
    “Syntax,” and of array construction in Section 3.6, “Overview of Basic Operators.”
 */
-   push(new mark(mark::array));
+   push(new (CurrentObjectHeap()) mark(this,mark::array));
    return;
    }
 
@@ -2402,7 +2399,7 @@ void job::operatorIdtransform() {
       pObject = pop();
    }
 
-   array *pArray = new array(this,"auto");
+   array *pArray = new (CurrentObjectHeap()) array(this,"auto");
 
    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
       pArray -> insert(*it);
@@ -2419,7 +2416,7 @@ void job::operatorIdtransform() {
 
    pushes a mark object on the operand stack (the same as the mark and [ operators).
 */
-   push(new mark(mark::dictionary));
+   push(new (CurrentObjectHeap()) mark(this,mark::dictionary));
    return;
    }
 
@@ -2460,7 +2457,7 @@ void job::operatorIdtransform() {
    immediately passes to the setpagedevice operator.
 */
 
-   dictionary *pDict = new dictionary(this,"inline");
+   dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,"inline");
 
    while ( object::mark != top() -> ObjectType() ) {
       object *pValue = pop();
@@ -2484,7 +2481,7 @@ void job::operatorIdtransform() {
    (documentation does not specifically provide this description)
 */
 
-   push(new mark(mark::procedure));
+   push(new (CurrentObjectHeap()) mark(this,mark::procedure));
 
    return;
    }
@@ -2500,7 +2497,7 @@ void job::operatorIdtransform() {
       pObject = pop();
    }
 
-   procedure *pProcedure = new procedure(this);
+   procedure *pProcedure = new (CurrentObjectHeap()) procedure(this);
 
    addProcedure(pProcedure);
 
@@ -2533,7 +2530,7 @@ void job::operatorIdtransform() {
 
 */
 
-   push(new matrix());
+   push(new (CurrentObjectHeap()) matrix(this));
 
    return;
    }
@@ -2567,7 +2564,7 @@ void job::operatorIdtransform() {
    object *p1 = pop();
    
    if ( object::integer == p1 -> ValueType() && object::integer == p2 -> ValueType() )
-      push(new object(p1 -> IntValue() * p2 -> IntValue()));
+      push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() * p2 -> IntValue()));
    else {
       double v1 = p1 -> DoubleValue();
       if ( object::integer == p1 -> ValueType() )
@@ -2575,7 +2572,7 @@ void job::operatorIdtransform() {
       double v2 = p2 -> DoubleValue();
       if ( object::integer == p2 -> ValueType() )
          v2 = (double)p2 -> IntValue();
-      push(new object(v1 * v2));
+      push(new (CurrentObjectHeap()) object(this,v1 * v2));
    }
    return;
    }
@@ -2613,9 +2610,9 @@ void job::operatorIdtransform() {
 */
    object *p = pop();
    if ( object::integer == p -> ValueType() )
-      push(new object(-1 * p -> IntValue()));
+      push(new (CurrentObjectHeap()) object(this,-1 * p -> IntValue()));
    else
-      push(new object(-1.0 * p -> DoubleValue()));
+      push(new (CurrentObjectHeap()) object(this,-1.0 * p -> DoubleValue()));
    return;
    }
 
@@ -2652,7 +2649,7 @@ void job::operatorIdtransform() {
    } else {
       long v = pTop -> IntValue();
       v ^= 0xFFFF;
-      push(new object(v));
+      push(new (CurrentObjectHeap()) object(this,v));
    }
 
    return;
@@ -2688,7 +2685,7 @@ void job::operatorIdtransform() {
    trademark; it has no direct connection with specific features of the PostScript
    language.
 */
-   push(new string(PRODUCT_NAME));
+   push(new (CurrentObjectHeap()) string(this,PRODUCT_NAME));
 
    return;
    }
@@ -3122,7 +3119,7 @@ void job::operatorIdtransform() {
    long j = atol(pop() -> Contents());
    long n = atol(pop() -> Contents());
 
-   object **pObjects = new object *[n];
+   object **pObjects = new (CurrentObjectHeap()) object *[n];
    long *pIndex = new long[n + 1];
 
    for ( long k = 0; k < n; k++ ) {
@@ -3229,14 +3226,14 @@ void job::operatorIdtransform() {
       double v = pop() -> Value();
       if ( v > 0.0 ) {
          if ( v - (long)v >= 0.5 )
-            push(new object((double)((long)v + 1.0)));
+            push(new (CurrentObjectHeap()) object(this,(double)((long)v + 1.0)));
          else
-            push(new object((double)((long)v)));
+            push(new (CurrentObjectHeap()) object(this,(double)((long)v)));
       } else {
          if ( -v + (long)v >= 0.5 )
-            push(new object((double)((long)v - 1.0)));
+            push(new (CurrentObjectHeap()) object(this,(double)((long)v - 1.0)));
          else
-            push(new object((double)((long)v)));
+            push(new (CurrentObjectHeap()) object(this,(double)((long)v)));
 
       }
    }
@@ -3259,7 +3256,7 @@ void job::operatorIdtransform() {
    state stack in a manner similar to gsave. This saved graphics state is restored by
    restore and grestoreall.
 */
-   push(new save());
+   push(new (CurrentObjectHeap()) save(this));
    return;
    }
 
@@ -3472,9 +3469,9 @@ _asm {
    object *pTop = pop();
 
    if ( object::array == pTop -> ObjectType() )
-      pCurrentColorSpace = new colorSpace(this,reinterpret_cast<array *>(pTop));
+      pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop));
    else
-      pCurrentColorSpace = new colorSpace(this,pTop -> Name());
+      pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,pTop -> Name());
 
    return;
    }
@@ -3944,7 +3941,7 @@ _asm {
    See Also: ISOLatin1Encoding, findencoding
 */
 
-   push(&StandardEncoding);
+   push(pStandardEncoding);
 
    return;
    }
@@ -4013,7 +4010,7 @@ _asm {
    char *pszString = new char[pCount -> IntValue() + 1];
    memset(pszString,0,(pCount -> IntValue() + 1) * sizeof(char));
    
-   push(new object(pszString,(pszString + pCount -> IntValue())));
+   push(new (CurrentObjectHeap()) object(this,pszString,(pszString + pCount -> IntValue())));
 
    delete [] pszString;
 
@@ -4067,9 +4064,9 @@ _asm {
    object *p2 = pop();
    object *p1 = pop();
    if ( object::integer == p1 -> ValueType() && object::integer == p2 -> ValueType() )
-      push(new object((long)(p1 -> IntValue() - p2 -> IntValue())));
+      push(new (CurrentObjectHeap()) object(this,(long)(p1 -> IntValue() - p2 -> IntValue())));
    else
-      push(new object((double)(p1 -> DoubleValue() - p2 -> DoubleValue())));
+      push(new (CurrentObjectHeap()) object(this,(double)(p1 -> DoubleValue() - p2 -> DoubleValue())));
    return;
    }
 
@@ -4098,8 +4095,8 @@ _asm {
       y = pop() -> Value();
       x = pop() -> Value();
    }
-   push(new object(x));
-   push(new object(y));
+   push(new (CurrentObjectHeap()) object(this,x));
+   push(new (CurrentObjectHeap()) object(this,y));
    return;
    }
 
@@ -4214,7 +4211,7 @@ _asm {
    the hardware or operating system environment in which the PostScript interpreter
    is running.
 */
-   push(new object(PS_VERSION));
+   push(new (CurrentObjectHeap()) object(this,PS_VERSION));
 
    return;
    }
@@ -4252,9 +4249,9 @@ _asm {
 
 */
 
-   push(new object(saveCount));
-   push(new object(1024L));
-   push(new object(1024L * 1024L));
+   push(new (CurrentObjectHeap()) object(this,saveCount));
+   push(new (CurrentObjectHeap()) object(this,1024L));
+   push(new (CurrentObjectHeap()) object(this,1024L * 1024L));
 
    return;
    }

@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\graphicsState.h"
 
@@ -12,7 +9,9 @@
     char graphicsState::szCurrentText[4096];
 
     graphicsState::graphicsState(job *pj,RECT *prcWindowsClip) :
-        pJob(pj),
+
+        matrix::matrix(pj),
+
         pFont(NULL),
         oldFont(NULL),
         textLeading(0.0f),
@@ -28,13 +27,15 @@
         cxPDFPage(0L),
         cyPDFPage(0L),
         pdfRotation(0L),
-        matrix(),
-        textMatrix(),
-        textMatrixIdentity(),
-        textMatrixPDF(),
-        textMatrixPDFIdentity(),
-        textMatrixRotation(),
-        textLineMatrixPDF()
+
+        textMatrix(pj),
+        textMatrixIdentity(pj),
+        textLineMatrix(pj),
+        textMatrixPDF(pj),
+        textMatrixPDFIdentity(pj),
+        textMatrixRotation(pj),
+
+        textLineMatrixPDF(pj)
     {
 
     memset(&lastMove,0,sizeof(POINTL));
@@ -84,14 +85,11 @@
     return;
     }
 
-    graphicsState::graphicsState(graphicsState &copy) : matrix(copy) {
-    memcpy(this,&copy,sizeof(graphicsState));
-    return;
-    }
 
     graphicsState::~graphicsState() {
     if ( pFont )
         delete pFont;
+    pFont = NULL;
     return;
     }
 
@@ -216,7 +214,7 @@
         long n = strlen(szCurrentText) + 1;
 
         char *pszValue = new char[n];
-        char *pszEncodedValue = NULL;
+        static char pszEncodedValue[65535];//char *pszEncodedValue = NULL;
 
 #if 1
         strncpy(pszValue,szCurrentText,n);
@@ -233,12 +231,12 @@
 
         rcTextObjectPDF.top = rcTextObjectPDF.bottom + rc.bottom - rc.top;
 
-        ASCIIHexEncode(pszValue,(DWORD)n,&pszEncodedValue);
+        ASCIIHexEncodeToString(pszValue,(DWORD)n,pszEncodedValue,65535);//&pszEncodedValue);
 
         pJob -> pIPostScriptTakeText -> TakeText(&rcTextObjectPDF,pszEncodedValue);
 
         delete [] pszValue;
-        delete [] pszEncodedValue;
+        //delete [] pszEncodedValue;
 
     }
 

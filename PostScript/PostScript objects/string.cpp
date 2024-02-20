@@ -1,20 +1,18 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include <stdio.h>
 
 #include "PostScript objects\string.h"
+#include "job.h"
 
 #include "error.h"
 
-   string::string(char *pszValue) :
-      object(pszValue,object::atom,object::string)
+   string::string(job *pJob,char *pszValue) :
+      object(pJob,pszValue,object::atom,object::string)
    {
    }
 
-   string::string(char *pStart,char *pEnd) :
-      object(pStart,pEnd,object::atom,object::string)
+   string::string(job *pJob,char *pStart,char *pEnd) :
+      object(pJob,pStart,pEnd,object::atom,object::string)
    {
    }
    
@@ -40,7 +38,7 @@
       sprintf(szMessage,"rangecheck: attempting to retrieve character %ld past the end of string %s",index,Contents());
       throw rangecheck(szMessage);
    }
-   return new object(Contents()[index]);
+   return new (pJob -> CurrentObjectHeap()) object(pJob,Contents()[index]);
    }
 
    

@@ -48,3 +48,21 @@
 
    return pCurrent;
    }
+
+
+   void dictionaryStack::remove(dictionary *pDict) {
+
+   std::list<dictionary *> restack;
+
+   while ( 0 < size() ) {
+      dictionary *pThis = pop();
+      if ( pThis == pDict )
+         continue;
+      restack.insert(restack.end(),pThis);
+   }
+
+   for ( std::list<dictionary *>::reverse_iterator it = restack.rbegin(); it != restack.rend(); it++ ) 
+      push((*it));
+
+   return;
+   }

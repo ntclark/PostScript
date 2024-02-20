@@ -4,8 +4,8 @@
 
 #include "PostScript objects\booleanObject.h"
 
-   booleanObject::booleanObject(char *psz) :
-      object(psz,object::logical)
+   booleanObject::booleanObject(job *pJob,char *psz) :
+      object(pJob,psz,object::logical)
    {
    if ( 0 == _stricmp(psz,"true") )
       value = true;

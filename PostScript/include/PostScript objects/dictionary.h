@@ -1,10 +1,8 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #pragma once
 
 #include <list>
+#include <vector>
 #include <map>
 
 class job;
@@ -15,6 +13,7 @@ class job;
    public:
 
       dictionary(job *,char *);
+      dictionary(job *,char *,bool isSystemObject);
       dictionary(job *,char *,enum objectType);
       dictionary(job *,enum objectType);
 
@@ -30,16 +29,17 @@ class job;
       object *retrieve(char *);
       char *getKey(long index);
       boolean exists(char *);
+      boolean exists(object *);
 
       void remove(char *pszKey);
+      void remove(object *pObj);
 
       long size() { return (long)entries.size(); };
 
    private:
 
-      job *pJob;
       std::map<long,object *> entries;
       std::map<long,void (__thiscall job::*)()> operators;
-      std::list<char *> keys;
+      std::vector<char *> keys;
 
    };

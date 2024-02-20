@@ -16,7 +16,7 @@
          unspecified = 4
       };
 
-      mark(markType);
+      mark(job *pJob,markType);
       ~mark();
 
    private:

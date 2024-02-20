@@ -9,8 +9,8 @@
    class string : public object {
    public:
 
-      string(char *pszValue); 
-      string(char *pStart,char *pEnd);
+      string(job *pJob,char *pszValue); 
+      string(job *pJob,char *pStart,char *pEnd);
       ~string();
 
       virtual object *get(long index);

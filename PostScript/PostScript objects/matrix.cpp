@@ -1,11 +1,8 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\matrix.h"
 
-   matrix::matrix() :
-      object(object::matrix,object::container),
+   matrix::matrix(job *pJob) :
+      object(pJob,object::matrix,object::container),
       a(1.0),
       b(0.0),
       c(0.0),

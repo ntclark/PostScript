@@ -1,12 +1,9 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\literal.h"
 
-   literal::literal(char *pStart,char *pEnd) :
+   literal::literal(job *pJob,char *pStart,char *pEnd) :
       pszStringRepresentation(NULL),
-      object(pStart,pEnd,object::literal,object::string)
+      object(pJob,pStart,pEnd,object::literal,object::string)
    {
    long n = (DWORD)strlen(Contents()) + 2;
    pszStringRepresentation = new char[n];

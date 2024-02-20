@@ -9,7 +9,7 @@
    class matrix : public object {
    public:
       
-      matrix();
+      matrix(job *pJob);
       matrix(matrix &);
       ~matrix();
 

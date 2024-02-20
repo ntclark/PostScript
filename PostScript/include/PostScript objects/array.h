@@ -35,7 +35,6 @@ class job;
 
    private:
 
-      job *pJob;
       std::map<long,object *> entries;
 
    };

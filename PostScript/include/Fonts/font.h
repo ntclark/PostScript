@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #pragma once
 
@@ -17,118 +14,118 @@ class job;
 #define CHARSTRINGS_KEY 17
 #define CHARSTRINGTYPE_KEY 6
 
-   struct INDEX {
+struct INDEX {
 
-      INDEX(BYTE *p) { 
+    INDEX(BYTE *p) { 
 
-      memset(this,0,sizeof(INDEX));
+    memset(this,0,sizeof(INDEX));
  
-      u_short f = 0L;
-      memcpy(&f,p,sizeof(u_short));
-      objectCount = ntohs(f);
-      p += sizeof(u_short);
-      offsetByteCount = (long)p[0];
-      p++;
-      offsets = new long[objectCount + 2];
-      memset(offsets,0,(objectCount + 2) * sizeof(long));
-      for ( long k = 0; k <= objectCount; k++ ) {
-         if ( 2 == offsetByteCount ) {
+    u_short f = 0L;
+    memcpy(&f,p,sizeof(u_short));
+    objectCount = ntohs(f);
+    p += sizeof(u_short);
+    offsetByteCount = (long)p[0];
+    p++;
+    offsets = new long[objectCount + 2];
+    memset(offsets,0,(objectCount + 2) * sizeof(long));
+    for ( long k = 0; k <= objectCount; k++ ) {
+        if ( 2 == offsetByteCount ) {
             memcpy(&f,p,sizeof(u_short));
             offsets[k] = ntohs(f);
-         } else
+        } else
             offsets[k] = (long)*p;
-         p += offsetByteCount;
-      }
-      offsets[objectCount + 1] = offsets[objectCount];
-      p -= offsetByteCount;
-      data = p + 1;
-      pEnd = data + offsets[objectCount] - 1;
-      dataSize = (long)(pEnd - data);
-      return;
-      };
+        p += offsetByteCount;
+    }
+    offsets[objectCount + 1] = offsets[objectCount];
+    p -= offsetByteCount;
+    data = p + 1;
+    pEnd = data + offsets[objectCount] - 1;
+    dataSize = (long)(pEnd - data);
+    return;
+    };
 
-      short objectCount;
-      long offsetByteCount;
-      long *offsets;
-      long dataSize;
-      BYTE *data;
-      BYTE *pEnd;
+    short objectCount;
+    long offsetByteCount;
+    long *offsets;
+    long dataSize;
+    BYTE *data;
+    BYTE *pEnd;
 
-   };
+    };
 
    struct Range1 {
       long first;
       long countLeft;
    };
 
-   class font : public dictionary {
 
-   public:
+    class font : public dictionary {
+    public:
 
-      font(job *pJob,char *fontName);
-      font(job *pJob,PdfDictionary *pFontDict,float fontSize);
-      ~font();
+    font(job *pJob,char *fontName);
+    font(job *pJob,PdfDictionary *pFontDict,float fontSize);
+    ~font();
 
-      void scalefont(float sv) { scale = sv; };
+    void scalefont(float sv) { scale = sv; };
 
-      enum fontType {
+    enum fontType {
+        ftype0 = 0,
+        ftype1 = 1,
+        ftype2 = 2,
+        ftype3 = 3,
+        ftype9 = 9,
+        ftype10 = 10,
+        ftype11 = 11,
+        ftype14 = 14,
+        ftype32 = 32,
+        ftype42 = 42,
+        ftypeUnspecified = 99 };
 
-         ftype0 = 0,
-         ftype1 = 1,
-         ftype2 = 2,
-         ftype3 = 3,
-         ftype9 = 9,
-         ftype10 = 10,
-         ftype11 = 11,
-         ftype14 = 14,
-         ftype32 = 32,
-         ftype42 = 42,
-         ftypeUnspecified = 99 };
+    char *translateText(char *);
 
-      char *translateText(char *);
+    private:
 
-   private:
+        void FontFile(PdfDictionary *pDescriptorDictionary);
+        void FontFile3(PdfObject *pFontFile);
 
-      void FontFile(PdfDictionary *pDescriptorDictionary);
-      void FontFile3(PdfObject *pFontFile);
+        char szFamily[64]{'\0'};
+        enum fontType fontType{fontType::ftypeUnspecified};
+        float scale{0.0f};
 
-      char szFamily[64]{'\0'};
-      enum fontType fontType;
-      float scale;
+        class array *pEncoding{NULL};
+        class array *pFontBBox{NULL};
+        class array *pWidths{NULL};
+        class array *pDifferencesArray{NULL};
+        class array *pCharsetArray{NULL};
 
-      job *pJob;
+        dictionary *pPrivateDictionary{NULL};
+        dictionary *pCharStrings{NULL};
 
-      class array encoding;
-      class array *pFontBBox;
+        long firstChar{1L},lastChar{1L};
+        float missingWidth{0.0f};
 
-      dictionary privateDictionary;
-      dictionary charStrings;
+        char *pszCharSet{NULL};
+        BYTE *pFontData{NULL};
+        INDEX *pNameIndex{NULL};
+        INDEX *pTopDictIndex{NULL};
+        INDEX *pStringIndex{NULL};
+        INDEX *pGlobalSubroutineIndex{NULL};
+        INDEX *pCharStringsIndex{NULL};
 
-      long firstChar,lastChar;
-      float missingWidth;
-      char *pszCharSet;
-      class array *pWidths;
-      class array *pDifferencesArray;
-      class array *pCharsetArray;
+        long *pSID{NULL};
+        // 02-18-2024: I renamed the following from pEncoding, to pEncodingGlyphs
+        // I wasn't, and am not, entirely sure glyphs are the intent, but it prevents
+        // a clash with the pEncoding array ptr I created from what was the object
+        long *pEncodingGlyphs{NULL};
+        long codeCount{0L};
 
-      BYTE *pFontData;
-      INDEX *pNameIndex;
-      INDEX *pTopDictIndex;
-      INDEX *pStringIndex;
-      INDEX *pGlobalSubroutineIndex;
-      INDEX *pCharStringsIndex;
+        long charStringType{2L};
 
-      long *pSID;
-      long *pEncoding;
-      long codeCount;
+        static class array *pStandardEncoding;
 
-      long charStringType;
+        friend class graphicsState;
 
-      static class array *pStandardEncoding;
-
-      friend class graphicsState;
-
-   };
+    };
 
 /*
                   TABLE 5.1 Font types

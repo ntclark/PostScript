@@ -1,7 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #pragma once
 
 #include "PostScript objects\matrix.h"
@@ -14,7 +10,6 @@ class font;
    public:
 
       graphicsState(job *pJob,RECT *prcWindowsClip);
-      graphicsState(graphicsState &);
       ~graphicsState();
 
       virtual void concat(matrix *);
@@ -100,7 +95,6 @@ class font;
 
       class font *pFont;
 
-      job *pJob;
       HGDIOBJ oldFont;
 
       long cxPDFPage,cyPDFPage;

@@ -9,7 +9,7 @@
    class literal : public object {
    public:
 
-      literal(char *pStart,char *pEnd);
+      literal(job *pJob,char *pStart,char *pEnd);
       ~literal();
 
       char *ToString();

@@ -1,29 +1,26 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\procedure.h"
 
 #include "job.h"
 
    procedure::procedure(job *pj,char *pStart,char *pEnd) :
-      pJob(pj),isBound(false),pszStringRepresentation(NULL),
-      object(pStart,pEnd,object::procedure,object::string)
+      isBound(false),pszStringRepresentation(NULL),
+      object(pj,pStart,pEnd,object::procedure,object::string)
    {
    return;
    }
 
    procedure::procedure(job *pj) :
-      pJob(pj),isBound(false),pszStringRepresentation(NULL),
-      object(object::procedure)
+      isBound(false),pszStringRepresentation(NULL),
+      object(pj,object::procedure)
    {
    return;
    }
 
 
    procedure::procedure(job *pj,char *pStart,char **ppEnd) :
-      pJob(pj),isBound(false),pszStringRepresentation(NULL),
-      object(object::procedure)
+      isBound(false),pszStringRepresentation(NULL),
+      object(pj,object::procedure)
    {
    
    pJob -> operatorMarkProcedureBegin();

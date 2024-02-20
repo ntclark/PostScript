@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #pragma once
 
@@ -24,242 +21,255 @@
 
    extern long loggingOff;
 
-   class job {
-   public:
+    class job {
+    public:
 
-      job(char *pszFileName,PdfPage *pPdfPage,HDC hdc,RECT *prcWindowsClip,IPostScriptTakeText *pIPostScriptTakeText);
-      ~job();
+        job(char *pszFileName,PdfPage *pPdfPage,HDC hdc,RECT *prcWindowsClip,IPostScriptTakeText *pIPostScriptTakeText);
+        ~job();
 
-      HDC GetDC() { return hdcTarget; };
-      RECT *WindowsClipArea() { return &rcWindowsClip; };
+        void *CurrentObjectHeap();
 
-      long parseJob(bool useThread = true);
+        HDC GetDC() { return hdcTarget; }
+        RECT *WindowsClipArea() { return &rcWindowsClip; }
 
-      long execute(char *,char **ppEnd = NULL,long length = -1L);
-      long execute();
-      long execute(procedure *);
+        long parseJob(bool useThread = true);
 
-      void bindProcedure(procedure *pProcedure);
+        long execute(char *,char **ppEnd = NULL,long length = -1L);
+        long execute();
+        long execute(procedure *);
 
-      void addFont(class font *);
-      void addProcedure(procedure *);
+        void bindProcedure(procedure *pProcedure);
 
-      PdfUtility *GetPdfUtility() { return pPdfUtility; };
+        void addFont(class font *);
+        void addProcedure(procedure *);
 
-      object* top() { return operandStack.top(); };
-      object* pop() { return operandStack.pop(); };
-      void push(object *pObject) { operandStack.push(pObject); };
+        PdfUtility *GetPdfUtility() { return pPdfUtility; }
 
-      void operatorStdout();
+        object* top() { return operandStack.top(); }
+        object* pop() { return operandStack.pop(); }
+        void push(object *pObject) { operandStack.push(pObject); }
 
-      void operatorAdd();
-      void operatorAnd();
-      void operatorArc();
-      void operatorArcn();
-      void operatorArray();
-      void operatorAshow();
-      void operatorAstore();
-      void operatorAwidthshow();
-      void operatorBegin();
-      void operatorBind();
-      void operatorCleartomark();
-      void operatorClosepath();
-      void operatorConcat();
-      void operatorCopy();
-      void operatorCountdictstack();
-      void operatorCounttomark();
-      void operatorCurrentdict();
-      void operatorCurrentglobal();
-      void operatorCurrentmatrix();
-      void operatorCurrentscreen();
-      void operatorCurveto();
-      void operatorCvi();
-      void operatorCvn();
-      void operatorCvr();
-      void operatorCvx();
-      void operatorDebug();
-      void operatorDef();
-      void operatorDefinefont();
-      void operatorDefineresource();
-      void operatorDict();
-      void operatorDiv();
-      void operatorDtransform();
-      void operatorDup();
-      void operatorEnd();
-      void operatorEofill();
-      void operatorEq();
-      void operatorErrordict();
-      void operatorExch();
-      void operatorExit();
-      void operatorExec();
-      void operatorExecuteonly();
-      void operatorFill();
-      void operatorFindfont();
-      void operatorFindresource();
-      void operatorFlush();
-      void operatorFor();
-      void operatorForall();
-      void operatorGe();
-      void operatorGet();
-      void operatorGrestore();
-      void operatorGsave();
-      void operatorGt();
-      void operatorIdtransform();
-      void operatorIf();
-      void operatorIfelse();
-      void operatorIndex();
-      void operatorISOLatin1Encoding();
-      void operatorItransform();
-      void operatorKnown();
-      void operatorLength();
-      void operatorLineto();
-      void operatorLoad();
-      void operatorLoop();
-      void operatorMakefont();
-      void operatorMakepattern();
-      void operatorMarkArrayBegin();
-      void operatorMarkArrayEnd();
-      void operatorMarkDictionaryBegin();
-      void operatorMarkDictionaryEnd();
-      void operatorMarkProcedureBegin();
-      void operatorMarkProcedureEnd();
-      void operatorMatrix();
-      void operatorMoveto();
-      void operatorMul();
-      void operatorNe();
-      void operatorNeg();
-      void operatorNewpath();
-      void operatorNot();
-      void operatorPop();
-      void operatorPrint();
-      void operatorProduct();
-      void operatorPstack();
-      void operatorPut();
-      void operatorPutinterval();
-      void operatorReadonly();
-      void operatorRectclip();
-      void operatorRectfill();
-      void operatorRectstroke();
-      void operatorRepeat();
-      void operatorRlineto();
-      void operatorRmoveto();
-      void operatorRoll();
-      void operatorRotate();
-      void operatorRound();
-      void operatorSave();
-      void operatorScale();
-      void operatorScalefont();
-      void operatorSelectfont();
-      void operatorSetcolor();
-      void operatorSetcolorspace();
-      void operatorSetdash();
-      void operatorSetfont();
-      void operatorSetglobal();
-      void operatorSetgray();
-      void operatorSetlinecap();
-      void operatorSetlinejoin();
-      void operatorSetlinewidth();
-      void operatorSetmatrix();
-      void operatorSetmiterlimit();
-      void operatorSetpagedevice();
-      void operatorSetuserparams();
-      void operatorShow();
-      void operatorShowpage();
-      void operatorStandardEncoding();
-      void operatorStopped();
-      void operatorString();
-      void operatorStroke();
-      void operatorSub();
-      void operatorTransform();
-      void operatorTranslate();
-      void operatorType();
-      void operatorUndef();
-      void operatorVersion();
-      void operatorVmstatus();
-      void operatorWhere();
-      void operatorWidthshow();
-      void operatorXshow();
-      void operatorXyshow();
-      void operatorYshow();
+        boolean deleteObject(object *pObject);
+        void deleteNonContainedObject(object *pObj);
 
-      void pdfOperator_apostrophe();
-      void pdfOperator_quote();
-      void pdfOperator_b();
-      void pdfOperator_bStar();
-      void pdfOperator_B();
-      void pdfOperator_BStar();
-      void pdfOperator_BDC();
-      void pdfOperator_BI();
-      void pdfOperator_BMC();
-      void pdfOperator_BT();
-      void pdfOperator_BX();
-      void pdfOperator_c();
-      void pdfOperator_cm();
-      void pdfOperator_CS();
-      void pdfOperator_cs();
-      void pdfOperator_d();
-      void pdfOperator_d0();
-      void pdfOperator_d1();
-      void pdfOperator_Do();
-      void pdfOperator_DP();
-      void pdfOperator_EI();
-      void pdfOperator_EMC();
-      void pdfOperator_ET();
-      void pdfOperator_EX();
-      void pdfOperator_fStar();
-      void pdfOperator_f();
-      void pdfOperator_F();
-      void pdfOperator_g();
-      void pdfOperator_G();
-      void pdfOperator_gs();
-      void pdfOperator_h();
-      void pdfOperator_i();
-      void pdfOperator_ID();
-      void pdfOperator_j();
-      void pdfOperator_J();
-      void pdfOperator_k();
-      void pdfOperator_K();
-      void pdfOperator_m();
-      void pdfOperator_M();
-      void pdfOperator_MP();
-      void pdfOperator_n();
-      void pdfOperator_l();
-      void pdfOperator_q();
-      void pdfOperator_Q();
-      void pdfOperator_re();
-      void pdfOperator_rg();
-      void pdfOperator_RG();
-      void pdfOperator_ri();
-      void pdfOperator_s();
-      void pdfOperator_S();
-      void pdfOperator_sc();
-      void pdfOperator_SC();
-      void pdfOperator_SCN();
-      void pdfOperator_scn();
-      void pdfOperator_sh();
-      void pdfOperator_TStar();
-      void pdfOperator_Tc();
-      void pdfOperator_Td();
-      void pdfOperator_TD();
-      void pdfOperator_Tf();
-      void pdfOperator_Th();
-      void pdfOperator_Tj();
-      void pdfOperator_TJ();
-      void pdfOperator_TL();
-      void pdfOperator_Tm();
-      void pdfOperator_Tr();
-      void pdfOperator_Ts();
-      void pdfOperator_Tw();
-      void pdfOperator_Tz();
-      void pdfOperator_v();
-      void pdfOperator_w();
-      void pdfOperator_W();
-      void pdfOperator_WStar();
-      void pdfOperator_y();
+        void incrementCount() { countObjects++; }
+        void decrementCount() { --countObjects; }
+
+        void operatorStdout();
+
+        void operatorAdd();
+        void operatorAnd();
+        void operatorArc();
+        void operatorArcn();
+        void operatorArray();
+        void operatorAshow();
+        void operatorAstore();
+        void operatorAwidthshow();
+        void operatorBegin();
+        void operatorBind();
+        void operatorCleartomark();
+        void operatorClosepath();
+        void operatorConcat();
+        void operatorCopy();
+        void operatorCountdictstack();
+        void operatorCounttomark();
+        void operatorCurrentdict();
+        void operatorCurrentglobal();
+        void operatorCurrentmatrix();
+        void operatorCurrentscreen();
+        void operatorCurveto();
+        void operatorCvi();
+        void operatorCvn();
+        void operatorCvr();
+        void operatorCvx();
+        void operatorDebug();
+        void operatorDef();
+        void operatorDefinefont();
+        void operatorDefineresource();
+        void operatorDict();
+        void operatorDiv();
+        void operatorDtransform();
+        void operatorDup();
+        void operatorEnd();
+        void operatorEofill();
+        void operatorEq();
+        void operatorErrordict();
+        void operatorExch();
+        void operatorExit();
+        void operatorExec();
+        void operatorExecuteonly();
+        void operatorFill();
+        void operatorFindfont();
+        void operatorFindresource();
+        void operatorFlush();
+        void operatorFor();
+        void operatorForall();
+        void operatorGe();
+        void operatorGet();
+        void operatorGrestore();
+        void operatorGsave();
+        void operatorGt();
+        void operatorIdtransform();
+        void operatorIf();
+        void operatorIfelse();
+        void operatorIndex();
+        void operatorISOLatin1Encoding();
+        void operatorItransform();
+        void operatorKnown();
+        void operatorLength();
+        void operatorLineto();
+        void operatorLoad();
+        void operatorLoop();
+        void operatorMakefont();
+        void operatorMakepattern();
+        void operatorMarkArrayBegin();
+        void operatorMarkArrayEnd();
+        void operatorMarkDictionaryBegin();
+        void operatorMarkDictionaryEnd();
+        void operatorMarkProcedureBegin();
+        void operatorMarkProcedureEnd();
+        void operatorMatrix();
+        void operatorMoveto();
+        void operatorMul();
+        void operatorNe();
+        void operatorNeg();
+        void operatorNewpath();
+        void operatorNot();
+        void operatorPop();
+        void operatorPrint();
+        void operatorProduct();
+        void operatorPstack();
+        void operatorPut();
+        void operatorPutinterval();
+        void operatorReadonly();
+        void operatorRectclip();
+        void operatorRectfill();
+        void operatorRectstroke();
+        void operatorRepeat();
+        void operatorRlineto();
+        void operatorRmoveto();
+        void operatorRoll();
+        void operatorRotate();
+        void operatorRound();
+        void operatorSave();
+        void operatorScale();
+        void operatorScalefont();
+        void operatorSelectfont();
+        void operatorSetcolor();
+        void operatorSetcolorspace();
+        void operatorSetdash();
+        void operatorSetfont();
+        void operatorSetglobal();
+        void operatorSetgray();
+        void operatorSetlinecap();
+        void operatorSetlinejoin();
+        void operatorSetlinewidth();
+        void operatorSetmatrix();
+        void operatorSetmiterlimit();
+        void operatorSetpagedevice();
+        void operatorSetuserparams();
+        void operatorShow();
+        void operatorShowpage();
+        void operatorStandardEncoding();
+        void operatorStopped();
+        void operatorString();
+        void operatorStroke();
+        void operatorSub();
+        void operatorTransform();
+        void operatorTranslate();
+        void operatorType();
+        void operatorUndef();
+        void operatorVersion();
+        void operatorVmstatus();
+        void operatorWhere();
+        void operatorWidthshow();
+        void operatorXshow();
+        void operatorXyshow();
+        void operatorYshow();
+
+        void pdfOperator_apostrophe();
+        void pdfOperator_quote();
+        void pdfOperator_b();
+        void pdfOperator_bStar();
+        void pdfOperator_B();
+        void pdfOperator_BStar();
+        void pdfOperator_BDC();
+        void pdfOperator_BI();
+        void pdfOperator_BMC();
+        void pdfOperator_BT();
+        void pdfOperator_BX();
+        void pdfOperator_c();
+        void pdfOperator_cm();
+        void pdfOperator_CS();
+        void pdfOperator_cs();
+        void pdfOperator_d();
+        void pdfOperator_d0();
+        void pdfOperator_d1();
+        void pdfOperator_Do();
+        void pdfOperator_DP();
+        void pdfOperator_EI();
+        void pdfOperator_EMC();
+        void pdfOperator_ET();
+        void pdfOperator_EX();
+        void pdfOperator_fStar();
+        void pdfOperator_f();
+        void pdfOperator_F();
+        void pdfOperator_g();
+        void pdfOperator_G();
+        void pdfOperator_gs();
+        void pdfOperator_h();
+        void pdfOperator_i();
+        void pdfOperator_ID();
+        void pdfOperator_j();
+        void pdfOperator_J();
+        void pdfOperator_k();
+        void pdfOperator_K();
+        void pdfOperator_m();
+        void pdfOperator_M();
+        void pdfOperator_MP();
+        void pdfOperator_n();
+        void pdfOperator_l();
+        void pdfOperator_q();
+        void pdfOperator_Q();
+        void pdfOperator_re();
+        void pdfOperator_rg();
+        void pdfOperator_RG();
+        void pdfOperator_ri();
+        void pdfOperator_s();
+        void pdfOperator_S();
+        void pdfOperator_sc();
+        void pdfOperator_SC();
+        void pdfOperator_SCN();
+        void pdfOperator_scn();
+        void pdfOperator_sh();
+        void pdfOperator_TStar();
+        void pdfOperator_Tc();
+        void pdfOperator_Td();
+        void pdfOperator_TD();
+        void pdfOperator_Tf();
+        void pdfOperator_Th();
+        void pdfOperator_Tj();
+        void pdfOperator_TJ();
+        void pdfOperator_TL();
+        void pdfOperator_Tm();
+        void pdfOperator_Tr();
+        void pdfOperator_Ts();
+        void pdfOperator_Tw();
+        void pdfOperator_Tz();
+        void pdfOperator_v();
+        void pdfOperator_w();
+        void pdfOperator_W();
+        void pdfOperator_WStar();
+        void pdfOperator_y();
+
+        static void *pHeap;
+        static void *pCurrentHeap;
+        static void *pNextHeap;
+        static size_t currentlyAllocatedHeap;
 
    private:
 
-      void initialize();
+      job();
 
       void resolve();
       bool seekDefinition();
@@ -292,46 +302,47 @@
       std::list<resource *> resourceList;
       std::list<procedure *> procedureList;
 
-      dictionary globalDict;
-      dictionary systemDict;
-      dictionary userDict;
-      dictionary errorDict;
-      dictionary statusDict;
-      dictionary pdfDict;
+      dictionary *pGlobalDict{NULL};
+      dictionary *pSystemDict{NULL};
+      dictionary *pUserDict{NULL};
+      dictionary *pErrorDict{NULL};
+      dictionary *pStatusDict{NULL};
+      dictionary *pPdfDict{NULL};
 
       booleanObject *pTrueConstant{NULL};
       booleanObject *pFalseConstant{NULL};
       object *pNullConstant{NULL};
 
-      font *pCourier;
+      font *pCourier{NULL};
 
-      name *pStringType;
-      name *pArrayType;
-      name *pIntegerType;
-      name *pRealType;
-      name *pBooleanType;
-      name *pDictType;
-      name *pMarkType;
-      name *pNullType;
-      name *pSaveType;
-      name *pFontType;
-      name *pOperatorType;
-      name *pNameType;
+      name *pStringType{NULL};
+      name *pArrayType{NULL};
+      name *pIntegerType{NULL};
+      name *pRealType{NULL};
+      name *pBooleanType{NULL};
+      name *pDictType{NULL};
+      name *pMarkType{NULL};
+      name *pNullType{NULL};
+      name *pSaveType{NULL};
+      name *pFontType{NULL};
+      name *pOperatorType{NULL};
+      name *pNameType{NULL};
 
-      object languageLevel;
+      object *pLanguageLevel{NULL};
 
-      array StandardEncoding;
-      array ISOLatin1Encoding;
+      array *pStandardEncoding{NULL};
+      array *pISOLatin1Encoding{NULL};
 
-      matrix defaultMatrix;
-      matrix *pCurrentMatrix;
+      matrix *pDefaultMatrix{NULL};
+      matrix *pCurrentMatrix{NULL};
 
-      colorSpace defaultColorSpace;
-      colorSpace *pCurrentColorSpace;
+      colorSpace *pDefaultColorSpace{NULL};
+      colorSpace *pCurrentColorSpace{NULL};
 
-      long saveCount;
+      long saveCount{0L};
       long inputLineNumber;
       long procedureDefinitionLevel;
+      long countObjects{0L};
 
       char *collectionDelimiterPeek(char *,char **);
       char *delimiterPeek(char *,char **);
@@ -342,11 +353,11 @@
 
       char *pStorage,*pEnd;
 
-      PdfPage *pPdfPage;
+      PdfPage *pPdfPage{NULL};
 
       HDC hdcTarget;
       RECT rcWindowsClip;
-      IPostScriptTakeText *pIPostScriptTakeText;
+      IPostScriptTakeText *pIPostScriptTakeText{NULL};
 
       static PdfUtility *pPdfUtility;
 
@@ -354,5 +365,6 @@
 
       friend class graphicsState;
       friend class PStoPDF;
+      friend class dictionary;
 
    };

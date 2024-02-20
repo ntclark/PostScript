@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "utilities.h"
 
@@ -95,53 +92,53 @@
    }
 
 
-   bool job::seekDefinition() {
+    bool job::seekDefinition() {
 
-   object *pKey = top();
+    object *pKey = top();
 
-   if ( object::number == pKey -> ObjectType() || object::literal == pKey -> ObjectType() )
-      return true;
+    if ( object::number == pKey -> ObjectType() || object::literal == pKey -> ObjectType() )
+        return true;
 
-   operatorWhere();
+    operatorWhere();
 
-   if ( top() == pFalseConstant ) {
-      pop();
-      push(pKey);
-      return false;
-   }
+    if ( top() == pFalseConstant ) {
+        pop();
+        push(pKey);
+        return false;
+    }
 
-   pop();
+    pop();
 
-   dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
+    dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
 
-   push(pDictionary -> retrieve(pKey -> Name()));
+    push(pDictionary -> retrieve(pKey -> Name()));
 
-   return false;
-   }
+    return false;
+    }
 
 
    long job::execute() {
 
-   object *pInitialObject = top();
+    object *pInitialObject = top();
 
-   bool isLiteral = seekDefinition();
+    bool isLiteral = seekDefinition();
    
-   if ( isLiteral )
-      return 0L;
+    if ( isLiteral )
+        return 0L;
 
-   object *pObject = pop();
+    object *pObject = pop();
 
-   switch ( pObject -> ObjectType() ) {
+    switch ( pObject -> ObjectType() ) {
 
-   case object::directExecutable: {
-      directExec *pDirectExec = reinterpret_cast<directExec *>(pObject);
-      void (__thiscall job::*pOperator)() = pDirectExec -> Procedure();
-      (this ->* pOperator)();
-      return 1L;
-      }
+    case object::directExecutable: {
+        directExec *pDirectExec = reinterpret_cast<directExec *>(pObject);
+        void (__thiscall job::*pOperator)() = pDirectExec -> Procedure();
+        (this ->* pOperator)();
+        return 1L;
+        }
 
-   default: 
-      if ( object::procedure == pObject -> ObjectType() && pInitialObject != pObject ) {
+    default: 
+        if ( object::procedure == pObject -> ObjectType() && pInitialObject != pObject ) {
 /*
       3.5.3 Deferred Execution
    
@@ -155,97 +152,97 @@
       indirectly—as a result of executing some other object, such as a name or an
       operator—is invoked as a procedure.
 */
-         procedure *pProcedure = reinterpret_cast<procedure *>(pObject);
-         pProcedure -> execute();
-      } else
-         push(pObject);
-   }
+            procedure *pProcedure = reinterpret_cast<procedure *>(pObject);
+            pProcedure -> execute();
+        } else
+            push(pObject);
+    }
 
-   return 0L;
-   }
+    return 0L;
+    }
 
 
-   long job::execute(char *pszString,char **ppEnd,long length) {
+    long job::execute(char *pszString,char **ppEnd,long length) {
 
-   char *p = pszString;
-   char *pNext = p;
-   char *pLogStart = NULL;
+    char *p = pszString;
+    char *pNext = p;
+    char *pLogStart = NULL;
 
-   if ( -1L != length ) {
-      char *pEnd = p + length;
-      while ( p < pEnd ) {
-         if ( *p == '\0' ) 
+    if ( ! ( -1L == length ) ) {
+        char *pEnd = p + length;
+        while ( p < pEnd ) {
+            if ( *p == '\0' ) 
             *p = ' ';
-         p++;
-      }
-      p = pszString;
-   }
+            p++;
+        }
+        p = pszString;
+    }
 
-   try {
+    try {
 
-   do {
+    do {
 
-      pLogStart = p;
+        pLogStart = p;
 
-      ADVANCE_THRU_WHITE_SPACE(p)
+        ADVANCE_THRU_WHITE_SPACE(p)
 
-      if ( ! *p )
-         break;
+        if( '\0' == *p )
+            break;
 
-      char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
-   
-      char *pDelimiter = NULL;
+        char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
 
-      if ( ! pCollectionDelimiter )
-         pDelimiter = (char *)delimiterPeek(p,&pNext);
+        char *pDelimiter = NULL;
 
-      if ( ! loggingOff && ! ppEnd )
-         pPStoPDF -> queueLog(pLogStart,pNext);
+        if ( ! pCollectionDelimiter )
+            pDelimiter = (char *)delimiterPeek(p,&pNext);
 
-      pLogStart = pNext;
+        if ( ! loggingOff && NULL == ppEnd )
+            pPStoPDF -> queueLog(pLogStart,pNext);
 
-      if ( pDelimiter ) {
+        pLogStart = pNext;
 
-         (this ->* tokenProcedures[HashCode((char *)pDelimiter)])(pNext,&pNext);
+        if ( pDelimiter )
 
-      } else {
+            (this ->* tokenProcedures[HashCode((char *)pDelimiter)])(pNext,&pNext);
 
-         object *po = NULL;
+        else {
 
-         if ( pCollectionDelimiter && *pCollectionDelimiter == '{' ) {
+            object *po = NULL;
 
-            po = new procedure(this,pNext,&pNext);
+            if ( pCollectionDelimiter && *pCollectionDelimiter == '{' ) {
 
-            push(po);
+                po = new (CurrentObjectHeap()) procedure(this,pNext,&pNext);
 
-         } else {
+                push(po);
 
-            if ( ppEnd && pCollectionDelimiter && *pCollectionDelimiter == '}' ) {
+            } else {
 
-               *ppEnd = pNext;
+                if ( ppEnd && pCollectionDelimiter && *pCollectionDelimiter == '}' ) {
 
-               return 0L;
+                    *ppEnd = pNext;
 
-            }
+                    return 0L;
 
-            if ( pCollectionDelimiter )
-               po = new object(pCollectionDelimiter);
-            else
-               po = new object(parseObject(pNext,&pNext));
+                }
 
-            push(po);
+                if ( pCollectionDelimiter )
+                    po = new (CurrentObjectHeap()) object(this,pCollectionDelimiter);
+                else
+                    po = new (CurrentObjectHeap()) object(this,parseObject(pNext,&pNext));
 
-            if ( ! ppEnd ) {
+                push(po);
 
-               resolve();
+                if ( NULL == ppEnd ) {
 
-               po = top();
+                    resolve();
 
-               if ( object::procedure == po -> ObjectType() ) {
-                  pop();
-                  execute(reinterpret_cast<procedure *>(po));
-               } else  
-                  execute();
+                    po = top();
+
+                    if ( object::procedure == po -> ObjectType() ) {
+                        pop();
+                        execute(reinterpret_cast<procedure *>(po));
+                    } else
+                        execute();
 
 //
 //NTC: 02-19-2012: Inline images start with the BI operator, and end with the EI operator, with an intervening
@@ -253,43 +250,41 @@
 // Until inline images are implemented completely and correctly, I am going to parse from any ID operator, through to the EI operator
 // and ignore the inline image image data.
 //
-               if ( 2 == strlen(po -> Contents()) && 0 == strncmp(po -> Contents(),"ID",2) ) {
+                   if ( 2 == strlen(po -> Contents()) && 0 == strncmp(po -> Contents(),"ID",2) ) {
 
-                  while ( ! ( 'E' == pNext[0] && 'I' == pNext[1] && ( 0x0A == pNext[2] || 0x0D == pNext[2] || ' ' == pNext[2] ) ) )
-                     pNext++;
+                      while ( ! ( 'E' == pNext[0] && 'I' == pNext[1] && ( 0x0A == pNext[2] || 0x0D == pNext[2] || ' ' == pNext[2] ) ) )
+                         pNext++;
 
-                  pNext += 3;
+                      pNext += 3;
 
-               }
+                   }
+
+                }
 
             }
 
-         }
+        }
 
-      }
+         p = pNext;
 
-      p = pNext;
+        if ( ! loggingOff && NULL == ppEnd )
+            pPStoPDF -> queueLog(pLogStart,pNext);
 
-      if ( ! loggingOff && ! ppEnd )
-         pPStoPDF -> queueLog(pLogStart,pNext);
+        pLogStart = pNext;
 
-      pLogStart = pNext;
+    } while ( p );
 
-   } while ( p );
-   
-   if ( ! loggingOff )
-      pPStoPDF -> queueLog(pLogStart,pNext);
+    if ( ! loggingOff )
+        pPStoPDF -> queueLog(pLogStart,pNext);
 
-   } catch ( syntaxerror se ) {
-      throw;
-   }
+    } catch ( syntaxerror se ) {
+        throw;
+    }
 
-   loggingOff--;
+    loggingOff = max(0,--loggingOff);
 
-   loggingOff = max(0,loggingOff);
-
-   return 0;
-   }
+    return 0;
+    }
 
 
    void job::bindProcedure(procedure *pProcedure) {
@@ -377,7 +372,7 @@
    ADVANCE_THRU_WHITE_SPACE(p)
    char *pBegin = p;
    ADVANCE_TO_END(p)
-   push(new literal(pBegin,p));
+   push(new (CurrentObjectHeap()) literal(this,pBegin,p));
    ADVANCE_THRU_WHITE_SPACE(p)
    *pEnd = p;
    return;
@@ -403,7 +398,7 @@
    char *p = pStart;
    ADVANCE_THRU_EOL(p)
    *ppEnd = p;
-   structureSpecs.insert(structureSpecs.end(),new structureSpec(pStart,*ppEnd));
+   structureSpecs.insert(structureSpecs.end(),new (CurrentObjectHeap()) structureSpec(this,pStart,*ppEnd));
    return;
    }
 
@@ -451,13 +446,13 @@
 
          strcpy(pTarget + strlen(pTarget),pBegin);
 
-         push(new string(pTarget));
+         push(new (CurrentObjectHeap()) string(this,pTarget));
 
          delete [] pTemp;
          delete [] pTarget;
 
       } else
-         push(new string(p,*ppEnd));
+         push(new (CurrentObjectHeap()) string(this,p,*ppEnd));
 
       *ppEnd = *ppEnd + 1;
    }
@@ -482,7 +477,7 @@
 
       ASCIIHexDecodeInPlace(pszNew);
 
-      push(new string(pszNew));
+      push(new (CurrentObjectHeap()) string(this,pszNew));
 
       delete [] pszNew;
 
