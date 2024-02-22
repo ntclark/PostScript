@@ -32,9 +32,7 @@
     }
 
     pCurrentHeap = pNextHeap;
-
     pNextHeap = (BYTE *)pCurrentHeap + theSize;
-
     return pCurrentHeap;
     }
 
