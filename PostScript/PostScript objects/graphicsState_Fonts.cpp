@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\graphicsState.h"
 #include "job.h"
@@ -53,7 +50,7 @@
    GetObject(currentFont,sizeof(LOGFONT),&logFont);
 
 #if USE_ANISOTROPIC
-   logFont.lfHeight = fontSize;
+   logFont.lfHeight = (long)fontSize;
 #else
    logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(pJob -> GetDC(), LOGPIXELSY), 72);
 #endif

@@ -261,7 +261,7 @@
       strcpy(logFont.lfFaceName,szFamily);
 
 #if USE_ANISOTROPIC
-   logFont.lfHeight = fontSize;
+   logFont.lfHeight = (long)fontSize;
 #else
    logFont.lfHeight = -MulDiv((long)fontSize, GetDeviceCaps(pJob -> GetDC(), LOGPIXELSY), 72);
 #endif

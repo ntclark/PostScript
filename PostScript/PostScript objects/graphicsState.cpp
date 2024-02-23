@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript objects\graphicsState.h"
 
@@ -213,7 +210,7 @@
 
     if ( ! ( NULL == pJob -> pIPostScriptTakeText ) ) {
 
-        long n = strlen(szCurrentText) + 1;
+        long n = (DWORD)strlen(szCurrentText) + 1;
 
         char *pszValue = new char[n];
         char *pszEncodedValue = NULL;
