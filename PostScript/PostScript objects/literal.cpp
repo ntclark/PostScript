@@ -1,9 +1,12 @@
 
 #include "PostScript objects\literal.h"
 
+   literal::literal(job *pJob,char *pValue) :
+      literal(pJob,pValue,NULL) {}
+
    literal::literal(job *pJob,char *pStart,char *pEnd) :
       pszStringRepresentation(NULL),
-      object(pJob,pStart,pEnd,object::literal,object::string)
+      object(pJob,pStart,pEnd,object::objectType::literal,object::valueType::string,object::valueClassification::simple)
    {
    long n = (DWORD)strlen(Contents()) + 2;
    pszStringRepresentation = new char[n];

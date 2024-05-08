@@ -6,63 +6,50 @@
 
 #include "error.h"
 
-   void dictionaryStack::push(dictionary *pObject) {
-   std::stack<dictionary *>::push(pObject);
-   return;
-   }
+
+    dictionary *dictionaryStack::top() {
+    if ( 0 == size() ) 
+        throw stackunderflow("");
+    return back();
+    }
 
 
-   dictionary *dictionaryStack::top() {
-   if ( 0 == size() ) 
-      throw stackunderflow("");
-   return std::stack<dictionary *>::top();
-   }
+    dictionary *dictionaryStack::pop() {
+    if ( 0 == size() ) 
+        throw stackunderflow("");
+    dictionary *pDictionary = back();
+    pop_back();
+    return pDictionary;
+    }
 
 
-   dictionary *dictionaryStack::pop() {
-   if ( 0 == size() ) 
-      throw stackunderflow("");
-   dictionary *pDictionary = std::stack<dictionary *>::top();
-   std::stack<dictionary *>::pop();
-   return pDictionary;
-   }
+    dictionary *dictionaryStack::bottom() {
+    if ( 0 == size() ) 
+        throw stackunderflow("");
+    return front();
+    }
 
 
-   dictionary *dictionaryStack::find(char *pszName) {
-
-   std::list<dictionary *> restack;
-
-   dictionary *pCurrent = NULL;
-
-   while ( size() ) {
-      dictionary *pThis = pop();
-      restack.insert(restack.end(),pThis);
-      if ( 0 == strcmp(pThis -> Name(),pszName) && ( strlen(pThis -> Name()) == strlen(pszName) ) ) {
-         pCurrent = pThis;
-         break;
-      }
-   }
-
-   for ( std::list<dictionary *>::reverse_iterator it = restack.rbegin(); it != restack.rend(); it++ ) 
-      push((*it));
-
-   return pCurrent;
-   }
+    void dictionaryStack::setCurrent(dictionary *pDict) {
+    push_back(pDict);
+    return;
+    }
 
 
-   void dictionaryStack::remove(dictionary *pDict) {
+    dictionary *dictionaryStack::find(char *pszName) {
+    for ( deque <dictionary *>::reverse_iterator it = rbegin(); it != rend(); it++ ) 
+        if ( (*it) -> exists(pszName) )
+            return *it;
+    return NULL;
+    }
 
-   std::list<dictionary *> restack;
 
-   while ( 0 < size() ) {
-      dictionary *pThis = pop();
-      if ( pThis == pDict )
-         continue;
-      restack.insert(restack.end(),pThis);
-   }
-
-   for ( std::list<dictionary *>::reverse_iterator it = restack.rbegin(); it != restack.rend(); it++ ) 
-      push((*it));
-
-   return;
-   }
+    void dictionaryStack::remove(dictionary *pDict) {
+    for ( deque <dictionary *>::iterator it = begin(); it != end(); it++ ) {
+        if ( *it == pDict ) {
+            erase(it);
+            return;
+        }
+    }
+    return;
+    }

@@ -4,145 +4,103 @@
 
 #include "PostScript.h"
 
+#include "Properties_i.c"
 #include "PostScript_i.c"
 
-   CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
-   bool PStoPDF::logPaintPending = false;
-   WNDPROC PStoPDF::nativeRichEditHandler = NULL;
-   HANDLE PStoPDF::hRichEditSemaphore;
+    CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
+    bool PStoPDF::logPaintPending = false;
+    WNDPROC PStoPDF::nativeRichEditHandler = NULL;
+    HANDLE PStoPDF::hRichEditSemaphore;
 
-   char PStoPDF::szErrorMessage[1024];
+    LRESULT (__stdcall *PStoPDF::nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
 
-   PStoPDF::PStoPDF(IUnknown *pUnknownOuter) :
+    HWND PStoPDF::hwndHost = NULL;
+    HWND PStoPDF::hwndClient = NULL;
+    HWND PStoPDF::hwndCmdPane = NULL;
+    HWND PStoPDF::hwndLogPane = NULL;
+    HWND PStoPDF::hwndLog = NULL;
+    HWND PStoPDF::hwndLogSplitter = NULL;
+    HWND PStoPDF::hwndOperandStackSize = NULL;
+    HWND PStoPDF::hwndCurrentDictionary = NULL;
 
-      pIConnectionPointContainer(NULL),
-      pIConnectionPoint(NULL),
-      pIEnumConnectionPoints(NULL),
-      pIEnumerateConnections(NULL),
+    char PStoPDF::szErrorMessage[1024];
 
-      pIOleObject(NULL),
-      pIOleInPlaceObject(NULL),
-      pIOleClientSite(NULL),
-      pIOleInPlaceSite(NULL),
+    PStoPDF::PStoPDF(IUnknown *pUnknownOuter) {
 
-      hwndHost(NULL),
-      hwndClient(NULL),
-      hwndLog(NULL),
-      hwndStack(NULL),
+    pPStoPDF = this;
 
-      pJob(NULL),
-      refCount(0)
+    //theLogLevel = none;
 
-   {
+    pIOleObject = new _IOleObject(this);
+    pIOleInPlaceObject = new _IOleInPlaceObject(this);
 
-   pPStoPDF = this;
+    pIConnectionPointContainer = new _IConnectionPointContainer(this);
+    pIConnectionPoint = new _IConnectionPoint(this);
 
-   pIOleObject = new _IOleObject(this);
-   pIOleInPlaceObject = new _IOleInPlaceObject(this);
+    INITCOMMONCONTROLSEX icex;
+    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    icex.dwICC = ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_TAB_CLASSES | ICC_LISTVIEW_CLASSES | ICC_PROGRESS_CLASS;
+    InitCommonControlsEx(&icex);
+    LoadLibrary("Msftedit.dll");
 
-   pIConnectionPointContainer = new _IConnectionPointContainer(this);
-   pIConnectionPoint = new _IConnectionPoint(this);
+    InitializeCriticalSection(&theQueueCriticalSection);
 
-   INITCOMMONCONTROLSEX icex;
-   icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-   icex.dwICC = ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_TAB_CLASSES | ICC_LISTVIEW_CLASSES | ICC_PROGRESS_CLASS;
-   InitCommonControlsEx(&icex);
-   LoadLibrary("Msftedit.dll");
+    memset(szCurrentPostScriptFile,0,sizeof(szCurrentPostScriptFile));
 
-   InitializeCriticalSection(&theQueueCriticalSection);
+    HRESULT rc = CoInitialize(NULL);
 
-   return;
-   }
+    CoCreateInstance(CLSID_InnoVisioNateProperties,NULL,CLSCTX_ALL,IID_IGProperties,reinterpret_cast<void **>(&pIGProperties));
 
+    pIGProperties -> Add(L"log visible",NULL);
+    pIGProperties -> DirectAccess(L"log visible",TYPE_BINARY,&logIsVisible,sizeof(logIsVisible));
 
-   PStoPDF::~PStoPDF() {
+    pIGProperties -> Add(L"log pane width",NULL);
+    pIGProperties -> DirectAccess(L"log pane width",TYPE_BINARY,&logPaneWidth,sizeof(logPaneWidth));
 
-   delete pIOleObject;
-   delete pIOleInPlaceObject;
-   delete pIConnectionPointContainer;
-   delete pIConnectionPoint;
+    WCHAR szwDataFile[MAX_PATH];
+    MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
+    wcscat(szwDataFile,L"\\PStoPDF.settings");
 
-   if ( pIOleInPlaceSite )
-      pIOleInPlaceSite -> Release();
+    pIGProperties -> put_FileName(szwDataFile);
 
-   if ( pIOleClientSite )
-      pIOleClientSite -> Release();
+    VARIANT_BOOL bSuccess;
 
-   if ( pIEnumConnectionPoints )
-      pIEnumConnectionPoints -> Release();
+    pIGProperties -> LoadFile(&bSuccess);
 
-   if ( pIEnumerateConnections )
-      pIEnumerateConnections -> Release();
-
-   return;
-   }
+    return;
+    }
 
 
-   int PStoPDF::initWindows() {
- 
-   pIOleInPlaceSite -> GetWindow(&hwndHost);
+    PStoPDF::~PStoPDF() {
 
-   WNDCLASS gClass;
-   
-   memset(&gClass,0,sizeof(WNDCLASS));
-   gClass.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
-   gClass.lpfnWndProc = PStoPDF::handler;
-   gClass.cbClsExtra = 32;
-   gClass.cbWndExtra = 32;
-   gClass.hInstance = hModule;
-   gClass.hIcon = NULL;
-   gClass.hCursor = NULL;
-   gClass.hbrBackground = 0;
-   gClass.lpszMenuName = NULL;
-   gClass.lpszClassName = "PStoPDF";
-  
-   RegisterClass(&gClass);
+    delete pIOleObject;
+    delete pIOleInPlaceObject;
+    delete pIConnectionPointContainer;
+    delete pIConnectionPoint;
 
-   hwndClient = CreateWindowEx(0L,"PStoPDF","",WS_CHILD,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
+    if ( pIOleInPlaceSite )
+        pIOleInPlaceSite -> Release();
 
-   hwndLog = CreateWindowEx(WS_EX_CLIENTEDGE,"RICHEDIT50W","",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
-                                       0,0,0,0,hwndClient,NULL,NULL,reinterpret_cast<void *>(this));
+    if ( pIOleClientSite )
+        pIOleClientSite -> Release();
 
-   hwndStack = CreateWindowEx(WS_EX_CLIENTEDGE,"RICHEDIT50W","",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
-                                          0,0,0,0,hwndClient,NULL,NULL,reinterpret_cast<void *>(this));
+    if ( pIEnumConnectionPoints )
+        pIEnumConnectionPoints -> Release();
 
-   nativeRichEditHandler = (WNDPROC)SetWindowLongPtr(hwndLog,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
+    if ( pIEnumerateConnections )
+        pIEnumerateConnections -> Release();
 
-   SetWindowLongPtr(hwndStack,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
+    pIGProperties -> Save();
+    pIGProperties -> Release();
 
-   SetWindowLongPtr(hwndLog,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(this));
+    if ( ! ( NULL == PStoPDF::nativeHostFrameHandler ) )
+        SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PStoPDF::nativeHostFrameHandler);
 
-   CHARFORMAT charFormat;
-   memset(&charFormat,0,sizeof(CHARFORMAT));
+    DestroyWindow(hwndClient);
+    DestroyWindow(hwndCmdPane);
+    DestroyWindow(hwndLog);
+    DestroyWindow(hwndLogPane);
+    DestroyWindow(hwndLogSplitter);
 
-   charFormat.cbSize = sizeof(CHARFORMAT);
-   charFormat.dwMask = CFM_FACE | CFM_SIZE;
-
-   strcpy(charFormat.szFaceName,"Courier New");
-   charFormat.yHeight = 10 * 20;
-
-   SendMessage(hwndLog,EM_SETCHARFORMAT,(WPARAM)SCF_ALL,(LPARAM)&charFormat);
-   SendMessage(hwndLog,EM_SHOWSCROLLBAR,(WPARAM)SB_VERT,(LPARAM)TRUE);
-   SendMessage(hwndLog,EM_SHOWSCROLLBAR,(WPARAM)SB_HORZ,(LPARAM)TRUE);
-
-   SETTEXTEX st;
-   memset(&st,0,sizeof(SETTEXTEX));
-   st.flags = ST_DEFAULT;
-   st.codepage = CP_ACP;
-
-#ifdef DO_RTF
-   SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
-#else
-   SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,(LPARAM)0L);
-#endif
-
-   SendMessage(hwndLog,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
-   SendMessage(hwndLog,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));
-
-   memset(&logStream,0,sizeof(EDITSTREAM));
-
-   logStream.dwCookie = (DWORD_PTR)this;
-   logStream.pfnCallback = processLog;
-
-   return 0;
-   }
+    return;
+    }

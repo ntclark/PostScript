@@ -23,6 +23,7 @@
     <RootNamespace>PostScript</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>PostScriptGen2</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -85,12 +86,12 @@
       <WarningLevel>0</WarningLevel>
       <DefaultCharType>Ascii</DefaultCharType>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
-      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.c</InterfaceIdentifierFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STANDALONE_;DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -98,18 +99,22 @@
       <PrecompiledHeaderFile />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>
+regsvr32 /s "$(TargetPath)"
+
+if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -136,12 +141,12 @@ Exit 0</Command>
       <WarningLevel>0</WarningLevel>
       <DefaultCharType>Ascii</DefaultCharType>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
-      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.c</InterfaceIdentifierFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STANDALONE_;DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -150,17 +155,21 @@ Exit 0</Command>
       </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>
+regsvr32 /s "$(TargetPath)"
+
+if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -184,23 +193,24 @@ Exit 0</Command>
     <Midl>
       <DefaultCharType>Ascii</DefaultCharType>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
-      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.c</InterfaceIdentifierFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STANDALONE_;DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -209,7 +219,10 @@ Exit 0</Command>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>
+regsvr32 /s "$(TargetPath)"
+
+if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -233,24 +246,25 @@ Exit 0</Command>
     <Midl>
       <DefaultCharType>Ascii</DefaultCharType>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
-      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScript_i.c</InterfaceIdentifierFileName>
+      <HeaderFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.h</HeaderFileName>
+      <InterfaceIdentifierFileName>$(GSYSTEM_HOME)\Common\Include\PostScriptGen2_i.c</InterfaceIdentifierFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STANDALONE_;DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>pdfEnabler.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -258,7 +272,10 @@ Exit 0</Command>
       <DataExecutionPrevention>true</DataExecutionPrevention>
     </Link>
     <PostBuildEvent>
-      <Command>if '$(BUILDER)' == 'JENKINS' Exit 0
+      <Command>
+regsvr32 /s "$(TargetPath)"
+
+if '$(BUILDER)' == 'JENKINS' Exit 0
 
    if '$(PlatformTarget)' == 'x64' (
       echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
@@ -280,6 +297,7 @@ Exit 0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
+    <ClCompile Include="cmdPaneHandler.cpp" />
     <ClCompile Include="COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="COM Events\IConnectionPointContainer.cpp" />
     <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
@@ -290,19 +308,42 @@ Exit 0</Command>
     <ClCompile Include="COM Interfaces\IPostScript.cpp" />
     <ClCompile Include="COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="Fonts\font.cpp" />
-    <ClCompile Include="Fonts\font_FontFile.cpp" />
+    <ClCompile Include="Fonts\font_FontFile.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Fonts\simpleGlyph.cpp" />
     <ClCompile Include="handler.cpp" />
-    <ClCompile Include="job.cpp" />
+    <ClCompile Include="job\job.cpp" />
+    <ClCompile Include="job\job_operators.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="job\job_pdfOperators.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="job\parse.cpp" />
+    <ClCompile Include="job\parseJob.cpp" />
+    <ClCompile Include="job\parseJob_execute.cpp" />
+    <ClCompile Include="logPaneHandler.cpp" />
     <ClCompile Include="operators.cpp" />
-    <ClCompile Include="parse.cpp" />
-    <ClCompile Include="parseJob.cpp" />
     <ClCompile Include="pdfOperators.cpp" />
     <ClCompile Include="PostScript objects\array.cpp" />
+    <ClCompile Include="PostScript objects\binaryString.cpp" />
     <ClCompile Include="PostScript objects\booleanObject.cpp" />
     <ClCompile Include="PostScript objects\colorSpace.cpp" />
     <ClCompile Include="PostScript objects\dictionary.cpp" />
-    <ClCompile Include="PostScript objects\graphicsState.cpp" />
-    <ClCompile Include="PostScript objects\graphicsState_Fonts.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\conic.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\cubicSpline.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawGlyph.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp" />
     <ClCompile Include="PostScript objects\literal.cpp" />
     <ClCompile Include="PostScript objects\mark.cpp" />
     <ClCompile Include="PostScript objects\matrix.cpp" />
@@ -313,9 +354,11 @@ Exit 0</Command>
     <ClCompile Include="PostScript objects\resource.cpp" />
     <ClCompile Include="PostScript objects\save.cpp" />
     <ClCompile Include="PostScript objects\string.cpp" />
+    <ClCompile Include="PostScript objects\constantString.cpp" />
     <ClCompile Include="PostScript objects\structureSpec.cpp" />
     <ClCompile Include="PostScript.cpp" />
     <ClCompile Include="PostScript_DisplayStack.cpp" />
+    <ClCompile Include="PostScript_initWindows.cpp" />
     <ClCompile Include="PostScript_Log.cpp" />
     <ClCompile Include="richEditHandler.cpp" />
     <ClCompile Include="Stacks\dictionaryStack.cpp" />
@@ -329,18 +372,21 @@ Exit 0</Command>
     <ResourceCompile Include="PostScript.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\PostScript.odl" />
+    <Midl Include="COM Implementation\PostScriptGen2.odl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\comment.h" />
     <ClInclude Include="include\error.h" />
-    <ClInclude Include="include\Fonts\font.h" />
     <ClInclude Include="include\job.h" />
+    <ClInclude Include="include\job_operators.h" />
+    <ClInclude Include="include\job_pdfOperators.h" />
     <ClInclude Include="include\PostScript objects\array.h" />
+    <ClInclude Include="include\PostScript objects\binaryString.h" />
     <ClInclude Include="include\PostScript objects\booleanObject.h" />
     <ClInclude Include="include\PostScript objects\colorSpace.h" />
     <ClInclude Include="include\PostScript objects\dictionary.h" />
     <ClInclude Include="include\PostScript objects\directExec.h" />
+    <ClInclude Include="include\PostScript objects\font.h" />
     <ClInclude Include="include\PostScript objects\graphicsState.h" />
     <ClInclude Include="include\PostScript objects\literal.h" />
     <ClInclude Include="include\PostScript objects\mark.h" />
@@ -352,6 +398,7 @@ Exit 0</Command>
     <ClInclude Include="include\PostScript objects\resource.h" />
     <ClInclude Include="include\PostScript objects\save.h" />
     <ClInclude Include="include\PostScript objects\string.h" />
+    <ClInclude Include="include\PostScript objects\constantString.h" />
     <ClInclude Include="include\PostScript objects\structureSpec.h" />
     <ClInclude Include="include\PostScript.h" />
     <ClInclude Include="include\PostScript_Log.h" />

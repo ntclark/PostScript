@@ -823,20 +823,29 @@ Same as G but used for nonstroking operations.
    return;
    }
 
-   void job::pdfOperator_Tf() {
+    void job::pdfOperator_Tf() {
 /*
-   font size  Tf
+    font size  Tf
 
-   Set the text font, Tf, to font and the text font size, Tfs, to size. font shall be the name of a 
-   font resource in the Font subdictionary of the current resource dictionary; size shall be a 
-   number representing a scale factor. There is no initial value for either font or size; they 
-   shall be specified explicitly by using Tf before any text is shown.
+    Set the text font, Tf, to font and the text font size, Tfs, to size. font shall be the name of a 
+    font resource in the Font subdictionary of the current resource dictionary; size shall be a 
+    number representing a scale factor. There is no initial value for either font or size; they 
+    shall be specified explicitly by using Tf before any text is shown.
 */
-   object *pfSize = pop();
-   object *pfKey = pop();
-   graphicsStateStack.current() -> setFont(pfKey -> Contents(),pfSize -> FloatValue());
-   return;
-   }
+    object *pfSize = pop();
+
+    operatorFindfont();
+
+    font *pFont = reinterpret_cast<font *>(top());
+
+    push(pfSize);
+
+    operatorScalefont();
+
+    operatorSetfont();
+
+    return;
+    }
 
    void job::pdfOperator_Th() {
 /*
@@ -883,7 +892,7 @@ Same as G but used for nonstroking operations.
 
    for ( long k = 0; k < count; k++ ) {
 
-      object *pItem = pArray -> get(k);
+      object *pItem = pArray -> getElement(k);
 
       if ( object::number == pItem -> ObjectType() )
          pCurrentState -> translateTextMatrixTJ(pItem -> FloatValue(),0.0f);

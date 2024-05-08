@@ -2,8 +2,9 @@
 #include "PostScript objects\pattern.h"
 
    pattern::pattern(job *pj) :
-      dictionary(pj,object::pattern)
+      dictionary(pj,DEFAULT_DICTIONARY_SIZE)
    {
+   theObjectType = object::objectType::pattern;
    return;
    }
 

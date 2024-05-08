@@ -9,6 +9,7 @@
    class literal : public object {
    public:
 
+      literal(job *pJob,char *pValue);
       literal(job *pJob,char *pStart,char *pEnd);
       ~literal();
 

@@ -2,51 +2,47 @@
 #include "PostScript.h"
 #include "job.h"
 
-    HRESULT PStoPDF::Parse(wchar_t *wsFileName) {
 
-    if ( pJob )
-        delete pJob;
+    HRESULT PStoPDF::SetSource(char *pszFileName) {
 
-    long n = (DWORD)wcslen(wsFileName) + 1;
-    char *pszFileName = new char[n];
-    memset(pszFileName,0,n * sizeof(char));
+    struct _stat fstat;
+    if ( ! ( 0 == _stat(pszFileName,&fstat) ) ) {
+        if ( ! ( NULL == hwndCmdPane ) ) {
+            char *p = strrchr(pszFileName,'/');
+            if ( ! p )
+                p = strrchr(pszFileName,'\\');
+            if ( ! p )
+                p = pszFileName - 1;
+            sprintf_s<1024>(szErrorMessage,"Error: The file \"%s\" does not exist",p + 1);
+            SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_ERROR),szErrorMessage);
+        }
+        return E_FAIL;
+    }
 
-    WideCharToMultiByte(CP_ACP,0,wsFileName,-1,pszFileName,n,0,0);
+    strcpy(szCurrentPostScriptFile,pszFileName);
 
-#if 1
-    pJob = new job(pszFileName,NULL,NULL,NULL,NULL);
-#else
-    pJob = new job("D:\\CursiVision\\PStoPDF\\Test Page.ps",NULL,NULL,NULL,NULL);
-#endif
-
-    pJob -> parseJob(false);
-
-    delete [] pszFileName;
+    if ( ! ( NULL == hwndCmdPane ) )
+        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_ACTIVE_FILE),szCurrentPostScriptFile);
 
     return S_OK;
     }
 
 
-    HRESULT PStoPDF::Convert(wchar_t *wsFileName) {
+    HRESULT PStoPDF::Parse(char *pszFileName) {
 
     if ( pJob )
         delete pJob;
 
-    long n = (DWORD)wcslen(wsFileName) + 1;
-    char *pszFileName = new char[n];
-    memset(pszFileName,0,n * sizeof(char));
+    HRESULT rc = S_OK;
+    if ( ! ( NULL == pszFileName ) ) 
+        rc = SetSource(pszFileName);
 
-    WideCharToMultiByte(CP_ACP,0,wsFileName,-1,pszFileName,n,0,0);
+    if ( ! ( S_OK == rc ) )
+        return E_FAIL;
 
-#if 1
-    pJob = new job(pszFileName,NULL,NULL,NULL,NULL);
-#else
-    pJob = new job("D:\\CursiVision\\PStoPDF\\Test Page.ps",NULL,NULL,NULL,NULL);
-#endif
+    pJob = new job(szCurrentPostScriptFile,hwndClient,NULL);
 
-    pJob -> parseJob();
-
-    delete [] pszFileName;
+    pJob -> parseJob(NULL == hwndClient ? false : true);
 
     return S_OK;
     }
@@ -54,10 +50,9 @@
 
     HRESULT PStoPDF::ParseText(char *pszStream,long length,void *pv_pipage,void *pvIPostScriptTakeText,HDC hdcTarget,RECT *prcWindowsClip) {
 
+#if 0
     if ( pJob )
         delete pJob;
-
-    loggingOff = 32768L;
 
     PdfPage *pPdfPage = NULL;
 
@@ -67,7 +62,7 @@
 
     try { 
 
-    pJob -> execute(pszStream,NULL,length);
+    pJob -> execute(pszStream);
 
     if ( hdcTarget )
         ModifyWorldTransform(hdcTarget,NULL,MWT_IDENTITY);
@@ -89,6 +84,7 @@
     delete pJob;
 
     pJob = NULL;
+#endif
 
     return S_OK;
    }
@@ -98,5 +94,11 @@
     if ( ! ppszError )
         return E_POINTER;
     *ppszError = szErrorMessage;
+    return S_OK;
+    }
+
+
+    HRESULT PStoPDF::LogLevel(enum logLevel logLevel) {
+    theLogLevel = logLevel;
     return S_OK;
     }

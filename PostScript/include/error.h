@@ -6,19 +6,19 @@
 
 #include <exception>
 
-class PStoPDFException : std::exception {
+    class PStoPDFException : std::exception {
 
-public:
+    public:
 
-   PStoPDFException(char *pszErrorMessage) { strcpy(szMessage,pszErrorMessage); };
-   char *Message() { return szMessage; };
-   
-   virtual char *ExceptionName() { return "PStoPDFException";} ;
+        PStoPDFException(char *pszErrorMessage) { strcpy(szMessage,pszErrorMessage); };
+        char *Message() { return szMessage; };
 
-private:
-   char szMessage[2048];
+        virtual char *ExceptionName() { return "PStoPDFException";} ;
 
-};
+    private:
+        char szMessage[2048];
+
+    };
 
 #define errorclass(name)                                                   \
 class name : public PStoPDFException {                                     \
@@ -34,3 +34,4 @@ errorclass(stackunderflow)
 errorclass(syntaxerror)
 errorclass(typecheck)
 errorclass(undefined)
+errorclass(undefinedresource)

@@ -1,0 +1,67 @@
+%%BeginResource: file Pscript_T42Hdr 5.0 0
+
+/asc42 0.0 d
+/sF42 { /asc42 ~ d Ji } bind d
+/bS42 { 0 asc42 -M } bind d
+/eS42 { 0 asc42 neg -M  } b
+/Is2015? { version cvi 2015 ge } bind d
+/AllocGlyphStorage { Is2015? { ! } { {string} forall } ? } bind d
+
+/Type42DictBegin { 25 dict ` /FontName ~ d /Encoding ~ d 4 array astore cvx /FontBBox ~ d /PaintType 0 d /FontType 42 d /FontMatrix [1 0 0 1 0 0] d /CharStrings 256 dict `/.notdef 0 d & E d /sfnts } bind d
+
+/Type42DictEnd { & @ /FontName get ~ definefont ! E } bind d
+
+/RDS { string currentfile ~ readstring ! } executeonly d
+
+/PrepFor2015 { Is2015? { /GlyphDirectory 16 dict d sfnts 0 get @ 2 ^ (glyx)putinterval 2 ^(locx)putinterval ! ! } { ! ! } ? } bind d
+
+/AddT42Char { Is2015? { findfont /GlyphDirectory get ` d E ! ! } { findfont /sfnts get 4 ^ get 3 ^ 2 ^ putinterval ! ! ! ! } ? } bind d
+
+/IDStrNull { 1 add 2 mul @ string 0 1 3 ^ 1 sub { 1 ^ ~ 0 put } for ~ ! } bind d
+
+/IDStr { @ 1 add 2 mul string 0 1 3 ^ { 1 ^ ~ @ 2 mul ~ 3 copy 256 idiv put ~ 1 add ~ 256 mod put } for ~ ! } bind d
+
+/IDStr2 { ~ @ 1 add 2 mul string 0 1 3 ^ { 1 ^ ~ @ 2 mul ~ 5 ^ add 3 copy 256 idiv put ~ 1 add ~ 256 mod put } for ~ ! ~ ! } bind d
+
+/CIDT42Begin { 25 dict ` 
+    /CDevProc ~ d 
+    /CIDMap ~ d 
+    /CIDCount ~ d 
+    /CIDSystemInfo 3 dict @ ` 3 -1 $ 
+    /Supplement ~ d 3 -1 $
+    /Ordering ~ d 3 -1 $ 
+    /Registry ~ d E d 
+    /CIDFontName ~ d 
+    /Encoding ~ d 4 array astore cvx 
+    /FontBBox ~ d 
+    /CharStrings 2 dict @ ` 
+    /.notdef 0 d E d 
+    /GDBytes 2 d 
+    /CIDFontType 2 d 
+    /FontType 42 d
+    /PaintType 0 d
+    /FontMatrix [1 0 0 1 0 0] d
+    /Metrics2 16 dict d
+    /sfnts } bind d
+
+/CIDT42End { CIDFontName & E/CIDFont defineresource ! } bind d
+
+/T42CIDCP32K { /CIDFont findresource @ length dict copy @/FID undef `/CIDFontName ~ d/CIDMap ~ d /CIDCount ~ d/Metrics2 8 dict d CIDFontName & E/CIDFont defineresource ! } bind d
+
+/T42CIDCPR { /CIDFont findresource @ length dict copy @/FID undef `/CIDFontName ~ d &/CDevProc known { [/CDevProc , @ type/operatortype ne {/exec cvx }if /! cvx /! cvx /! cvx /! cvx 5 /^ cvx 5 /^ cvx 0.0 0.0] cvx } { {! ! ! ! ! 5 ^ 5 ^ 0.0 0.0 } } ? bind
+    readonly/CDevProc ~ d CIDFontName & E/CIDFont defineresource ! } bind d
+
+/T0AddT42Char { /CIDFont findresource /GlyphDirectory get ` d E ! ! } bind d
+
+/T0AddT42Mtx2 { /CIDFont findresource /Metrics2 get ` d E } bind d
+
+/UpdateCIDMap { /CIDFont findresource /CIDMap get 3 1 $ putinterval } d
+
+/AddXUID { version cvi 3011 ge { /XUID ~ d } { ! } ? } bind d
+
+/hfDef42CID { /CIDFont findresource @ length dict copy @ /FID undef `/CIDFontName 2 ^ d @ type @/booleantype ne { /arraytype eq {/CDevProc ~ d } { matrix @ 4 4 -1 $ put/FontMatrix ~ d } ? } { ! ! } ? & E/CIDFont defineresource ! } bind d
+
+/hfDefRT42CID { /CIDFont findresource @ length dict copy @ /FID undef ` /CIDFontName 1 ^ d & /CDevProc known { [/CDevProc , @ type /operatortype ne { /exec cvx } if /! cvx /! cvx /! cvx /! cvx 5 /^ cvx 5 /^ cvx 0.0 0.0] cvx } { { ! ! ! ! ! 5 ^ 5 ^ 0.0 0.0 } }? bind readonly
+
+/CDevProc ~ d & E /CIDFont defineresource ! } bind d
+%%EndResource

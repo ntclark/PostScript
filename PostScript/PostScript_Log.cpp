@@ -7,7 +7,10 @@
 
    static std::queue<char *> theLog;
 
-   long PStoPDF::clearLog() {   
+   long PStoPDF::clearLog() {
+
+   if ( NULL == hwndLog )
+      return 0;
 
    SETTEXTEX st;
    memset(&st,0,sizeof(SETTEXTEX));
@@ -19,6 +22,7 @@
 #ifdef DO_RTF
    PostMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
 #endif
+
    PostMessage(hwndLog,EM_SETREADONLY,(WPARAM)TRUE,0L);
 
    return 0;
@@ -27,7 +31,18 @@
 
    long PStoPDF::queueLog(char *pszOutput,char *pEnd,bool isError) {
 
+   if ( none == theLogLevel )
+      return 0L;
+
    EnterCriticalSection(&theQueueCriticalSection);
+
+   static char szOperandStackSize[64];
+   sprintf_s<64>(szOperandStackSize,"%ld",(long)pJob -> operandStack.size());
+   SendMessage(hwndOperandStackSize,WM_SETTEXT,0L,(LPARAM)szOperandStackSize);
+
+   static char szCurrentDictionary[64];
+   sprintf_s<64>(szCurrentDictionary,"%s",pJob -> dictionaryStack.top() -> Name());
+   SendMessage(hwndCurrentDictionary,WM_SETTEXT,0L,(LPARAM)szCurrentDictionary);
 
    long n = 0L;
 
@@ -61,8 +76,24 @@
    memcpy((BYTE *)p,pStart,pEnd - pStart);
    p[pEnd - pStart] = '\0';
 
+if ( 0 == strncmp(p,"featurebegin",11) )
+printf("hello world");
+
+if ( 0 == strncmp(p,"version",7) )
+printf("hello world");
+
+if ( 0 == strncmp(p,"Pscript_WinNT",13) )
+printf("hello world");
+
+if ( 0 == strncmp(p,"Type42DictBegin",15) )
+printf("hello world");
+
+if ( 0 == strncmp(pStart,"end reinitialize",16) )
+printf("hello world");
+
    if ( NULL == hwndLog ) {
       OutputDebugStringA(p);
+      LeaveCriticalSection(&theQueueCriticalSection);
       return 0;
    }
 
@@ -71,13 +102,9 @@
    hRichEditSemaphore = CreateSemaphore(NULL,0,1,NULL);
 
 #ifdef DO_RTF
-
    PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_RTF | SFF_SELECTION),(LPARAM)&logStream);
-
 #else
-
    PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_TEXT | SFF_SELECTION),(LPARAM)&logStream);
-
 #endif
 
    LeaveCriticalSection(&theQueueCriticalSection);

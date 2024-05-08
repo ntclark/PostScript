@@ -4,19 +4,21 @@
 
 #pragma once
 
-#include <stack>
+#include <deque>
 
 #include "PostScript objects\dictionary.h"
 
-   class dictionaryStack : public std::stack<dictionary *> {
+   class dictionaryStack : public std::deque<dictionary *> {
    public:
 
       dictionary *top();
       dictionary *pop();
+      dictionary *bottom();
+
+      void setCurrent(dictionary *);
 
       dictionary *find(char *pszName);
 
-      void push(dictionary *);
       void remove(dictionary *);
 
    private:

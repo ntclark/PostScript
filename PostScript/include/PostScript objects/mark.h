@@ -9,18 +9,7 @@
    class mark : public object {
    public:
 
-      enum markType {
-         array = 1,
-         dictionary = 2,
-         procedure = 3,
-         unspecified = 4
-      };
-
-      mark(job *pJob,markType);
+      mark(job *pJob,object::valueType);
       ~mark();
 
-   private:
-
-      markType theType;
-   
    };

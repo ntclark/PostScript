@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <list>
+#include <vector>
 
 class job;
 
@@ -23,6 +23,8 @@ class job;
 
       void insert(object *);
 
+      virtual void putElement(long index,object *pObject);
+
       char *ToString();
       void clear();
 
@@ -33,9 +35,12 @@ class job;
 
    private:
 
-      bool isBound;
-      std::list<object *> entries;
-      char *pszStringRepresentation;
+      procedure(job *pj,char *pStart,char *pEnd,char **ppEnd);
+
+      bool isBound{false};
+      std::vector<object *> entries;
+      char *pszStringRepresentation{NULL};
+      procedure *pContainingProcedure{NULL};
 
       friend class job;
 

@@ -30,19 +30,45 @@
             font = 15,
             name = 16,
             literal = 17,
-            resource = 18
+            resource = 18,
+            objectTypeUnspecified = 19
+        };
+
+        enum valueClassification {
+            simple = 50,
+            composite = 51
         };
 
         enum valueType {
             invalidValueType = 99,
-            unspecified = 100,
+            valueTypeUnspecified = 100,
             container = 101,
             string = 102,
-            character = 103,
-            integer = 104,
-            real = 105,
-            radix = 106,
-            executableProcedure = 107
+            constantString = 103,
+            hexString = 104,
+            binaryString = 105,
+            character = 106,
+            integer = 107,
+            real = 108,
+            radix = 109,
+            trueOrFalse = 110,
+            arrayMark = 111,
+            dictionaryMark = 112,
+            procedureMark = 113,
+            executableProcedure = 114,
+            executableOperator = 115
+        };
+
+        enum executableAttribute {
+            nonExecutable = 201,
+            executable = 202
+        };
+
+        enum accessAttribute {
+            unlimited = 301,
+            readOnly = 302,
+            executeOnly = 303,
+            none = 304
         };
 
         static void initializeStorage();
@@ -53,28 +79,29 @@
 
         object(job *,char c);
         object(job *,char *pszContents);
-        object(job *,char *pszContents,objectType theType);
-        object(job *,char *pszContents,objectType theType,valueType theValueType);
+        object(job *,char *pszContents,objectType theType,valueType theValueType,valueClassification vcf);
+        object(job *,char *pszContents,objectType theType,valueType theValueType,valueClassification vcf,executableAttribute ea);
 
         object(job *,char *pStart,char *pEnd);
-        object(job *,char *pStart,char *pEnd,objectType theType);
-        object(job *,char *pStart,char *pEnd,objectType theType,valueType theValueType);
+        object(job *,char *pStart,char *pEnd,objectType theType,valueType theValueType,valueClassification vcf);
 
-        object(job *,objectType theType);
-        object(job *,objectType,valueType);
+        object(job *,objectType,valueType,valueClassification);
+        object(job *,BYTE value);
         object(job *,long value);
         object(job *,double value);
 
-        virtual void put(long index,object *);
-        virtual object *get(long index);
+        virtual void put(long index,BYTE v);
+        virtual BYTE get(long index);
+
+        virtual void putElement(long index,object *pElement);
+        virtual object *getElement(long index);
+
         virtual void execute();
         virtual char *ToString();
 
         virtual char *Name(char *pszNewName = NULL);
 
         virtual char *Contents(char *pszContents = NULL);
-
-        bool IsSystemObject() { return isSystemObject; }
 
         char *TypeName();
         char *ValueTypeName();
@@ -86,7 +113,7 @@
         void SetExecuteOnly(bool v) { isExecuteOnly = v; };
         bool IsExecuteOnly() { return isExecuteOnly; };
 
-        enum objectType ObjectType() { return theType; };
+        enum objectType ObjectType() { return theObjectType; };
         enum valueType ValueType( enum valueType vt = invalidValueType ) { if ( vt != invalidValueType ) theValueType = vt; return theValueType; };
 
         static void *pHeap;
@@ -94,18 +121,22 @@
         static void *pNextHeap;
         static size_t currentlyAllocatedHeap;
 
-        static bool isCreatingSystemObjects;
-
     protected:
 
         job *pJob{NULL};
-        bool isSystemObject{isCreatingSystemObjects};
+
+        objectType theObjectType{objectTypeUnspecified};
+        valueType theValueType{valueTypeUnspecified};
+        executableAttribute theExecutableAttribute{nonExecutable};
+        accessAttribute theAccessAttribute{none};
 
         virtual ~object();
 
     private:
 
-        void parseValue();
+        object(job *,char charVal,long longVal,double realVal,char *pStart,char *pEnd,objectType,valueType,valueClassification,executableAttribute,accessAttribute);
+
+        void parseValue(objectType,valueType);
 
         object *pContainingDictionary{NULL};
 
@@ -116,9 +147,6 @@
             long intValue{-LONG_MAX};
             double doubleValue;
         };
-
-        objectType theType{null};
-        valueType theValueType{unspecified};
 
         bool isExecuteOnly{false};
 

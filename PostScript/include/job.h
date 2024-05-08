@@ -1,51 +1,56 @@
 
 #pragma once
 
+#include <string>
+
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
-#include "PostScript_i.h"
+#include "PostScriptGen2_i.h"
 
-#include "PostScript objects\procedure.h"
 #include "Stacks\graphicsStateStack.h"
-#include "comment.h"
-#include "PostScript objects\structureSpec.h"
 #include "Stacks\objectStack.h"
 #include "Stacks\dictionaryStack.h"
+
+#include "comment.h"
+#include "error.h"
+
+#include "PostScript objects\procedure.h"
+#include "PostScript objects\string.h"
+#include "PostScript objects\structureSpec.h"
 #include "PostScript objects\resource.h"
 #include "PostScript objects\booleanObject.h"
 #include "PostScript objects\name.h"
 #include "PostScript objects\array.h"
 #include "PostScript objects\colorSpace.h"
-#include "error.h"
 #include "PostScript objects\matrix.h"
-
-   extern long loggingOff;
 
     class job {
     public:
 
-        job(char *pszFileName,PdfPage *pPdfPage,HDC hdc,RECT *prcWindowsClip,IPostScriptTakeText *pIPostScriptTakeText);
+        job(char *pszFileName,HWND hwndSurface,IPostScriptTakeText *pIPostScriptTakeText);
         ~job();
 
         void *CurrentObjectHeap();
 
-        HDC GetDC() { return hdcTarget; }
-        RECT *WindowsClipArea() { return &rcWindowsClip; }
-
         long parseJob(bool useThread = true);
 
-        long execute(char *,char **ppEnd = NULL,long length = -1L);
-        long execute();
-        long execute(procedure *);
+        long execute(char *);
+        long executeObject();
+        long executeProcedure(procedure *);
 
+        void parseProcedure(procedure *,char *pStart,char **ppEnd);
         void bindProcedure(procedure *pProcedure);
+        void parseProcedureString(char *pStart,char **ppEnd);
 
         void addFont(class font *);
-        void addProcedure(procedure *);
 
         PdfUtility *GetPdfUtility() { return pPdfUtility; }
 
-        object* top() { return operandStack.top(); }
+        object* top() { 
+            if ( 0 == operandStack.size() )
+                return NULL;
+            return operandStack.top(); 
+        }
         object* pop() { return operandStack.pop(); }
         void push(object *pObject) { operandStack.push(pObject); }
 
@@ -55,212 +60,9 @@
         void incrementCount() { countObjects++; }
         void decrementCount() { --countObjects; }
 
-        void operatorStdout();
+#include "job_operators.h"
 
-        void operatorAdd();
-        void operatorAnd();
-        void operatorArc();
-        void operatorArcn();
-        void operatorArray();
-        void operatorAshow();
-        void operatorAstore();
-        void operatorAwidthshow();
-        void operatorBegin();
-        void operatorBind();
-        void operatorCleartomark();
-        void operatorClosepath();
-        void operatorConcat();
-        void operatorCopy();
-        void operatorCountdictstack();
-        void operatorCounttomark();
-        void operatorCurrentdict();
-        void operatorCurrentglobal();
-        void operatorCurrentmatrix();
-        void operatorCurrentscreen();
-        void operatorCurveto();
-        void operatorCvi();
-        void operatorCvn();
-        void operatorCvr();
-        void operatorCvx();
-        void operatorDebug();
-        void operatorDef();
-        void operatorDefinefont();
-        void operatorDefineresource();
-        void operatorDict();
-        void operatorDiv();
-        void operatorDtransform();
-        void operatorDup();
-        void operatorEnd();
-        void operatorEofill();
-        void operatorEq();
-        void operatorErrordict();
-        void operatorExch();
-        void operatorExit();
-        void operatorExec();
-        void operatorExecuteonly();
-        void operatorFill();
-        void operatorFindfont();
-        void operatorFindresource();
-        void operatorFlush();
-        void operatorFor();
-        void operatorForall();
-        void operatorGe();
-        void operatorGet();
-        void operatorGrestore();
-        void operatorGsave();
-        void operatorGt();
-        void operatorIdtransform();
-        void operatorIf();
-        void operatorIfelse();
-        void operatorIndex();
-        void operatorISOLatin1Encoding();
-        void operatorItransform();
-        void operatorKnown();
-        void operatorLength();
-        void operatorLineto();
-        void operatorLoad();
-        void operatorLoop();
-        void operatorMakefont();
-        void operatorMakepattern();
-        void operatorMarkArrayBegin();
-        void operatorMarkArrayEnd();
-        void operatorMarkDictionaryBegin();
-        void operatorMarkDictionaryEnd();
-        void operatorMarkProcedureBegin();
-        void operatorMarkProcedureEnd();
-        void operatorMatrix();
-        void operatorMoveto();
-        void operatorMul();
-        void operatorNe();
-        void operatorNeg();
-        void operatorNewpath();
-        void operatorNot();
-        void operatorPop();
-        void operatorPrint();
-        void operatorProduct();
-        void operatorPstack();
-        void operatorPut();
-        void operatorPutinterval();
-        void operatorReadonly();
-        void operatorRectclip();
-        void operatorRectfill();
-        void operatorRectstroke();
-        void operatorRepeat();
-        void operatorRlineto();
-        void operatorRmoveto();
-        void operatorRoll();
-        void operatorRotate();
-        void operatorRound();
-        void operatorSave();
-        void operatorScale();
-        void operatorScalefont();
-        void operatorSelectfont();
-        void operatorSetcolor();
-        void operatorSetcolorspace();
-        void operatorSetdash();
-        void operatorSetfont();
-        void operatorSetglobal();
-        void operatorSetgray();
-        void operatorSetlinecap();
-        void operatorSetlinejoin();
-        void operatorSetlinewidth();
-        void operatorSetmatrix();
-        void operatorSetmiterlimit();
-        void operatorSetpagedevice();
-        void operatorSetuserparams();
-        void operatorShow();
-        void operatorShowpage();
-        void operatorStandardEncoding();
-        void operatorStopped();
-        void operatorString();
-        void operatorStroke();
-        void operatorSub();
-        void operatorTransform();
-        void operatorTranslate();
-        void operatorType();
-        void operatorUndef();
-        void operatorVersion();
-        void operatorVmstatus();
-        void operatorWhere();
-        void operatorWidthshow();
-        void operatorXshow();
-        void operatorXyshow();
-        void operatorYshow();
-
-        void pdfOperator_apostrophe();
-        void pdfOperator_quote();
-        void pdfOperator_b();
-        void pdfOperator_bStar();
-        void pdfOperator_B();
-        void pdfOperator_BStar();
-        void pdfOperator_BDC();
-        void pdfOperator_BI();
-        void pdfOperator_BMC();
-        void pdfOperator_BT();
-        void pdfOperator_BX();
-        void pdfOperator_c();
-        void pdfOperator_cm();
-        void pdfOperator_CS();
-        void pdfOperator_cs();
-        void pdfOperator_d();
-        void pdfOperator_d0();
-        void pdfOperator_d1();
-        void pdfOperator_Do();
-        void pdfOperator_DP();
-        void pdfOperator_EI();
-        void pdfOperator_EMC();
-        void pdfOperator_ET();
-        void pdfOperator_EX();
-        void pdfOperator_fStar();
-        void pdfOperator_f();
-        void pdfOperator_F();
-        void pdfOperator_g();
-        void pdfOperator_G();
-        void pdfOperator_gs();
-        void pdfOperator_h();
-        void pdfOperator_i();
-        void pdfOperator_ID();
-        void pdfOperator_j();
-        void pdfOperator_J();
-        void pdfOperator_k();
-        void pdfOperator_K();
-        void pdfOperator_m();
-        void pdfOperator_M();
-        void pdfOperator_MP();
-        void pdfOperator_n();
-        void pdfOperator_l();
-        void pdfOperator_q();
-        void pdfOperator_Q();
-        void pdfOperator_re();
-        void pdfOperator_rg();
-        void pdfOperator_RG();
-        void pdfOperator_ri();
-        void pdfOperator_s();
-        void pdfOperator_S();
-        void pdfOperator_sc();
-        void pdfOperator_SC();
-        void pdfOperator_SCN();
-        void pdfOperator_scn();
-        void pdfOperator_sh();
-        void pdfOperator_TStar();
-        void pdfOperator_Tc();
-        void pdfOperator_Td();
-        void pdfOperator_TD();
-        void pdfOperator_Tf();
-        void pdfOperator_Th();
-        void pdfOperator_Tj();
-        void pdfOperator_TJ();
-        void pdfOperator_TL();
-        void pdfOperator_Tm();
-        void pdfOperator_Tr();
-        void pdfOperator_Ts();
-        void pdfOperator_Tw();
-        void pdfOperator_Tz();
-        void pdfOperator_v();
-        void pdfOperator_w();
-        void pdfOperator_W();
-        void pdfOperator_WStar();
-        void pdfOperator_y();
+#include "job_pdfOperators.h"
 
         static void *pHeap;
         static void *pCurrentHeap;
@@ -272,8 +74,12 @@
       job();
 
       void resolve();
+      object *resolve(char *pszObjectName);
       bool seekDefinition();
       bool seekOperator();
+      dictionary *containingDictionary(object *pObj);
+
+      long getPageCount(char *pszFileName);
 
       void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd);
       char *parseObject(char *pStart,char **pEnd);
@@ -285,11 +91,16 @@
       void parseHex85String(char *pStart,char **ppEnd);
       void parseLiteralName(char *apStart,char **ppEnd);
 
-      std::map<long,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
-      std::map<long,char *> antiDelimiters;
+      HBITMAP parsePage(long pageNumber);
+
+      graphicsState *currentGS();
+
+      std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
+      std::map<size_t,char *> antiDelimiters;
+      std::map<size_t,name *> validNames;
 
       std::list<comment *> commentStack;
-      std::map<long,object *> literalNames;
+      std::map<size_t,object *> literalNames;
       std::list<structureSpec *> structureSpecs;
 
       std::map<object::objectType,std::map<object::valueType,object *>> nameTypeMap;
@@ -309,9 +120,17 @@
       dictionary *pStatusDict{NULL};
       dictionary *pPdfDict{NULL};
 
+      dictionary *pFontDirectory{NULL};
+
       booleanObject *pTrueConstant{NULL};
       booleanObject *pFalseConstant{NULL};
       object *pNullConstant{NULL};
+      object *pZeroConstant{NULL};
+      object *pOneConstant{NULL};
+      object *pEncodingLiteral{NULL};
+      object *pCharStringsLiteral{NULL};
+      object *pGlyphDirectoryLiteral{NULL};
+      object *pSfntsLiteral{NULL};
 
       font *pCourier{NULL};
 
@@ -340,23 +159,24 @@
       colorSpace *pCurrentColorSpace{NULL};
 
       long saveCount{0L};
-      long inputLineNumber;
-      long procedureDefinitionLevel;
+      long inputLineNumber{0L};
+      long procedureDefinitionLevel{0L};
       long countObjects{0L};
+      long countPages{0L};
 
       char *collectionDelimiterPeek(char *,char **);
       char *delimiterPeek(char *,char **);
       char *token();
 
-      bool isGlobalVM;
-      bool hasExited;
+      bool isGlobalVM{false};
+      bool hasExited{false};
 
-      char *pStorage,*pEnd;
+      char *pStorage{NULL},*pEnd{NULL};
 
-      PdfPage *pPdfPage{NULL};
+      HWND hwndSurface{NULL};
 
-      HDC hdcTarget;
-      RECT rcWindowsClip;
+      HBITMAP hbmSink{NULL};
+
       IPostScriptTakeText *pIPostScriptTakeText{NULL};
 
       static PdfUtility *pPdfUtility;
@@ -366,5 +186,5 @@
       friend class graphicsState;
       friend class PStoPDF;
       friend class dictionary;
-
+      friend class name;
    };

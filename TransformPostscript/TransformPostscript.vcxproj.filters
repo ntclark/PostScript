@@ -13,10 +13,47 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\COM Interfaces">
+      <UniqueIdentifier>{4861d26d-0c5d-499f-97a0-eae8b5f6fbdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\COM Interfaces\Control Hosting">
+      <UniqueIdentifier>{4c93ec92-3e28-47a0-bb79-caca438971cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="COM Interfaces\Control Hosting\IOleClientSite.cpp">
+      <Filter>Source Files\COM Interfaces\Control Hosting</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Interfaces\Control Hosting\IOleDocumentSite.cpp">
+      <Filter>Source Files\COM Interfaces\Control Hosting</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Interfaces\Control Hosting\IOleInPlaceFrame.cpp">
+      <Filter>Source Files\COM Interfaces\Control Hosting</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Interfaces\Control Hosting\IOleInPlaceSite.cpp">
+      <Filter>Source Files\COM Interfaces\Control Hosting</Filter>
+    </ClCompile>
+    <ClCompile Include="ParsePSHost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="handlers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParsePostscript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ParsePostscript.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

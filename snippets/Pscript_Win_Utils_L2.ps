@@ -1,0 +1,56 @@
+%%BeginResource: file Pscript_Win_Utils_L2 5.0 0
+
+/rf 
+/rectfill , d
+/fx { 1 1 dtransform @ 0 ge {1 sub 0.5 } { 1 add -0.5 } ? 3 -1 $ @ 0 ge { 1 sub 0.5 } { 1 add -0.5 } ? 3 1 $ 4 1 $ idtransform 4 -2 $ idtransform } b
+
+/BZ { 4 -2 $ snap + +S fx rf } b
+
+/rs /rectstroke , d
+/rc /rectclip , d
+
+/UtilsInit { currentglobal { F setglobal } if } b
+/scol { ! setcolor } b
+/colspA /DeviceGray d
+/colspABC /DeviceRGB d
+/colspRefresh { colspABC setcolorspace } b
+/SetColSpace { colspABC setcolorspace } b
+
+/resourcestatus where { ! /ColorRendering /ProcSet resourcestatus { ! ! T } { F } ? } { F } ? not { /ColorRendering << /GetHalftoneName { currenthalftone @ /HalftoneName known { /HalftoneName get } 
+        { ! /none } ? } bn /GetPageDeviceName { currentpagedevice @ /PageDeviceName known { /PageDeviceName get @ null eq { ! /none } if } { ! /none } ? } bn
+
+/GetSubstituteCRD{!/DefaultColorRendering/ColorRendering resourcestatus{! !
+/DefaultColorRendering}{(DefaultColorRendering*){cvn exit}127 string
+
+/ColorRendering resourceforall}?}bn>>/defineresource where{!/ProcSet
+defineresource !}{! !}?}if/buildcrdname{/ColorRendering/ProcSet findresource `
+mark GetHalftoneName @ type @/nametype ne ~/stringtype ne and{!/none}if(.)
+GetPageDeviceName @ type @/nametype ne ~/stringtype ne and{!/none}if(.)5 ^ 0 5
+-1 1{^ length add}for string 6 1 $ 5 ^ 5{~ 1 ^ cvs length 1 ^ length 1 ^ sub
+getinterval}repeat ! cvn 3 1 $ ! ! E}b/definecolorrendering{~ buildcrdname ~
+/ColorRendering defineresource ! } b
+
+/findcolorrendering where 
+
+    { pop }
+
+    { /findcolorrendering 
+        { buildcrdname dup /ColorRendering resourcestatus 
+            { pop pop true }
+            { /ColorRendering /ProcSet findresource begin GetSubstituteCRD end false }
+            ifelse
+        }
+        b
+    } 
+
+ifelse 
+
+/selectcolorrendering { findcolorrendering ! /ColorRendering findresource setcolorrendering } b
+
+/G2UBegin{findresource/FontInfo get/GlyphNames2Unicode get
+`}bind d/G2CCBegin{findresource/FontInfo get/GlyphNames2HostCode get `}bind d
+/G2UEnd{E}bind d/AddFontInfoBegin{/FontInfo 8 dict @ `}bind d/AddFontInfo{
+/GlyphNames2Unicode 16 dict d/GlyphNames2HostCode 16 dict d}bind d
+/AddFontInfoEnd{E d}bind d/T0AddCFFMtx2{/CIDFont findresource/Metrics2 get ` d
+E}bind d
+%%EndResource

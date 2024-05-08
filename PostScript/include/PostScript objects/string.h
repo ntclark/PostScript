@@ -11,11 +11,16 @@
 
       string(job *pJob,char *pszValue); 
       string(job *pJob,char *pStart,char *pEnd);
+
       ~string();
 
-      virtual object *get(long index);
-      virtual void put(long index,object *);
+      virtual BYTE get(long index);
+      virtual void put(long index,BYTE);
 
-   private:
+   protected:
+
+      string(job *pJob,object::valueType valueType);
+      string(job *pJob,char *pszValue,object::valueType valueType);
+      string(job *pJob,char *pStart,char *pEnd,object::valueType valueType);
 
    };

@@ -14,18 +14,17 @@ class job;
    public:
 
       array(job *pJob,char *pszName);
-      array(job *pJob,char *pszName,objectType ot);
       array(job *pJob,char *pszName,char *pszValues);
       array(job *pJob,char *pszName,long initialCount);
       array(job *pJob,long initialCount);
+      array(job *pJob,char *pszName,long initialCount,char *pszValues);
 
       virtual ~array();
 
       void insert(object *);
 
-      void put(long index,object *);
-
-      object *get(long index);
+      virtual void putElement(long index,object *);
+      virtual object *getElement(long index);
 
       void clear();
 
@@ -33,7 +32,7 @@ class job;
 
       long size() { return (long)entries.size(); };
 
-   private:
+   protected:
 
       std::map<long,object *> entries;
 

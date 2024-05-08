@@ -2,13 +2,12 @@
 #include "PostScript objects\object.h"
 #include "job.h"
 
+#include <float.h>
+
     void *object::pHeap = NULL;
     void *object::pCurrentHeap = NULL;
     void *object::pNextHeap = NULL;
     size_t object::currentlyAllocatedHeap = 0L;
-
-
-    bool object::isCreatingSystemObjects = false;
 
     void object::initializeStorage() {
     pHeap = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT,OBJECT_HEAP_SIZE);
@@ -25,10 +24,10 @@
     currentlyAllocatedHeap = 0L;
     }
 
-
     void *object::operator new(size_t theSize,void *pPtr) {
 
-    if ( OBJECT_HEAP_SIZE < ( currentlyAllocatedHeap + theSize ) ) {
+    if ( ((BYTE *)pNextHeap - (BYTE *)pHeap + theSize) > currentlyAllocatedHeap ) {
+MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     }
 
     pCurrentHeap = pNextHeap;
@@ -37,227 +36,132 @@
     }
 
 
-    object::object(job *pj,char c) :
+    object::object(job *pj,char charVal,long longVal,double realVal,char *pszVal,char *pszEnd,objectType ot,valueType vt,valueClassification vcf,executableAttribute ea,accessAttribute aa) :
+
         pJob(pj),
-        theType(atom),
-        theValueType(character)
+        theObjectType(ot),
+        theValueType(vt),
+        theExecutableAttribute(ea),
+        theAccessAttribute(aa)
+
     {
 
     pJob -> incrementCount();
 
-    pszContents = new char[2];
-    pszContents[0] = c;
-    pszContents[1] = '\0';
+    if ( ! ( '\0' == charVal ) ) {
 
-    pszName = new char[2];
-    pszName[0] = c;
-    pszName[1] = '\0';
+        pszContents = new char[2];
+        pszContents[0] = charVal;
+        pszContents[1] = '\0';
+
+        pszName = new char[2];
+        pszName[0] = charVal;
+        pszName[1] = '\0';
+
+        if ( objectTypeUnspecified == theObjectType )
+            theObjectType = atom;
+
+        if ( valueTypeUnspecified == theValueType )
+            theValueType = character;
+
+    } else if ( ! ( NULL == pszVal ) ) {
+
+        long n = 0L;
+        if ( ! ( NULL == pszEnd ) )
+            n = (long)(pszEnd - pszVal);
+        else
+            n = (long)strlen(pszVal);
+
+        pszContents = new char[n + 1];
+        pszContents[n] = '\0';
+        if ( ! ( NULL == pszEnd ) )
+            strncpy(pszContents,pszVal,n);
+        else
+            strcpy(pszContents,pszVal);
+
+        pszName = new char[n + 1];
+        pszName[n] = '\0';
+        if ( ! ( NULL == pszEnd ) )
+            strncpy(pszName,pszVal,n);
+        else
+            strcpy(pszName,pszVal);
+
+        if ( objectTypeUnspecified == theObjectType )
+            theObjectType = atom;
+
+        if ( valueTypeUnspecified == theValueType )
+            theValueType = string;
+
+    } else if ( ! ( LONG_MAX == longVal ) ) {
+
+        pszContents = new char[64];
+        memset(pszContents,0,64 * sizeof(char));
+        sprintf(pszContents,"%ld",longVal);
+
+        pszName = new char[64];
+        memset(pszName,0,64 * sizeof(char));
+        sprintf(pszName,"%ld",longVal);
+
+        if ( objectTypeUnspecified == theObjectType )
+            theObjectType = number;
+
+        if ( valueTypeUnspecified == theValueType )
+            theValueType = integer;
+
+    } else if ( ! ( DBL_MAX == realVal ) ) {
+
+        pszContents = new char[64];
+        memset(pszContents,0,64 * sizeof(char));
+        sprintf(pszContents,"%lf",realVal);
+
+        pszName = new char[64];
+        memset(pszName,0,64 * sizeof(char));
+        sprintf(pszName,"%lf",realVal);
+
+        if ( objectTypeUnspecified == theObjectType )
+            theObjectType = number;
+
+        if ( valueTypeUnspecified == theValueType )
+            theValueType = real;
+    }
+
+    parseValue(ot,vt);
+
+
 
     return;
     }
 
 
-    object::object(job *pj,char *contents) :
-        pJob(pj)
-    {
+    object::object(job *pj,objectType ot,valueType vt,valueClassification vcf) :
+        object(pj,'\0',LONG_MAX,DBL_MAX,NULL,NULL,ot,vt,vcf,nonExecutable,unlimited) {}
 
-    pJob -> incrementCount();
+    object::object(job *pj,char *pszContents,objectType ot,valueType vt,valueClassification vcf) :
+        object(pj,'\0',LONG_MAX,DBL_MAX,pszContents,NULL,ot,vt,vcf,nonExecutable,unlimited) {}
 
-    long n = (DWORD)strlen(contents) + 1;
-
-    pszContents = new char[n];
-    pszContents[n - 1] = '\0';
-    strcpy(pszContents,contents);
-
-    pszName = new char[n];
-    pszName[n - 1] = '\0';
-    strcpy(pszName,contents);
-
-    parseValue();
-
-    return;
-    }
-
-
-    object::object(job *pj,char *contents,objectType t) :
-        pJob(pj),
-        theType(t),
-        theValueType(string)
-    {
-
-    pJob -> incrementCount();
-
-    long n = (DWORD)strlen(contents) + 1;
-
-    pszContents = new char[n];
-    pszContents[n - 1] = '\0';
-    strcpy(pszContents,contents);
-
-    pszName = new char[n];
-    pszName[n - 1] = '\0';
-    strcpy(pszName,contents);
-
-    parseValue();
-
-    return;
-    }
-
-
-    object::object(job *pj,objectType t,valueType vt) :
-        pJob(pj),
-        theType(t),
-        theValueType(vt)
-    {
-    pJob -> incrementCount();
-    return;
-    }
-
-
-    object::object(job *pj,char *contents,objectType t,valueType vt) :
-        pJob(pj),
-        theType(t),
-        theValueType(vt)
-    {
-
-    pJob -> incrementCount();
-
-    long n = (DWORD)strlen(contents) + 1;
-
-    pszContents = new char[n];
-    pszContents[n - 1] = '\0';
-    strcpy(pszContents,contents);
-
-    pszName = new char[n];
-    pszName[n - 1] = '\0';
-    strcpy(pszName,contents);
-
-    parseValue();
-
-    return;
-    }
-
+    object::object(job *pj,char *pszContents,objectType ot,valueType vt,valueClassification vcf,executableAttribute ea) :
+        object(pj,'\0',LONG_MAX,DBL_MAX,pszContents,NULL,ot,vt,vcf,ea,unlimited) {}
 
     object::object(job *pj,char *pStart,char *pEnd) :
-        pJob(pj),
-        theType(null),
-        theValueType(unspecified)
-    {
+        object(pj,'\0',LONG_MAX,DBL_MAX,pStart,pEnd,objectTypeUnspecified,valueTypeUnspecified,simple,nonExecutable,unlimited) {}
 
-    pJob -> incrementCount();
+    object::object(job *pj,char *pStart,char *pEnd,objectType ot,valueType vt,valueClassification vcf) :
+        object(pj,'\0',LONG_MAX,DBL_MAX,pStart,pEnd,ot,vt,vcf,nonExecutable,unlimited) {}
 
-    long n = (long)(pEnd - pStart);
+    object::object(job *pj,char c) :
+        object(pj,   c,LONG_MAX,DBL_MAX,NULL,NULL,objectTypeUnspecified,character,simple,nonExecutable,unlimited) {}
 
-    pszContents = new char[n + 1];
-    pszContents[n] = '\0';
-    memcpy(pszContents,(char *)pStart,n);
+    object::object(job *pj,char *pszContents) :
+        object(pj,'\0',LONG_MAX,DBL_MAX,pszContents,NULL,objectTypeUnspecified,valueTypeUnspecified,simple,nonExecutable,unlimited) {}
 
-    pszName = new char[n + 1];
-    pszName[n] = '\0';
-    memcpy(pszName,(char *)pStart,n);
-
-    parseValue();
-
-    return;
-    }
-
-
-    object::object(job *pj,char *pStart,char *pEnd,objectType t) :
-        pJob(pj),
-        theType(t),
-        theValueType(string)
-    {
-
-    pJob -> incrementCount();
-
-    long n = (long)(pEnd - pStart);
-
-    pszContents = new char[n + 1];
-    pszContents[n] = '\0';
-    memcpy((BYTE *)pszContents,pStart,n);
-
-    pszName = new char[n + 1];
-    pszName[n] = '\0';
-    memcpy((BYTE *)pszName,pStart,n);
-
-    parseValue();
-
-    return;
-    }
-
-
-    object::object(job *pj,char *pStart,char *pEnd,objectType t,valueType vt) :
-        pJob(pj),
-        theType(t),
-        theValueType(vt)
-    {
-
-    pJob -> incrementCount();
-
-    long n = (long)(pEnd - pStart + 1);
-
-    pszContents = new char[n];
-    pszContents[n - 1] = '\0';
-    memcpy((BYTE *)pszContents,pStart,n - 1);
-
-    pszName = new char[n];
-    pszName[n - 1] = '\0';
-    memcpy((BYTE *)pszName,pStart,n - 1);
-
-    parseValue();
-
-    return;
-    }
-
-
-    object::object(job *pj,objectType t) :
-        pJob(pj),
-        theType(t)
-    {
-    pJob -> incrementCount();
-    return;
-    }
-
+    object::object(job *pj,BYTE bValue) :
+        object(pj,'\0',(long)bValue,DBL_MAX,NULL,NULL,number,integer,simple,nonExecutable,unlimited) {}
 
     object::object(job *pj,long value) :
-        pJob(pj),
-        intValue(value),
-        theType(number),
-        theValueType(integer)
-    {
-
-    pJob -> incrementCount();
-
-    pszContents = new char[64];
-    memset(pszContents,0,64 * sizeof(char));
-    sprintf(pszContents,"%ld",intValue);
-
-    pszName = new char[64];
-    memset(pszName,0,64 * sizeof(char));
-    sprintf(pszName,"%ld",intValue);
-
-    return;
-    }
-
+        object(pj,'\0',value,DBL_MAX,NULL,NULL,number,integer,simple,nonExecutable,unlimited) {}
 
     object::object(job *pj,double value) :
-        pJob(pj),
-        doubleValue(value),
-        theType(number),
-        theValueType(real)
-    {
-
-    pJob -> incrementCount();
-
-    pszContents = new char[64];
-    memset(pszContents,0,64 * sizeof(char));
-    sprintf(pszContents,"%lf",doubleValue);
-
-    pszName = new char[64];
-    memset(pszName,0,64 * sizeof(char));
-    sprintf(pszName,"%lf",doubleValue);
-
-    return;
-    }
+        object(pj,'\0',LONG_MAX,value,NULL,NULL,number,real,simple,nonExecutable,unlimited) {}
 
 
     object::~object() {
@@ -299,7 +203,7 @@
     }
 
 
-    void object::parseValue() {
+    void object::parseValue(objectType ot,valueType vt) {
 
     if ( NULL == pszContents )
         return;
@@ -309,25 +213,30 @@
     if ( '\0' == *p )
         return;
 
+    // radix number is xx#anychars.. xx digits, min 2, max 36, 
+
     bool isReal = false;
-    long radixCount = 0L;
+    bool radixFound = false;
     long digitCount = 0L;
-    long preRadixDigitCount = 0L;
+
+    long preRadixDigitIndex = -1L;
+    char radixBase[2]{'\0','\0'};
 
     while ( *p ) {
 
         if ( ( 'a' <= *p && *p <= 'z' ) || ( 'A' <= *p && *p <= 'Z' ) ) {
 
-            if ( 0 == radixCount )
+            if ( ! radixFound )
                 return;
 
         } else if ( '0' <= *p && *p <= '9'  ) {
 
             digitCount++;
-            if ( 0 == radixCount ) {
-                preRadixDigitCount;
-                if ( 3 == preRadixDigitCount )
-                    return;
+
+            if ( ! radixFound ) {
+                preRadixDigitIndex++;
+                if ( 2 > preRadixDigitIndex ) 
+                    radixBase[preRadixDigitIndex] = *p;
             }
 
         } else if ( '.' == *p ) {
@@ -336,10 +245,13 @@
 
         } else if ( '#' == *p ) {
 
-            if ( radixCount )
+            if ( radixFound || -1L == preRadixDigitIndex ) 
                 return;
 
-            radixCount++;
+            if ( 2 > atol(radixBase) || 36 < atol(radixBase) )
+                return;
+
+            radixFound = true;
 
         } else 
 
@@ -353,25 +265,25 @@
     if ( 0L == digitCount )
         return;
 
-    if ( null == theType )
-        theType = number;
+    if ( objectTypeUnspecified == ot )
+        theObjectType = number;
 
     if ( isReal ) {
         doubleValue = atof(pszContents);
-        if ( ! ( theValueType == object::string ) )
+        if ( valueTypeUnspecified == vt )
             theValueType = object::real;
-    } else if ( 1 == radixCount ) {
+    } else if ( radixFound ) {
         char *p = strchr(pszContents,'#');
         *p = '\0';
         long base = atol(pszContents);
         *p = '#';
         p = p + 1;
         intValue = strtoul(p,NULL,base);
-        if ( ! ( theValueType == object::string ) )
+        if ( valueTypeUnspecified == vt )
             theValueType = object::radix;
     } else {
         intValue = atol(pszContents);
-        if ( ! ( theValueType == object::string ) )
+        if ( valueTypeUnspecified == vt )
             theValueType = object::integer;
     } 
 
@@ -387,7 +299,7 @@
     }
     intValue = value; 
     sprintf(pszContents,"%ld",value); 
-    theType = object::number;
+    theObjectType = object::number;
     theValueType = object::integer;
     return intValue;
     }
@@ -403,7 +315,7 @@
 
     doubleValue = value; 
     sprintf(pszContents,"%lf",value); 
-    theType = object::number;
+    theObjectType = object::number;
     theValueType = object::real;
     return doubleValue;
     }
@@ -417,7 +329,7 @@
 
 
     double object::Value() {
-    if ( object::number == theType ) {
+    if ( object::number == theObjectType ) {
         if ( object::integer == theValueType )
             return (double)intValue;
         return doubleValue;
@@ -427,7 +339,9 @@
 
     char *object::TypeName() {
 
-    switch ( theType ) {
+    switch ( theObjectType ) {
+    case objectTypeUnspecified:
+        return "unspecified";
     case atom:
         return "atom";
     case procedure:
@@ -468,7 +382,7 @@
 
     char *object::ValueTypeName() {
     switch ( theValueType ) {
-    case unspecified:
+    case valueTypeUnspecified:
         return "unspecified";
     case container:
         return "container";
@@ -487,15 +401,28 @@
     }
 
 
-    void object::put(long index,object *) {
+    void object::put(long,BYTE) {
     MessageBox(NULL,"put is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
     _endthread();
     return;
     }
 
 
-    object *object::get(long index) {
+    BYTE object::get(long index) {
     MessageBox(NULL,"get is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    _endthread();
+    return NULL;
+    }
+
+    void object::putElement(long index,object *) {
+    MessageBox(NULL,"putElement is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    _endthread();
+    return;
+    }
+
+
+    object *object::getElement(long index) {
+    MessageBox(NULL,"getElement is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
     _endthread();
     return NULL;
     }

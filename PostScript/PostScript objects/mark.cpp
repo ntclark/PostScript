@@ -1,13 +1,7 @@
 
 #include "PostScript objects\mark.h"
 
-   mark::mark(job *pJob,markType t) :
-      theType(t),
-      object(pJob,"",object::mark)
-   {
-   return;
-   }
+   mark::mark(job *pJob,object::valueType vt) :
+      object(pJob,object::objectType::mark,vt,object::valueClassification::simple) { }
 
-   mark::~mark() {
-   return;
-   }
+   mark::~mark() { }

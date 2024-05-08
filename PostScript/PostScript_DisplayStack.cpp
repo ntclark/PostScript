@@ -6,6 +6,7 @@
 
    long PStoPDF::displayStack() {
 
+#if 0
    SETTEXTEX st;
    memset(&st,0,sizeof(SETTEXTEX));
    st.flags = ST_DEFAULT;
@@ -13,7 +14,6 @@
 
    PostMessage(hwndStack,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
 
-#if 0
    EnterCriticalSection(&theQueueCriticalSection);
 
    long n = 0L;

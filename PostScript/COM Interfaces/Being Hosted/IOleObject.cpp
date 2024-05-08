@@ -45,6 +45,7 @@
       pParent -> pIOleInPlaceSite -> Release();
 
    pParent -> pIOleInPlaceSite = NULL;
+
    pParent -> pIOleClientSite -> QueryInterface(IID_IOleInPlaceSite,(void **)&pParent -> pIOleInPlaceSite);
 
    pParent -> initWindows();
@@ -87,7 +88,7 @@
    rect.right = tempSizel.cx;
    rect.bottom = tempSizel.cy;
 
-   SetWindowPos(pParent -> hwndHost,HWND_TOP,rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,SWP_SHOWWINDOW);
+   SetWindowPos(pParent -> hwndClient,HWND_TOP,rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,SWP_SHOWWINDOW);
 
    return S_OK;
    }
@@ -192,7 +193,7 @@
  
  
    STDMETHODIMP PStoPDF::_IOleObject::GetUserClassID(CLSID *pclsid) {
-  *pclsid = CLSID_PostScript;
+  *pclsid = CLSID_PostScriptGen2;
    return S_OK;
    }
  

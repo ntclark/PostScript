@@ -5,12 +5,12 @@
 #pragma once
 
 #include "object.h"
+#include "PostScript objects/array.h"
 
-   class matrix : public object {
+   class matrix : public array {
    public:
       
       matrix(job *pJob);
-      matrix(matrix &);
       ~matrix();
 
       void SetValue(long index,float value);
@@ -19,11 +19,20 @@
       virtual void concat(float *);
       virtual void concat(XFORM &);
 
-   public:
+      virtual char *ToString();
 
-      union {
-         struct { float a,b,c,d,tx,ty; };
-         float v[6];
-      };
+      float a();
+      float b();
+      float c();
+      float d();
+      float tx();
+      float ty();
+
+      void a(float v);
+      void b(float v);
+      void c(float v);
+      void d(float v);
+      void tx(float v);
+      void ty(float v);
 
    };

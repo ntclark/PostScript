@@ -1,0 +1,88 @@
+%%BeginResource: file Pscript_Win_Basic 5.0 0
+
+/d /def load def
+/, /load load d
+/~ /exch , d
+/? /ifelse , d
+/! /pop , d
+/` /begin , d
+/^ /index , d
+/@ /dup , d
+/+ /translate , d
+/$ /roll , d
+/U /userdict , d
+/M /moveto , d
+/- /rlineto , d/&/currentdict , d/:/gsave , d/;/grestore , d
+/F /false , d
+/T /true , d
+/N /newpath , d
+/E /end , d
+/Ac /arc , d
+/An /arcn , d
+/A /ashow , d
+/D /awidthshow , d
+/C /closepath , d
+/V /div , d
+/O /eofill , d
+/L /fill , d
+/I /lineto , d
+/-c /curveto , d
+/-M /rmoveto , d
+/+S /scale , d
+/Ji /setfont , d
+/Lc /setlinecap , d
+/Lj /setlinejoin , d
+/Lw /setlinewidth , d
+/Lm /setmiterlimit , d
+/sd /setdash , d
+/S /show , d
+/LH /showpage , d
+/K /stroke , d
+/W /widthshow , d
+/R /rotate , d
+/L2? false /languagelevel where { pop languagelevel 2 ge { pop true } if } if d L2? { /xS /xshow , d /yS /yshow , d /zS /xyshow , d } if 
+/b { bind d } bind d
+/bd { bind d } bind d
+/xd { ~ d } bd
+/ld { , d } bd
+/bn /bind ld
+/lw /Lw ld
+/lc /Lc ld
+/lj /Lj ld
+/sg /setgray ld
+/ADO_mxRot null d
+/self & d 
+/OrgMx matrix currentmatrix d
+/reinitialize {: OrgMx setmatrix [ /TextInit /GraphInit /UtilsInit counttomark { @ where { self eq } { F } ? { cvx exec } { ! } ? } repeat cleartomark ;} b
+
+/initialize { ` { /Pscript_Win_Data where { ! } { U /Pscript_Win_Data & put } ? 
+/ADO_mxRot ~ d /TextInitialised? F d reinitialize E } { U /Pscript_Win_Data 230 dict @ ` put /ADO_mxRot ~ d /TextInitialised? F d reinitialize } ? } b
+
+/terminate { ! { & self eq { exit } { E } ? } loop E } b
+/suspend /terminate , d
+
+/resume { ` Pscript_Win_Data ` } b U `
+/lucas 21690 d
+
+/featurebegin { countdictstack lucas [ } b
+
+/featurecleanup { stopped { cleartomark @ lucas eq { ! exit } if } loop countdictstack ~ sub @ 0 gt { { E } repeat } { ! } ? } b 
+
+E /snap { transform 0.25 sub round 0.25 add ~ 0.25 sub round 0.25 add ~ itransform } b 
+
+/dsnap { dtransform round ~ round ~ idtransform } b
+
+/nonzero_round { @ 0.5 ge { round } { @ -0.5 lt{round}{0 ge{1}{-1}?}?}?}b/nonzero_dsnap{dtransform
+nonzero_round ~ nonzero_round ~ idtransform}b U<04>cvn{}put/rr{1 ^ 0 - 0 ~ -
+neg 0 - C}b/irp{4 -2 $ + +S fx 4 2 $ M 1 ^ 0 - 0 ~ - neg 0 -}b/rp{4 2 $ M 1 ^ 0
+- 0 ~ - neg 0 -}b/solid{[]0 sd}b/g{@ not{U/DefIf_save save put}if U/DefIf_bool
+2 ^ put}b/DefIf_El{if U/DefIf_bool get not @{U/DefIf_save get restore}if}b/e
+{DefIf_El !}b/UDF{L2?{undefinefont}{!}?}b/UDR{L2?{undefineresource}{! !}?}b
+/freeVM{/Courier findfont[40 0 0 -40 0 0]makefont Ji 2 vmreclaim}b/hfRedefFont
+{findfont @ length dict `{1 ^/FID ne{d}{! !}?}forall & E @ ` ~{/CharStrings 1
+dict `/.notdef 0 d & E d}if/Encoding 256 array 0 1 255{1 ^ ~/.notdef put}for d
+E definefont !}bind d/hfMkCIDFont{/CIDFont findresource @ length 2 add dict `{1
+^ @/FID eq ~ @/XUID eq ~/UIDBase eq or or{! !}{d}?}forall/CDevProc ~ d/Metrics2
+16 dict d/CIDFontName 1 ^ d & E 1 ^ ~/CIDFont defineresource ![~]composefont !}
+bind d
+%%EndResource

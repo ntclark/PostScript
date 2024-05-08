@@ -2,10 +2,13 @@
 #include "job.h"
 #include "PostScript objects\graphicsState.h"
 
+#include "PostScript objects\font.h"
 #include "PostScript objects\string.h"
-#include "Fonts\font.h"
+#include "PostScript objects\binaryString.h"
 #include "PostScript objects\pattern.h"
 #include "PostScript objects\mark.h"
+#include "PostScript objects\literal.h"
+#include "PostScript objects\directExec.h"
 
 #include "PostScript objects\save.h"
 
@@ -40,7 +43,7 @@
 */
    object *p1 = pop();
    object *p2 = pop();
-   if ( object::integer == p1 -> ObjectType() && object::integer == p2 -> ObjectType() )
+   if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() + p2 -> IntValue()));
    else
       push(new (CurrentObjectHeap()) object(this,p1 -> Value() + p2 -> Value()));
@@ -211,58 +214,58 @@
    return;
    }
 
-   void job::operatorAstore() {
+    void job::operatorAstore() {
 /*
 
-   astore 
+    astore 
 
-      any0 … anyn-1 array astore array
+        any0 … anyn-1 array astore array
 
-   stores the objects any0 to anyn-1 from the operand stack into array, where n is the
-   length of array. The astore operator first removes the array operand from the stack
-   and determines its length. It then removes that number of objects from the stack,
-   storing the topmost one into element n - 1 of array and the bottommost one into
-   element 0. Finally, it pushes array back on the stack. Note that an astore operation
-   cannot be performed on packed arrays.
+    stores the objects any0 to anyn-1 from the operand stack into array, where n is the
+    length of array. The astore operator first removes the array operand from the stack
+    and determines its length. It then removes that number of objects from the stack,
+    storing the topmost one into element n - 1 of array and the bottommost one into
+    element 0. Finally, it pushes array back on the stack. Note that an astore operation
+    cannot be performed on packed arrays.
 
-   If the value of array is in global VM and any of the objects any0 through anyn-1 are
-   composite objects whose values are in local VM, an invalidaccess error occurs (see
-   Section 3.7.2, “Local and Global VM”).
+    If the value of array is in global VM and any of the objects any0 through anyn-1 are
+    composite objects whose values are in local VM, an invalidaccess error occurs (see
+    Section 3.7.2, “Local and Global VM”).
 
-   Example
+    Example
 
-      (a) (bcd) (ef) 3 array astore Þ [(a) (bcd) (ef)]
+        (a) (bcd) (ef) 3 array astore Þ [(a) (bcd) (ef)]
 
-   This example creates a three-element array, stores the strings a, bcd, and ef into it
-   as elements 0, 1, and 2, and leaves the array object on the operand stack.
+    This example creates a three-element array, stores the strings a, bcd, and ef into it
+    as elements 0, 1, and 2, and leaves the array object on the operand stack.
 
-   Errors: invalidaccess, stackunderflow, typecheck
+    Errors: invalidaccess, stackunderflow, typecheck
 */
+
+    array *pArray = reinterpret_cast<array *>(top());
+
+    operatorLength();
+
+    object *pCount = pop();
+
+    long n = pCount -> IntValue();
+
+    for ( long k = 0; k < n; k++ ) {
+
+        object *pObject = pop();
+
+        push(pArray);
+        push(new (CurrentObjectHeap()) object(this,n - k - 1));
+        push(pObject);
+
+        operatorPut();
+
+    }
    
-   array *pArray = reinterpret_cast<array *>(top());
+    push(pArray);
 
-   operatorLength();
-
-   object *pCount = pop();
-
-   long n = pCount -> IntValue();
-
-   for ( long k = 0; k < n; k++ ) {
-
-      object *pObject = pop();
-
-      push(pArray);
-      push(new (CurrentObjectHeap()) object(this,n - k - 1));
-      push(pObject);
-
-      operatorPut();
-
-   }
-   
-   push(pArray);
-
-   return;
-   }
+    return;
+    }
 
 
    void job::operatorAwidthshow() {
@@ -292,91 +295,90 @@
    }
 
 
-   void job::operatorBegin() {
+    void job::operatorBegin() {
 
 /*
-   begin 
-      dict begin –
+    begin 
+        dict begin –
 
-   pushes dict on the dictionary stack, making it the current dictionary and installing
-   it as the first of the dictionaries consulted during implicit name lookup and by
-   def, load, store, and where.
+    pushes dict on the dictionary stack, making it the current dictionary and installing
+    it as the first of the dictionaries consulted during implicit name lookup and by
+    def, load, store, and where.
 
-   Errors: dictstackoverflow, invalidaccess, stackunderflow, typecheck
+    Errors: dictstackoverflow, invalidaccess, stackunderflow, typecheck
 */
 
-   object *pDictionary = pop();
+    object *pObj = pop();
 
-   if ( object::dictionary == pDictionary -> ObjectType() || object::font == pDictionary -> ObjectType() ) {
-      dictionaryStack.push(reinterpret_cast<dictionary *>(pDictionary));
-      return;
-   }
+    if ( ! ( object::dictionary == pObj -> ObjectType() ) && ! ( object::font == pObj -> ObjectType() ) ) {
+        char szMessage[1024];
+        sprintf(szMessage,"operator begin: object %s is not a dictionary",pObj -> Name());
+        throw typecheck(szMessage);
+        return;
+    }
 
-   char szMessage[1024];
-   sprintf(szMessage,"operator begin: object %s is not a dictionary",pDictionary -> Name());
-   throw typecheck(szMessage);
+    dictionary *pDictionary = reinterpret_cast<dictionary *>(pObj);
 
-   return;
-   }
+    dictionaryStack.setCurrent(pDictionary);
+
+    return;
+    }
 
 
-   void job::operatorBind() {
+    void job::operatorBind() {
 /*
-   bind 
-      proc bind proc
+    bind 
+        proc bind proc
 
-   replaces executable operator names in proc by their values. For each element of
-   proc that is an executable name, bind looks up the name in the context of the current
-   dictionary stack as if by the load operator. If the name is found and its value
-   is an operator object, bind replaces the name with the operator in proc. If the
-   name is not found or its value is not an operator, bind does not make a change.
+    replaces executable operator names in proc by their values. For each element of
+    proc that is an executable name, bind looks up the name in the context of the current
+    dictionary stack as if by the load operator. If the name is found and its value
+    is an operator object, bind replaces the name with the operator in proc. If the
+    name is not found or its value is not an operator, bind does not make a change.
 
-   For each procedure object contained within proc, bind applies itself recursively to
-   that procedure, makes the procedure read-only, and stores it back into proc. bind
-   applies to both arrays and packed arrays, but it treats their access attributes differently.
-   It will ignore a read-only array; that is, it will neither bind elements of the
-   array nor examine nested procedures. On the other hand, bind will operate on a
-   packed array (which always has read-only or even more restricted access), disregarding
-   its access attribute. No error occurs in either case.
+    For each procedure object contained within proc, bind applies itself recursively to
+    that procedure, makes the procedure read-only, and stores it back into proc. bind
+    applies to both arrays and packed arrays, but it treats their access attributes differently.
+    It will ignore a read-only array; that is, it will neither bind elements of the
+    array nor examine nested procedures. On the other hand, bind will operate on a
+    packed array (which always has read-only or even more restricted access), disregarding
+    its access attribute. No error occurs in either case.
 
-   The effect of bind is that all operator names in proc and in procedures nested
-   within proc to any depth become tightly bound to the operators themselves. During
-   subsequent execution of proc, the interpreter encounters the operators themselves
-   rather than their names. See Section 3.12, “Early Name Binding.”
+    The effect of bind is that all operator names in proc and in procedures nested
+    within proc to any depth become tightly bound to the operators themselves. During
+    subsequent execution of proc, the interpreter encounters the operators themselves
+    rather than their names. See Section 3.12, “Early Name Binding.”
 
-   In LanguageLevel 3, if the user parameter IdiomRecognition is true, then after replacing
-   executable names with operators, bind compares proc with every template
-   procedure defined in instances of the IdiomSet resource category. If it finds a
-   match, it returns the associated substitute procedure. See Section 3.12.1, “bind
-   Operator.”
+    In LanguageLevel 3, if the user parameter IdiomRecognition is true, then after replacing
+    executable names with operators, bind compares proc with every template
+    procedure defined in instances of the IdiomSet resource category. If it finds a
+    match, it returns the associated substitute procedure. See Section 3.12.1, “bind
+    Operator.”
 */
 
-   // Not implemented yet. Instead - procedures will be properly resolved during 
-   // execution time. That logic should then help in implementing this operator.
+    procedure *pProcedure = reinterpret_cast<procedure *>(pop());
 
-   procedure *pProcedure = reinterpret_cast<procedure *>(pop());
+    pProcedure -> bind();
 
-   pProcedure -> bind();
+    push(pProcedure);
 
-   push(pProcedure);
+    return;
+    }
 
-   return;
-   }
-
-   void job::operatorCleartomark() {
+    void job::operatorCleartomark() {
 /*
-   cleartomark 
-      mark obj1 … objn cleartomark –
+    cleartomark 
+        mark obj1 … objn cleartomark –
 
-   pops entries from the operand stack repeatedly until it encounters a mark, which
-   it also pops from the stack. obj1 through objn are any objects other than marks.
+    pops entries from the operand stack repeatedly until it encounters a mark, which
+    it also pops from the stack. obj1 through objn are any objects other than marks.
 */
-   while ( object::mark != top() -> ObjectType() ) {
-      pop();
-   }
-   pop();
-   return;
-   }
+    while ( ! ( object::mark == top() -> ObjectType() ) ) {
+        pop();
+    }
+    pop();
+    return;
+    }
 
    void job::operatorClosepath() {
 /*
@@ -395,141 +397,134 @@
    return;
    }
 
-   void job::operatorConcat() {
+    void job::operatorConcat() {
 /*
-   concat 
-      matrix concat –
+    concat 
+        matrix concat –
 
-   applies the transformation represented by matrix to the user coordinate space.
-   concat accomplishes this by concatenating matrix with the current transformation
-   matrix (CTM); that is, it replaces the CTM with the matrix product matrix ´ CTM
-   (see Section 4.3, “Coordinate Systems and Transformations”).
+    applies the transformation represented by matrix to the user coordinate space.
+    concat accomplishes this by concatenating matrix with the current transformation
+    matrix (CTM); that is, it replaces the CTM with the matrix product matrix ´ CTM
+    (see Section 4.3, “Coordinate Systems and Transformations”).
 */
-   graphicsStateStack.current() -> concat(reinterpret_cast<matrix *>(pop()));
-   return;
-   }
+    graphicsStateStack.current() -> concat(reinterpret_cast<matrix *>(pop()));
+    return;
+    }
 
-   void job::operatorCopy() {
+    void job::operatorCopy() {
 /*
-   copy 
+    copy 
 
-      any1 … anyn n copy any1 … anyn any1 … anyn
+        any1 … anyn n copy any1 … anyn any1 … anyn
 
-      array1 array2 copy subarray2
-      dict1 dict2 copy dict2
-      string1 string2 copy substring2
-      packedarray1 array2 copy subarray2
-      gstate1 gstate2 copy gstate2
+        array1 array2 copy subarray2
+        dict1 dict2 copy dict2
+        string1 string2 copy substring2
+        packedarray1 array2 copy subarray2
+        gstate1 gstate2 copy gstate2
 
-   performs two entirely different functions, depending on the type of the topmost
-   operand.
+    performs two entirely different functions, depending on the type of the topmost
+    operand.
 
-   In the first form, where the top element on the operand stack is a nonnegative integer
-   n, copy pops n from the stack and duplicates the top n elements on the stack
-   as shown above. This form of copy operates only on the objects themselves, not
-   on the values of composite objects.
+    In the first form, where the top element on the operand stack is a nonnegative integer
+    n, copy pops n from the stack and duplicates the top n elements on the stack
+    as shown above. This form of copy operates only on the objects themselves, not
+    on the values of composite objects.
 
-   Examples
+    Examples
 
-      (a) (b) (c) 2 copy => (a) (b) (c) (b) (c)
-      (a) (b) (c) 0 copy => (a) (b) (c)
+        (a) (b) (c) 2 copy => (a) (b) (c) (b) (c)
+        (a) (b) (c) 0 copy => (a) (b) (c)
    
-   In the other forms, copy copies all the elements of the first composite object into
-   the second. The composite object operands must be of the same type, except that
-   a packed array can be copied into an array (and only into an array—copy cannot
-   copy into packed arrays, because they are read-only). This form of copy copies the
-   value of a composite object. This is quite different from dup and other operators
-   that copy only the objects themselves (see Section 3.3.1, “Simple and Composite
-   Objects”). However, copy performs only one level of copying. It does not apply
-   recursively to elements that are themselves composite objects; instead, the values
-   of those elements become shared.
+    In the other forms, copy copies all the elements of the first composite object into
+    the second. The composite object operands must be of the same type, except that
+    a packed array can be copied into an array (and only into an array—copy cannot
+    copy into packed arrays, because they are read-only). This form of copy copies the
+    value of a composite object. This is quite different from dup and other operators
+    that copy only the objects themselves (see Section 3.3.1, “Simple and Composite
+    Objects”). However, copy performs only one level of copying. It does not apply
+    recursively to elements that are themselves composite objects; instead, the values
+    of those elements become shared.
 
-   In the case of arrays or strings, the length of the second object must be at least as
-   great as the first; copy returns the initial subarray or substring of the second operand
-   into which the elements were copied. Any remaining elements of array2 or
-   string2 are unaffected.
+    In the case of arrays or strings, the length of the second object must be at least as
+    great as the first; copy returns the initial subarray or substring of the second operand
+    into which the elements were copied. Any remaining elements of array2 or
+    string2 are unaffected.
 
-   In the case of dictionaries, LanguageLevel 1 requires that dict2 have a length (as returned
-   by the length operator) of 0 and a maximum capacity (as returned by the
-   maxlength operator) at least as great as the length of dict1. LanguageLevels 2 and 3
-   do not impose this restriction, since dictionaries can expand when necessary.
-   The literal/executable and access attributes of the result are normally the same as
-   those of the second operand. However, in LanguageLevel 1 the access attribute of
-   dict2 is copied from that of dict1.
+    In the case of dictionaries, LanguageLevel 1 requires that dict2 have a length (as returned
+    by the length operator) of 0 and a maximum capacity (as returned by the
+    maxlength operator) at least as great as the length of dict1. LanguageLevels 2 and 3
+    do not impose this restriction, since dictionaries can expand when necessary.
+    The literal/executable and access attributes of the result are normally the same as
+    those of the second operand. However, in LanguageLevel 1 the access attribute of
+    dict2 is copied from that of dict1.
 
-   If the value of the destination object is in global VM and any of the elements copied
-   from the source object are composite objects whose values are in local VM, an
-   invalidaccess error occurs (see Section 3.7.2, “Local and Global VM”).
+    If the value of the destination object is in global VM and any of the elements copied
+    from the source object are composite objects whose values are in local VM, an
+    invalidaccess error occurs (see Section 3.7.2, “Local and Global VM”).
 
-   Example
+    Example
 
-      /a1 [1 2 3] def
-      a1 dup length array copy => [1 2 3]
+        /a1 [1 2 3] def
+        a1 dup length array copy => [1 2 3]
       
-   Errors: invalidaccess, rangecheck, stackoverflow, stackunderflow, typecheck
-   See Also: dup, get, put, putinterval
+    Errors: invalidaccess, rangecheck, stackoverflow, stackunderflow, typecheck
+    See Also: dup, get, put, putinterval
 */
 
-   object *pTop = top();
+    object *pTop = top();
 
-   if ( object::number == pTop -> ObjectType() && object::integer == pTop -> ValueType() && pTop -> IntValue() >= 0 ) {
+    if ( object::number == pTop -> ObjectType() && object::integer == pTop -> ValueType() && pTop -> IntValue() >= 0 ) {
 
-      pTop = pop();
+        pTop = pop();
 
-      long n = pTop -> IntValue();
+        long n = pTop -> IntValue();
 
-      std::list<object *> entries;
+        std::list<object *> entries;
 
-      for ( long k = 0; k < n; k++ )
-         entries.insert(entries.end(),pop());
+        for ( long k = 0; k < n; k++ )
+            entries.insert(entries.end(),pop());
 
-      for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
-         push(*it);
+        for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
+            push(*it);
 
-      for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
-         push(*it);
+        for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
+            push(*it);
 
-      entries.clear();
-   
-      return;
+        entries.clear();
 
-   }
+        return;
 
-   switch ( pTop -> ObjectType() ) {
+    }
 
-   case object::dictionary: {
-      dictionary *pTarget = reinterpret_cast<dictionary *>(pop());
-      dictionary *pSource = reinterpret_cast<dictionary *>(pop());
+    switch ( pTop -> ObjectType() ) {
 
-      long n = pSource -> size();
+    case object::dictionary: {
+        dictionary *pTarget = reinterpret_cast<dictionary *>(pop());
+        pTarget -> copyFrom(reinterpret_cast<dictionary *>(pop()));
+        push(pTarget);
+        }
+        break;
 
-      for ( long k = 0; k < n; k++ ) 
-         pTarget -> put(pSource -> getKey(k),pSource -> retrieve(pSource -> getKey(k)));
+    default:
+        __debugbreak();
+        break;
+    }
 
-      push(pTarget);
+    return;
+    }
 
-      }
-      break;
-
-   default:
-      __debugbreak();
-      break;
-   }
-
-   return;
-   }
-
-   void job::operatorCountdictstack() {
+    void job::operatorCountdictstack() {
 /*
-   countdictstack 
-      – countdictstack int
+    countdictstack 
+        – countdictstack int
 
-   counts the number of dictionaries currently on the dictionary stack and pushes
-   this count on the operand stack.
+    counts the number of dictionaries currently on the dictionary stack and pushes
+    this count on the operand stack.
 */
-   push(new (CurrentObjectHeap()) object(this,(long)dictionaryStack.size()));
-   return;
-   }
+    push(new (CurrentObjectHeap()) object(this,(long)dictionaryStack.size()));
+    return;
+    }
 
 
    void job::operatorCounttomark() {
@@ -561,19 +556,40 @@
    return;
    }
 
-   void job::operatorCurrentdict() {
+    void job::operatorCurrentdict() {
 /*
-   currentdict 
-      – currentdict dict
+    currentdict 
+        – currentdict dict
 
-   pushes the current dictionary (the dictionary on the top of the dictionary stack)
-   on the operand stack. currentdict does not pop the dictionary stack; it just pushes
-   a duplicate of its top element on the operand stack.
+    pushes the current dictionary (the dictionary on the top of the dictionary stack)
+    on the operand stack. currentdict does not pop the dictionary stack; it just pushes
+    a duplicate of its top element on the operand stack.
 
 */
-   push(dictionaryStack.top());
-   return;
-   }
+    push(dictionaryStack.top());
+    return;
+    }
+
+    void job::operatorCurrentfont() {
+
+/*
+    currentfont – currentfont font
+    – currentfont cidfont
+
+    returns the current font or CIDFont dictionary, based on the font parameter in
+    the graphics state. Normally, currentfont returns the value of the font parameter,
+    as set by setfont or selectfont (and also returned by rootfont). However, when the
+    font parameter denotes a composite font, and currentfont is executed inside the
+    BuildGlyph, BuildChar, or CharStrings procedure of a descendant base font or
+    CIDFont (or inside a procedure invoked by cshow), currentfont returns the current 
+    descendant base font or CIDFont. (Of course, if the procedure calls setfont
+    or selectfont first, rootfont and currentfont both return the newly selected font.)
+
+    Errors: stackoverflow
+    See Also: rootfont, selectfont, setfont
+*/
+    return;
+    }
 
    void job::operatorCurrentglobal() {
 /*
@@ -589,50 +605,50 @@
    return;
    }
 
-   void job::operatorCurrentmatrix() {
+    void job::operatorCurrentmatrix() {
 /*
-   currentmatrix 
-      matrix currentmatrix matrix
+    currentmatrix 
+        matrix currentmatrix matrix
 
-   replaces the value of matrix with the current transformation matrix (CTM) in the
-   graphics state and pushes this modified matrix back on the operand stack (see
-   Section 4.3.2, “Transformations”).
+    replaces the value of matrix with the current transformation matrix (CTM) in the
+    graphics state and pushes this modified matrix back on the operand stack (see
+    Section 4.3.2, “Transformations”).
 */
 
-   return;
-   }
+    return;
+    }
 
-   void job::operatorCurrentscreen() {
+    void job::operatorCurrentscreen() {
 /*
-   currentscreen 
-         currentscreen frequency angle proc
-         currentscreen frequency angle halftone (LanguageLevel 2)
+    currentscreen 
+            currentscreen frequency angle proc
+            currentscreen frequency angle halftone (LanguageLevel 2)
 
-   returns the frequency, angle, and spot function of the current halftone screen parameter
-   in the graphics state (see Section 7.4, “Halftones”), assuming that the
-   halftone was established via the setscreen operator. If setcolorscreen was used instead,
-   the values returned describe the screen for the gray color component only.
-   If the current halftone was defined via the sethalftone operator, currentscreen returns
-   a halftone dictionary describing its properties in place of the spot function.
+    returns the frequency, angle, and spot function of the current halftone screen parameter
+    in the graphics state (see Section 7.4, “Halftones”), assuming that the
+    halftone was established via the setscreen operator. If setcolorscreen was used instead,
+    the values returned describe the screen for the gray color component only.
+    If the current halftone was defined via the sethalftone operator, currentscreen returns
+    a halftone dictionary describing its properties in place of the spot function.
 
-   For type 1 halftone dictionaries, the values returned for frequency and angle are
-   taken from the dictionary’s Frequency and Angle entries; for all other halftone
-   types, currentscreen returns a frequency of 60 and an angle of 0.
+    For type 1 halftone dictionaries, the values returned for frequency and angle are
+    taken from the dictionary’s Frequency and Angle entries; for all other halftone
+    types, currentscreen returns a frequency of 60 and an angle of 0.
 
-   Errors: stackoverflow
-   See Also: setscreen, setcolorscreen,
+    Errors: stackoverflow
+    See Also: setscreen, setcolorscreen,
 */
 
-   push(pTrueConstant);
-   push(pTrueConstant);
-   push(pTrueConstant);
+    push(pTrueConstant);
+    push(pTrueConstant);
+    push(pTrueConstant);
 
-   pPStoPDF -> queueLog("\n");
-   pPStoPDF -> queueLog("NOT IMPLEMENTED: currentscreen");
-   pPStoPDF -> queueLog("\n");
+    pPStoPDF -> queueLog("\n");
+    pPStoPDF -> queueLog("NOT IMPLEMENTED: currentscreen");
+    pPStoPDF -> queueLog("\n");
    
-   return;
-   }
+    return;
+    }
 
 
    void job::operatorCurveto() {
@@ -676,21 +692,21 @@
    return;
    }
 
-   void job::operatorCvi() {
+    void job::operatorCvi() {
 /*
-   cvi 
-      num cvi int
-      string cvi int
+    cvi 
+        num cvi int
+        string cvi int
 
-   (convert to integer) takes an integer, real, or string object from the stack and
-   produces an integer result. If the operand is an integer, cvi simply returns it. If the
-   operand is a real number, it truncates any fractional part (that is, rounds it toward
-   0) and converts it to an integer. If the operand is a string, cvi invokes the equivalent
-   of the token operator to interpret the characters of the string as a number
-   according to the PostScript syntax rules. If that number is a real number, cvi converts
-   it to an integer. A rangecheck error occurs if a real number is too large to
-   convert to an integer. (See the round, truncate, floor, and ceiling operators, which
-   remove fractional parts without performing type conversion.)
+    (convert to integer) takes an integer, real, or string object from the stack and
+    produces an integer result. If the operand is an integer, cvi simply returns it. If the
+    operand is a real number, it truncates any fractional part (that is, rounds it toward
+    0) and converts it to an integer. If the operand is a string, cvi invokes the equivalent
+    of the token operator to interpret the characters of the string as a number
+    according to the PostScript syntax rules. If that number is a real number, cvi converts
+    it to an integer. A rangecheck error occurs if a real number is too large to
+    convert to an integer. (See the round, truncate, floor, and ceiling operators, which
+    remove fractional parts without performing type conversion.)
 */
 
 //
@@ -698,83 +714,120 @@
 //If it is (originally) a real number, this may mean that it's value is something like 2.016 (?) or 20.16 ?
 //But typically real -> integer conversion would end up with 2 or 20 in this case.
 //
-   object *pTop = pop();
-   if ( object::number == pTop -> ObjectType() ) {
-      if ( object::integer == pTop -> ValueType() || object::radix == pTop -> ValueType() )
-         push(new (CurrentObjectHeap()) object(this,pTop -> IntValue()));
-      else
-         push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
-   } else
-      push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
-   return;
-   }
+    object *pTop = pop();
+    if ( object::number == pTop -> ObjectType() ) {
+        if ( object::integer == pTop -> ValueType() || object::radix == pTop -> ValueType() )
+            push(new (CurrentObjectHeap()) object(this,pTop -> IntValue()));
+        else
+            push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
+    } else
+        push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
+    return;
+    }
 
-   void job::operatorCvn() {
+    void job::operatorCvn() {
 /*
-   cvn 
-      string cvn name
+    cvn 
+        string cvn name
 
-   (convert to name) converts the string operand to a name object that is lexically
-   the same as the string. The name object is executable if the string was executable.
-*/
-//
-// TODO: It is not clear what "executable" means at this time
-//
-   object *pTop = pop();
-
-   long n = (DWORD)strlen(pTop -> Name()) + 2;
-   char *pszTemp = new char[n];
-
-   sprintf(pszTemp,"/%s",pTop -> Name());
-
-   push(new (CurrentObjectHeap()) string(this,pszTemp));
-
-   delete [] pszTemp;
-
-   return;
-   }
-
-   void job::operatorCvr() {
-/*
-   cvr 
-      num cvr real
-      string cvr real
-
-   (convert to real) takes an integer, real, or string object and produces a real result.
-
-   If the operand is an integer, cvr converts it to a real number. If the operand is a
-   real number, cvr simply returns it. If the operand is a string, cvr invokes the equivalent
-   of the token operator to interpret the characters of the string as a number
-   according to the PostScript syntax rules. If that number is an integer, cvr converts
-   it to a real number.
-
-   Errors: invalidaccess, limitcheck, stackunderflow, syntaxerror, typecheck,undefinedresult
+    (convert to name) converts the string operand to a name object that is lexically
+    the same as the string. The name object is executable if the string was executable.
 */
 
-   object *pTop = pop();
-   if ( object::number == pTop -> ObjectType() )
-      push(new (CurrentObjectHeap()) object(this,pTop -> DoubleValue()));
-   else
-      push(new (CurrentObjectHeap()) object(this,atof(pTop -> Contents())));
-   return;
-   }
+    object *pTop = pop();
 
+    long n = (DWORD)strlen(pTop -> Name()) + 2;
 
-   void job::operatorCvx() {
+    char *pszTemp = new char[n];
+
+    sprintf(pszTemp,"/%s",pTop -> Name());
+
+    push(new (CurrentObjectHeap()) string(this,pszTemp));
+
+    delete [] pszTemp;
+
+    return;
+    }
+
+    void job::operatorCvr() {
 /*
-   cvx 
-      any cvx any
+    cvr 
+        num cvr real
+        string cvr real
 
-   (convert to executable) makes the object on the top of the operand stack have the
-   executable instead of the literal attribute.
+    (convert to real) takes an integer, real, or string object and produces a real result.
+
+    If the operand is an integer, cvr converts it to a real number. If the operand is a
+    real number, cvr simply returns it. If the operand is a string, cvr invokes the equivalent
+    of the token operator to interpret the characters of the string as a number
+    according to the PostScript syntax rules. If that number is an integer, cvr converts
+    it to a real number.
+
+    Errors: invalidaccess, limitcheck, stackunderflow, syntaxerror, typecheck,undefinedresult
 */
-   return;
-   }
 
-   void job::operatorDebug() {
-   __debugbreak();
-   return;
-   }
+    object *pTop = pop();
+    if ( object::number == pTop -> ObjectType() )
+        push(new (CurrentObjectHeap()) object(this,pTop -> DoubleValue()));
+    else
+        push(new (CurrentObjectHeap()) object(this,atof(pTop -> Contents())));
+    return;
+    }
+
+    void job::operatorCvs() {
+/*
+    cvs
+        any string cvs substring
+
+    (convert to string) produces a text representation of an arbitrary object any, stores
+    the text into string (overwriting some initial portion of its value), and returns a
+    string object designating the substring actually used. If string is too small to hold
+    the result of the conversion, a rangecheck error occurs.
+
+    If any is a number, cvs produces a string representation of that number. If any is a
+    boolean value, cvs produces either the string true or the string false. If any is a
+    string, cvs copies its contents into string. If any is a name or an operator, cvs pro-
+    duces the text representation of that name or the operator’s name. If any is any
+    other type, cvs produces the text --nostringval--.
+
+    If any is a real number, the precise format of the result string is implementation
+    dependent and not under program control. For example, the value 0.001 might be
+    represented as 0.001 or as 1.0E-3.
+*/
+
+    object *pTop = pop();
+
+    if ( object::number == pTop -> ObjectType() ) {
+        char szNumber[64];
+        if ( object::valueType::real == pTop -> ValueType() )
+            sprintf_s<64>(szNumber,"%g",pTop -> FloatValue());
+        else
+            sprintf_s<64>(szNumber,"%ld",pTop -> IntValue());
+        push(new (CurrentObjectHeap()) literal(this,szNumber,NULL));
+    } else
+        push(new (CurrentObjectHeap()) literal(this,pTop -> Contents(),NULL));
+
+    return;
+    }
+
+    void job::operatorCvx() {
+/*
+    cvx 
+        any cvx any
+
+    (convert to executable) makes the object on the top of the operand stack have the
+    executable instead of the literal attribute.
+*/
+
+    top() -> theExecutableAttribute = object::executableAttribute::executable;
+
+    return;
+    }
+
+    void job::operatorDebug() {
+    __debugbreak();
+    return;
+    }
 
    void job::operatorDef() {
 /*
@@ -794,233 +847,214 @@
    object *pValue = pop();
    object *pKey = pop();
 
-   dictionary *pDictionary = dictionaryStack.top();
-
-   pDictionary -> insert(pKey -> Name(),pValue);
+   dictionaryStack.top() -> put(pKey -> Name(),pValue);
 
 #if 0
-   push(pValue);
+   if ( ( object::dictionary == pValue -> ObjectType() || object::font == pValue -> ObjectType() ) && NULL == pValue -> Name() )
+      pValue -> Name(pKey -> Name());
 
-   operatorWhere();
-
-   if ( top() == pFalseConstant ) {
-      pop();
-   } else {
-      pop();
-      dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
-      pValue = pDictionary -> retrieve(pValue -> Name());
-   }
-
-   pValue -> Name(pKey -> Name());
-   dictionaryStack.top() -> insert(pKey -> Name(),pValue);
+   if ( object::procedure == pValue -> ObjectType() && NULL == pValue -> Name() )
+      pValue -> Name(pKey -> Name());
 #endif
-
    return;
    }
 
-   void job::operatorDefinefont() {
+    void job::operatorDefinefont() {
 /*
 
-   definefont 
-      key font definefont font
-      key cidfont definefont cidfont
+    definefont 
+        key font definefont font
+        key cidfont definefont cidfont
 
-   registers font or cidfont in the Font resource category as an instance associated with
-   key (usually a name). definefont first checks that font or cidfont is a well-formed
-   dictionary—in other words, that it contains all entries required in that type of dictionary.
-   It inserts an additional entry whose key is FID and whose value is an object
-   of type fontID. It makes the dictionary’s access read-only. Finally, it associates
-   key with font or cidfont in the font directory.
+    registers font or cidfont in the Font resource category as an instance associated with
+    key (usually a name). definefont first checks that font or cidfont is a well-formed
+    dictionary—in other words, that it contains all entries required in that type of dictionary.
+    It inserts an additional entry whose key is FID and whose value is an object
+    of type fontID. It makes the dictionary’s access read-only. Finally, it associates
+    key with font or cidfont in the font directory.
 
-   definefont distinguishes between a CIDFont and a font by the presence or absence
-   of a CIDFontType entry. If the operand is a CIDFont, definefont also inserts a
-   FontType entry with an appropriate value (see Table 5.11 on page 370).
+    definefont distinguishes between a CIDFont and a font by the presence or absence
+    of a CIDFontType entry. If the operand is a CIDFont, definefont also inserts a
+    FontType entry with an appropriate value (see Table 5.11 on page 370).
 
-   If the operand is a composite font (see Section 5.10, “Composite Fonts”),
-   definefont inserts the entries EscChar, ShiftIn, and ShiftOut if they are not present
-   but are required; it may also insert the implementation-dependent entries
-   PrefEnc, MIDVector, and CurMID. All the descendant fonts must have been
-   registered by definefont previously; descendant CIDFonts must have been either
-   registered by definefont or defined as CIDFont resource instances (with defineresource).
+    If the operand is a composite font (see Section 5.10, “Composite Fonts”),
+    definefont inserts the entries EscChar, ShiftIn, and ShiftOut if they are not present
+    but are required; it may also insert the implementation-dependent entries
+    PrefEnc, MIDVector, and CurMID. All the descendant fonts must have been
+    registered by definefont previously; descendant CIDFonts must have been either
+    registered by definefont or defined as CIDFont resource instances (with defineresource).
 
-   In LanguageLevel 1, the dictionary must be large enough to accommodate all of
-   the additional entries inserted by definefont. The font must not have been registered
-   previously, and an FID entry must not be present.
+    In LanguageLevel 1, the dictionary must be large enough to accommodate all of
+    the additional entries inserted by definefont. The font must not have been registered
+    previously, and an FID entry must not be present.
 
-   In LanguageLevels 2 and 3, a Font resource instance can be associated with more
-   than one key. If font or cidfont has already been registered, definefont does not
-   alter it in any way.
+    In LanguageLevels 2 and 3, a Font resource instance can be associated with more
+    than one key. If font or cidfont has already been registered, definefont does not
+    alter it in any way.
 
-   Subsequent invocation of findfont with key will return the same resource instance.
-   Font registration is subject to the normal semantics of virtual memory (see
-   Section 3.7, “Memory Management”). In particular, the lifetime of the definition
-   depends on the VM allocation mode at the time definefont is executed. A local
-   definition can be undone by a subsequent restore operation.
+    Subsequent invocation of findfont with key will return the same resource instance.
+    Font registration is subject to the normal semantics of virtual memory (see
+    Section 3.7, “Memory Management”). In particular, the lifetime of the definition
+    depends on the VM allocation mode at the time definefont is executed. A local
+    definition can be undone by a subsequent restore operation.
 
-   definefont is actually a special case of defineresource operating on the Font category.
+    definefont is actually a special case of defineresource operating on the Font category.
 
-   For details, see defineresource and Section 3.9, “Named Resources.”
+    For details, see defineresource and Section 3.9, “Named Resources.”
 
-   Errors: dictfull, invalidaccess, invalidfont, limitcheck, rangecheck,stackunderflow, typecheck
-   See Also: makefont, scalefont, setfont, defineresource, FontDirectory,GlobalFontDirectory, setglobal
+    Errors: dictfull, invalidaccess, invalidfont, limitcheck, rangecheck,stackunderflow, typecheck
+    See Also: makefont, scalefont, setfont, defineresource, FontDirectory,GlobalFontDirectory, setglobal
 */
 
-   object *po = pop();
-   object *pKey = pop();
+    object *po = pop();
+    object *pKey = pop();
 
-   switch ( po -> ObjectType() ) {
+    font *pFont = NULL;
 
-   case object::font: {
-      font *pFont = reinterpret_cast<font *>(po);
-      pFont -> Name(pKey -> Name());
-      pFont -> insert("FID",pKey);
-      }
-      break;
+    if ( object::font == po -> ObjectType() ) 
+        pFont = reinterpret_cast<font *>(po);
+    else
+        pFont = new (CurrentObjectHeap()) font(this,reinterpret_cast<dictionary *>(po));
 
-   case object::dictionary: {
-      dictionary *pDictionary = reinterpret_cast<dictionary *>(po);
-      pDictionary -> Name(pKey -> Name());
-      pDictionary -> insert("FID",pKey);
-      }
-      break;
+    dictionary *pDictionary = static_cast<dictionary *>(pFont);
 
-   default:
-      __debugbreak();
-      break;
-   }
+    pDictionary -> Name(pKey -> Name());
+    pDictionary -> put("FID",pKey);
 
-   push(po);
+    pFont -> SetCIDFont(pDictionary -> exists("CIDFontType"));
 
-   return;
-   }
+    pFontDirectory -> put(pKey -> Name(),pDictionary);
+
+    push(pFont);
+
+    return;
+    }
 
 
-   void job::operatorDefineresource() {
+    void job::operatorDefineresource() {
 /*
-   defineresource 
-      key instance category defineresource instance
+    defineresource 
+        key instance category defineresource instance
 
-   associates a resource instance with a resource name in a specified category.
-   category is a name object that identifies a resource category, such as Font (see
-   Section 3.9.2, “Resource Categories”). key is a name or string object that will be
-   used to identify the resource instance. (Names and strings are interchangeable;
-   other types of keys are permitted but are not recommended.) instance is the resource
-   instance itself; its type must be appropriate to the resource category.
+    associates a resource instance with a resource name in a specified category.
+    category is a name object that identifies a resource category, such as Font (see
+    Section 3.9.2, “Resource Categories”). key is a name or string object that will be
+    used to identify the resource instance. (Names and strings are interchangeable;
+    other types of keys are permitted but are not recommended.) instance is the resource
+    instance itself; its type must be appropriate to the resource category.
 
-   Before defining the resource instance, defineresource verifies that the instance object
-   is the correct type. Depending on the resource category, it may also perform
-   additional validation of the object and may have other side effects (see
-   Section 3.9.2); these side effects are determined by the DefineResource procedure
-   in the category implementation dictionary. Finally, defineresource makes the object
-   read-only if its access is not already restricted.
+    Before defining the resource instance, defineresource verifies that the instance object
+    is the correct type. Depending on the resource category, it may also perform
+    additional validation of the object and may have other side effects (see
+    Section 3.9.2); these side effects are determined by the DefineResource procedure
+    in the category implementation dictionary. Finally, defineresource makes the object
+    read-only if its access is not already restricted.
 
-   The lifetime of the definition depends on the VM allocation mode at the time
-   defineresource is executed. If the current VM allocation mode is local
-   (currentglobal returns false), the effect of defineresource is undone by the next
-   nonnested restore operation. If the current VM allocation mode is global
-   (currentglobal returns true), the effect of defineresource persists until global VM
-   is restored at the end of the job. If the current job is not encapsulated, the effect of
-   a global defineresource operation persists indefinitely, and may be visible to other
-   execution contexts.
+    The lifetime of the definition depends on the VM allocation mode at the time
+    defineresource is executed. If the current VM allocation mode is local
+    (currentglobal returns false), the effect of defineresource is undone by the next
+    nonnested restore operation. If the current VM allocation mode is global
+    (currentglobal returns true), the effect of defineresource persists until global VM
+    is restored at the end of the job. If the current job is not encapsulated, the effect of
+    a global defineresource operation persists indefinitely, and may be visible to other
+    execution contexts.
 
-   Local and global definitions are maintained separately. If a new resource instance
-   is defined with the same category and key as an existing one, the new definition
-   overrides the old one. The precise effect depends on whether the old definition is
-   local or global and whether the new definition (current VM allocation mode) is
-   local or global. There are two main cases:
+    Local and global definitions are maintained separately. If a new resource instance
+    is defined with the same category and key as an existing one, the new definition
+    overrides the old one. The precise effect depends on whether the old definition is
+    local or global and whether the new definition (current VM allocation mode) is
+    local or global. There are two main cases:
 
-      • The new definition is local. defineresource installs the new local definition,
-      replacing an existing local definition if there is one. If there is an existing global
-      definition, defineresource does not disturb it. However, the global definition is
-      obscured by the local one. If the local definition is later removed, the global
-      definition reappears.
+        • The new definition is local. defineresource installs the new local definition,
+        replacing an existing local definition if there is one. If there is an existing global
+        definition, defineresource does not disturb it. However, the global definition is
+        obscured by the local one. If the local definition is later removed, the global
+        definition reappears.
 
-      • The new definition is global. defineresource first removes an existing local definition
-      if there is one. It then installs the new global definition, replacing an
-      existing global definition if there is one.
-      defineresource can be used multiple times to associate a given resource instance
-      with more than one key.
+        • The new definition is global. defineresource first removes an existing local definition
+        if there is one. It then installs the new global definition, replacing an
+        existing global definition if there is one.
+        defineresource can be used multiple times to associate a given resource instance
+        with more than one key.
 
-   If the category name is unknown, an undefined error occurs. If the instance is of
-   the wrong type for the specified category, a typecheck error occurs. If the instance
-   is in local VM but the current VM allocation mode is global, an invalidaccess
-   error occurs; this is analogous to storing a local object into a global dictionary.
-   Other errors can occur for specific categories; for example, when dealing with the
-   Font or CIDFont category, defineresource may execute an invalidfont error.
+    If the category name is unknown, an undefined error occurs. If the instance is of
+    the wrong type for the specified category, a typecheck error occurs. If the instance
+    is in local VM but the current VM allocation mode is global, an invalidaccess
+    error occurs; this is analogous to storing a local object into a global dictionary.
+    Other errors can occur for specific categories; for example, when dealing with the
+    Font or CIDFont category, defineresource may execute an invalidfont error.
 */
 
-   object *pCategory = pop();
-   object *pInstance = pop();
-   object *pKey = pop();
+    object *pCategory = pop();
+    object *pInstance = pop();
+    object *pKey = pop();
 
-   resource *pResource = new (CurrentObjectHeap()) resource(this,pCategory,pInstance,pKey);
+    resource *pResource = new (CurrentObjectHeap()) resource(this,pCategory,pInstance,pKey);
 
-   resourceList.insert(resourceList.end(),pResource);
+    resourceList.insert(resourceList.end(),pResource);
 
-   push(pResource);
+    push(pResource);
 
-   return;
-   }
+    return;
+    }
 
-   void job::operatorDict() {
+    void job::operatorDict() {
 /*
-   dict 
-      int dict dict
+    dict 
+        int dict dict
 
-   creates an empty dictionary with an initial capacity of int elements and pushes the
-   created dictionary object on the operand stack. int is expected to be a nonnegative
-   integer. The dictionary is allocated in local or global VM according to the VM allocation
-   mode (see Section 3.7.2, “Local and Global VM”).
+    creates an empty dictionary with an initial capacity of int elements and pushes the
+    created dictionary object on the operand stack. int is expected to be a nonnegative
+    integer. The dictionary is allocated in local or global VM according to the VM allocation
+    mode (see Section 3.7.2, “Local and Global VM”).
 
-   In LanguageLevel 1, the resulting dictionary has a maximum capacity of int elements.
-   Attempting to exceed that limit causes a dictfull error.
+    In LanguageLevel 1, the resulting dictionary has a maximum capacity of int elements.
+    Attempting to exceed that limit causes a dictfull error.
 
-   In LanguageLevels 2 and 3, the int operand specifies only the initial capacity; the
-   dictionary can grow beyond that capacity if necessary. The dict operator immediately
-   consumes sufficient VM to hold int entries. If more than that number of entries
-   are subsequently stored in the dictionary, additional VM is consumed at that
-   time.
+    In LanguageLevels 2 and 3, the int operand specifies only the initial capacity; the
+    dictionary can grow beyond that capacity if necessary. The dict operator immediately
+    consumes sufficient VM to hold int entries. If more than that number of entries
+    are subsequently stored in the dictionary, additional VM is consumed at that
+    time.
 
-   There is a cost associated with expanding a dictionary beyond its initial allocation.
-   For efficiency reasons, a dictionary is expanded in chunks rather than one element
-   at a time, so it may contain a substantial amount of unused space. If a program
-   knows how large a dictionary it needs, it should create one of that size
-   initially. On the other hand, if a program cannot predict how large the dictionary
-   will eventually grow, it should choose a small initial allocation sufficient for its
-   immediate needs. The built-in writeable dictionaries (for example, userdict) follow
-   the latter convention.
+    There is a cost associated with expanding a dictionary beyond its initial allocation.
+    For efficiency reasons, a dictionary is expanded in chunks rather than one element
+    at a time, so it may contain a substantial amount of unused space. If a program
+    knows how large a dictionary it needs, it should create one of that size
+    initially. On the other hand, if a program cannot predict how large the dictionary
+    will eventually grow, it should choose a small initial allocation sufficient for its
+    immediate needs. The built-in writeable dictionaries (for example, userdict) follow
+    the latter convention.
 */
 
-   object *pCount = pop();
+    object *pCount = pop();
 
-   dictionary *pDictionary = new (CurrentObjectHeap()) dictionary(this,"unnamed");
+    dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,pCount -> IntValue());
 
-//   dictionaryList.insert(dictionaryList.end(),pDictionary);
+    push(pDict);
 
-   push(pDictionary);
+    return;
+    }
 
-   return;
-   }
-
-   void job::operatorDiv() {
+    void job::operatorDiv() {
 /*
-   div 
-      num1 num2 div quotient
+    div 
+        num1 num2 div quotient
 
-   divides num1 by num2, producing a result that is always a real number even if both
-   operands are integers. Use idiv instead if the operands are integers and an integer
-   result is desired.
+    divides num1 by num2, producing a result that is always a real number even if both
+    operands are integers. Use idiv instead if the operands are integers and an integer
+    result is desired.
 */
-   object *p2 = pop();
-   object *p1 = pop();
+    object *p2 = pop();
+    object *p1 = pop();
    
-   double v1 = p1 -> Value();
-   double v2 = p2 -> Value();
+    double v1 = p1 -> Value();
+    double v2 = p2 -> Value();
 
-   push(new (CurrentObjectHeap()) object(this,v1 / v2));
+    push(new (CurrentObjectHeap()) object(this,v1 / v2));
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorDtransform() {
 /*
@@ -1076,26 +1110,29 @@ useful for determining how distances map from user space to device space.
    }
 
 
-   void job::operatorEnd() {
+    void job::operatorEnd() {
 /*
-   end 
-      – end –
+    end 
+        – end –
 
-   pops the current dictionary off the dictionary stack, making the dictionary below
-   it the current dictionary. If end tries to pop the bottommost instance of userdict,
-   a dictstackunderflow error occurs.
+    pops the current dictionary off the dictionary stack, making the dictionary below
+    it the current dictionary. If end tries to pop the bottommost instance of userdict,
+    a dictstackunderflow error occurs.
 */
 
-   if ( 0 == dictionaryStack.size() ) {
-      char szMessage[1024];
-      sprintf(szMessage,"operator: end. An attempt was made to pop a dictionary off an empty dictionary stack");
-      throw dictstackunderflow(szMessage);
-   }
+    if ( 0 == dictionaryStack.size() ) {
+        char szMessage[1024];
+        sprintf(szMessage,"operator: end. An attempt was made to pop a dictionary off an empty dictionary stack");
+        throw dictstackunderflow(szMessage);
+    }
 
-dictionary *pDictionary =
-   dictionaryStack.pop();
-   return;
-   }
+    dictionary *pDictionary = dictionaryStack.pop();
+
+    //if ( dictionaryStack.pUserDict == pDictionary || dictionaryStack.pSystemDict == pDictionary ) 
+    //    dictionaryStack.setBottom(pDictionary);
+
+    return;
+    }
 
    
    void job::operatorEofill() {
@@ -1110,27 +1147,27 @@ dictionary *pDictionary =
    return;
    }
 
-   void job::operatorEq() {
+    void job::operatorEq() {
 /*
-   eq 
-      any1 any2 eq bool
+    eq 
+        any1 any2 eq bool
 
-   pops two objects from the operand stack and pushes true if they are equal, or false
-   if not. The definition of equality depends on the types of the objects being compared.
-   Simple objects are equal if their types and values are the same. Strings are
-   equal if their lengths and individual elements are equal. Other composite objects
-   (arrays and dictionaries) are equal only if they share the same value. Separate values
-   are considered unequal, even if all the components of those values are the
-   same.
+    pops two objects from the operand stack and pushes true if they are equal, or false
+    if not. The definition of equality depends on the types of the objects being compared.
+    Simple objects are equal if their types and values are the same. Strings are
+    equal if their lengths and individual elements are equal. Other composite objects
+    (arrays and dictionaries) are equal only if they share the same value. Separate values
+    are considered unequal, even if all the components of those values are the
+    same.
 
-   This operator performs some type conversions. Integers and real numbers can be
-   compared freely: an integer and a real number representing the same mathematical
-   value are considered equal by eq. Strings and names can likewise be compared
-   freely: a name defined by some sequence of characters is equal to a string whose
-   elements are the same sequence of characters.
+    This operator performs some type conversions. Integers and real numbers can be
+    compared freely: an integer and a real number representing the same mathematical
+    value are considered equal by eq. Strings and names can likewise be compared
+    freely: a name defined by some sequence of characters is equal to a string whose
+    elements are the same sequence of characters.
 
-   The literal/executable and access attributes of objects are not considered in comparisons
-   between objects.
+    The literal/executable and access attributes of objects are not considered in comparisons
+    between objects.
 */
    object *pAny2 = pop();
    object *pAny1 = pop();
@@ -1140,60 +1177,8 @@ dictionary *pDictionary =
       return;
    }
 
-   if ( pAny2 -> ObjectType() != pAny1 -> ObjectType() ) {
-
+   if ( ! ( pAny2 -> ObjectType() == pAny1 -> ObjectType() ) ) {
       push(pFalseConstant);
-
-//
-// NTC: !!!! It is unclear why the eq (or ne) operator is comparing FID to the literal 
-// numeric value 256 !!!!
-//
-#if 0
-      if ( pAny2 == pNullConstant || pAny1 == pNullConstant ) {
-         push(pFalseConstant);
-         return;
-      }
-
-      if ( pAny1 -> ObjectType() != object::number ) {
-
-         push(pAny1);
-
-         operatorWhere();
-
-         object *pIsFound = pop();
-
-         if ( pTrueConstant == pIsFound ) {
-            dictionary *pDict = reinterpret_cast<dictionary *>(pop());
-            push(pDict -> retrieve(pAny1 -> Name()));
-            push(pAny2);
-            return operatorEq();
-         }
-
-      }
-
-      if ( pAny2 -> ObjectType() != object::number ) {
-
-         push(pAny2);
-
-         operatorWhere();
-
-         object *pIsFound = pop();
-
-         if ( pTrueConstant == pIsFound ) {
-            dictionary *pDict = reinterpret_cast<dictionary *>(pop());
-            push(pAny1);
-            push(pDict -> retrieve(pAny2 -> Name()));
-            return operatorEq();
-         }
-
-      }
-
-_asm {
-int 3;
-}
-      push(pFalseConstant);
-#endif
-
       return;
    }
 
@@ -1220,17 +1205,32 @@ int 3;
 
       return;
 
+   case object::literal:
+      if ( 0 == strcmp(pAny1 -> Name(),pAny2 -> Name()) && strlen(pAny1 -> Name()) == strlen(pAny2 -> Name()) )
+         push(pTrueConstant);
+      else
+         push(pFalseConstant);
+      return;
+
    case object::dictionary: {
+
       if ( object::dictionary != pAny2 -> ObjectType() ) {
          push(pFalseConstant);
          return;
       }
+
       dictionary *pDict1 = reinterpret_cast<dictionary *>(pAny1);
       dictionary *pDict2 = reinterpret_cast<dictionary *>(pAny2);
       if ( pDict1 -> size() != pDict2 -> size() ) {
          push(pFalseConstant);
          return;
       }
+
+      if ( pDict1 -> hasSameEntries(pDict2) ) {
+         push(pFalseConstant);
+         return;
+      }
+#if 0
       long n = pDict1 -> size();
       for ( long k = 0; k < n; k++ ) {
          push(pDict1 -> retrieve(pDict1 -> getKey(k)));
@@ -1241,6 +1241,7 @@ int 3;
             return;
          }
       }
+#endif
       push(pTrueConstant);
       }
       return;
@@ -1258,8 +1259,8 @@ int 3;
       }
       long n = pDict1 -> size();
       for ( long k = 0; k < n; k++ ) {
-         push(pDict1 -> get(k));
-         push(pDict2 -> get(k));
+         push(pDict1 -> getElement(k));
+         push(pDict2 -> getElement(k));
          operatorEq();
          if ( pFalseConstant == pop() ) {
             push(pFalseConstant);
@@ -1279,72 +1280,105 @@ int 3;
    }
 
 
-   void job::operatorErrordict() {
+    void job::operatorErrordict() {
 /*
-   errordict 
-      – errordict dict
+    errordict 
+        – errordict dict
 
-   pushes the dictionary object errordict on the operand stack (see Section 3.11, “Errors”).
-   errordict is not an operator; it is a name in systemdict associated with the
-   dictionary object.
+    pushes the dictionary object errordict on the operand stack (see Section 3.11, “Errors”).
+    errordict is not an operator; it is a name in systemdict associated with the
+    dictionary object.
 */
-   push(pSystemDict -> retrieve("errordict"));
-   return;
-   }
+    push(pSystemDict -> retrieve("theErrordict"));
+    return;
+    }
 
-   void job::operatorExch() {
+    void job::operatorExch() {
 /*
-   exch 
-      any1 any2 exch any2 any1
+    exch 
+        any1 any2 exch any2 any1
 
-   exchanges the top two elements on the operand stack.
+    exchanges the top two elements on the operand stack.
 */
-   object *p2 = pop();
-   object *p1 = pop();
-   push(p2);
-   push(p1);
-   return;
-   }
+    object *p2 = pop();
+    object *p1 = pop();
+    push(p2);
+    push(p1);
+    return;
+    }
 
-   void job::operatorExec() {
+    void job::operatorExec() {
 /*
-   exec 
-      any exec –
+    exec 
+        any exec –
 
-   pushes the operand on the execution stack, executing it immediately. The effect of
-   executing an object depends on the object’s type and literal/executable attribute;
-   see Section 3.5, “Execution.” In particular, executing a literal object will cause it
-   only to be pushed back on the operand stack. Executing a procedure, however,
-   will cause the procedure to be called.
+    pushes the operand on the execution stack, executing it immediately. The effect of
+    executing an object depends on the object’s type and literal/executable attribute;
+    see Section 3.5, “Execution.” In particular, executing a literal object will cause it
+    only to be pushed back on the operand stack. Executing a procedure, however,
+    will cause the procedure to be called.
 
-      Examples
-         (3 2 add) cvx exec => 5
-         3 2 /add exec => 3 2 /add
-         3 2 /add cvx exec => 5
+        Examples
+            (3 2 add) cvx exec => 5
+            3 2 /add exec => 3 2 /add
+            3 2 /add cvx exec => 5
 
-   In the first example, the string 3 2 add is made executable and then executed. Executing
-   a string causes its characters to be scanned and interpreted according to the
-   PostScript language syntax rules.
+    In the first example, the string 3 2 add is made executable and then executed. Executing
+    a string causes its characters to be scanned and interpreted according to the
+    PostScript language syntax rules.
 
-   In the second example, the literal objects 3, 2, and /add are pushed on the operand
-   stack, then exec is applied to /add. Since /add is a literal name, executing it simply
-   causes it to be pushed back on the operand stack. The exec operator in this case
-   has no useful effect.
+    In the second example, the literal objects 3, 2, and /add are pushed on the operand
+    stack, then exec is applied to /add. Since /add is a literal name, executing it simply
+    causes it to be pushed back on the operand stack. The exec operator in this case
+    has no useful effect.
 
-   In the third example, the literal name /add on the top of the operand stack is
-   made executable by cvx. Applying exec to this executable name causes it to be
-   looked up and the add operation to be performed.
+    In the third example, the literal name /add on the top of the operand stack is
+    made executable by cvx. Applying exec to this executable name causes it to be
+    looked up and the add operation to be performed.
 */
-   object *pObject = top();
 
-   if ( object::procedure == pObject -> ObjectType() ) {
-      procedure *pProcedure = reinterpret_cast<procedure *>(pop());
-      pProcedure -> execute();
-   } else
-      execute();
+    /*
 
-   return;
-   }
+    This is incomplete. Right now, it only works to de-reference literals or strings that may
+    point to some procedure or operator in a dictionary.
+
+    Specifically, it would NOT correctly parse something like "(3 2 add)" that is
+    in the first example.
+
+    More precisely, it is the cvx operator that is incomplete. In the case of example 1,
+    that operator should have created something like a procedure.
+
+    */
+    object *pObject = top();
+
+    if ( ! ( object::executableAttribute::executable == pObject -> theExecutableAttribute ) )
+        return;
+
+    for ( long k = 0; k < 2; k++ ) {
+
+        if ( object::procedure == pObject -> ObjectType() ) {
+            pop();
+            reinterpret_cast<procedure *>(pObject) -> execute();
+            return;
+        }
+
+        if ( object::objectType::directExecutable == pObject -> ObjectType() ) {
+            pop();
+            directExec *pDirectExec = reinterpret_cast<directExec *>(pObject);
+            void (__thiscall job::*pOperator)() = pDirectExec -> Operator();
+            (this ->* pOperator)();
+            return;
+        }
+
+        resolve();
+
+        pObject = top();
+
+    }
+
+    return;
+    }
+
 
    void job::operatorExecuteonly() {
 /*
@@ -1435,205 +1469,183 @@ int 3;
    return;
    }
 
-   void job::operatorFindfont() {
+    void job::operatorFindfont() {
 /*
-   findfont 
+    findfont 
 
-      key findfont font
-      key findfont cidfont
+        key findfont font
+        key findfont cidfont
 
-   obtains a Font resource instance whose name is key and pushes the instance
-   (which may be a font or CIDFont dictionary) on the operand stack (see
-   Section 5.1, “Organization and Use of Fonts”). key may be a key previously passed
-   to definefont, in which case the Font resource instance associated with key (in the
-   font directory) is returned.
+    obtains a Font resource instance whose name is key and pushes the instance
+    (which may be a font or CIDFont dictionary) on the operand stack (see
+    Section 5.1, “Organization and Use of Fonts”). key may be a key previously passed
+    to definefont, in which case the Font resource instance associated with key (in the
+    font directory) is returned.
 
-   If the Font resource identified by key is not defined in virtual memory, findfont
-   takes an action that varies according to the environment in which the PostScript
-   interpreter is operating. In some environments, findfont may attempt to read a
-   font definition from an external source, such as a file. In other environments,
-   findfont substitutes a default font or executes the invalidfont error. findfont is a
-   special case of findresource applied to the Font category. See Section 3.9, “Named
-   Resources.”
+    If the Font resource identified by key is not defined in virtual memory, findfont
+    takes an action that varies according to the environment in which the PostScript
+    interpreter is operating. In some environments, findfont may attempt to read a
+    font definition from an external source, such as a file. In other environments,
+    findfont substitutes a default font or executes the invalidfont error. findfont is a
+    special case of findresource applied to the Font category. See Section 3.9, “Named
+    Resources.”
 
-   findfont, like findresource, normally looks first for Font resources defined in local
-   VM, then for those defined in global VM. However, if the current VM allocation
-   mode is global, findfont considers only Font resources defined in global VM. If
-   findfont needs to load a font or CIDFont into VM, it may use either local or global
-   VM; see Section 3.9.2, “Resource Categories,” for more information.
+    findfont, like findresource, normally looks first for Font resources defined in local
+    VM, then for those defined in global VM. However, if the current VM allocation
+    mode is global, findfont considers only Font resources defined in global VM. If
+    findfont needs to load a font or CIDFont into VM, it may use either local or global
+    VM; see Section 3.9.2, “Resource Categories,” for more information.
 
-   findfont is not an operator, but rather a built-in procedure. It may be redefined
-   a PostScript program that requires different strategies for finding fonts.
+    findfont is not an operator, but rather a built-in procedure. It may be redefined
+    a PostScript program that requires different strategies for finding fonts.
 
    Errors: invalidfont, stackunderflow, typecheck
 */
 
-   pop();
+    object *pKey = pop();
 
-   push(pCourier);
+    font *pFont = reinterpret_cast<font *>(pFontDirectory -> retrieve(pKey -> Name()));
 
-#if 0
+    if ( NULL == pFont ) {
+        push(pCourier);
+        return;
+    }
 
-   for ( std::list<font *>::iterator it = fontList.begin(); it != fontList.end(); it++ ) {
+    push(pFont);
 
-      font *pFont = (*it);
+   return;
+   }
 
-      if ( pFont -> exists("FID") ) {
-         object *pName = pFont ->retrieve("FID");
-         if ( 0 == strcmp(pName->Name(),pKey->Contents()) ) {
-            push(pFont);
+    void job::operatorFindresource() {
+/*
+    findresource 
+        key category findresource instance
+
+    attempts to obtain a named resource instance in a specified category. category is a
+    name object that identifies a resource category, such as Font (see Section 3.9.2,
+    “Resource Categories”). key is a name or string object that identifies the resource
+    instance. (Names and strings are interchangeable; other types of keys are permitted
+    but are not recommended.) If it succeeds, findresource pushes the resource
+    instance on the operand stack; this is an object whose type depends on the resource
+    category.
+
+    8.2 Operator Details
+
+    findresource first attempts to obtain a resource instance that has previously been
+    defined in virtual memory by defineresource. If the current VM allocation mode
+    is local, findresource considers local resource definitions first, then global definitions
+    (see defineresource). However, if the current VM allocation mode is global,
+    findresource considers only global resource definitions.
+
+    If the requested resource instance is not currently defined in VM, findresource attempts
+    to obtain it from an external source. The way this is done is not specified
+    by the PostScript language; it varies among different implementations and different
+    resource categories. The effect of this action is to create an object in VM and
+    execute defineresource. findresource then returns the newly created object. If key
+    is not a name or a string, findresource will not attempt to obtain an external resource.
+    When findresource loads an object into VM, it may use global VM even if the current
+    VM allocation mode is local. In other words, it may set the VM allocation
+    mode to global (true setglobal) while loading the resource instance and executing
+    defineresource. The policy for whether to use global or local VM resides in the
+    FindResource procedure for the specific resource category; see Section 3.9.2, “Resource
+    Categories.”
+
+    During its execution, findresource may remove the definitions of resource instances
+    that were previously loaded into VM by findresource. The mechanisms
+    and policies for this depend on the category and the implementation; reclamation
+    of resources may occur at times other than during execution of findresource.
+    However, resource definitions that were made by explicit execution of defineresource
+    are never disturbed by automatic reclamation.
+
+    If the specified resource category does not exist, an undefined error occurs. If the
+    category exists but there is no instance whose name is key, an undefinedresource
+    error occurs.
+
+    Errors: stackunderflow, typecheck, undefined, undefinedresource
+    See Also: defineresource, resourcestatus, resourceforall, undefineresource
+*/
+
+    object *pCategory = pop();
+    object *pKey = pop();
+
+    if ( 0 == strcmp(pCategory -> Name(),"Font") ) {
+
+        object *pFont = pFontDirectory -> retrieve(pKey -> Name());
+
+        if ( NULL == pFont ) {
+            char szMessage[1024];
+            sprintf(szMessage,"operator: findResource. The font resource %s was not found",pKey -> Name());
+            throw undefinedresource(szMessage);
+        }
+
+        push(pFont);
+        return;
+
+    }
+
+    for ( std::list<resource *>::iterator it = resourceList.begin(); it != resourceList.end(); it++ ) {
+
+        resource *pResource = (*it);
+
+        if ( 0 == strcmp(pResource -> Name(),pKey -> Contents()) ) {
+            push(pResource);
             return;
-         }
-      }
+        }
 
-   }
+    }
 
-#if 0
-   for ( std::list<font *>::iterator it = fontList.begin(); it != fontList.end(); it++ ) {
-      font *pFont = (*it);
-      if ( ( 0 == strcmp(pFont -> Name(),pKey -> Name()) ) && strlen(pFont -> Name()) == strlen(pKey -> Name()) ) {
-         push(pFont);
-         return;
-      }
-   }
+    pPStoPDF -> queueLog("\n");
+    pPStoPDF -> queueLog("NOT IMPLEMENTED: findresource");
+    pPStoPDF -> queueLog("\n");
 
-   dictionary *pDictionary = dictionaryStack.find(pKey -> Name());
-   if ( pDictionary ) {
-      push(pDictionary);
-      return;
-   }
-#endif
+    return;
+    }
 
-#if 0
-   char szMessage[1024];
-   sprintf(szMessage,"operator findfont: invalid font '%s'",pKey -> Name());
-   throw invalidfont(szMessage);
-   return;
-#endif
-   
-   font *pFont = new font(this,pKey -> Name());
-   push(pFont);
 
-#endif
-   return;
-   }
-
-   void job::operatorFindresource() {
+    void job::operatorFor() {
 /*
-   findresource 
-      key category findresource instance
+    for 
+        initial increment limit proc for –
 
-   attempts to obtain a named resource instance in a specified category. category is a
-   name object that identifies a resource category, such as Font (see Section 3.9.2,
-   “Resource Categories”). key is a name or string object that identifies the resource
-   instance. (Names and strings are interchangeable; other types of keys are permitted
-   but are not recommended.) If it succeeds, findresource pushes the resource
-   instance on the operand stack; this is an object whose type depends on the resource
-   category.
+    executes the procedure proc repeatedly, passing it a sequence of values from initial
+    by steps of increment to limit. The for operator expects initial, increment, and limit to
+    be numbers. It maintains a temporary internal variable, known as the control
+    variable, which it first sets to initial. Then, before each repetition, it compares the
+    control variable to the termination value limit. If limit has not been exceeded, for
+    pushes the control variable on the operand stack, executes proc, and adds increment
+    to the control variable.
 
-   8.2 Operator Details
-
-   findresource first attempts to obtain a resource instance that has previously been
-   defined in virtual memory by defineresource. If the current VM allocation mode
-   is local, findresource considers local resource definitions first, then global definitions
-   (see defineresource). However, if the current VM allocation mode is global,
-   findresource considers only global resource definitions.
-
-   If the requested resource instance is not currently defined in VM, findresource attempts
-   to obtain it from an external source. The way this is done is not specified
-   by the PostScript language; it varies among different implementations and different
-   resource categories. The effect of this action is to create an object in VM and
-   execute defineresource. findresource then returns the newly created object. If key
-   is not a name or a string, findresource will not attempt to obtain an external resource.
-   When findresource loads an object into VM, it may use global VM even if the current
-   VM allocation mode is local. In other words, it may set the VM allocation
-   mode to global (true setglobal) while loading the resource instance and executing
-   defineresource. The policy for whether to use global or local VM resides in the
-   FindResource procedure for the specific resource category; see Section 3.9.2, “Resource
-   Categories.”
-
-   During its execution, findresource may remove the definitions of resource instances
-   that were previously loaded into VM by findresource. The mechanisms
-   and policies for this depend on the category and the implementation; reclamation
-   of resources may occur at times other than during execution of findresource.
-   However, resource definitions that were made by explicit execution of defineresource
-   are never disturbed by automatic reclamation.
-
-   If the specified resource category does not exist, an undefined error occurs. If the
-   category exists but there is no instance whose name is key, an undefinedresource
-   error occurs.
-
-   Errors: stackunderflow, typecheck, undefined, undefinedresource
-   See Also: defineresource, resourcestatus, resourceforall, undefineresource
+    The termination condition depends on whether increment is positive or negative.
+    If increment is positive, for terminates when the control variable becomes greater
+    than limit. If increment is negative, for terminates when the control variable becomes
+    less than limit. If initial meets the termination condition, for does not execute
+    proc at all. If proc executes the exit operator, for terminates prematurely.
+    Usually, proc will use the value on the operand stack for some purpose. However,
+    if proc does not remove the value, it will remain there. Successive executions of
+    proc will cause successive values of the control variable to accumulate on the operand
+    stack.
 */
+    procedure *pProc = reinterpret_cast<procedure *>(pop());
+    object *pLimit = pop();
+    object *pIncrement = pop();
+    object *pInitial = pop();
 
-   object *pKey = pop();
-   object *pCategory = pop();
+    long initial = pInitial -> IntValue();
+    long increment = pIncrement -> IntValue();
+    long limit = pLimit -> IntValue();
+    long control = initial;
 
-   for ( std::list<resource *>::iterator it = resourceList.begin(); it != resourceList.end(); it++ ) {
+    object *pControl = new (CurrentObjectHeap()) object(this,control);
 
-      resource *pResource = (*it);
+    while ( ( 0 < increment && control <= limit ) || ( increment < 0 && control >= limit ) ) {
+        push(pControl);
+        executeProcedure(pProc);
+        control += increment;
+        pControl -> IntValue(control);
+    }
 
-      if ( 0 == strcmp(pResource -> Name(),pKey -> Contents()) ) {
-         push(pResource);
-         return;
-      }
-
-   }
-
-   pPStoPDF -> queueLog("\n");
-   pPStoPDF -> queueLog("NOT IMPLEMENTED: findresource");
-   pPStoPDF -> queueLog("\n");
-
-   return;
-   }
-
-
-   void job::operatorFor() {
-/*
-   for 
-      initial increment limit proc for –
-
-   executes the procedure proc repeatedly, passing it a sequence of values from initial
-   by steps of increment to limit. The for operator expects initial, increment, and limit to
-   be numbers. It maintains a temporary internal variable, known as the control
-   variable, which it first sets to initial. Then, before each repetition, it compares the
-   control variable to the termination value limit. If limit has not been exceeded, for
-   pushes the control variable on the operand stack, executes proc, and adds increment
-   to the control variable.
-
-   The termination condition depends on whether increment is positive or negative.
-   If increment is positive, for terminates when the control variable becomes greater
-   than limit. If increment is negative, for terminates when the control variable becomes
-   less than limit. If initial meets the termination condition, for does not execute
-   proc at all. If proc executes the exit operator, for terminates prematurely.
-   Usually, proc will use the value on the operand stack for some purpose. However,
-   if proc does not remove the value, it will remain there. Successive executions of
-   proc will cause successive values of the control variable to accumulate on the operand
-   stack.
-*/
-   object *pProc = pop();
-   object *pLimit = pop();
-   object *pIncrement = pop();
-   object *pInitial = pop();
-
-   long initial = atol(pInitial -> Contents());
-   long increment = atol(pIncrement -> Contents());
-   long limit = atol(pLimit -> Contents());
-   long control = initial;
-
-   object *pControl = new (CurrentObjectHeap()) object(this,control);
-
-   while ( ( increment > 0 && control <= limit ) || ( increment < 0 && control >= limit ) ) {
-      push(pControl);
-      push(pProc);
-      execute();
-      control += increment;
-      pControl -> IntValue(control);
-   }
-
-   return;
-   }
+    return;
+    }
 
    void job::operatorForall() {
 /*
@@ -1683,23 +1695,19 @@ int 3;
       array *pArray = reinterpret_cast<array *>(pSource);
       long n = pArray -> size();
       for ( long k = 0; k < n; k++ ) {
-         push(pArray -> get(k));
+         push(pArray -> getElement(k));
          push(pProc);
-         execute();
+         executeObject();
       }
       }
       break;
 
    case object::font:
-   case object::dictionary: {
-      dictionary *pDictionary = reinterpret_cast<dictionary *>(pSource);
-      long n = pDictionary -> size();
-      for ( long k = 0; k < n; k++ ) {
-         push(pDictionary -> retrieve(pDictionary -> getKey(k)));
-         push(pProc);
-         execute();
-      }
-      }
+      static_cast<dictionary *>(reinterpret_cast<font *>(pSource)) -> forAll(pProc);
+      break;
+
+   case object::dictionary: 
+      reinterpret_cast<dictionary *>(pSource) -> forAll(pProc);
       break;
 
    case object::string: {
@@ -1758,63 +1766,71 @@ int 3;
    return;
    }
 
-   void job::operatorGet() {
+    void job::operatorGet() {
 /*
-   get 
-      array index get any
-      packedarray index get any
-      dict key get any
-      string index get int
+    get 
+        array index get any
+        packedarray index get any
+        dict key get any
+        string index get int
 
-   returns a single element from the value of the first operand. If the first operand is
-   an array, a packed array, or a string, get treats the second operand as an index and
-   returns the element identified by the index, counting from 0. index must be in the
-   range 0 to n - 1, where n is the length of the array, packed array, or string. If it is
-   outside this range, a rangecheck error occurs.
+    returns a single element from the value of the first operand. If the first operand is
+    an array, a packed array, or a string, get treats the second operand as an index and
+    returns the element identified by the index, counting from 0. index must be in the
+    range 0 to n - 1, where n is the length of the array, packed array, or string. If it is
+    outside this range, a rangecheck error occurs.
 
-   If the first operand is a dictionary, get looks up the second operand as a key in the
-   dictionary and returns the associated value. If the key is not present in the dictionary,
-   an undefined error occurs.
+    If the first operand is a dictionary, get looks up the second operand as a key in the
+    dictionary and returns the associated value. If the key is not present in the dictionary,
+    an undefined error occurs.
 
-   Errors: invalidaccess, rangecheck, stackunderflow, typecheck, undefined
+    Errors: invalidaccess, rangecheck, stackunderflow, typecheck, undefined
 
 */
-   object *pIndex = pop();
-   object *pTarget = pop();
+    object *pIndex = pop();
+    object *pTarget = pop();
+    dictionary *pFontDictionary = NULL;
 
-   switch ( pTarget -> ObjectType() ) {
+    switch ( pTarget -> ObjectType() ) {
 
-   case object::array:
-      push(reinterpret_cast<array *>(pTarget) -> get(pIndex -> IntValue()));
-      return;
+    case object::array:
+        push(reinterpret_cast<array *>(pTarget) -> getElement(pIndex -> IntValue()));
+        return;
 
-   case object::packedarray: {
-      __debugbreak();
-      }
-      break;
+    case object::packedarray: {
+        __debugbreak();
+        }
+        break;
 
-   case object::font:
-   case object::dictionary: {
-      dictionary *pDict = reinterpret_cast<dictionary *>(pTarget);
-      object *pObject = pDict -> retrieve(pIndex -> Name());
-      if ( ! pObject ) {
-         char szError[1024];
-         sprintf(szError,"operator get: cannot find %s in font or dictionary %s (type: %s)",pIndex -> Name(),pDict -> Name(),pDict->TypeName());
-         throw undefined(szError);
-      }
-      push(pObject);
-      break;
-      }
+    case object::font:
+        pFontDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pTarget));
 
-   case object::string: {
-      __debugbreak();
-      break;
-      }
+    case object::dictionary: {
+        if ( NULL == pFontDictionary )
+            pFontDictionary = reinterpret_cast<dictionary *>(pTarget);
 
-   }
+        object *pObject = pFontDictionary -> retrieve(pIndex -> Name());
+        if ( NULL == pObject ) {
+            char szError[1024];
+            sprintf(szError,"operator get: cannot find %s in font or dictionary %s (type: %s)",pIndex -> Name(),pFontDictionary -> Name(),pFontDictionary -> TypeName());
+            throw undefined(szError);
+        }
+        push(pObject);
+        break;
+        }
 
-   return;
-   }
+    case object::binaryString:
+    case object::constantString:
+    case object::hexString:
+    case object::string: {
+        push(new (CurrentObjectHeap()) object(this,(long)pTarget -> get(pIndex -> IntValue())));
+        break;
+        }
+
+    }
+
+    return;
+    }
 
    void job::operatorGrestore() {
 /*
@@ -1929,64 +1945,63 @@ int 3;
    return;
    }
 
-   void job::operatorIfelse() {
+    void job::operatorIfelse() {
 /*
-   ifelse 
-      bool proc1 proc2 ifelse –
+    ifelse 
+        bool proc1 proc2 ifelse –
 
-   removes all three operands from the stack, then executes proc1 if bool is true or
-   proc2 if bool is false. The ifelse operator pushes no results of its own on the operand
+    removes all three operands from the stack, then executes proc1 if bool is true or
+    proc2 if bool is false. The ifelse operator pushes no results of its own on the operand stack
 */
 
-   procedure *pProc2 = reinterpret_cast<procedure *>(pop());
-   procedure *pProc1 = reinterpret_cast<procedure *>(pop());
-   booleanObject *bo = reinterpret_cast<booleanObject *>(pop());
+    procedure *pProc2 = reinterpret_cast<procedure *>(pop());
+    procedure *pProc1 = reinterpret_cast<procedure *>(pop());
+    booleanObject *bo = reinterpret_cast<booleanObject *>(pop());
 
-   if ( bo == pTrueConstant )
-      pProc1 -> execute();
-   else
-      pProc2 -> execute();
+    if ( bo == pTrueConstant ) 
+        pProc1 -> execute();
+    else
+        pProc2 -> execute();
+    return;
+    }
 
-   return;
-   }
-
-   void job::operatorIndex() {
+    void job::operatorIndex() {
 /*
-   index 
-      anyn … any0 n index anyn … any0 anyn
+    index 
+        anyn … any0 n index anyn … any0 anyn
 
-   removes the nonnegative integer n from the operand stack, counts down to the
-   nth element from the top of the stack, and pushes a copy of that element on the
-   stack.
+    removes the nonnegative integer n from the operand stack, counts down to the
+    nth element from the top of the stack, and pushes a copy of that element on the
+    stack.
 
-   Examples
+    Examples
 
-      (a) (b) (c) (d) 0 index => (a) (b) (c) (d) (d)
-      (a) (b) (c) (d) 3 index => (a) (b) (c) (d) (a)
+        (a) (b) (c) (d) 0 index => (a) (b) (c) (d) (d)
+        (a) (b) (c) (d) 3 index => (a) (b) (c) (d) (a)
 
-   Errors: rangecheck, stackunderflow, typecheck
-   See Also: copy, dup, roll
+    Errors: rangecheck, stackunderflow, typecheck
+    See Also: copy, dup, roll
 
 */
-   object *pCount = pop();
+    object *pCount = pop();
 
-   long n = pCount -> IntValue();
+    long n = pCount -> IntValue();
 
-   std::list<object *> replacements;
-   for ( long k = 0; k < n; k++ )
-      replacements.insert(replacements.end(),pop());
+    std::list<object *> replacements;
+    for ( long k = 0; k < n; k++ )
+        replacements.insert(replacements.end(),pop());
 
-   object *pDuplicate = operandStack.top();
+    object *pDuplicate = operandStack.top();
 
-   for ( std::list<object *>::reverse_iterator it = replacements.rbegin(); it != replacements.rend(); it++ )
-      push(*it);
+    for ( std::list<object *>::reverse_iterator it = replacements.rbegin(); it != replacements.rend(); it++ )
+        push(*it);
 
-   push(pDuplicate);
+    push(pDuplicate);
 
-   replacements.clear();
+    replacements.clear();
 
-   return;
-   }
+    return;
+    }
 
 void job::operatorIdtransform() {
 /*
@@ -2139,6 +2154,9 @@ void job::operatorIdtransform() {
       break;
 
    case object::font:
+      length = static_cast<dictionary *>(reinterpret_cast<font *>(pItem)) -> size();
+      break;
+
    case object::dictionary:
       length = reinterpret_cast<dictionary *>(pItem) -> size();
       break;
@@ -2148,8 +2166,14 @@ void job::operatorIdtransform() {
       switch ( pItem -> ValueType() ) {
       case object::string:
       case object::character:
+      case object::constantString:
          length = (DWORD)strlen(pItem -> Contents());
          break;
+
+      case object::binaryString:
+         length = (DWORD)strlen(pItem -> Contents()) / 2;
+         break;
+
       default: 
          char szError[1024];
          sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
@@ -2186,46 +2210,56 @@ void job::operatorIdtransform() {
    return;
    }
 
-   void job::operatorLoad() {
-/*
-   load 
-      key load value
 
-   searches for key in each dictionary on the dictionary stack, starting with the topmost
-   (current) dictionary. If key is found in some dictionary, load pushes the associated
-   value on the operand stack; otherwise, an undefined error occurs.
+    void job::operatorLoad() {
+    /*
+    load 
+        key load value
 
-   load looks up key the same way the interpreter looks up executable names that it
-   encounters during execution. However, load always pushes the associated value
-   on the operand stack; it never executes the value.
+    searches for key in each dictionary on the dictionary stack, starting with the topmost
+    (current) dictionary. If key is found in some dictionary, load pushes the associated
+    value on the operand stack; otherwise, an undefined error occurs.
 
-   Examples
-      /avg {add 2 div} def
-      /avg load => {add 2 div}
+    load looks up key the same way the interpreter looks up executable names that it
+    encounters during execution. However, load always pushes the associated value
+    on the operand stack; it never executes the value.
 
-   Errors: invalidaccess, stackunderflow, typecheck, undefined
-*/
+    Examples
+        /avg {add 2 div} def
+        /avg load => {add 2 div}
 
-   object *pKey = top();
+    Errors: invalidaccess, stackunderflow, typecheck, undefined
+    */
 
-   operatorWhere();
+    object *pKey = top();
 
-   if ( top() == pFalseConstant ) {
-      pop();
-      push(pKey);
-      char szMessage[1024];
-      sprintf(szMessage,"operator: load. Value %s is undefined",pKey -> Name());
-      throw undefined(szMessage);
-   }
+    operatorWhere();
 
-   pop();
+    if ( top() == pFalseConstant ) {
 
-   dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
+        pop();
 
-   push(pDictionary -> retrieve(pKey -> Name()));
+        std::map<size_t,name *>::iterator it = validNames.find(std::hash<std::string>()(pKey -> Name()));
 
-   return;
-   }
+        if ( ! ( it == validNames.end() ) ) {
+            push(it -> second);
+            return;
+        }
+
+        push(pKey);
+        char szMessage[1024];
+        sprintf(szMessage,"operator: load. Value %s is undefined",pKey -> Name());
+        throw undefined(szMessage);
+    }
+
+    pop();
+
+    dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
+
+    push(pDictionary -> retrieve(pKey -> Name()));
+
+    return;
+    }
 
    void job::operatorLoop() {
 /*
@@ -2354,7 +2388,7 @@ void job::operatorIdtransform() {
    object by a matching ] operator. See the discussion of array syntax in Section 3.2,
    “Syntax,” and of array construction in Section 3.6, “Overview of Basic Operators.”
 */
-   push(new (CurrentObjectHeap()) mark(this,mark::array));
+   push(new (CurrentObjectHeap()) mark(this,object::valueType::arrayMark));
    return;
    }
 
@@ -2416,61 +2450,69 @@ void job::operatorIdtransform() {
 
    pushes a mark object on the operand stack (the same as the mark and [ operators).
 */
-   push(new (CurrentObjectHeap()) mark(this,mark::dictionary));
+   push(new (CurrentObjectHeap()) mark(this,object::valueType::dictionaryMark));
    return;
    }
 
-   void job::operatorMarkDictionaryEnd() {
+    void job::operatorMarkDictionaryEnd() {
 /*
-   >> 
-      mark key1 value1 … keyn valuen >> dict
+    >> 
+        mark key1 value1 … keyn valuen >> dict
 
-   creates and returns a dictionary containing the specified key-value pairs. The operands
-   are a mark followed by an even number of objects, which the operator uses
-   alternately as keys and values to be inserted into the dictionary. The dictionary is
-   allocated space for precisely the number of key-value pairs supplied.
+    creates and returns a dictionary containing the specified key-value pairs. The operands
+    are a mark followed by an even number of objects, which the operator uses
+    alternately as keys and values to be inserted into the dictionary. The dictionary is
+    allocated space for precisely the number of key-value pairs supplied.
 
-   The dictionary is allocated in local or global VM according to the current VM
-   allocation mode. An invalidaccess error occurs if the dictionary is in global VM
-   and any keys or values are in local VM (see Section 3.7.2, “Local and Global
-   VM”). A rangecheck error occurs if there is an odd number of objects above the
-   topmost mark on the stack.
+    The dictionary is allocated in local or global VM according to the current VM
+    allocation mode. An invalidaccess error occurs if the dictionary is in global VM
+    and any keys or values are in local VM (see Section 3.7.2, “Local and Global
+    VM”). A rangecheck error occurs if there is an odd number of objects above the
+    topmost mark on the stack.
 
-   The >> operator is equivalent to the following code:
+    The >> operator is equivalent to the following code:
 
-      counttomark 2 idiv
-      dup dict
-      begin
-         {def} repeat
-         pop
-         currentdict
-      end
+        counttomark 2 idiv
+        dup dict
+        begin
+            {def} repeat
+            pop
+            currentdict
+        end
 
-   Example
+    Example
 
-      << /Duplex true
-         /PageSize [612 792]
-         /Collate false
-      >> setpagedevice
+        << /Duplex true
+            /PageSize [612 792]
+            /Collate false
+        >> setpagedevice
 
-   This example constructs a dictionary containing three key-value pairs, which it
-   immediately passes to the setpagedevice operator.
+    This example constructs a dictionary containing three key-value pairs, which it
+    immediately passes to the setpagedevice operator.
 */
 
-   dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,"inline");
+    std::vector<object *> toInsertValues;
+    std::vector<object *> toInsertKeys;
 
-   while ( object::mark != top() -> ObjectType() ) {
-      object *pValue = pop();
-      object *pKey = pop();
-      pDict -> insert(pKey -> Name(),pValue);
-   }
+    while ( ! ( object::mark == top() -> ObjectType() ) ) {
+        toInsertValues.push_back(pop());
+        toInsertKeys.push_back(pop());
+    }
 
-   pop();
+    dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,"inline",(long)toInsertValues.size());
 
-   push(pDict);
+    for ( long k = (long)toInsertValues.size() - 1; k > -1; k-- ) 
+        pDict -> put(toInsertKeys[k] -> Name(),toInsertValues[k]);
 
-   return;
-   }
+    toInsertValues.clear();
+    toInsertKeys.clear();
+
+    pop();
+
+    push(pDict);
+
+    return;
+    }
 
 
    void job::operatorMarkProcedureBegin() {
@@ -2481,7 +2523,7 @@ void job::operatorIdtransform() {
    (documentation does not specifically provide this description)
 */
 
-   push(new (CurrentObjectHeap()) mark(this,mark::procedure));
+   push(new (CurrentObjectHeap()) mark(this,object::valueType::procedureMark));
 
    return;
    }
@@ -2498,8 +2540,6 @@ void job::operatorIdtransform() {
    }
 
    procedure *pProcedure = new (CurrentObjectHeap()) procedure(this);
-
-   addProcedure(pProcedure);
 
    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
       pProcedure -> insert(*it);
@@ -2536,20 +2576,22 @@ void job::operatorIdtransform() {
    }
 
 
-   void job::operatorMoveto() {
+    void job::operatorMoveto() {
 /*
-   moveto 
-      x y moveto –
+    moveto 
+        x y moveto –
 
-   starts a new subpath of the current path (see Section 4.4, “Path Construction”) by
-   setting the current point in the graphics state to the coordinates (x, y) in user
-   space. No new line segments are added to the current path.
-   If the previous path operation in the current path was moveto or rmoveto, that
-   point is deleted from the current path and the new moveto point replaces it.
+    starts a new subpath of the current path (see Section 4.4, “Path Construction”) by
+    setting the current point in the graphics state to the coordinates (x, y) in user
+    space. No new line segments are added to the current path.
+    If the previous path operation in the current path was moveto or rmoveto, that
+    point is deleted from the current path and the new moveto point replaces it.
 */
-   graphicsStateStack.current() -> moveto();
-   return;
-   }
+
+    currentGS() -> moveto();
+
+    return;
+    }
 
    void job::operatorMul() {
 /*
@@ -2627,33 +2669,33 @@ void job::operatorIdtransform() {
    return;
    }
 
-   void job::operatorNot() {
+    void job::operatorNot() {
 /*
-   not 
-      bool1 not bool2
-      int1 not int2
+    not 
+        bool1 not bool2
+        int1 not int2
 
-   returns the logical negation of the operand if it is boolean. If the operand is an
-   integer, not returns the bitwise complement (ones complement) of its binary representation.
+    returns the logical negation of the operand if it is boolean. If the operand is an
+    integer, not returns the bitwise complement (ones complement) of its binary representation.
 */
 //
 // TODO: I'm not sure of the "ones complement" operation being ^=
 //
-   object *pTop = pop();
+    object *pTop = pop();
 
-   if ( object::logical == pTop -> ObjectType() ) {
-      if ( pTop == pTrueConstant )
-         push(pFalseConstant);
-      else
-         push(pTrueConstant);
-   } else {
-      long v = pTop -> IntValue();
-      v ^= 0xFFFF;
-      push(new (CurrentObjectHeap()) object(this,v));
-   }
+    if ( object::logical == pTop -> ObjectType() ) {
+        if ( pTop == pTrueConstant )
+            push(pFalseConstant);
+        else
+            push(pTrueConstant);
+    } else {
+        long v = pTop -> IntValue();
+        v ^= 0xFFFF;
+        push(new (CurrentObjectHeap()) object(this,v));
+    }
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorPop() {
    pop();
@@ -2675,20 +2717,20 @@ void job::operatorIdtransform() {
    return;
    }
 
-   void job::operatorProduct() {
+    void job::operatorProduct() {
 /*
-   product 
-      – product string
+    product 
+        – product string
 
-   is a read-only string object that is the name of the product in which the PostScript
-   interpreter is running. The value of this string is typically a manufacturer-defined
-   trademark; it has no direct connection with specific features of the PostScript
-   language.
+    is a read-only string object that is the name of the product in which the PostScript
+    interpreter is running. The value of this string is typically a manufacturer-defined
+    trademark; it has no direct connection with specific features of the PostScript
+    language.
 */
-   push(new (CurrentObjectHeap()) string(this,PRODUCT_NAME));
+    push(new (CurrentObjectHeap()) string(this,PRODUCT_NAME));
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorPstack() {
 /*
@@ -2756,19 +2798,15 @@ void job::operatorIdtransform() {
    switch ( pTarget -> ObjectType() ) {
 
    case object::array:
-      reinterpret_cast<array *>(pTarget) -> put(pIndex -> IntValue(),pValue);
+      reinterpret_cast<array *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
       break;
 
    case object::dictionary:
       reinterpret_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
       break;
 
-//
-//NTC: 01-05-2011. It is unclear why put is being called with a procedure target but
-// for now it is allowed but does nothing
-//
    case object::procedure:
-//      reinterpret_cast<procedure *>(pTarget) -> put(pIndex -> IntValue(),pValue);
+      reinterpret_cast<procedure *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
       break;
 
    case object::matrix:
@@ -2782,97 +2820,100 @@ void job::operatorIdtransform() {
    return;
    }
 
-   void job::operatorPutinterval() {
+
+    void job::operatorPutinterval() {
 /*
-   putinterval 
-      array1 index array2 putinterval –
-      array1 index packedarray2 putinterval –
-      string1 index string2 putinterval –
+    putinterval 
+        array1 index array2 putinterval –
+        array1 index packedarray2 putinterval –
+        string1 index string2 putinterval –
 
-   replaces a subsequence of the elements of the first operand by the entire contents
-   of the third operand. The subsequence that is replaced begins at index in the first
-   operand; its length is the same as the length of the third operand.
+    replaces a subsequence of the elements of the first operand by the entire contents
+    of the third operand. The subsequence that is replaced begins at index in the first
+    operand; its length is the same as the length of the third operand.
 
-   The objects are copied from the third operand to the first, as if by a sequence of
-   individual get and put operations. In the case of arrays, if the copied elements are
-   themselves composite objects, the values of those objects are shared between
-   array2 and array1 (see Section 3.3.1, “Simple and Composite Objects”).
+    The objects are copied from the third operand to the first, as if by a sequence of
+    individual get and put operations. In the case of arrays, if the copied elements are
+    themselves composite objects, the values of those objects are shared between
+    array2 and array1 (see Section 3.3.1, “Simple and Composite Objects”).
 
-   putinterval requires index to be a valid index in array1 or string1 such that index
-   plus the length of array2 or string2 is not greater than the length of array1 or string1.
+    putinterval requires index to be a valid index in array1 or string1 such that index
+    plus the length of array2 or string2 is not greater than the length of array1 or string1.
 
-   If the value of array1 is in global VM and any of the elements copied from array2 or
-   packedarray2 are composite objects whose values are in local VM, an invalidaccess
-   error occurs (see Section 3.7.2, “Local and Global VM”).
+    If the value of array1 is in global VM and any of the elements copied from array2 or
+    packedarray2 are composite objects whose values are in local VM, an invalidaccess
+    error occurs (see Section 3.7.2, “Local and Global VM”).
 
-   Examples
+    Examples
 
-      /ar [5 8 2 7 3] def
-      ar 1 [(a) (b) (c)] putinterval
-      ar ==> [5 (a) (b) (c) 3]
+        /ar [5 8 2 7 3] def
+        ar 1 [(a) (b) (c)] putinterval
+        ar ==> [5 (a) (b) (c) 3]
 
-      /st (abc) def
-      st 1 (de) putinterval
-      st ==> (ade)
+        /st (abc) def
+        st 1 (de) putinterval
+        st ==> (ade)
 
-   Errors: invalidaccess, rangecheck, stackunderflow, typecheck
+    Errors: invalidaccess, rangecheck, stackunderflow, typecheck
 
 */
-   object *pObject2 = pop();
-   object *pIndex = pop();
-   object *pObject1 = pop();
+    object *pObject2 = pop();
+    object *pIndex = pop();
+    object *pObject1 = pop();
 
-   push(pObject2);
-   operatorLength();
-   long n = (pop()) -> IntValue();
+    push(pObject2);
 
-   long index = pIndex -> IntValue();
+    operatorLength();
 
-   if ( object::array == pObject1 -> ObjectType() || object::packedarray == pObject1 -> ObjectType() ) {
+    long n = pop() -> IntValue();
 
-      array *pArray = reinterpret_cast<array *>(pObject1);
+    long index = pIndex -> IntValue();
 
-      switch ( pObject2 -> ObjectType() ) {
-      case object::array:
-      case object::packedarray: {
-         array *pSource = reinterpret_cast<array *>(pObject2);
-         for ( long k = 0; k < n; k++ ) 
-            pArray -> put(index++,pSource -> get(k));
-         }
-         break;
+    if ( object::array == pObject1 -> ObjectType() || object::packedarray == pObject1 -> ObjectType() ) {
 
-      case object::string: {
-         }
-         break;
+        array *pArray = reinterpret_cast<array *>(pObject1);
 
-      default: {
-         char szMessage[1024];
-         sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array or string",pObject2 -> Name(),pObject2 -> TypeName());
-         throw typecheck(szMessage);
-         }
-      }
+        switch ( pObject2 -> ObjectType() ) {
+        case object::array:
+        case object::packedarray: {
+            array *pSource = reinterpret_cast<array *>(pObject2);
+            for ( long k = 0; k < n; k++ ) 
+            pArray -> putElement(index++,pSource -> getElement(k));
+            }
+            break;
 
-   } else if ( object::atom == pObject1 -> ObjectType() && object::string == pObject1 -> ValueType() ) {
+        case object::string: {
+            }
+            break;
 
-      if ( object::atom != pObject2 -> ObjectType() || object::string != pObject2 -> ValueType() ) {
-         char szMessage[1024];
-         sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be string",pObject2 -> Name(),pObject2 -> TypeName());
-         throw typecheck(szMessage);
-      }
+        default: {
+            char szMessage[1024];
+            sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array or string",pObject2 -> Name(),pObject2 -> TypeName());
+            throw typecheck(szMessage);
+            }
+        }
 
-      string *pSource = reinterpret_cast<string *>(pObject2);
-      string *pTarget = reinterpret_cast<string *>(pObject1);
-      for ( long k = 0; k < n; k++ ) 
-         pTarget -> put(index++,pSource -> get(k));
+    } else if ( object::atom == pObject1 -> ObjectType() && 
+                ( object::valueType::string == pObject1 -> ValueType() || object::valueType::constantString == pObject1 -> ValueType() || 
+                    object::valueType::hexString == pObject1 -> ValueType() || object::valueType::binaryString == pObject1 -> ValueType() ) ) {
 
-   } else {
-      char szMessage[1024];
-      sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array, packedarray, or string",pObject1 -> Name(),pObject1 -> TypeName());
-      throw typecheck(szMessage);
-   }
+        /*if ( ! ( pObject1 -> ObjectType() == pObject2 -> ObjectType() ) || ! ( pObject1 -> ValueType() == pObject2 -> ValueType() ) ) {
+            char szMessage[1024];
+            sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be string",pObject2 -> Name(),pObject2 -> TypeName());
+            throw typecheck(szMessage);
+        }*/
 
-   return;
-   }
+        for ( long k = 0; k < n; k++ ) 
+            pObject1 -> put(index++,pObject2 -> get(k));
+
+    } else {
+        char szMessage[1024];
+        sprintf(szMessage,"operator putinterval: the type of an object is invalid (%s) should be array, packedarray, or string",pObject1 -> TypeName());
+        throw typecheck(szMessage);
+    }
+
+    return;
+    }
 
 
    void job::operatorReadonly() {
@@ -3060,111 +3101,113 @@ void job::operatorIdtransform() {
    return;
    }
 
-   void job::operatorRmoveto() {
+    void job::operatorRmoveto() {
 /*
-   rmoveto 
-      dx dy rmoveto –
+    rmoveto 
+        dx dy rmoveto –
 
-   (relative moveto) starts a new subpath of the current path (see Section 4.4, “Path
-   Construction”) by displacing the coordinates of the current point dx user space
-   units horizontally and dy units vertically, without connecting it to the previous
-   current point. That is, the operands dx and dy are interpreted as relative displacements
-   from the current point rather than as absolute coordinates. In all other respects,
-   the behavior of rmoveto is identical to that of moveto.
-   If the current point is undefined because the current path is empty, a
-   nocurrentpoint error occurs.
+    (relative moveto) starts a new subpath of the current path (see Section 4.4, “Path
+    Construction”) by displacing the coordinates of the current point dx user space
+    units horizontally and dy units vertically, without connecting it to the previous
+    current point. That is, the operands dx and dy are interpreted as relative displacements
+    from the current point rather than as absolute coordinates. In all other respects,
+    the behavior of rmoveto is identical to that of moveto.
+    If the current point is undefined because the current path is empty, a
+    nocurrentpoint error occurs.
 
 */
-   pop();
-   pop();
-   return;
-   }
+
+    currentGS() -> rmoveto();
+
+    return;
+    }
 
 
-   void job::operatorRoll() {
+    void job::operatorRoll() {
 /*
-   roll 
-      ANYn-1 … ANY0 n j roll ANY(j-1)mod.n … ANY0 ANYn-1 … ANYj.mod.n
+    roll 
+        ANYn-1 … ANY0 n j roll ANY(j-1)mod.n … ANY0 ANYn-1 … ANYj.mod.n
 
-   performs a circular shift of the objects anyn-1 through any0 on the operand stack
-   by the amount j. Positive j indicates upward motion on the stack, whereas negative
-   j indicates downward motion.
+    performs a circular shift of the objects anyn-1 through any0 on the operand stack
+    by the amount j. Positive j indicates upward motion on the stack, whereas negative
+    j indicates downward motion.
 
-   n must be a nonnegative integer and j must be an integer. roll first removes these
-   operands from the stack; there must be at least n additional elements. It then performs
-   a circular shift of these n elements by j positions.
+    n must be a nonnegative integer and j must be an integer. roll first removes these
+    operands from the stack; there must be at least n additional elements. It then performs
+    a circular shift of these n elements by j positions.
 
-   If j is positive, each shift consists of removing an element from the top of the stack
-   and inserting it between element n - 1 and element n of the stack, moving all intervening 
-   elements one level higher on the stack. If j is negative, each shift consists
-   of removing element n - 1 of the stack and pushing it on the top of the stack,
-   moving all intervening elements one level lower on the stack.
+    If j is positive, each shift consists of removing an element from the top of the stack
+    and inserting it between element n - 1 and element n of the stack, moving all intervening 
+    elements one level higher on the stack. If j is negative, each shift consists
+    of removing element n - 1 of the stack and pushing it on the top of the stack,
+    moving all intervening elements one level lower on the stack.
 
-         Examples
-         (a) (b) (c) 3 -1 roll  (b) (c) (a)
-          0   1   2              1   2   0
+            Examples
+            (a) (b) (c) 3 -1 roll  (b) (c) (a)
+            0   1   2              1   2   0
 
-         (a) (b) (c) (d) 4 -2 roll  (c) (d) (a) (b)
-          0   1   2   3              2   3   0   1
+            (a) (b) (c) (d) 4 -2 roll  (c) (d) (a) (b)
+            0   1   2   3              2   3   0   1
 
-         (a) (b) (c) 3 1 roll  (c) (a) (b)
-          0   1   2             2   0   1
+            (a) (b) (c) 3 1 roll  (c) (a) (b)
+            0   1   2             2   0   1
 
-         (a) (b) (c) (d) 4 2 roll (c) (d) (a) (b)
-          0   1   2   3            2   3   0   1
+            (a) (b) (c) (d) 4 2 roll (c) (d) (a) (b)
+            0   1   2   3            2   3   0   1
 
-         (a) (b) (c) 3 0 roll  (a) (b) (c)
+            (a) (b) (c) 3 0 roll  (a) (b) (c)
 
 */
-   long j = atol(pop() -> Contents());
-   long n = atol(pop() -> Contents());
+    long j = pop() -> IntValue();
+    long n = pop() -> IntValue();
 
-   object **pObjects = new (CurrentObjectHeap()) object *[n];
-   long *pIndex = new long[n + 1];
+    object **pObjects = new object *[n];
 
-   for ( long k = 0; k < n; k++ ) {
-      pObjects[n - k - 1] = pop();
-      pIndex[k] = n - k - 1;
-   }
+    long *pIndex = new long[n + 1];
+    
+    for ( long k = 0; k < n; k++ ) {
+        pIndex[k] = n - k - 1;
+        pObjects[pIndex[k]] = pop();
+    }
 
-   pIndex[n] = -1L;
+    pIndex[n] = -1L;
 
-   if ( j > 0 ) {
+    if ( j > 0 ) {
 
-      for ( long k = 0; k < j; k++ ) {
+        for ( long k = 0; k < j; k++ ) {
          
-         long topOfStack = pIndex[0];
+            long topOfStack = pIndex[0];
 
-         for ( long sp = 0; sp < n; sp++ )
-            pIndex[sp] = pIndex[sp + 1];
+            for ( long sp = 0; sp < n; sp++ )
+                pIndex[sp] = pIndex[sp + 1];
 
-         pIndex[n - 1] = topOfStack;
+            pIndex[n - 1] = topOfStack;
 
-      }
+        }
 
-   } else {
+    } else {
 
-      for ( long k = 0; k < -j; k++ ) {
+        for ( long k = 0; k < -j; k++ ) {
 
-         long bottomOfStack = pIndex[n - 1];
+            long bottomOfStack = pIndex[n - 1];
 
-         for ( long sp = n; sp > 0; sp-- )
-            pIndex[sp] = pIndex[sp - 1];
+            for ( long sp = n; sp > 0; sp-- )
+                pIndex[sp] = pIndex[sp - 1];
 
-         pIndex[0] = bottomOfStack;
+            pIndex[0] = bottomOfStack;
 
-      }
+        }
 
-   }
+    }
 
-   for ( long k = n - 1; k >= 0; k-- )
-      push(pObjects[pIndex[k]]);
+    for ( long k = n - 1; k >= 0; k-- )
+        push(pObjects[pIndex[k]]);
 
-   delete [] pObjects;
-   delete [] pIndex;
+    delete [] pObjects;
+    delete [] pIndex;
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorRotate() {
 /*
@@ -3297,92 +3340,89 @@ void job::operatorIdtransform() {
    return;
    }
 
-   void job::operatorScalefont() {
+    void job::operatorScalefont() {
 /*
-   scalefont 
-         font scale scalefont font
-         cidfont scale scalefont cidfont
+    scalefont 
+            font scale scalefont font
+            cidfont scale scalefont cidfont
 
-   applies the scale factor scale to font or cidfont, producing a new font¢ or cidfont¢
-   whose glyphs are scaled by scale (in both the x and y dimensions) when they are
-   shown. scalefont first creates a copy of font or cidfont. Then it replaces the copy’s
-   FontMatrix entry with the result of scaling the existing FontMatrix by scale. It inserts
-   two additional entries, OrigFont and ScaleMatrix, whose purpose is internal
-   to the implementation. Finally, it returns the result as font¢ or cidfont¢.
-   Showing glyphs from font¢ or cidfont¢ produces the same results as showing from
-   font or cidfont after having scaled user space by scale in by means of the scale operator.
-   scalefont is essentially a convenience operator that enables the desired scale
-   factor to be encapsulated in the font or CIDFont description. Another operator,
-   makefont, performs more general transformations than simple scaling. See the
-   description of makefont for more information on how the transformed font is derived.
-   selectfont combines the effects of findfont and scalefont.
+    applies the scale factor scale to font or cidfont, producing a new font¢ or cidfont¢
+    whose glyphs are scaled by scale (in both the x and y dimensions) when they are
+    shown. scalefont first creates a copy of font or cidfont. Then it replaces the copy’s
+    FontMatrix entry with the result of scaling the existing FontMatrix by scale. It inserts
+    two additional entries, OrigFont and ScaleMatrix, whose purpose is internal
+    to the implementation. Finally, it returns the result as font¢ or cidfont¢.
+    Showing glyphs from font¢ or cidfont¢ produces the same results as showing from
+    font or cidfont after having scaled user space by scale in by means of the scale operator.
+    scalefont is essentially a convenience operator that enables the desired scale
+    factor to be encapsulated in the font or CIDFont description. Another operator,
+    makefont, performs more general transformations than simple scaling. See the
+    description of makefont for more information on how the transformed font is derived.
+    selectfont combines the effects of findfont and scalefont.
 
 */
-   float sf = (float)atol(pop() -> Name());
-   font *pFont = reinterpret_cast<font *>(pop());
-   pFont -> scalefont(sf);
-   push(pFont);
-   return;
-   }
+    object *pFontScale = pop();
+    font *pFont = reinterpret_cast<font *>(pop());
+    pFont -> scalefont(pFontScale -> FloatValue());
+    push(pFont);
+    return;
+    }
 
-   void job::operatorSelectfont() {
+    void job::operatorSelectfont() {
 /*
-   selectfont 
+    selectfont 
 
-      key scale selectfont –
-      key matrix selectfont –
+        key scale selectfont –
+        key matrix selectfont –
 
-      obtains a Font resource instance whose name is key, transforms the instance
-      (which may be a font or CIDFont dictionary) according to scale or matrix, and establishes
-      it as the font parameter in the graphics state. selectfont is equivalent to
-      one of the following, according to whether the second operand is a number or a
-      matrix:
+        obtains a Font resource instance whose name is key, transforms the instance
+        (which may be a font or CIDFont dictionary) according to scale or matrix, and establishes
+        it as the font parameter in the graphics state. selectfont is equivalent to
+        one of the following, according to whether the second operand is a number or a
+        matrix:
 
-         key findfont scale scalefont setfont
-         key findfont matrix makefont setfont
+            key findfont scale scalefont setfont
+            key findfont matrix makefont setfont
 
-      If the Font resource instance named by key is already defined in virtual memory,
-      selectfont obtains the corresponding dictionary directly and does not execute
-      findfont. However, if the Font resource instance is not defined, selectfont invokes
-      findfont. In the latter case, it actually executes the name object findfont, so it uses
-      the current definition of that name in the environment of the dictionary stack. On
-      the other hand, redefining scalefont, makefont, or setfont would not alter the behavior
-      of selectfont.
+        If the Font resource instance named by key is already defined in virtual memory,
+        selectfont obtains the corresponding dictionary directly and does not execute
+        findfont. However, if the Font resource instance is not defined, selectfont invokes
+        findfont. In the latter case, it actually executes the name object findfont, so it uses
+        the current definition of that name in the environment of the dictionary stack. On
+        the other hand, redefining scalefont, makefont, or setfont would not alter the behavior
+        of selectfont.
 
-      selectfont can give rise to any of the errors possible for the component operations,
-      including arbitrary errors from a user-defined findfont procedure.
-      Example
+        selectfont can give rise to any of the errors possible for the component operations,
+        including arbitrary errors from a user-defined findfont procedure.
+        Example
 
-         /Helvetica 10 selectfont % More efficient
-         /Helvetica findfont 10 scalefont setfont
+            /Helvetica 10 selectfont % More efficient
+            /Helvetica findfont 10 scalefont setfont
 
-      Both lines of code above have the same effect, but the first one is almost always
-      more efficient.
+        Both lines of code above have the same effect, but the first one is almost always
+        more efficient.
 
-      Errors: invalidfont, rangecheck, stackunderflow, typecheck
-      See Also: findfont, makefont, scalefont, setfont
+        Errors: invalidfont, rangecheck, stackunderflow, typecheck
+        See Also: findfont, makefont, scalefont, setfont
 */
-#if 1
-   pop();
-   pop();
-#else
-   object *pScaleOrMatrix = pop();
-   object *pKey = pop();
 
-   switch ( pScaleOrMatrix -> ObjectType() ) {
-   case object::number:
-      graphicsStateStack.current() -> setFontScale(pScaleOrMatrix -> FloatValue());
-      break;
+    object *pScaleOrMatrix = pop();
 
-   default:
-_asm {
-   int 3;
-}
-      break;
-   }
-#endif
-   return;
-   }
+    operatorFindfont();
+
+    font *pFont = reinterpret_cast<font *>(top());
+
+    push(pScaleOrMatrix);
+
+    if ( object::valueType::real == pScaleOrMatrix -> ValueType() )
+        operatorScalefont();
+    else
+        operatorMakefont();
+
+    operatorSetfont();
+
+    return;
+    }
 
    void job::operatorSetcolor() {
 /*
@@ -3437,44 +3477,44 @@ _asm {
    return;
    }
 
-   void job::operatorSetcolorspace() {
+    void job::operatorSetcolorspace() {
 /*
-   setcolorspace 
-      array setcolorspace –
-      name setcolorspace –
+    setcolorspace 
+        array setcolorspace –
+        name setcolorspace –
 
-   sets the current color space in the graphics state. It also initializes the current
-   color to a value that depends on the specific color space selected. The initial value
-   of the current color space is DeviceGray.
-   In the first form of the operator, the color space is specified by an array of the
-   form
+    sets the current color space in the graphics state. It also initializes the current
+    color to a value that depends on the specific color space selected. The initial value
+    of the current color space is DeviceGray.
+    In the first form of the operator, the color space is specified by an array of the
+    form
 
-         [family param1 … paramn]
+            [family param1 … paramn]
 
-   where family is the name of the color space family and the parameters
-   param1 through paramn further describe the space within that family. The number
-   and meanings of these parameters vary depending on the family; see Section 4.8,
-   “Color Spaces,” for details.
+    where family is the name of the color space family and the parameters
+    param1 through paramn further describe the space within that family. The number
+    and meanings of these parameters vary depending on the family; see Section 4.8,
+    “Color Spaces,” for details.
 
-   In the second form, the color space is specified by its family name only. This is allowed
-   only for those color space families that require no parameters: DeviceGray,
-   DeviceRGB, DeviceCMYK, and Pattern. Specifying a color space by name is equivalent
-   to specifying it by a one-element array containing just that name with no
-   other parameters.
+    In the second form, the color space is specified by its family name only. This is allowed
+    only for those color space families that require no parameters: DeviceGray,
+    DeviceRGB, DeviceCMYK, and Pattern. Specifying a color space by name is equivalent
+    to specifying it by a one-element array containing just that name with no
+    other parameters.
 
-   Execution of this operator is not permitted in certain circumstances; see
-   Section 4.8.1, “Types of Color Space.”
+    Execution of this operator is not permitted in certain circumstances; see
+    Section 4.8.1, “Types of Color Space.”
 */
 
-   object *pTop = pop();
+    object *pTop = pop();
 
-   if ( object::array == pTop -> ObjectType() )
-      pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop));
-   else
-      pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,pTop -> Name());
+    if ( object::array == pTop -> ObjectType() )
+        pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop));
+    else
+        pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,pTop -> Name());
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorSetdash() {
 /*
@@ -3523,24 +3563,24 @@ _asm {
    return;
    }
 
-   void job::operatorSetfont() {
+    void job::operatorSetfont() {
 /*
-   setfont 
-      font setfont –
-      cidfont setfont –
+    setfont 
+        font setfont –
+        cidfont setfont –
 
-   establishes font or cidfont as the font parameter in the graphics state (subsequently
-   returned by rootfont). This in turn determines the current font or CIDFont (returned
-   by currentfont)—the font to be used by subsequent glyph operators, such
-   as show and stringwidth, or the CIDFont to be used by a subsequent glyphshow
-   operator. The operand must be a valid font or CIDFont dictionary. See
-   Section 5.1, “Organization and Use of Fonts.”
+    establishes font or cidfont as the font parameter in the graphics state (subsequently
+    returned by rootfont). This in turn determines the current font or CIDFont (returned
+    by currentfont)—the font to be used by subsequent glyph operators, such
+    as show and stringwidth, or the CIDFont to be used by a subsequent glyphshow
+    operator. The operand must be a valid font or CIDFont dictionary. See
+    Section 5.1, “Organization and Use of Fonts.”
 */
 
-   pop();
+    currentGS() -> setFont(reinterpret_cast<font *>(pop()));
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorSetglobal() {
 /*
@@ -3946,50 +3986,50 @@ _asm {
    return;
    }
 
-   void job::operatorStopped() {
+    void job::operatorStopped() {
 /*
-   stopped 
-      any stopped bool
+    stopped 
+        any stopped bool
 
-   executes any, which is typically, but not necessarily, a procedure, executable file,
-   or executable string object. If any runs to completion normally, stopped returns
-   false on the operand stack. If any terminates prematurely as a result of executing
-   stop, stopped returns true. Regardless of the outcome, the interpreter resumes execution
-   at the next object in normal sequence after stopped.
+    executes any, which is typically, but not necessarily, a procedure, executable file,
+    or executable string object. If any runs to completion normally, stopped returns
+    false on the operand stack. If any terminates prematurely as a result of executing
+    stop, stopped returns true. Regardless of the outcome, the interpreter resumes execution
+    at the next object in normal sequence after stopped.
 
-   This mechanism provides an effective way for a PostScript program to “catch”
-   errors or other premature terminations, retain control, and perhaps perform its
-   own error recovery. See Section 3.11, “Errors.”
+    This mechanism provides an effective way for a PostScript program to “catch”
+    errors or other premature terminations, retain control, and perhaps perform its
+    own error recovery. See Section 3.11, “Errors.”
 
-   When an error occurs, the standard error handler sets newerror to true in the
-   $error dictionary. When using stopped to catch and continue from an error
-   (without invoking handleerror), it is prudent to explicitly reset newerror to false
-   in $error; otherwise, any subsequent execution of stop may result in inadvertent
-   reporting of the leftover error. Also, note that the standard error handler sets the
-   VM allocation mode to local.
+    When an error occurs, the standard error handler sets newerror to true in the
+    $error dictionary. When using stopped to catch and continue from an error
+    (without invoking handleerror), it is prudent to explicitly reset newerror to false
+    in $error; otherwise, any subsequent execution of stop may result in inadvertent
+    reporting of the leftover error. Also, note that the standard error handler sets the
+    VM allocation mode to local.
 
-      Example
-      { … } stopped
-         {handleerror}
-      if
+        Example
+        { … } stopped
+            {handleerror}
+        if
 
-   If execution of the procedure { … } causes an error, the default error reporting
-   procedure is invoked (by handleerror). In any event, normal execution continues
-   at the token following the if operator.
+    If execution of the procedure { … } causes an error, the default error reporting
+    procedure is invoked (by handleerror). In any event, normal execution continues
+    at the token following the if operator.
 */
 
-   object *pObject = top();
+    object *pObject = top();
 
-   if ( object::procedure == pObject -> ObjectType() ) {
-      pop();
-      execute(reinterpret_cast<procedure *>(pObject));
-   } else  
-      execute();
+    if ( object::procedure == pObject -> ObjectType() ) {
+        pop();
+        executeProcedure(reinterpret_cast<procedure *>(pObject));
+    } else  
+        executeObject();
 
-   push(pFalseConstant);
+    push(pFalseConstant);
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorString() {
 /*
@@ -4135,43 +4175,43 @@ _asm {
    return;
    }
    
-   void job::operatorType() {
-/*
-   type 
-      any type name
+    void job::operatorType() {
+    /*
+    type 
+        any type name
 
-   returns a name object that identifies the type of the object any. The possible
-   names that type can return are as follows:
+    returns a name object that identifies the type of the object any. The possible
+    names that type can return are as follows:
 
-      arraytype         nametype
-      booleantype       nulltype
-      dicttype          operatortype
-      filetype          packedarraytype
-      fonttype          realtype
-      gstatetype        savetype
-      integertype       stringtype
-      marktype
+        arraytype         nametype
+        booleantype       nulltype
+        dicttype          operatortype
+        filetype          packedarraytype
+        fonttype          realtype
+        gstatetype        savetype
+        integertype       stringtype
+        marktype
 
-   The name fonttype identifies an object of type fontID. It has nothing to do with a
-   font dictionary, which is identified by dicttype the same as any other dictionary.
+    The name fonttype identifies an object of type fontID. It has nothing to do with a
+    font dictionary, which is identified by dicttype the same as any other dictionary.
 
-   The returned name has the executable attribute. This makes it convenient to perform
-   type-dependent processing of an object simply by executing the name returned
-   by type in the context of a dictionary that defines all the type names to
-   have procedure values (this is how the == operator works).
+    The returned name has the executable attribute. This makes it convenient to perform
+    type-dependent processing of an object simply by executing the name returned
+    by type in the context of a dictionary that defines all the type names to
+    have procedure values (this is how the == operator works).
 
-   The set of types is subject to enlargement in future revisions of the language. A
-   program that examines the types of arbitrary objects should be prepared to behave
-   reasonably if type returns a name that is not in this list.
+    The set of types is subject to enlargement in future revisions of the language. A
+    program that examines the types of arbitrary objects should be prepared to behave
+    reasonably if type returns a name that is not in this list.
 
-   Errors: stackunderflow
-*/
-   object *pObject = pop();
+    Errors: stackunderflow
+    */
+    object *pObject = pop();
 
-   push(nameTypeMap[pObject -> ObjectType()][pObject -> ValueType()]);
+    push(nameTypeMap[pObject -> ObjectType()][pObject -> ValueType()]);
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorUndef() {
 /*
@@ -4193,13 +4233,38 @@ _asm {
    object *pKey = pop();
    dictionary *pDict = reinterpret_cast<dictionary *>(pop());
 
-   if ( ! pDict -> exists(pKey -> Contents()) )
+   if ( ! pDict -> exists(pKey -> Name()) )
       return;
 
-   pDict -> remove(pKey -> Contents());
+   pDict -> remove(pKey -> Name());
 
    return;
    }
+
+    void job::operatorUndefinefont() {
+/*
+    undefinefont
+        key undefinefont –
+
+    removes key and its associated value (a font or CIDFont dictionary) from the font
+    directory, reversing the effect of a previous definefont operation. 
+    undefinefont is a special case of the undefineresource operator applied to 
+    the Font category. For details, see undefineresource and Section 3.9, “Named Resources.”
+
+    Errors: stackunderflow, typecheck
+    See Also: definefont, undefineresource
+*/
+
+    object *pKey = pop();
+
+    if ( ! pFontDirectory -> exists(pKey -> Name()) )
+        return;
+
+    pFontDirectory -> remove(pKey -> Name());
+
+    return;
+    }
+
 
    void job::operatorVersion() {
 /*
@@ -4256,50 +4321,39 @@ _asm {
    return;
    }
 
-   void job::operatorWhere() {
+    void job::operatorWhere() {
 /*
-   where 
+    where 
 
-      key where dict true (if found)
-      false (if not found)
+        key where dict true (if found)
+        false (if not found)
 
-   determines which dictionary on the dictionary stack, if any, contains an entry
-   whose key is key. where searches for key in each dictionary on the dictionary stack,
-   starting with the topmost (current) dictionary. If key is found in some dictionary,
-   where returns that dictionary object and the boolean value true; otherwise, where
-   simply returns false.
+    determines which dictionary on the dictionary stack, if any, contains an entry
+    whose key is key. where searches for key in each dictionary on the dictionary stack,
+    starting with the topmost (current) dictionary. If key is found in some dictionary,
+    where returns that dictionary object and the boolean value true; otherwise, where
+    simply returns false.
 
-   Errors: invalidaccess, stackoverflow, stackunderflow, typecheck
+    Errors: invalidaccess, stackoverflow, stackunderflow, typecheck
 */
 
-   object *pTop = pop();
+    object *pTop = pop();
 
-   std::list<dictionary *> restack;
+    dictionary *pCurrent = NULL;
 
-   dictionary *pCurrent = NULL;
+    if ( ! ( NULL == pTop -> Name() ) )
+        pCurrent = dictionaryStack.find(pTop -> Name());
 
-   while ( dictionaryStack.size() ) {
-      dictionary *pThis = dictionaryStack.pop();
-      restack.insert(restack.end(),pThis);
-      if ( pThis -> exists(pTop -> Name()) ) {
-         pCurrent = pThis;
-         break;
-      }
-   }
+    if ( ! ( NULL == pCurrent ) ) {
+        push(pCurrent);
+        push(pTrueConstant);
+        return;
+    }
 
-   for ( std::list<dictionary *>::reverse_iterator it = restack.rbegin(); it != restack.rend(); it++ ) 
-      dictionaryStack.push((*it));
+    push(pFalseConstant);
 
-   if ( pCurrent ) {
-      push(pCurrent);
-      push(pTrueConstant);
-      return;
-   }
-
-   push(pFalseConstant);
-
-   return;
-   }
+    return;
+    }
 
    void job::operatorWidthshow() {
 /*
@@ -4356,58 +4410,92 @@ _asm {
    return;
    }
 
-   void job::operatorXshow() {
+    void job::operatorXshow() {
 /*
-   xshow 
-      string numarray xshow –
-      string numstring xshow –
+    xshow 
+        string numarray xshow –
+        string numstring xshow –
 
-   is similar to xyshow; however, for each glyph shown, xshow extracts only one
-   number from numarray or numstring. It uses that number as the x displacement
-   and the value 0 as the y displacement. In all other respects, xshow behaves the
-   same as xyshow.
+    is similar to xyshow; however, for each glyph shown, xshow extracts only one
+    number from numarray or numstring. It uses that number as the x displacement
+    and the value 0 as the y displacement. In all other respects, xshow behaves the
+    same as xyshow.
+
+    See section, 3.14.5 Encoded Number Strings
+    At this point, the use of a numstring operand is not implemented
 
 */
-   pop();
-   pop();
-   return;
-   }
+    object *pObject = pop();
 
-   void job::operatorXyshow() {
+    array *pNumberArray = reinterpret_cast<array *>(pObject);
+
+    pObject = reinterpret_cast<string *>(top());
+
+    operatorLength();
+
+    long strSize = pop() -> IntValue();
+
+    binaryString *pBinary = NULL;
+    string *pString = NULL;
+
+    if ( object::valueType::binaryString == pObject -> ValueType() )
+        pBinary = reinterpret_cast<binaryString *>(pObject);
+    else
+        pString = reinterpret_cast<string *>(pObject);
+
+    for ( long k = 0; k < strSize; k++ ) {
+
+        object *pChar = NULL;
+
+        if ( pBinary ) 
+            currentGS() -> drawGlyph(pBinary -> get(k));
+        else
+            pChar = pString -> getElement(k);
+
+        object *pX = pNumberArray -> getElement(k);
+        push(pX);
+        push(pZeroConstant);
+        currentGS() -> rmoveto();
+    }
+
+    return;
+    }
+
+    void job::operatorXyshow() {
 /*
-   xyshow 
-      string numarray xyshow –
-      string numstring xyshow –
+    xyshow 
+        string numarray xyshow –
+        string numstring xyshow –
 
-   paints glyphs for the characters of string in a manner similar to show. After painting
-   each glyph, it extracts two successive numbers from the array numarray or the
-   encoded number string numstring. These two numbers, interpreted in user space,
-   determine the position of the origin of the next glyph relative to the origin of the
-   glyph just shown. The first number is the x displacement and the second number
-   is the y displacement. In other words, the two numbers override the glyph’s normal
-   width.
+    paints glyphs for the characters of string in a manner similar to show. After painting
+    each glyph, it extracts two successive numbers from the array numarray or the
+    encoded number string numstring. These two numbers, interpreted in user space,
+    determine the position of the origin of the next glyph relative to the origin of the
+    glyph just shown. The first number is the x displacement and the second number
+    is the y displacement. In other words, the two numbers override the glyph’s normal
+    width.
 
-   If numarray or numstring is exhausted before all the characters of string have been
-   shown, a rangecheck error occurs. See Section 5.1.4, “Glyph Positioning,” for further
-   information about xyshow, and Section
+    If numarray or numstring is exhausted before all the characters of string have been
+    shown, a rangecheck error occurs. See Section 5.1.4, “Glyph Positioning,” for further
+    information about xyshow, and Section
 */
-   pop();
-   pop();
-   return;
-   }
+    object *pNumberArray = pop();
+    object *pString = pop();
+    return;
+    }
 
-   void job::operatorYshow() {
+    void job::operatorYshow() {
 /*
-   yshow 
-      string numarray yshow –
-      string numstring yshow –
+    yshow 
+        string numarray yshow –
+        string numstring yshow –
 
-   is similar to xyshow; however, for each glyph shown, yshow extracts only one
-   number from numarray or numstring. It uses that number as the y displacement
-   and the value 0 as the x displacement. In all other respects, yshow behaves the
-   same as xyshow.
+    is similar to xyshow; however, for each glyph shown, yshow extracts only one
+    number from numarray or numstring. It uses that number as the y displacement
+    and the value 0 as the x displacement. In all other respects, yshow behaves the
+    same as xyshow.
 */
-   pop();
-   pop();
-   return;
-   }
+    pop();
+    pop();
+    return;
+    }

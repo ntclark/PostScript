@@ -8,7 +8,7 @@
 
    colorSpace::colorSpace(job *pj,object *po) :
       parameterCount(0),
-      array(pj,po -> Name(),object::colorSpace)
+      array(pj,po -> Name())
    {
    if ( object::matrix == po -> ObjectType() ) {
       __debugbreak();
@@ -19,7 +19,7 @@
 
    colorSpace::colorSpace(job *pj,char *pszName) :
       parameterCount(0),
-      array(pj,pszName,object::colorSpace)
+      array(pj,pszName)
    {
    return;
    }

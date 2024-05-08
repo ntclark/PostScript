@@ -37,11 +37,14 @@
     <Filter Include="Source Files\Stacks">
       <UniqueIdentifier>{cce96c05-3587-4609-9a8f-1849a5c5cebe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Fonts">
-      <UniqueIdentifier>{db734db7-852a-4c26-b698-9b5049ebc8c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Stacks">
       <UniqueIdentifier>{359318e9-d6f8-488d-977f-7c68a033ba27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\job">
+      <UniqueIdentifier>{d531f7d2-f388-4f5d-95b6-80e3039f509c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PostScript objects\graphicsState">
+      <UniqueIdentifier>{2f5a6cf9-de0f-479c-9288-38242b24a54d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -51,16 +54,7 @@
     <ClCompile Include="handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="job.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="operators.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="parse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="parseJob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pdfOperators.cpp">
@@ -156,20 +150,68 @@
     <ClCompile Include="Stacks\objectStack.cpp">
       <Filter>Source Files\Stacks</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicsState.cpp">
-      <Filter>Source Files\PostScript objects</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\resource.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\save.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicsState_Fonts.cpp">
-      <Filter>Source Files\PostScript objects</Filter>
-    </ClCompile>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript_initWindows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cmdPaneHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logPaneHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="job\job.cpp">
+      <Filter>Source Files\job</Filter>
+    </ClCompile>
+    <ClCompile Include="job\parse.cpp">
+      <Filter>Source Files\job</Filter>
+    </ClCompile>
+    <ClCompile Include="job\parseJob.cpp">
+      <Filter>Source Files\job</Filter>
+    </ClCompile>
+    <ClCompile Include="job\parseJob_execute.cpp">
+      <Filter>Source Files\job</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\constantString.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\binaryString.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="job\job_operators.cpp">
+      <Filter>Source Files\job</Filter>
+    </ClCompile>
+    <ClCompile Include="job\job_pdfOperators.cpp">
+      <Filter>Source Files\job</Filter>
+    </ClCompile>
+    <ClCompile Include="Fonts\simpleGlyph.cpp">
+      <Filter>Source Files\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\conic.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\cubicSpline.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawGlyph.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -181,7 +223,7 @@
     <Text Include="resources\glyphList.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\PostScript.odl">
+    <Midl Include="COM Implementation\PostScriptGen2.odl">
       <Filter>Source Files\COM Implementation</Filter>
     </Midl>
   </ItemGroup>
@@ -234,9 +276,6 @@
     <ClInclude Include="include\PostScript objects\structureSpec.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
-    <ClInclude Include="include\Fonts\font.h">
-      <Filter>Header Files\Fonts</Filter>
-    </ClInclude>
     <ClInclude Include="include\Stacks\dictionaryStack.h">
       <Filter>Header Files\Stacks</Filter>
     </ClInclude>
@@ -265,6 +304,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\PostScript objects\string.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\constantString.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\binaryString.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\job_operators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\job_pdfOperators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\font.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
   </ItemGroup>

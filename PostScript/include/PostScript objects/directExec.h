@@ -9,13 +9,16 @@
    class directExec : public object {
    public:
 
-      directExec(job *pJob,char *pszContents,void (__thiscall job::*pProc)()) : object(pJob,pszContents,object::directExecutable), pProcedure(pProc) {};
+      directExec(job *pJob,char *pszContents,void (__thiscall job::*pProc)()) : 
+            object(pJob,pszContents,object::objectType::directExecutable,object::valueType::executableOperator,
+                    object::valueClassification::simple,object::executableAttribute::executable), pOperator(pProc) {};
+
       ~directExec() {};
 
-      void (__thiscall job::*Procedure())() { return pProcedure; };
+      void (__thiscall job::*Operator())() { return pOperator; };
 
    private:
 
-      void (__thiscall job::*pProcedure)();
+      void (__thiscall job::*pOperator)();
 
    };

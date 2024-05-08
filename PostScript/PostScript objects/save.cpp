@@ -2,7 +2,7 @@
 #include "PostScript objects\save.h"
 
    save::save(job *pJob) :
-      object(pJob,"",object::save)
+      object(pJob,NULL,object::objectType::save,object::valueType::valueTypeUnspecified,object::valueClassification::composite)
    {
    return;
    }
