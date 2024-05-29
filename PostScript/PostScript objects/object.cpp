@@ -127,8 +127,6 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     parseValue(ot,vt);
 
-
-
     return;
     }
 
@@ -298,7 +296,9 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return atol(pszContents);
     }
     intValue = value; 
-    sprintf(pszContents,"%ld",value); 
+    char szInt[32];
+    sprintf_s<32>(szInt,"%ld",value);
+    Contents(szInt);
     theObjectType = object::number;
     theValueType = object::integer;
     return intValue;
@@ -314,7 +314,9 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     }
 
     doubleValue = value; 
-    sprintf(pszContents,"%lf",value); 
+    char szDouble[32];
+    sprintf_s<32>(szDouble,"%f",value);
+    Contents(szDouble);
     theObjectType = object::number;
     theValueType = object::real;
     return doubleValue;
@@ -325,6 +327,11 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     if ( -FLT_MAX == value ) 
         return (float)DoubleValue();
     return (float)DoubleValue((double)value);
+    }
+
+
+    POINT_TYPE object::PointValue() {
+    return PICA_FACTOR * DoubleValue();
     }
 
 

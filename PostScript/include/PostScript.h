@@ -314,77 +314,6 @@
 
     };
 
-#define ADVANCE_THRU_EOL(p)               \
-{                                         \
-while ( *p != 0x0A && *p != 0x0D )        \
-   p++;                                   \
-if ( *p == 0x0A || *p == 0x0D )           \
-   p++;                                   \
-if ( *p == 0x0A || *p == 0x0D )           \
-   p++;                                   \
-}
-
-
-#define ADVANCE_THRU_WHITE_SPACE(p) \
-{                                   \
-while ( *p && strchr(pszWhiteSpace,*p) ) { \
-   p++;  \
-}        \
-}
-
-#define ADVANCE_TO_WHITE_SPACE(p)         \
-{                                         \
-while ( *p && ! strchr(pszWhiteSpace,*p) )\
-   p++;                                   \
-}
-
-#define ADVANCE_TO_END(p)                    \
-{                                            \
-while ( *p && ! strchr(pszWhiteSpace,*p) ) { \
-   char *pz = (char *)p;                     \
-   for ( long k = 0; 1; k++ ) {              \
-      if ( ! psCollectionDelimiters[k][0] )  \
-         break;                              \
-      if ( 0 == strncmp(pz,psCollectionDelimiters[k],psCollectionDelimiterLength[k]) ) {   \
-         pz = NULL; \
-         break;     \
-      }             \
-   }                \
-   if ( ! pz )      \
-      break;        \
-   pz = strchr(pszDelimiters,*p);  \
-   if ( pz ) {                     \
-      for ( long k = 0; 1; k++ ) { \
-         if ( ! psDelimiters[k][0] ) \
-            break;                   \
-         if ( 0 == strncmp(pz,psDelimiters[k],psDelimiterLength[k]) ) { \
-            pz = NULL;                                                  \
-            break;                                                      \
-         }          \
-      }             \
-      if ( ! pz )   \
-         break;     \
-   }                \
-   p++;             \
-}                   \
-}
-
-#define COMMENT_DELIMITER           "%"
-#define DSC_DELIMITER               "%%"
-#define LITERAL_DELIMITER           "/"
-#define PROC_DELIMITER_BEGIN        "{"
-#define PROC_DELIMITER_END          "}"
-#define STRING_DELIMITER_BEGIN      "("
-#define STRING_DELIMITER_END        ")"
-#define HEX_STRING_DELIMITER_BEGIN  "<"
-#define HEX_STRING_DELIMITER_END    ">"
-#define HEX85_DELIMITER_BEGIN       "<~"
-#define HEX85_DELIMITER_END         "~>"
-#define DICTIONARY_DELIMITER_BEGIN  "<<"
-#define DICTIONARY_DELIMITER_END    ">>"
-#define ARRAY_DELIMITER_BEGIN       "["
-#define ARRAY_DELIMITER_END         "]"
-
 #define PIXELS_TO_HIMETRIC(x,ppli)  ( (2540*(x) + ((ppli) >> 1)) / (ppli) )
 #define HIMETRIC_TO_PIXELS(x,ppli)  ( ((ppli)*(x) + 1270) / 2540 )
 
@@ -418,7 +347,6 @@ while ( *p && ! strchr(pszWhiteSpace,*p) ) { \
     }   \
     }
 
-
 #ifdef DEFINE_DATA
 
    PStoPDF *pPStoPDF = NULL;
@@ -438,7 +366,6 @@ while ( *p && ! strchr(pszWhiteSpace,*p) ) { \
 
    char psOtherDelimiters[][8] = {"]",0};
    char pszDelimiters[] = {"%%%(/<~{"};
-   char pszWhiteSpace[] = " \t\x0A\x0D\x0C";
 
 #else
 
@@ -457,6 +384,5 @@ while ( *p && ! strchr(pszWhiteSpace,*p) ) { \
    extern long psDelimiterLength[];
    extern char psOtherDelimiters[][8];
    extern char pszDelimiters[];
-   extern char pszWhiteSpace[];
 
 #endif

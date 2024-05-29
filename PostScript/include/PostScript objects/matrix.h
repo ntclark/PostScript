@@ -1,7 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #pragma once
 
 #include "object.h"
@@ -13,26 +9,48 @@
       matrix(job *pJob);
       ~matrix();
 
-      void SetValue(long index,float value);
-
-      virtual void concat(matrix *);
-      virtual void concat(float *);
-      virtual void concat(XFORM &);
+      void SetValue(long index,POINT_TYPE value);
 
       virtual char *ToString();
 
-      float a();
-      float b();
-      float c();
-      float d();
-      float tx();
-      float ty();
+      void concat(matrix *);
+      void concat(array *);
+      void concat(POINT_TYPE *);
+      void concat(XFORM &);
 
-      void a(float v);
-      void b(float v);
-      void c(float v);
-      void d(float v);
-      void tx(float v);
-      void ty(float v);
+      void revertTransform();
+
+      void copyFrom(matrix *);
+
+      void scale(POINT_TYPE scaleFactor);
+
+      POINT_TYPE a();
+      POINT_TYPE b();
+      POINT_TYPE c();
+      POINT_TYPE d();
+      POINT_TYPE tx();
+      POINT_TYPE ty();
+
+      POINT_TYPE aInverse();
+      POINT_TYPE bInverse();
+      POINT_TYPE cInverse();
+      POINT_TYPE dInverse();
+      POINT_TYPE txInverse();
+      POINT_TYPE tyInverse();
+
+      void a(POINT_TYPE v);
+      void b(POINT_TYPE v);
+      void c(POINT_TYPE v);
+      void d(POINT_TYPE v);
+      void tx(POINT_TYPE v);
+      void ty(POINT_TYPE v);
+
+   private:
+
+      POINT_TYPE revertValues[6]{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+      POINT_TYPE inverse[6]{6 * 0.0f};
+      boolean invalidated{false};
+
+      void invert();
 
    };

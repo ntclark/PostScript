@@ -1,12 +1,15 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #pragma once
 
 #include <map>
 
 #include "object.h"
+
+#define A 0
+#define B 1
+#define C 2
+#define D 3
+#define TX 4
+#define TY 5
 
 class job;
 
@@ -25,6 +28,8 @@ class job;
 
       virtual void putElement(long index,object *);
       virtual object *getElement(long index);
+
+      virtual void setValue(long index,POINT_TYPE v);
 
       void clear();
 

@@ -31,6 +31,8 @@
 
    long PStoPDF::queueLog(char *pszOutput,char *pEnd,bool isError) {
 
+//OutputDebugStringA(pszOutput);
+
    if ( none == theLogLevel )
       return 0L;
 
@@ -75,21 +77,6 @@
    char *p = new char[pEnd - pStart + 2];
    memcpy((BYTE *)p,pStart,pEnd - pStart);
    p[pEnd - pStart] = '\0';
-
-if ( 0 == strncmp(p,"featurebegin",11) )
-printf("hello world");
-
-if ( 0 == strncmp(p,"version",7) )
-printf("hello world");
-
-if ( 0 == strncmp(p,"Pscript_WinNT",13) )
-printf("hello world");
-
-if ( 0 == strncmp(p,"Type42DictBegin",15) )
-printf("hello world");
-
-if ( 0 == strncmp(pStart,"end reinitialize",16) )
-printf("hello world");
 
    if ( NULL == hwndLog ) {
       OutputDebugStringA(p);

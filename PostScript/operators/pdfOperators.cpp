@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "job.h"
 
@@ -123,7 +120,7 @@
 /*
    tag  BMC
 
-   Begin a marked-content sequence terminated by a balancing EMCoperator. tag shall be a name object 
+   Begin a marked-content sequence terminated by a balancing EMC operator. tag shall be a name object 
    indicating the role or significance of the sequence.
 */
    pop();
@@ -138,7 +135,10 @@
       Tlm, to the identity matrix. Text objects shall not be nested; a second BT 
       shall not appear before an ET.
 */
+Beep(2000,200);
+#if 0
    graphicsStateStack.current() -> beginText();
+#endif
    return;
    }
 
@@ -174,11 +174,11 @@
    (see 8.3.2, "Coordinate Spaces"). Although the operands specify a matrix, they shall 
    be written as six separate numbers, not as an array.
 */
-   float d[6];
+   POINT_TYPE d[6];
    for ( long k = 5; k > -1; k-- )
-      d[k] = pop() -> FloatValue();
+      d[k] = pop() -> OBJECT_POINT_TYPE_VALUE;
 
-   graphicsStateStack.current() -> concat(d);
+   currentGS() -> concat(d);
    return;
    }
    
@@ -344,7 +344,10 @@
 /*
       End a text object, discarding the text matrix.   
 */
+Beep(2000,200);
+#if 0
    graphicsStateStack.current() -> endText();
+#endif
    return;
    }
 
@@ -420,7 +423,7 @@ Same as G but used for nonstroking operations.
       of a graphics state parameter dictionary in the ExtGState subdictionary of the current 
       resource dictionary (see the next sub-clause).
 */
-   graphicsStateStack.current() -> setGraphicsStateDict(pop() -> Contents());
+   currentGS() -> setGraphicsStateDict(pop() -> Contents());
    return;
    }
 
@@ -565,7 +568,7 @@ Same as G but used for nonstroking operations.
    gsave
       Save graphics state
 */
-   graphicsStateStack.save();
+   graphicsStateStack.gSave();
    return;
    }
 
@@ -575,7 +578,7 @@ Same as G but used for nonstroking operations.
       Restore the graphics state by removing the most recently saved state from the stack and making it 
       the current state (see 8.4.2, "Graphics State Stack").
 */
-   graphicsStateStack.restore();
+   graphicsStateStack.gRestore();
    return;
    }
 
@@ -772,7 +775,11 @@ Same as G but used for nonstroking operations.
       Going to the next line entails decreasing the y coordinate.
 */
 //   graphicsStateStack.current() -> translateTextMatrix(0.0f,-graphicsStateStack.current() -> getTextLeading());
+
+Beep(2000,200);
+#if 0
    graphicsStateStack.current() -> startLine(0.0f,-graphicsStateStack.current() -> getTextLeading());
+#endif
    return;
    }
 
@@ -786,7 +793,10 @@ Same as G but used for nonstroking operations.
    Initial value: 0.
 */
    object *pCS = pop();
-   graphicsStateStack.current() -> setCharacterSpacing(pCS -> FloatValue());
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setCharacterSpacing(pCS -> OBJECT_POINT_TYPE_VALUE);
+#endif
    return;
    }
 
@@ -799,7 +809,10 @@ Same as G but used for nonstroking operations.
 */
    object *pty = pop();
    object *ptx = pop();
-   graphicsStateStack.current() -> startLine(ptx -> FloatValue(),pty -> FloatValue());
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> startLine(ptx -> OBJECT_POINT_TYPE_VALUE,pty -> OBJECT_POINT_TYPE_VALUE);
+#endif
    return;
    }
 
@@ -818,7 +831,10 @@ Same as G but used for nonstroking operations.
 */
    operatorDup();
    object *pTy = pop();
-   graphicsStateStack.current() -> setTextLeading(-pTy -> FloatValue());
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setTextLeading(-pTy -> OBJECT_POINT_TYPE_VALUE);
+#endif
    pdfOperator_Td();
    return;
    }
@@ -852,7 +868,10 @@ Same as G but used for nonstroking operations.
    scaling Th
 */
    object *pHS = pop();
-   graphicsStateStack.current() -> setHorizontalTextScaling(pHS -> FloatValue() / 100.0f);
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setHorizontalTextScaling(pHS -> OBJECT_POINT_TYPE_VALUE / 100.0f);
+#endif
    return;
    }
 
@@ -886,6 +905,8 @@ Same as G but used for nonstroking operations.
    
    array *pArray = reinterpret_cast<array *>(pop());
 
+Beep(2000,200);
+#if 0
    graphicsState *pCurrentState = graphicsStateStack.current();
 
    long count = pArray -> size();
@@ -895,13 +916,13 @@ Same as G but used for nonstroking operations.
       object *pItem = pArray -> getElement(k);
 
       if ( object::number == pItem -> ObjectType() )
-         pCurrentState -> translateTextMatrixTJ(pItem -> FloatValue(),0.0f);
+         pCurrentState -> translateTextMatrixTJ(pItem -> OBJECT_POINT_TYPE_VALUE,0.0f);
 
       else if ( object::string == pItem -> ValueType() )
          pCurrentState -> addText(pItem -> Contents());
 
    }
-
+#endif
    return;
    }
 
@@ -916,7 +937,10 @@ Same as G but used for nonstroking operations.
    Initial value: 0.
 */
    object *pTL = pop();
-   graphicsStateStack.current() -> setTextLeading(pTL -> FloatValue());
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setTextLeading(pTL -> OBJECT_POINT_TYPE_VALUE);
+#endif
    return;
    }
 
@@ -934,10 +958,12 @@ Same as G but used for nonstroking operations.
 */
    float d[6];
    for ( long k = 5; k > -1; k-- )
-      d[k] = pop() -> FloatValue();
+      d[k] = pop() -> OBJECT_POINT_TYPE_VALUE;
 
+Beep(2000,200);
+#if 0
    graphicsStateStack.current() -> setTextMatrix(d);
-
+#endif
    return;
    }
 
@@ -950,7 +976,10 @@ Same as G but used for nonstroking operations.
    Initial value: 0.
 */
    object *pMode = pop();
+Beep(2000,200);
+#if 0
    graphicsStateStack.current() -> setTextRenderingMode(pMode -> IntValue());
+#endif
    return;
    }
 
@@ -963,7 +992,10 @@ Same as G but used for nonstroking operations.
    Initial value: 0.
 */
    object *pTR = pop();
-   graphicsStateStack.current() -> setTextRise(pTR -> FloatValue());
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setTextRise(pTR -> OBJECT_POINT_TYPE_VALUE);
+#endif
    return;
    }
 
@@ -979,7 +1011,10 @@ Same as G but used for nonstroking operations.
 
 */
    object *pWS = pop();
-   graphicsStateStack.current() -> setWordSpacing(pWS -> FloatValue());
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setWordSpacing(pWS -> OBJECT_POINT_TYPE_VALUE);
+#endif
    return;
    }
 
@@ -994,7 +1029,10 @@ Same as G but used for nonstroking operations.
    Initial value: 100 (normal width).
 */
    object *pTZ = pop();
-   graphicsStateStack.current() -> setHorizontalTextScaling(pTZ -> FloatValue() / 100.0f);
+Beep(2000,200);
+#if 0
+   graphicsStateStack.current() -> setHorizontalTextScaling(pTZ -> OBJECT_POINT_TYPE_VALUE / 100.0f);
+#endif
    return;
    }
 

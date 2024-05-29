@@ -6,6 +6,13 @@
 
 #define OBJECT_HEAP_SIZE   104857600
 
+typedef double POINT_TYPE;
+
+#define OBJECT_POINT_TYPE_VALUE DoubleValue()
+#define OBJECT_SET_POINT_TYPE_VALUE(v) DoubleValue(v)
+
+#define PICA_FACTOR 128
+
     class job;
 
     class object {
@@ -31,7 +38,9 @@
             name = 16,
             literal = 17,
             resource = 18,
-            objectTypeUnspecified = 19
+            file = 19,
+            filter = 20,
+            objectTypeUnspecified = 99
         };
 
         enum valueClassification {
@@ -107,6 +116,8 @@
         char *ValueTypeName();
         long IntValue(long value = -LONG_MAX);
         double DoubleValue(double value = -DBL_MAX);
+        POINT_TYPE PointValue();
+
         float FloatValue(float value = -FLT_MAX);
         double Value();
 
@@ -115,6 +126,8 @@
 
         enum objectType ObjectType() { return theObjectType; };
         enum valueType ValueType( enum valueType vt = invalidValueType ) { if ( vt != invalidValueType ) theValueType = vt; return theValueType; };
+
+        object *ContainingDictionary() { return pContainingDictionary; }
 
         static void *pHeap;
         static void *pCurrentHeap;

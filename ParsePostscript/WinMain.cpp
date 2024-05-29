@@ -98,7 +98,7 @@ RECT rcFrame{512,512,1024,768};
 
     pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
 
-    pParsePSHost -> pIPostScript -> ShowFontRenderingPoints(true);
+    pParsePSHost -> pIPostScript -> ShowFontRenderingPoints(false);
 
     MSG qMessage;
 

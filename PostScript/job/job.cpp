@@ -29,6 +29,7 @@
         graphicsStateStack(this)
 
     {
+
     if ( ! pPdfUtility )
         pPdfUtility = new PdfUtility();
 
@@ -52,9 +53,14 @@
     pDefaultColorSpace = new (CurrentObjectHeap()) colorSpace(this,"DeviceGray");
     pCurrentColorSpace = pDefaultColorSpace;
 
+    memset(szPostScriptSourceFile,0,MAX_PATH * sizeof(char));
+
+    pPostScriptSourceFile = NULL;;
+
     if ( pszFileName ) {
         FILE *f = fopen(pszFileName,"rb");
         if ( f ) {
+            strcpy(szPostScriptSourceFile,pszFileName);
             fseek(f,0,SEEK_END);
             long fileSize = ftell(f);
             fseek(f,0,SEEK_SET);
@@ -69,6 +75,7 @@
 
     pStringType = new (CurrentObjectHeap()) name(this,"stringtype");
     pArrayType = new (CurrentObjectHeap()) name(this,"arraytype");
+    pPackedArrayType = new (CurrentObjectHeap()) name(this,"packedarraytype");
     pIntegerType = new (CurrentObjectHeap()) name(this,"integertype");
     pRealType = new (CurrentObjectHeap()) name(this,"realtype");
     pBooleanType = new (CurrentObjectHeap()) name(this,"booleantype");
@@ -92,6 +99,8 @@
 
     nameTypeMap[object::literal][object::string] = pStringType;
     nameTypeMap[object::procedure][object::string] = pStringType;
+    nameTypeMap[object::procedure][object::executableProcedure] = pPackedArrayType;
+    nameTypeMap[object::matrix][object::container] = pArrayType;
     nameTypeMap[object::dictionary][object::string] = pDictType;
     nameTypeMap[object::array][object::container] = pArrayType;
     nameTypeMap[object::number][object::integer] = pIntegerType;
@@ -147,10 +156,21 @@
     pNullConstant = new (CurrentObjectHeap()) object(this,"null");
     pZeroConstant =  new (CurrentObjectHeap()) object(this,"0");
     pOneConstant =  new (CurrentObjectHeap()) object(this,"1");
-    pEncodingLiteral = new (CurrentObjectHeap()) literal(this,"Encoding");
+
+    pFontTypeLiteral = new (CurrentObjectHeap()) object(this,"FontType");
+    pFontNameLiteral = new (CurrentObjectHeap()) object(this,"FontName");
+    pFontMatrixLiteral = new (CurrentObjectHeap()) object(this,"FontMatrix");
+
+    pEncodingArrayLiteral = new (CurrentObjectHeap()) literal(this,"Encoding");
     pCharStringsLiteral = new (CurrentObjectHeap()) literal(this,"CharStrings");
     pGlyphDirectoryLiteral = new (CurrentObjectHeap()) literal(this,"GlyphDirectory");
     pSfntsLiteral = new (CurrentObjectHeap()) literal(this,"sfnts");
+    pPageSizeLiteral = new (CurrentObjectHeap()) literal(this,"PageSize");
+    pFontBoundingBoxLiteral = new (CurrentObjectHeap()) literal(this,"FontBBox");
+    pFontMatrixLiteral = new (CurrentObjectHeap()) literal(this,"FontMatrix");
+    pRestoreFontMatrixLiteral = new (CurrentObjectHeap()) literal(this,"RestoreFontMatrix");
+    pBuildGlyphLiteral = new (CurrentObjectHeap()) literal(this,"BuildGlyph");
+    pBuildCharLiteral = new (CurrentObjectHeap()) literal(this,"BuildChar");
 
     pCourier = new (CurrentObjectHeap()) class font(this,"Courier");
 
@@ -171,7 +191,7 @@
     dictionaryStack.setCurrent(pUserDict);
     dictionaryStack.setCurrent(pSystemDict);
 
-    graphicsStateStack.push(new (CurrentObjectHeap()) graphicsState(this,hwndSurface));
+    graphicsStateStack.push(new graphicsState(this,hwndSurface));
 
     return;
     }
@@ -223,18 +243,25 @@
 
     object *job::resolve(char *pszObjectName) {
 
+    char *p = pszObjectName;
+    boolean isNumeric = true;
+    while ( *p ) {
+        if ( ! isdigit(*p) && ! ( '.' == *p ) && ! ( '-' == *p ) ) {
+            isNumeric = false;
+            break;
+        }
+        p++;
+    }
+
+    if ( isNumeric )
+        return NULL;
+
     dictionary *pDictionary = dictionaryStack.find(pszObjectName);
 
     if ( NULL == pDictionary )
         return NULL;
 
     return pDictionary -> retrieve(pszObjectName);
-    }
-
-
-    void job::addFont(font *pFont) {
-    fontList.insert(fontList.end(),pFont);
-    return;
     }
 
 

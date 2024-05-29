@@ -1,5 +1,5 @@
 
-#include "PostScript objects\array.h"
+#include "PostScript objects/array.h"
 
 #include "job.h"
 
@@ -65,6 +65,15 @@
         return NULL;
     return entries[index];
     }
+
+    void array::setValue(long index,POINT_TYPE v) {
+    object *pElement = getElement(index);
+    if ( NULL == pElement )
+        return;
+    pElement -> OBJECT_SET_POINT_TYPE_VALUE(v);
+    return;
+    }
+
 
     void array::clear() {
     entries.clear();

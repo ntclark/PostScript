@@ -2,6 +2,7 @@
 #include "utilities.h"
 
 #include "job.h"
+
 #include "PostScript objects\directExec.h"
 #include "PostScript objects\literal.h"
 #include "PostScript objects\string.h"
@@ -384,6 +385,16 @@
     return;
     }
 
+// WHY IN THE FUCK DID I HAVE TO DO THIS (!?!?!?!)
+#define ADVANCE_THRU_EOL(p)               \
+{                                         \
+while ( *p != 0x0A && *p != 0x0D )        \
+   p++;                                   \
+if ( *p == 0x0A || *p == 0x0D )           \
+   p++;                                   \
+if ( *p == 0x0A || *p == 0x0D )           \
+   p++;                                   \
+}
 
     void job::parseStructureSpec(char *pStart,char **ppEnd) {
     char *p = pStart;
@@ -481,18 +492,6 @@
         cbString--;
 
         DWORD dwFlags = 0L;
-
-//+-------------------------------------------------------------------------
-// convert formatted string to binary
-// If cchString is 0, then pszString is NULL terminated and
-// cchString is obtained via strlen() + 1.
-// dwFlags defines string format
-// if pbBinary is NULL, *pcbBinary returns the size of required memory
-// *pdwSkip returns the character count of skipped strings, optional
-// *pdwFlags returns the actual format used in the conversion, optional
-//--------------------------------------------------------------------------
-        //DWORD dwCount = ASCIIHexDecodeInPlace((char *)pDecoded);
-
         DWORD dwCount = 0L;
 
         CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,NULL,&dwCount,NULL,&dwFlags);

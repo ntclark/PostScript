@@ -13,12 +13,15 @@
     pSystemDict -> put("begin",&job::operatorBegin);
     pSystemDict -> put("bind",&job::operatorBind);
     pSystemDict -> put("cleartomark",&job::operatorCleartomark);
+    pSystemDict -> put("clip",&job::operatorClip);
     pSystemDict -> put("closepath",&job::operatorClosepath);
+    pSystemDict -> put("colorimage",&job::operatorColorimage);
     pSystemDict -> put("concat",&job::operatorConcat);
     pSystemDict -> put("copy",&job::operatorCopy);
     pSystemDict -> put("countdictstack",&job::operatorCountdictstack);
     pSystemDict -> put("counttomark",&job::operatorCounttomark);
     pSystemDict -> put("currentdict",&job::operatorCurrentdict);
+    pSystemDict -> put("currentfile",&job::operatorCurrentfile);
     pSystemDict -> put("currentfont",&job::operatorCurrentfont);
     pSystemDict -> put("currentglobal",&job::operatorCurrentglobal);
     pSystemDict -> put("currentmatrix",&job::operatorCurrentmatrix);
@@ -30,6 +33,7 @@
     pSystemDict -> put("cvs",&job::operatorCvs);
     pSystemDict -> put("cvx",&job::operatorCvx);
     pSystemDict -> put("debug",&job::operatorDebug);
+    pSystemDict -> put("debuglevel",&job::operatorDebuglevel);
     pSystemDict -> put("def",&job::operatorDef);
     pSystemDict -> put("definefont",&job::operatorDefinefont);
     pSystemDict -> put("defineresource",&job::operatorDefineresource);
@@ -38,13 +42,15 @@
     pSystemDict -> put("div",&job::operatorDiv);
     pSystemDict -> put("dup",&job::operatorDup);
     pSystemDict -> put("end",&job::operatorEnd);
-    pSystemDict -> put("errordict",&job::operatorErrordict);
+    pSystemDict -> put("eoclip",&job::operatorEoclip);
     pSystemDict -> put("eofill",&job::operatorEofill);
     pSystemDict -> put("eq",&job::operatorEq);
+    pSystemDict -> put("errordict",&job::operatorErrordict);
     pSystemDict -> put("exch",&job::operatorExch);
     pSystemDict -> put("exec",&job::operatorExec);
     pSystemDict -> put("executeonly",&job::operatorExecuteonly);
     pSystemDict -> put("exit",&job::operatorExit);
+    pSystemDict -> put("filter",&job::operatorFilter);
     pSystemDict -> put("findfont",&job::operatorFindfont);
     pSystemDict -> put("findresource",&job::operatorFindresource);
     pSystemDict -> put("fill",&job::operatorFill);
@@ -59,7 +65,9 @@
     pSystemDict -> put("idtransform",&job::operatorIdtransform);
     pSystemDict -> put("if",&job::operatorIf);
     pSystemDict -> put("ifelse",&job::operatorIfelse);
+    pSystemDict -> put("imagemask",&job::operatorImagemask);
     pSystemDict -> put("index",&job::operatorIndex);
+    pSystemDict -> put("initmatrix",&job::operatorInitmatrix);
     pSystemDict -> put("ISOLatin1Encoding",&job::operatorISOLatin1Encoding);
     pSystemDict -> put("itransform",&job::operatorItransform);
     pSystemDict -> put("known",&job::operatorKnown);
@@ -96,6 +104,8 @@
     pSystemDict -> put("scale",&job::operatorScale);
     pSystemDict -> put("scalefont",&job::operatorScalefont);
     pSystemDict -> put("selectfont",&job::operatorSelectfont);
+    pSystemDict -> put("setcachedevice",&job::operatorSetcachedevice);
+    pSystemDict -> put("setcmykcolor",&job::operatorSetcmykcolor);
     pSystemDict -> put("setcolor",&job::operatorSetcolor);
     pSystemDict -> put("setcolorspace",&job::operatorSetcolorspace);
     pSystemDict -> put("setdash",&job::operatorSetdash);
@@ -108,6 +118,7 @@
     pSystemDict -> put("setmatrix",&job::operatorSetmatrix);
     pSystemDict -> put("setmiterlimit",&job::operatorSetmiterlimit);
     pSystemDict -> put("setpagedevice",&job::operatorSetpagedevice);
+    pSystemDict -> put("setrgbcolor",&job::operatorSetrgbcolor);
     pSystemDict -> put("setuserparams",&job::operatorSetuserparams);
     pSystemDict -> put("show",&job::operatorShow);
     pSystemDict -> put("showpage",&job::operatorShowpage);

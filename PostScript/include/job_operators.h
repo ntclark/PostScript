@@ -12,12 +12,15 @@
         void operatorBegin();
         void operatorBind();
         void operatorCleartomark();
+        void operatorClip();
         void operatorClosepath();
+        void operatorColorimage();
         void operatorConcat();
         void operatorCopy();
         void operatorCountdictstack();
         void operatorCounttomark();
         void operatorCurrentdict();
+        void operatorCurrentfile();
         void operatorCurrentfont();
         void operatorCurrentglobal();
         void operatorCurrentmatrix();
@@ -29,6 +32,7 @@
         void operatorCvs();
         void operatorCvx();
         void operatorDebug();
+        void operatorDebuglevel();
         void operatorDef();
         void operatorDefinefont();
         void operatorDefineresource();
@@ -37,6 +41,7 @@
         void operatorDtransform();
         void operatorDup();
         void operatorEnd();
+        void operatorEoclip();
         void operatorEofill();
         void operatorEq();
         void operatorErrordict();
@@ -45,6 +50,7 @@
         void operatorExec();
         void operatorExecuteonly();
         void operatorFill();
+        void operatorFilter();
         void operatorFindfont();
         void operatorFindresource();
         void operatorFlush();
@@ -58,7 +64,9 @@
         void operatorIdtransform();
         void operatorIf();
         void operatorIfelse();
+        void operatorImagemask();
         void operatorIndex();
+        void operatorInitmatrix();
         void operatorISOLatin1Encoding();
         void operatorItransform();
         void operatorKnown();
@@ -101,6 +109,8 @@
         void operatorScale();
         void operatorScalefont();
         void operatorSelectfont();
+        void operatorSetcachedevice();
+        void operatorSetcmykcolor();
         void operatorSetcolor();
         void operatorSetcolorspace();
         void operatorSetdash();
@@ -113,6 +123,7 @@
         void operatorSetmatrix();
         void operatorSetmiterlimit();
         void operatorSetpagedevice();
+        void operatorSetrgbcolor();
         void operatorSetuserparams();
         void operatorShow();
         void operatorShowpage();

@@ -99,12 +99,12 @@
       <PrecompiledHeaderFile />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\Box2D\Common;C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\cocos2dx\include;C:\Development\PostScript\PostScript\SensorTest\SensorTest;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -155,12 +155,12 @@ Exit 0</Command>
       </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\Box2D\Common;C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\cocos2dx\include;C:\Development\PostScript\PostScript\SensorTest\SensorTest;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -205,12 +205,12 @@ Exit 0</Command>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\Box2D\Common;C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\cocos2dx\include;C:\Development\PostScript\PostScript\SensorTest\SensorTest;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -259,12 +259,12 @@ Exit 0</Command>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\include;C:\Development\PostScript\freetype-2.13.2\include\freetype;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\Box2D\Common;C:\Development\PostScript\PostScript\SensorTest\SensorTest\libs\cocos2dx\include;C:\Development\PostScript\PostScript\SensorTest\SensorTest;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>freetype.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -297,6 +297,13 @@ Exit 0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
+    <ClCompile Include="..\freetype-2.13.2\freetype-2.13.2\src\base\ftoutln.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="ascii85EncodeDecode.cpp" />
     <ClCompile Include="cmdPaneHandler.cpp" />
     <ClCompile Include="COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="COM Events\IConnectionPointContainer.cpp" />
@@ -331,19 +338,26 @@ Exit 0</Command>
     <ClCompile Include="job\parseJob.cpp" />
     <ClCompile Include="job\parseJob_execute.cpp" />
     <ClCompile Include="logPaneHandler.cpp" />
-    <ClCompile Include="operators.cpp" />
-    <ClCompile Include="pdfOperators.cpp" />
+    <ClCompile Include="operators\operators_AtoL.cpp" />
+    <ClCompile Include="operators\operators_MtoZ.cpp" />
+    <ClCompile Include="operators\pdfOperators.cpp" />
     <ClCompile Include="PostScript objects\array.cpp" />
     <ClCompile Include="PostScript objects\binaryString.cpp" />
     <ClCompile Include="PostScript objects\booleanObject.cpp" />
     <ClCompile Include="PostScript objects\colorSpace.cpp" />
     <ClCompile Include="PostScript objects\dictionary.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\conic.cpp" />
+    <ClCompile Include="PostScript objects\file.cpp" />
+    <ClCompile Include="PostScript objects\filter.cpp" />
     <ClCompile Include="PostScript objects\graphicState\cubicSpline.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_bezierCurve.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_colorImage.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType3Glyph.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_filter.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawGlyph.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType42Glyph.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_saveRestore.cpp" />
     <ClCompile Include="PostScript objects\literal.cpp" />
     <ClCompile Include="PostScript objects\mark.cpp" />
     <ClCompile Include="PostScript objects\matrix.cpp" />
@@ -375,17 +389,21 @@ Exit 0</Command>
     <Midl Include="COM Implementation\PostScriptGen2.odl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ascii85.h" />
     <ClInclude Include="include\comment.h" />
     <ClInclude Include="include\error.h" />
     <ClInclude Include="include\job.h" />
     <ClInclude Include="include\job_operators.h" />
     <ClInclude Include="include\job_pdfOperators.h" />
+    <ClInclude Include="include\parsing.h" />
     <ClInclude Include="include\PostScript objects\array.h" />
     <ClInclude Include="include\PostScript objects\binaryString.h" />
     <ClInclude Include="include\PostScript objects\booleanObject.h" />
     <ClInclude Include="include\PostScript objects\colorSpace.h" />
     <ClInclude Include="include\PostScript objects\dictionary.h" />
     <ClInclude Include="include\PostScript objects\directExec.h" />
+    <ClInclude Include="include\PostScript objects\file.h" />
+    <ClInclude Include="include\PostScript objects\filter.h" />
     <ClInclude Include="include\PostScript objects\font.h" />
     <ClInclude Include="include\PostScript objects\graphicsState.h" />
     <ClInclude Include="include\PostScript objects\literal.h" />

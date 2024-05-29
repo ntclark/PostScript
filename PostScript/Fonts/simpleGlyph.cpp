@@ -9,6 +9,8 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
         pbGlyphData(pbInput)
     {
 
+    memset(phantomPoints,0,sizeof(phantomPoints));
+
     contourCount = pGlyphHeader -> countourCount;
 
     pEndPtsOfContours = new uint16_t[contourCount];
@@ -282,9 +284,6 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
         pPoints[k].px = pXCoordinates + k;
         pPoints[k].py = pYCoordinates + k;
 
-char szX[64];
-sprintf_s<64>(szX,"%ld: %5.2f, %5.2f oncurve = %d \n",k,pPoints[k].X(),pPoints[k].Y(),pFlags[k] & ON_CURVE_POINT ? 1 : 0);
-OutputDebugStringA(szX);
         pointsInContour++;
 
         if ( pointsInContour > contourPointCount[contourIndex] ) {
@@ -295,11 +294,13 @@ OutputDebugStringA(szX);
 
     }
 
-    otLongHorizontalMetric horizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics[bGlyph];
+    long hmTableIndex = min(bGlyph,pFont -> pHorizHeadTable -> numberOfHMetrics - 1);
 
-    long advanceWidth = horizontalMetric.advanceWidth;
-    long advanceHeight = 0L;
-    long bearing_x = horizontalMetric.lsb;
+    otLongHorizontalMetric horizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics[hmTableIndex];
+
+    advanceWidth = horizontalMetric.advanceWidth;
+    advanceHeight = 0L;
+    leftSideBearing = horizontalMetric.lsb;
     long bearing_y = 0L;
 
     if ( ! ( NULL == pFont -> pVerticalMetricsTable ) ) {
@@ -316,11 +317,12 @@ OutputDebugStringA(szX);
 
     }
 
-    POINTL phantomPoints[] = { 
-        { pGlyphHeader -> xMin - bearing_x, 0L },
-        { pGlyphHeader -> xMin - bearing_x + advanceWidth, 0L },
-        { 0L, pGlyphHeader -> yMax + bearing_y },
-        { 0L, pGlyphHeader -> yMax + bearing_y - advanceHeight } };
+    phantomPoints[0] = { pGlyphHeader -> xMin - leftSideBearing,0L };
+    phantomPoints[1] = { 0L, pGlyphHeader -> yMax + bearing_y };
+    phantomPoints[2] = { pGlyphHeader -> xMin - leftSideBearing + advanceWidth, 0L };
+    phantomPoints[3] = { 0L, pGlyphHeader -> yMax + bearing_y - advanceHeight };
+
+    rightSideBearing = advanceWidth - (leftSideBearing + pGlyphHeader -> xMax - pGlyphHeader -> xMin);
 
     pXResult = pXCoordinates;
     pYResult = pYCoordinates;
@@ -331,89 +333,18 @@ OutputDebugStringA(szX);
     boundingBox[3] = -FLT_MAX;
 
     for ( long k = 0; k < pointCount; k++, pXResult++, pYResult++ ) {
-        //*pX += (int16_t)-phantomPoints[0].x;
-        //*pY += (int16_t)phantomPoints[0].y;
+        //*pXResult += (int16_t)-phantomPoints[0].x;
+        *pXResult += leftSideBearing;
+        //*pYResult += (int16_t)phantomPoints[0].y;
         boundingBox[0] = min(boundingBox[0],*pXResult);
         boundingBox[1] = min(boundingBox[1],*pYResult);
         boundingBox[2] = max(boundingBox[2],*pXResult);
         boundingBox[3] = max(boundingBox[3],*pYResult);
     }
 
-char szX[64];
-sprintf_s<64>(szX,"%5.0f, %5.2f, %5.2f, %5.2f\n",boundingBox[0],boundingBox[1],boundingBox[2],boundingBox[3]);
-OutputDebugStringA(szX);
-#if 0
-
-int16_t linearAdvance = horizontalMetric.advanceWidth;
-
-metrics.horiBearingX = boundingBox[0];//bbox.xMin;
-metrics.horiBearingY = boundingBox[3];//bbox.yMax;
-//if ( loader->widthp )
-//    glyph->metrics.horiAdvance = loader->widthp[glyph_index] * 64;
-//else
-metrics.horiAdvance = phantomPoints[1].x - phantomPoints[0].x;//SUB_LONG( loader->pp2.x, loader->pp1.x );
-
-metrics.width  = boundingBox[2] - boundingBox[0];//SUB_LONG( bbox.xMax, bbox.xMin );
-metrics.height = boundingBox[3] - boundingBox[1];//SUB_LONG( bbox.yMax, bbox.yMin );
-
-
-int16_t top = 0;      /* scaled vertical top side bearing  */
-int16_t advance = 0;  /* scaled vertical advance height    */
-
-signed long y_scale = 0x10000L;
-
-/* Get the unscaled top bearing and advance height. */
-if ( ! ( NULL == pFont -> pVerticalMetricsTable ) && 0 < pFont -> pVertHeadTable -> numOfLongVerMetrics ) {
-
-    top = (FT_Short)FT_DivFix( phantomPoints[2].y - boundingBox[3] /*SUB_LONG( loader->pp3.y, bbox.yMax ) */, y_scale );
-
-    if ( phantomPoints[2].y <= phantomPoints[3].y ) //loader->pp3.y <= loader->pp4.y )
-        advance = 0;
-    else
-        advance = (FT_UShort)FT_DivFix( phantomPoints[2].y - phantomPoints[3].y /*SUB_LONG( loader->pp3.y,loader->pp4.y ) */,y_scale );
-
-} else {
-
-    FT_Pos  height = 0;
-
-    /* XXX Compute top side bearing and advance height in  */
-    /*     Get_VMetrics instead of here.                   */
-
-    /* NOTE: The OS/2 values are the only `portable' ones, */
-    /*       which is why we use them, if there is an OS/2 */
-    /*       table in the font.  Otherwise, we use the     */
-    /*       values defined in the horizontal header.      */
-
-    height = (FT_Short)FT_DivFix( boundingBox[3] - boundingBox[1] /*SUB_LONG( bbox.yMax,bbox.yMin )*/,y_scale );
-
-    //if ( face -> os2.version != 0xFFFFU )
-    //    advance = (FT_Pos)( face->os2.sTypoAscender - face->os2.sTypoDescender );
-    //else
-        advance = (FT_Pos)( pFont -> pHorizHeadTable -> ascender - pFont -> pHorizHeadTable -> descender );//face->horizontal.Ascender - face->horizontal.Descender );
-
-    top = ( advance - height ) / 2;
-
-}
-
-//glyph->linearVertAdvance = advance;
-
-metrics.vertBearingX = metrics.horiBearingX - metrics.horiAdvance / 2;// SUB_LONG( glyph->metrics.horiBearingX,glyph->metrics.horiAdvance / 2 );
-metrics.vertBearingY = top;
-metrics.vertAdvance  = advance;
-
-#if 0
-    for ( long k = 0; k < 4; k++ ) {
-        pXCoordinates[totalPoints + k] = phantomPoints[k].x;
-        pYCoordinates[totalPoints + k] = phantomPoints[k].y;
+    return;
     }
-#endif
 
-    //pGraphicsState -> scale(pXCoordinates,pYCoordinates,12.0 / pFont -> pHeadTable -> unitsPerEm,12.0 / pFont -> pHeadTable -> unitsPerEm,pointCount);
-
-LoadGlyph(bGlyph,pbGlyphData,cbGlyphData,(BYTE *)&horizontalMetric);
-#endif
-
-}
 
     otSimpleGlyph::~otSimpleGlyph() {
 
@@ -432,7 +363,7 @@ LoadGlyph(bGlyph,pbGlyphData,cbGlyphData,(BYTE *)&horizontalMetric);
 
 }
 
-
+#if 0
     void font::positionSimpleGlyph(otSimpleGlyph *pGlyph,POINTL basePoint) {
 
     for ( long k = 0; k < pGlyph -> pointCount; k++ ) {
@@ -456,3 +387,4 @@ LoadGlyph(bGlyph,pbGlyphData,cbGlyphData,(BYTE *)&horizontalMetric);
 
     return;
     }
+#endif

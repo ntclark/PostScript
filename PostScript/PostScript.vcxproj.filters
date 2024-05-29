@@ -46,18 +46,15 @@
     <Filter Include="Source Files\PostScript objects\graphicsState">
       <UniqueIdentifier>{2f5a6cf9-de0f-479c-9288-38242b24a54d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\operators">
+      <UniqueIdentifier>{54b05f3b-58d8-4db1-b747-e048b32edc0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PostScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="operators.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pdfOperators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PostScript_DisplayStack.cpp">
@@ -195,9 +192,6 @@
     <ClCompile Include="Fonts\simpleGlyph.cpp">
       <Filter>Source Files\Fonts</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\conic.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
@@ -207,11 +201,47 @@
     <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawGlyph.cpp">
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType42Glyph.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_bezierCurve.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\freetype-2.13.2\freetype-2.13.2\src\base\ftoutln.c">
+      <Filter>Source Files\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType3Glyph.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_saveRestore.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\file.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_colorImage.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_filter.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\filter.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="ascii85EncodeDecode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="operators\operators_AtoL.cpp">
+      <Filter>Source Files\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="operators\pdfOperators.cpp">
+      <Filter>Source Files\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="operators\operators_MtoZ.cpp">
+      <Filter>Source Files\operators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -320,6 +350,18 @@
     </ClInclude>
     <ClInclude Include="include\PostScript objects\font.h">
       <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\file.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\filter.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\parsing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ascii85.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

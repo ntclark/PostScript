@@ -14,8 +14,8 @@ class job;
       graphicsStateStack(job *pJob);
       ~graphicsStateStack();
 
-      void save();
-      graphicsState *restore();
+      void gSave();
+      graphicsState *gRestore();
       graphicsState *current();
 
       job *pJob{NULL};

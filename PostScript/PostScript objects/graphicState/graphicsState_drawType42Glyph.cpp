@@ -1,19 +1,77 @@
 
+#define CANVAS_ITY_IMPLEMENTATION
+#include "canvas_ity.hpp"
+#include <fstream>
+
 #include "PostScript objects/graphicsState.h"
 #include "PostScript objects/font.h"
 
     void graphicsState::drawGlyph(BYTE bGlyph) {
 
-    uint32_t locTableEntrySize = 16;
-    if ( 1 == pCurrentFont -> pHeadTable -> indexToLocFormat )
-        locTableEntrySize = 32;
+#if 0
 
+    long height = 768;
+    long width = 1024;
+
+    canvas_ity::canvas theCanvas(1024,768);
+
+    FILE *fX = fopen("C:\\Development\\PostScript\\arial.ttf","rb");
+
+    fseek(fX,0,SEEK_END);
+    DWORD cb = ftell(fX);
+    fseek(fX,0,SEEK_SET);
+
+    BYTE *pbFont = new BYTE[cb];
+    fread(pbFont,1,cb,fX);
+
+    fclose(fX);
+
+    theCanvas.set_font(pbFont,cb,64.0f);
+
+    theCanvas.set_color(canvas_ity::fill_style,0.0f,1.0f,0.0f,1.0f);
+    theCanvas.set_color(canvas_ity::stroke_style,0.0f,1.0f,0.0f,1.0f);
+
+    theCanvas.stroke_text("Hello World",64.0f,64.0f,1000.0f);
+
+    theCanvas.set_color(canvas_ity::fill_style,0.25f,0.25f,0.25f,0.0f);
+    theCanvas.fill_rectangle( 0.0f, 0.0f, 1024, 768.0f );
+
+    // Fetch the rendered RGBA pixels from the entire canvas.
+    unsigned char *image = new unsigned char[ height * width * 4 ];
+    theCanvas.get_image_data( image, width, height, width * 4, 0, 0 );
+    // Write them out to a TGA image file (TGA uses BGRA order).
+    unsigned char header[] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        width & 255, width >> 8, height & 255, height >> 8, 32, 40 };
+    for ( int pixel = 0; pixel < height * width; ++pixel )
+        std::swap( image[ pixel * 4 + 0 ], image[ pixel * 4 + 2 ] );
+
+    std::ofstream stream( "C:\\Development\\PostScript\\example.tga", std::ios::binary );
+    stream.write( reinterpret_cast< char * >( header ), sizeof( header ) );
+    stream.write( reinterpret_cast< char * >( image ), height * width * 4 );
+
+    stream.close();
+
+#endif
 
     if ( NULL == hdcSurface )
         return;
 
     pJob -> push(pCurrentFont);
-    pJob -> push(pJob -> pEncodingLiteral);
+    pJob -> push(pJob -> pFontTypeLiteral);
+    pJob -> operatorGet();
+
+    object *pFontType = pJob -> pop();
+
+    if ( 0 == strcmp(pFontType -> Contents(),"3") ) {
+        drawType3Glyph(bGlyph);
+        return;
+    }
+
+    if ( ! ( 0 == strcmp(pFontType -> Contents(),"42") ) )
+        return;
+
+    pJob -> push(pCurrentFont);
+    pJob -> push(pJob -> pEncodingArrayLiteral);
     pJob -> operatorGet();
 
     // The BYTE bGlyph is the "index" into the Encoding array
@@ -102,14 +160,25 @@
 
         pSimpleGlyph = new otSimpleGlyph(bGlyph,pCurrentFont,this,&glyphHeader,pbGlyphData,cbGlyphData);
 
-        POINTL basePoint = lastPoint;
+        GS_POINT basePoint = lastUserSpacePoint;
 
+#if 0
         pCurrentFont -> positionSimpleGlyph(pSimpleGlyph,basePoint);
-
-        //pCurrentFont -> scaleSimpleGlyph(pSimpleGlyph);
+        pCurrentFont -> scaleSimpleGlyph(pSimpleGlyph);
+#endif
 
         POINTD *pPoints = pSimpleGlyph -> pPoints;
         uint8_t *pFlags = pSimpleGlyph -> pFlags;
+
+        scale(pPoints,pSimpleGlyph -> pointCount,pCurrentFont -> scaleFUnitsToPoints);
+
+        pCurrentFont -> transformGlyphInPlace(pPoints,pSimpleGlyph -> pointCount);
+
+        transformInPlace(pPoints,pSimpleGlyph -> pointCount);
+
+        POINTD ptBaseline{(POINT_TYPE)lastUserSpacePoint.x,(POINT_TYPE)(/*userSpaceDomain.y - */lastUserSpacePoint.y)};
+
+        translate(pPoints,pSimpleGlyph -> pointCount,&ptBaseline);
 
         long pointIndex = 0;
 
@@ -140,19 +209,25 @@
                     pBeginPoint = pThisPoint;
                     beginPointOnCurve = onCurve;
 
+GS_POINT *pGSPoint = new GS_POINT(pThisPoint);
+
                     if ( onCurve )
-                        thesePoints.push_back(pThisPoint);
+                        thesePoints.push_back(pGSPoint);//pThisPoint);
 
                 } else {
 
                     POINTD *pPoint2 = onCurve ? pThisPoint : lerp(pEndPoint,pThisPoint,0.5f);
 
                     if ( 0 == thesePoints.size() || ( lastPointOnCurve && onCurve ) ) 
-                         thesePoints.push_back(pPoint2);
+{
+GS_POINT *pGSPoint = new GS_POINT(pPoint2);
+                         thesePoints.push_back(pGSPoint);//pPoint2);
+}
 
                     else if ( ( ! lastPointOnCurve ) || onCurve ) {
 
-                        POINTD *pPoint1 = thesePoints.back();
+GS_POINT *pGSPoint = thesePoints.back();
+                        POINTD *pPoint1 = new POINTD(pGSPoint);//thesePoints.back();
                         POINTD *pControl1 = lerp(pPoint1,pEndPoint,2.0f / 3.0f);
                         POINTD *pControl2 = lerp(pPoint2,pEndPoint,2.0f / 3.0f);
                         bezierCurve( pPoint1, pControl1, pControl2, pPoint2, 0.125f);
@@ -167,7 +242,8 @@
             }
 
             boolean isFirst = true;
-            for ( POINTD *pPoint : thesePoints ) {
+            //for ( POINTD *pPoint : thesePoints ) {
+            for ( GS_POINT *pPoint : thesePoints ) {
                 if ( isFirst ) {
                     moveto(pPoint);
                     isFirst = false;
@@ -206,11 +282,9 @@
 
         }
 
+        moveto(&basePoint);
+
         delete pSimpleGlyph;
-
-        basePoint.x += glyphHeader.xMax - glyphHeader.xMin;
-
-        moveto(basePoint);
 
     }
 

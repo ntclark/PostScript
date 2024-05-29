@@ -111,8 +111,6 @@
     if ( pszStringRepresentation )
         delete [] pszStringRepresentation;
 
-    //   pJob -> parseProcedure(this);
-
     long n = 0L;
     for ( object *pObj : entries )
         n += (long)strlen(pObj -> ToString());

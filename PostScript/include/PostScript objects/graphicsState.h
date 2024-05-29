@@ -2,13 +2,84 @@
 
 #include "job.h"
 
-typedef float POINT_TYPE;
+#define GLYPH_POINT_TIC_SIZE ( 16.0f / scalePointsToPixels )
+#define GLYPH_POINT_TIC_SIZE_SMALL ( 8.0f / scalePointsToPixels)
+
+#define BEZIER_CURVE_GRANULARITY  0.1
+#define GLYPH_BMP_PIXELS    128
 
 #include "PostScript objects/matrix.h"
 #include "PostScript objects/binaryString.h"
+#include "PostScript objects/dictionary.h"
+
+
+struct SplineSet{
+    double a;
+    double b;
+    double c;
+    double d;
+    double x;
+};
+
+struct POINTD;
+
+    struct GS_POINT {
+        GS_POINT() : x(0.0),y(0.0) {}
+        GS_POINT(POINT_TYPE px,POINT_TYPE py) : x(px), y(py) {}
+        GS_POINT(POINTD *pPointd);
+        POINT_TYPE x;
+        POINT_TYPE y;
+    };
+
+    static GS_POINT &operator-=(GS_POINT &left,GS_POINT right) { 
+        left.x -= right.x;
+        left.y -= right.y; 
+        return left; 
+    }
+
+    static GS_POINT operator-(GS_POINT left,GS_POINT right) {
+        return left -= right;
+    }
+
+    static GS_POINT &operator+=(GS_POINT &left,GS_POINT right) {
+        left.x += right.x;
+        left.y += right.y;
+        return left;
+    }
+
+    static GS_POINT operator+(GS_POINT left,GS_POINT right) {
+        return left += right;
+    }
+
+    static GS_POINT &operator*=(GS_POINT &left,POINT_TYPE right) {
+        left.x *= right;
+        left.y *= right;
+        return left; 
+    }
+
+    static GS_POINT operator*(POINT_TYPE left, GS_POINT right ) {
+        return right *= left;
+    }
+
+    static GS_POINT operator*(GS_POINT left, POINT_TYPE right ) {
+        return left *= right;
+    }
+
+    static POINT_TYPE dot( GS_POINT *pLeft, GS_POINT *pRight ) {
+    return pLeft -> x * pRight -> x + pLeft -> y * pRight -> y;
+    }
+
+    static POINT_TYPE dot( GS_POINT &left, GS_POINT &right ) {
+    return left.x * right.x + left.y * right.y; 
+    }
+
+    static GS_POINT perpendicular( GS_POINT that ) {
+    return GS_POINT( -that.y, that.x ); 
+    }
+
 
     struct POINTD {
-        POINTD() {};
+        POINTD() : POINTD(0.0f,0.0f) {}
         POINTD(POINT_TYPE *ptrX,POINT_TYPE *ptrY) : px(ptrX), py(ptrY) {};
         POINTD(POINT_TYPE x,POINT_TYPE y) {
             px = new POINT_TYPE;
@@ -16,6 +87,7 @@ typedef float POINT_TYPE;
             *px = x;
             *py = y;
         }
+        POINTD(GS_POINT *pGSPoint) : POINTD(pGSPoint -> x,pGSPoint -> y) {}
         POINTD(POINTD &rhs) {
             px = new POINT_TYPE;
             py = new POINT_TYPE;
@@ -81,143 +153,140 @@ typedef float POINT_TYPE;
     }
 
 
-   class graphicsState : public matrix {
+   class graphicsState {
    public:
 
-      graphicsState(job *pJob,HWND hwndSurface);
+      graphicsState(job *pJob,HWND hwndSurface = NULL);
       ~graphicsState();
 
-      virtual void concat(matrix *);
-      virtual void concat(float *);
-      virtual void concat(XFORM &);
+      void copyFrom(graphicsState *pOther);
+
+      void concat(matrix *);
+      void concat(array *);
+      void concat(POINT_TYPE *);
+      void concat(XFORM &);
+
+      void revertMatrix();
 
       void restored();
 
+      void newPath();
+
       void moveto();
+      void moveto(object *pX,object *pY);
       void moveto(POINT_TYPE x,POINT_TYPE y);
-      void moveto(long x,long y);
-      void moveto(POINTL ptl);
+      void moveto(GS_POINT *pPt);
       void moveto(POINTD *pPointd);
 
       void rmoveto();
       void rmoveto(POINT_TYPE x,POINT_TYPE y);
-      void rmoveto(long x,long y);
-      void rmoveto(POINTL ptl);
+      void rmoveto(GS_POINT pt);
       void rmoveto(POINTD *pPointd);
 
       void lineto();
+      void lineto(object *pX,object *pY);
       void lineto(POINT_TYPE x,POINT_TYPE y);
-      void lineto(long x,long y);
-      void lineto(POINTL ptl);
+      void lineto(GS_POINT *pPt);
       void lineto(POINTD *pPointd);
 
       void rlineto();
       void rlineto(POINT_TYPE x,POINT_TYPE );
-      void rlineto(long x,long y);
-      void rlineto(POINTL ptl);
+      void rlineto(GS_POINT);
       void rlineto(POINTD *pPointd);
 
+      void curveto();
+
       void closepath();
-      void show(char *);
+      void fillpath();
 
-      void translate(POINT_TYPE *pX,POINT_TYPE *pY,POINTL ptl,uint16_t ptCount);
-      void scale(POINT_TYPE *pX,POINT_TYPE *pY,POINT_TYPE scaleX,POINT_TYPE scaleY,uint16_t ptCount);
+      void transformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+      void transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+      void untransformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+      void untransformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
 
-      void setTextMatrix(float *);
+      void scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *px2,POINT_TYPE *py2);
 
-      void setTextLeading(float v) { textLeading = v; };
-      float getTextLeading() { return textLeading; };
+      void transform(POINTD *pPoints,uint16_t pointCount);
+      void transformInPlace(POINTD *pPoints,uint16_t pointCount);
 
-      void setTextRise(float v) { textRise = v; };
-      float getTextRise() { return textRise; };
+      void translate(POINTD *pPoints,uint16_t pointCount,POINTD *pToPoint);
+      void scale(POINTD *pPoints,uint16_t pountCount,POINT_TYPE scale);
 
-      void setCharacterSpacing(float v) { characterSpacing = v; };
-      float getCharacterSpacing() { return characterSpacing; };
+      void setLineCap(long v) { lineCap = v; }
+      void setLineJoin(long v) { lineJoin = v; }
+      void setLineWidth(POINT_TYPE v) { lineWidth = v; }
 
-      void setWordSpacing(float v) { wordSpacing = v; };
-      float getWordSpacing() { return wordSpacing; };
+      void setPageDevice(class dictionary *pDictionary);
 
-      void setHorizontalTextScaling(float v) { horizontalTextScaling = v; };
-      float getHorizontalTextScaling() { return horizontalTextScaling; };
-
-      void setTextRenderingMode(long v) { textRenderingMode = v; };
-      long getTextRenderingMode() { return textRenderingMode; };
-
-      void setWritingMode(long v) { writingMode = v; };
-      long getWritingMode() { return writingMode; };
-
-      void setLineCap(long v) { lineCap = v; };
-      long getLineCap() { return lineCap; };
-
-      void setLineJoin(long v) { lineJoin = v; };
-      long getLineJoin() { return lineJoin; };
-
-      void translateTextMatrix(float tx,float ty);
-      void translateTextMatrixTJ(float tx,float ty);
-      void beginText();
-      void addText(char *);
-      void startLine(float tx,float ty);
-      void endText();
+      void initMatrix();
+      void setMatrix(object *pMatrix);
 
       void setGraphicsStateDict(char *pszDictName);
 
       void setFont(class font *pFont);
 
-      float measureText(char *pszText,RECT *pResult);
-
-      void drawText(char *pszText);
       void drawGlyph(BYTE bGlyph);
+      void drawType3Glyph(BYTE bGlyph);
+
+      void setCacheDevice();
+
+      long DisplayResolution() { return displayResolution; }
+
+      void gSave();
+      void gRestore();
+
+      matrix *ToUserSpaceXForm() { return pToUserSpace; }
+
+      void filter();
+      void colorImage();
+
+      HDC activeDC() { if ( ! ( NULL == hdcAlternate ) ) return hdcAlternate; return hdcSurface; }
+
+      font *findFont(char *pszFontName);
 
    private:
 
-      void drawConic(std::vector<double> &xPoints,std::vector<double> &yPoints);
+      job *pJob{NULL};
+
+      static matrix *pFromUserSpaceToDeviceSpace;
+      matrix *pToUserSpace{NULL};
 
       POINTD *lerp(POINTD *pStart,POINTD *pEnd,POINT_TYPE slope);
+      void lerp(GS_POINT *pStart,GS_POINT *pEnd,POINT_TYPE slope,GS_POINT *pResult);
       void bezierCurve(POINTD *point_1,POINTD *control_1,POINTD *control_2,POINTD *point_2,POINT_TYPE angular);
+      void bezierCurve(GS_POINT *pPoint1,GS_POINT *pPoint2,GS_POINT *pPoint3,GS_POINT *pPoint4,POINT_TYPE angular);
       void addTessellation(POINTD *point_1,POINTD *control_1,POINTD *control_2,POINTD *point_2,POINT_TYPE angular,long limit);
+      void addTessellation(GS_POINT *point_1,GS_POINT *control_1,GS_POINT *control_2,GS_POINT *point_2,POINT_TYPE angular,long limit);
 
-      std::vector<POINTD *> thesePoints;
-
-      HWND hwndSurface{NULL};
-      HDC hdcSurface{NULL};
+      std::vector<GS_POINT *> thesePoints;
 
       XFORM *pTransform();
-      XFORM *pTextTransform();
 
-      void sendText();
-
-      matrix textMatrix;
-      matrix textMatrixIdentity;
-      matrix textLineMatrix;
-      matrix textMatrixPDF;
-      matrix textMatrixPDFIdentity;
-      matrix textLineMatrixPDF;
-      matrix textMatrixRotation;
-
-      float textLeading;
-      float fontSize;
-      float textRise;
-      float characterSpacing;
-      float wordSpacing;
-      float horizontalTextScaling;
-      float pdfRotation;
-      long textRenderingMode;
-      long writingMode;
-      long lineCap;
-      long lineJoin;
+      POINT_TYPE lineWidth{0.0f};
+      long lineCap{0L};
+      long lineJoin{0L};
 
       class font *pCurrentFont{NULL};
 
-      HGDIOBJ oldFont;
+      long pageHeightPoints{0L};
+      long pageWidthPoints{0L};
 
-      long cxPDFPage,cyPDFPage;
+      POINT_TYPE scalePointsToPixels{0.0f};
+      POINT_TYPE scaleGlyphSpacetoPixels{0.0f};
+      GS_POINT glyphSpaceDomain;
 
-      POINTL lastPoint;
+      GS_POINT lastUserSpacePoint;
+      GS_POINT lastUserSpaceMovedToPoint;
+      GS_POINT lastPointsPoint;
 
-      RECT rcTextObjectWindows;
-      RECT rcTextObjectPDF;
+      static long cxClient;
+      static long cyClient;
+      static long displayResolution;
+      static HWND hwndSurface;
+      static HDC hdcSurface;
+      static HDC hdcAlternate;
+      static HBITMAP hbmGlyph;
 
-      static char szCurrentText[4096];
-
+      friend class graphicsStateStack;
    };
    

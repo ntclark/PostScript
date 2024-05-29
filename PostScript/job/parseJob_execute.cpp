@@ -1,10 +1,11 @@
 #include "job.h"
 
 
-    long job::execute(char *pStart) {
+    long job::execute(char *pBegin) {
 
+    pStart = pBegin;
     char *p = pStart;
-    char *pNext = p;
+    pNext = p;
     char *pLogStart = NULL;
 
     try {
@@ -152,8 +153,7 @@
             po = new (CurrentObjectHeap()) object(this,pCollectionDelimiter);
             push(po);
             resolve();
-            po = top();
-            pop();
+            po = pop();
             p = pNext;
         } else {
             char *pObjectName = parseObject(p,&p);

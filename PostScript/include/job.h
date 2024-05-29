@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "parsing.h"
+
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
 #include "PostScriptGen2_i.h"
@@ -42,7 +44,9 @@
         void bindProcedure(procedure *pProcedure);
         void parseProcedureString(char *pStart,char **ppEnd);
 
-        void addFont(class font *);
+        long currentInputFileOffset() { return (long)(currentInput() - pStart); }
+        char *currentInput() { ADVANCE_THRU_WHITE_SPACE(pNext); return pNext; }
+        void setCurrentInput(char *pInput) { pNext = pInput; }
 
         PdfUtility *GetPdfUtility() { return pPdfUtility; }
 
@@ -60,6 +64,8 @@
         void incrementCount() { countObjects++; }
         void decrementCount() { --countObjects; }
 
+        graphicsState *currentGS();
+
 #include "job_operators.h"
 
 #include "job_pdfOperators.h"
@@ -71,120 +77,137 @@
 
    private:
 
-      job();
+        job();
 
-      void resolve();
-      object *resolve(char *pszObjectName);
-      bool seekDefinition();
-      bool seekOperator();
-      dictionary *containingDictionary(object *pObj);
+        void resolve();
+        object *resolve(char *pszObjectName);
+        bool seekDefinition();
+        bool seekOperator();
+        dictionary *containingDictionary(object *pObj);
 
-      long getPageCount(char *pszFileName);
+        long getPageCount(char *pszFileName);
 
-      void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd);
-      char *parseObject(char *pStart,char **pEnd);
+        void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd);
+        void parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd);
+        char *parseObject(char *pStart,char **pEnd);
 
-      void parseStructureSpec(char *pStart,char **ppEnd);
-      void parseComment(char *pStart,char **ppEnd);
-      void parseString(char *pStart,char **ppEnd);
-      void parseHexString(char *pStart,char **ppEnd);
-      void parseHex85String(char *pStart,char **ppEnd);
-      void parseLiteralName(char *apStart,char **ppEnd);
+        void parseStructureSpec(char *pStart,char **ppEnd);
+        void parseComment(char *pStart,char **ppEnd);
+        void parseString(char *pStart,char **ppEnd);
+        void parseHexString(char *pStart,char **ppEnd);
+        void parseHex85String(char *pStart,char **ppEnd);
+        void parseLiteralName(char *apStart,char **ppEnd);
 
-      HBITMAP parsePage(long pageNumber);
+        HBITMAP parsePage(long pageNumber);
 
-      graphicsState *currentGS();
+        char *pStart{NULL};
+        char *pNext{NULL};
 
-      std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
-      std::map<size_t,char *> antiDelimiters;
-      std::map<size_t,name *> validNames;
+        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
+        std::map<size_t,char *> antiDelimiters;
+        std::map<size_t,name *> validNames;
 
-      std::list<comment *> commentStack;
-      std::map<size_t,object *> literalNames;
-      std::list<structureSpec *> structureSpecs;
+        std::list<comment *> commentStack;
+        std::map<size_t,object *> literalNames;
+        std::list<structureSpec *> structureSpecs;
 
-      std::map<object::objectType,std::map<object::valueType,object *>> nameTypeMap;
+        std::map<object::objectType,std::map<object::valueType,object *>> nameTypeMap;
 
-      objectStack operandStack;
-      dictionaryStack dictionaryStack;
-      graphicsStateStack graphicsStateStack;
+        objectStack operandStack;
+        dictionaryStack dictionaryStack;
+        graphicsStateStack graphicsStateStack;
 
-      std::list<font *> fontList;
-      std::list<resource *> resourceList;
-      std::list<procedure *> procedureList;
+        std::list<resource *> resourceList;
+        std::list<procedure *> procedureList;
 
-      dictionary *pGlobalDict{NULL};
-      dictionary *pSystemDict{NULL};
-      dictionary *pUserDict{NULL};
-      dictionary *pErrorDict{NULL};
-      dictionary *pStatusDict{NULL};
-      dictionary *pPdfDict{NULL};
+        dictionary *pGlobalDict{NULL};
+        dictionary *pSystemDict{NULL};
+        dictionary *pUserDict{NULL};
+        dictionary *pErrorDict{NULL};
+        dictionary *pStatusDict{NULL};
+        dictionary *pPdfDict{NULL};
 
-      dictionary *pFontDirectory{NULL};
+        dictionary *pFontDirectory{NULL};
 
-      booleanObject *pTrueConstant{NULL};
-      booleanObject *pFalseConstant{NULL};
-      object *pNullConstant{NULL};
-      object *pZeroConstant{NULL};
-      object *pOneConstant{NULL};
-      object *pEncodingLiteral{NULL};
-      object *pCharStringsLiteral{NULL};
-      object *pGlyphDirectoryLiteral{NULL};
-      object *pSfntsLiteral{NULL};
+        booleanObject *pTrueConstant{NULL};
+        booleanObject *pFalseConstant{NULL};
+        object *pNullConstant{NULL};
+        object *pZeroConstant{NULL};
+        object *pOneConstant{NULL};
+        object *pFontTypeLiteral{NULL};
+        object *pFontNameLiteral{NULL};
+        object *pFontMatrixLiteral{NULL};
+        object *pEncodingArrayLiteral{NULL};
+        object *pCharStringsLiteral{NULL};
+        object *pGlyphDirectoryLiteral{NULL};
+        object *pFontBoundingBoxLiteral{NULL};
+        object *pFontMatrixLiteral{NULL};
+        object *pRestoreFontMatrixLiteral{NULL};
+        object *pSfntsLiteral{NULL};
+        object *pPageSizeLiteral{NULL};
+        object *pBuildGlyphLiteral{NULL};
+        object *pBuildCharLiteral{NULL};
 
-      font *pCourier{NULL};
+        class font *pCourier{NULL};
 
-      name *pStringType{NULL};
-      name *pArrayType{NULL};
-      name *pIntegerType{NULL};
-      name *pRealType{NULL};
-      name *pBooleanType{NULL};
-      name *pDictType{NULL};
-      name *pMarkType{NULL};
-      name *pNullType{NULL};
-      name *pSaveType{NULL};
-      name *pFontType{NULL};
-      name *pOperatorType{NULL};
-      name *pNameType{NULL};
+        name *pStringType{NULL};
+        name *pArrayType{NULL};
+        name *pPackedArrayType{NULL};
+        name *pIntegerType{NULL};
+        name *pRealType{NULL};
+        name *pBooleanType{NULL};
+        name *pDictType{NULL};
+        name *pMarkType{NULL};
+        name *pNullType{NULL};
+        name *pSaveType{NULL};
+        name *pFontType{NULL};
+        name *pOperatorType{NULL};
+        name *pNameType{NULL};
 
-      object *pLanguageLevel{NULL};
+        object *pLanguageLevel{NULL};
 
-      array *pStandardEncoding{NULL};
-      array *pISOLatin1Encoding{NULL};
+        array *pStandardEncoding{NULL};
+        array *pISOLatin1Encoding{NULL};
 
-      matrix *pDefaultMatrix{NULL};
-      matrix *pCurrentMatrix{NULL};
+        matrix *pDefaultMatrix{NULL};
+        matrix *pCurrentMatrix{NULL};
 
-      colorSpace *pDefaultColorSpace{NULL};
-      colorSpace *pCurrentColorSpace{NULL};
+        colorSpace *pDefaultColorSpace{NULL};
+        colorSpace *pCurrentColorSpace{NULL};
 
-      long saveCount{0L};
-      long inputLineNumber{0L};
-      long procedureDefinitionLevel{0L};
-      long countObjects{0L};
-      long countPages{0L};
+        char szPostScriptSourceFile[MAX_PATH];
+        FILE *pPostScriptSourceFile{NULL};
 
-      char *collectionDelimiterPeek(char *,char **);
-      char *delimiterPeek(char *,char **);
-      char *token();
+        long saveCount{0L};
+        long inputLineNumber{0L};
+        long procedureDefinitionLevel{0L};
+        long countObjects{0L};
+        long countPages{0L};
 
-      bool isGlobalVM{false};
-      bool hasExited{false};
+        char *collectionDelimiterPeek(char *,char **);
+        char *delimiterPeek(char *,char **);
+        char *token();
 
-      char *pStorage{NULL},*pEnd{NULL};
+        bool isGlobalVM{false};
+        bool hasExited{false};
 
-      HWND hwndSurface{NULL};
+        char *pStorage{NULL},*pEnd{NULL};
 
-      HBITMAP hbmSink{NULL};
+        HWND hwndSurface{NULL};
 
-      IPostScriptTakeText *pIPostScriptTakeText{NULL};
+        HBITMAP hbmSink{NULL};
 
-      static PdfUtility *pPdfUtility;
+        IPostScriptTakeText *pIPostScriptTakeText{NULL};
 
-      static unsigned int __stdcall _execute(void *);
+        static PdfUtility *pPdfUtility;
 
-      friend class graphicsState;
-      friend class PStoPDF;
-      friend class dictionary;
-      friend class name;
+        static unsigned int __stdcall _execute(void *);
+
+        friend class graphicsState;
+        friend class graphicsStateStack;
+        friend class PStoPDF;
+        friend class dictionary;
+        friend class font;
+        friend class name;
+        friend class file;
    };

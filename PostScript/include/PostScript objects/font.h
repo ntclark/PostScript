@@ -12,7 +12,6 @@ class font;
 #include "PostScript objects\graphicsState.h"
 
 #define DEFAULT_POINT_SIZE  12
-#define GLYPH_POINT_TIC_SIZE 32L
 
 #define FT_CURVE_TAG_CONIC         0x00
 #define FT_CURVE_TAG_CUBIC         0x02
@@ -33,18 +32,6 @@ class font;
 #define X_SAME          0x10
 #define Y_POSITIVE      0x20  /* two meanings depending on Y_SHORT_VECTOR */
 #define Y_SAME          0x20
-
-#define FT_OUTLINE_NONE             0x0
-#define FT_OUTLINE_OWNER            0x1
-#define FT_OUTLINE_EVEN_ODD_FILL    0x2
-#define FT_OUTLINE_REVERSE_FILL     0x4
-#define FT_OUTLINE_IGNORE_DROPOUTS  0x8
-#define FT_OUTLINE_SMART_DROPOUTS   0x10
-#define FT_OUTLINE_INCLUDE_STUBS    0x20
-#define FT_OUTLINE_OVERLAP          0x40
-
-#define FT_OUTLINE_HIGH_PRECISION   0x100
-#define FT_OUTLINE_SINGLE_PASS      0x200
 
 #define _WS2_32_WINSOCK_SWAP_LONGLONG(l)        \
 ( ( ((l) >> 56) & 0x00000000000000FFLL ) |      \
@@ -135,7 +122,7 @@ struct INDEX {
 
 
     struct otTableRecord {
-        uint8_t tag[4];     // tableTag	Table identifier.
+        uint8_t tag[4];     // tableTag Table identifier.
         uint32_t checksum;  //Checksum for this table.
         uint32_t offset;    // Offset from beginning of font file.
         uint32_t length;    //Length of this table.
@@ -184,8 +171,6 @@ struct INDEX {
             BE_TO_LE_16(pb,searchRange)
             BE_TO_LE_16(pb,entrySelector)
             BE_TO_LE_16(pb,rangeShift)
-
-            //pTableRecords = new otTableRecord[numTables];
 
             for ( long k = 0; k < numTables; k++ ) {
                 pTableRecords[k].load(pb);
@@ -401,11 +386,17 @@ Bits 7–15: Reserved (set to 0).
         POINT_TYPE **pPointFirstY{NULL};
         uint8_t **pFlagsFirst{NULL};
 
-        POINT_TYPE boundingBox[4]{0,0,0,0};
-
         int16_t contourCount{0};
         int16_t inputPointCount{0};
         int16_t pointCount{0};
+
+        int32_t advanceWidth{0L};
+        int32_t advanceHeight{0L};
+        int32_t leftSideBearing{0L};
+        int32_t rightSideBearing{0L};
+
+        POINT_TYPE boundingBox[4]{0,0,0,0};
+        POINTL phantomPoints[4];
 
     };
 
@@ -476,19 +467,132 @@ Bits 7–15: Reserved (set to 0).
     };
 
 
+    struct otOS2Table {
+        otOS2Table(BYTE *pBytes) {
+            load(pBytes);
+        }
+        uint16_t version;           // 0x0005
+        uint16_t xAvgCharWidth;
+        uint16_t usWeightClass;
+        uint16_t usWidthClass;
+        uint16_t fsType;
+        int16_t ySubscriptXSize;
+        int16_t ySubscriptYSize;
+        int16_t ySubscriptXOffset;
+        int16_t ySubscriptYOffset;
+        int16_t ySuperscriptXSize;
+        int16_t ySuperscriptYSize;
+        int16_t ySuperscriptXOffset;
+        int16_t ySuperscriptYOffset;
+        int16_t yStrikeoutSize;
+        int16_t yStrikeoutPosition;
+        int16_t sFamilyClass;
+        uint8_t panose[10];
+        uint32_t ulUnicodeRange1;   // Bits 0–31
+        uint32_t ulUnicodeRange2;   // Bits 32–63
+        uint32_t ulUnicodeRange3;   // Bits 64–95
+        uint32_t ulUnicodeRange4;   // Bits 96–127
+        uint8_t achVendID;
+        uint16_t fsSelection;
+        uint16_t usFirstCharIndex;
+        uint16_t usLastCharIndex;
+        int16_t sTypoAscender;
+        int16_t sTypoDescender;
+        int16_t sTypoLineGap;
+        uint16_t usWinAscent;
+        uint16_t usWinDescent;
+        uint32_t ulCodePageRange1;  // Bits 0–31
+        uint32_t ulCodePageRange2;  // Bits 32–63
+        int16_t sxHeight;
+        int16_t sCapHeight;
+        uint16_t usDefaultChar;
+        uint16_t usBreakChar;
+        uint16_t usMaxContext;
+        uint16_t usLowerOpticalPointSize;
+        uint16_t usUpperOpticalPointSize;
+        void load(BYTE *pb) {
+            BE_TO_LE_16(pb,version);
+            BE_TO_LE_16(pb,xAvgCharWidth);
+            BE_TO_LE_16(pb,usWeightClass);
+            BE_TO_LE_16(pb,usWidthClass);
+            BE_TO_LE_16(pb,fsType);
+            BE_TO_LE_16(pb,ySubscriptXSize);
+            BE_TO_LE_16(pb,ySubscriptYSize);
+            BE_TO_LE_16(pb,ySubscriptXOffset);
+            BE_TO_LE_16(pb,ySubscriptYOffset);
+            BE_TO_LE_16(pb,ySuperscriptXSize);
+            BE_TO_LE_16(pb,ySuperscriptYSize);
+            BE_TO_LE_16(pb,ySuperscriptXOffset);
+            BE_TO_LE_16(pb,ySuperscriptYOffset);
+            BE_TO_LE_16(pb,yStrikeoutSize);
+            BE_TO_LE_16(pb,yStrikeoutPosition);
+            BE_TO_LE_16(pb,sFamilyClass);
+            pb += 10; // panose[10]
+            BE_TO_LE_32(pb,ulUnicodeRange1);
+            BE_TO_LE_32(pb,ulUnicodeRange2);
+            BE_TO_LE_32(pb,ulUnicodeRange3);
+            BE_TO_LE_32(pb,ulUnicodeRange4);
+            pb++;//uint8_t achVendID;
+            BE_TO_LE_16(pb,fsSelection);
+            BE_TO_LE_16(pb,usFirstCharIndex);
+            BE_TO_LE_16(pb,usLastCharIndex);
+            BE_TO_LE_16(pb,sTypoAscender);
+            BE_TO_LE_16(pb,sTypoDescender);
+            BE_TO_LE_16(pb,sTypoLineGap);
+            BE_TO_LE_16(pb,usWinAscent);
+            BE_TO_LE_16(pb,usWinDescent);
+            BE_TO_LE_32(pb,ulCodePageRange1);
+            BE_TO_LE_32(pb,ulCodePageRange2);
+            BE_TO_LE_16(pb,sxHeight);
+            BE_TO_LE_16(pb,sCapHeight);
+            BE_TO_LE_16(pb,usDefaultChar);
+            BE_TO_LE_16(pb,usBreakChar);
+            BE_TO_LE_16(pb,usMaxContext);
+            BE_TO_LE_16(pb,usLowerOpticalPointSize);
+            BE_TO_LE_16(pb,usUpperOpticalPointSize);
+        }
+    };
+
+
+    struct type3GlyphBoundingBox {
+        type3GlyphBoundingBox() {
+            memset(this,0,sizeof(type3GlyphBoundingBox));
+        }
+        GS_POINT lowerLeft;
+        GS_POINT upperRight;
+        GS_POINT advance;
+    };
+
     class font : public dictionary {
     public:
 
-    font(job *pJob,char *fontName);
-    font(job *pJob,dictionary *);
-    font(job *pJob,PdfDictionary *pFontDict,float fontSize);
-    ~font();
+        font(job *pJob,char *fontName);
+        font(job *pJob,dictionary *,char *fontName);
+        font(job *pJob,PdfDictionary *pFontDict,POINT_TYPE fontSize);
+        ~font();
 
-    void load(long glyphCount);
+        void load(long glyphCount);
+        void type3load();
+        void type42Load(BYTE *pbData = NULL);
 
-    void scalefont(float sv) { scale = sv; };
+        char *fontName();
 
-    enum fontType {
+        void scalefont(POINT_TYPE sv);
+        void setFontMatrix(class matrix *pMatrix);
+        void transformGlyph(POINTD *pPointD,long countPoints);
+        void transformGlyphInPlace(POINTD *pPointD,long countPoints);
+        void transformGlyph(POINTD *pPointD,long countPoints,class matrix *pMatrix);
+        void transformGlyphInPlace(POINTD *pPointD,long countPoints,class matrix *pMatrix);
+
+        class matrix *getMatrix(object *pMatrixName = NULL);
+        void putMatrix(class matrix *,object*pMatrixName = NULL);
+
+        void gSave();
+        void gRestore();
+
+        long UnitsPerEm() { return pHeadTable -> unitsPerEm; }
+
+        enum fontType {
         ftype0 = 0,
         ftype1 = 1,
         ftype2 = 2,
@@ -501,12 +605,7 @@ Bits 7–15: Reserved (set to 0).
         ftype42 = 42,
         ftypeUnspecified = 99 };
 
-    char *translateText(char *);
-
-    void SetCIDFont(boolean isCID) { isCIDFont = isCID; }
-
-    void positionSimpleGlyph(otSimpleGlyph *pGlyph,POINTL ptl);
-    void scaleSimpleGlyph(otSimpleGlyph *pGlyph);
+        void SetCIDFont(boolean isCID) { isCIDFont = isCID; }
 
     private:
 
@@ -522,9 +621,9 @@ Bits 7–15: Reserved (set to 0).
         otHeadTable *pHeadTable{NULL};
         otHorizHeadTable *pHorizHeadTable{NULL};
         otVertHeadTable *pVertHeadTable{NULL};
-
         otHorizontalMetricsTable *pHorizontalMetricsTable{NULL};
         otVerticalMetricsTable *pVerticalMetricsTable{NULL};
+        otOS2Table *pOS2Table{NULL};
 
         class array *pSfntsArray{NULL};
         BYTE *pSfntsTable{NULL};
@@ -533,29 +632,15 @@ Bits 7–15: Reserved (set to 0).
 
         char szFamily[64]{'\0'};
         enum fontType fontType{fontType::ftypeUnspecified};
-        float pointSize{DEFAULT_POINT_SIZE};
-        float scale{0.0f};
 
-        long firstChar{1L},lastChar{1L};
-        float missingWidth{0.0f};
-
-        char *pszCharSet{NULL};
-        BYTE *pFontData{NULL};
-        INDEX *pNameIndex{NULL};
-        INDEX *pTopDictIndex{NULL};
-        INDEX *pStringIndex{NULL};
-        INDEX *pGlobalSubroutineIndex{NULL};
-        INDEX *pCharStringsIndex{NULL};
-
-        long *pSID{NULL};
-        long *pEncodingGlyphs{NULL};
-        long codeCount{0L};
+        POINT_TYPE pointSize{DEFAULT_POINT_SIZE};
+        POINT_TYPE scaleFUnitsToPoints{0.0f};
+        class array *pBoundingBoxArray{NULL};
+        type3GlyphBoundingBox type3GlyphBoundingBox;
 
         long charStringType{2L};
 
         boolean isCIDFont{false};
-
-        static class array *pStandardEncoding;
 
         friend class graphicsState;
         friend class otSimpleGlyph;
