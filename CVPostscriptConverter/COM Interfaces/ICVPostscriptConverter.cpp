@@ -5,59 +5,6 @@
 
     BOOL CVPostscriptConverter::ConvertToPDF(char *pszPostscriptFileName) {
 
-#if 0
-
-    char szBrokenFile[256];
-    char szPattern[256];
-
-    sprintf(szPattern,"%s\\*.ps","C:\\Users\\NateC\\Desktop\\Needs Fixed");
-
-    WIN32_FIND_DATA findData{0};
-
-    HANDLE hFiles = FindFirstFile(szPattern,&findData);
-
-    do {
-
-        if ( '.' == findData.cFileName[0] )
-            continue;
-
-        sprintf(szBrokenFile,"C:\\Users\\NateC\\Desktop\\Needs Fixed\\%s",findData.cFileName);
-
-        FILE *fX = fopen(szBrokenFile,"rb");
-
-        fseek(fX,0,SEEK_END);
-
-        long fileSize = ftell(fX);
-
-        fseek(fX,0,SEEK_SET);
-
-        char *pszReplacement = new char[fileSize + 2];
-    
-        memset(pszReplacement,0,(fileSize + 2) * sizeof(char));
-
-        fread(pszReplacement,1,fileSize,fX);
-
-        fclose(fX);
-
-        long pSize = fileSize;
-
-        replacePSCode2(pszReplacement,&pSize);
-
-        fX = fopen("C:\\temp\\x.ps","wb");
-        fwrite(pszReplacement,1,pSize,fX);
-        fclose(fX);
-        
-break;
-
-    } while ( 0 < FindNextFile(hFiles,&findData) );
-
-    Initialize(gsInstance,(char *)"C:\\temp\\x.ps");
-
-    gsapi_exit(gsInstance);
-    gsapi_delete_instance(gsInstance);
-
-#else
-
     FILE *fX = fopen(pszPostscriptFileName,"rb");
 
     fseek(fX,0,SEEK_END);
@@ -92,8 +39,6 @@ break;
     gsapi_delete_instance(gsInstance);
 
     delete [] pbFile;
-
-#endif
 
     return TRUE;
     }

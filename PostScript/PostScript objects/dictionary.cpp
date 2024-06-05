@@ -116,14 +116,14 @@
    return;
    }
 
-
+#if 0
    void dictionary::retrieve(char *pszName,void (job::**ppProcedure)()) {
    *ppProcedure = NULL;
    if ( operators.find(HashCode(pszName)) != operators.end() ) 
       *ppProcedure = operators[HashCode(pszName)];
    return;
    }
-
+#endif
 
    object *dictionary::retrieve(char *pszName) {
    std::map<long,object *>::iterator it = entries.find(HashCode(pszName));

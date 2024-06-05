@@ -25,7 +25,6 @@ class job;
       void insert(char *,char *);
 
       void put(char *psz,object *p) { insert(psz,p); };
-      void retrieve(char *,void (__thiscall job::**)());
 
       object *retrieve(char *);
       char *getKey(long index);

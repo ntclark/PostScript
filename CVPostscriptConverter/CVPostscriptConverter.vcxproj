@@ -105,7 +105,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psSupport64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
@@ -149,7 +149,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psSupport64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
