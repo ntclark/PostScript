@@ -17,6 +17,8 @@
 
     if ( ! ( NULL == pIPostScript ) )
         pIPostScript -> Release();
+
+    return;
     }
 
 
