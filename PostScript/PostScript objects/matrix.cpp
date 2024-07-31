@@ -36,6 +36,17 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
+    void matrix::identity() {
+    a(1.0);
+    b(0.0);
+    c(0.0);
+    d(1.0);
+    tx(0.0);
+    ty(0.0);
+    return;
+    }
+
+
     void matrix::copyFrom(matrix *pOther) {
     a(pOther -> a());
     b(pOther -> b());
@@ -96,8 +107,8 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
 //
     POINT_TYPE newValues[] = {0.0,0.0,0.0,0.0,0.0,0.0};
 
-    newValues[A] = pPrime[A] * a() + pPrime[B] * c();   newValues[B] = pPrime[A] * b() + pPrime[B] * d();
-    newValues[C] = pPrime[C] * a() + pPrime[D] * c();   newValues[D] = pPrime[C] * b() + pPrime[D] * d();
+    newValues[A] = pPrime[A] * a() - pPrime[B] * c();   newValues[B] = pPrime[A] * b() - pPrime[B] * d();
+    newValues[C] = -pPrime[C] * a() + pPrime[D] * c();   newValues[D] = -pPrime[C] * b() + pPrime[D] * d();
 
     newValues[TX] = pPrime[TX] * a() + pPrime[TY] * c() + tx();     newValues[TY] = pPrime[TX] * b() + pPrime[TY] * d() + ty();
 

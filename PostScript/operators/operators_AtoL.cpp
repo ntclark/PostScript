@@ -4,6 +4,7 @@
 
 #include "PostScript objects\font.h"
 #include "PostScript objects\string.h"
+#include "PostScript objects\constantString.h"
 #include "PostScript objects\binaryString.h"
 #include "PostScript objects\pattern.h"
 #include "PostScript objects\mark.h"
@@ -33,145 +34,194 @@
    return;
    }
 
-   void job::operatorAdd() {
+    void job::operatorAdd() {
 /*
-   add 
-      num1 num2 add sum
+    add 
+        num1 num2 add sum
 
-   returns the sum of num1 and num2. If both operands are integers and the result is
-   within integer range, the result is an integer; otherwise, the result is a real number.
+    returns the sum of num1 and num2. If both operands are integers and the result is
+    within integer range, the result is an integer; otherwise, the result is a real number.
 */
+    object *p1 = pop();
+    object *p2 = pop();
+    if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
+        push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() + p2 -> IntValue()));
+    else
+        push(new (CurrentObjectHeap()) object(this,p1 -> Value() + p2 -> Value()));
+    return;
+    }
+
+
+    void job::operatorAload() {
+/*
+    aload 
+
+        array aload any0 ... anyn - 1 array
+        packedarray aload any0 ... anyn - 1 packedarray
+
+    successively pushes all n elements of array or packedarray on the operand stack
+    (where n is the length of the operand), and then pushes the operand itself.
+
+*/
+
+    object *pTop = pop();
+
+    switch ( pTop -> ObjectType() ) {
+
+    case object::objectType::array: {
+        class array *pArray = reinterpret_cast<class array *>(pTop);
+        for ( long k = 0; k < pArray -> size(); k++ )
+            push(pArray -> getElement(k));
+        }
+        break;
+
+    case object::objectType::procedure: {
+        class procedure *pProcedure = reinterpret_cast<procedure *>(pTop);
+        for ( object *pObj : pProcedure -> entries ) 
+            push(pObj);
+        }
+        break;
+
+    default:
+        char szMessage[1024];
+        sprintf(szMessage,"operator aload: object %s is not an array or procedure",pTop -> Name());
+        //throw typecheck(szMessage);
+        return;
+    }
+
+    push(pTop);
+
+    return;
+    }
+
+
+     void job::operatorAnd() {
+/*
+    and 
+        bool1 bool2 and bool3
+        int1 int2 and int3
+
+    returns the logical conjunction of the operands if they are boolean. If the operands
+    are integers, and returns the bitwise “and” of their binary representations.
+
+    Examples
+        true true and => true % A complete truth table
+        true false and => false
+        false true and => false
+        false false and => false
+        99 1 and => 1
+        52 7 and => 4
+
+        Errors: stackunderflow, typecheck
+        See Also: or, xor, not, true, false
+*/
+
    object *p1 = pop();
-   object *p2 = pop();
-   if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
-      push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() + p2 -> IntValue()));
-   else
-      push(new (CurrentObjectHeap()) object(this,p1 -> Value() + p2 -> Value()));
-   return;
-   }
+    object *p2 = pop();
+
+    if ( object::logical == p1 -> ObjectType() && object::logical == p2 -> ObjectType() ) {
+
+        if ( p1 == pTrueConstant && p2 == pTrueConstant )
+            push(pTrueConstant);
+        else 
+            push(pFalseConstant);
+
+    } else {
+
+        if ( object::integer == p1 -> ObjectType() && object::integer == p2 -> ObjectType() ) {
+
+            long v = p1 -> IntValue() & p2 -> IntValue();
+
+            push(new (CurrentObjectHeap()) object(this,v));
+
+        } else {
+            __debugbreak();
+        }
+
+    }
+    return;
+    }
 
 
-   void job::operatorAnd() {
+    void job::operatorArc() {
 /*
-   and 
-      bool1 bool2 and bool3
-      int1 int2 and int3
+    arc 
+        x y r angle1 angle2 arc –
 
-   returns the logical conjunction of the operands if they are boolean. If the operands
-   are integers, and returns the bitwise “and” of their binary representations.
+    appends an arc of a circle to the current path, possibly preceded by a straight line
+    segment. The arc is centered at coordinates (x, y) in user space, with radius r. The
+    operands angle1 and angle2 define the endpoints of the arc by specifying the angles
+    of the vectors joining them to the center of the arc. The angles are measured in degrees
+    counterclockwise from the positive x axis of the current user coordinate system
+    (see Figure 8.1).
 
-   Examples
-      true true and => true % A complete truth table
-      true false and => false
-      false true and => false
-      false false and => false
-      99 1 and => 1
-      52 7 and => 4
+                FIGURE 8.1 arc operator
 
-      Errors: stackunderflow, typecheck
-      See Also: or, xor, not, true, false
+    The arc produced is circular in user space. If user space is scaled nonuniformly
+    (that is, differently in the x and y dimensions), the resulting curve will be elliptical
+    in device space.
+
+    If there is a current point, a straight line segment from the current point to the
+    first endpoint of the arc is added to the current path preceding the arc itself. If the
+    current path is empty, this initial line segment is omitted. In either case, the second
+    endpoint of the arc becomes the new current point.
+
+    If angle2 is less than angle1, it is increased by multiples of 360 until it becomes
+    greater than or equal to angle1. No other adjustments are made to the two angles.
+    In particular, the angle subtended by the arc is not reduced modulo 360; if the difference
+    angle2 - angle1 exceeds 360, the resulting path will trace portions of the
+    circle more than once.
+
+    The arc is represented internally by one or more cubic Bézier curves (see curveto)
+    approximating the required shape. This is done with sufficient accuracy to produce
+    a faithful rendition of the required arc. However, a program that reads the
+    constructed path using pathforall will encounter curveto segments where arcs
+    were specified originally.
 */
+    POINT_TYPE angle2 = pop() -> DoubleValue();
+    POINT_TYPE angle1 = pop() -> DoubleValue();
+    POINT_TYPE radius = pop() -> DoubleValue();
+    POINT_TYPE y = pop() -> DoubleValue();
+    POINT_TYPE x = pop() -> DoubleValue();
 
-   object *p1 = pop();
-   object *p2 = pop();
+    currentGS() -> arcto(x,y,radius,angle1,angle2);
 
-   if ( object::logical == p1 -> ObjectType() && object::logical == p2 -> ObjectType() ) {
+    return;
+    }
 
-      if ( p1 == pTrueConstant && p2 == pTrueConstant )
-         push(pTrueConstant);
-      else 
-         push(pFalseConstant);
-
-   } else {
-
-      if ( object::integer == p1 -> ObjectType() && object::integer == p2 -> ObjectType() ) {
-
-         long v = p1 -> IntValue() & p2 -> IntValue();
-
-         push(new (CurrentObjectHeap()) object(this,v));
-
-      } else {
-         __debugbreak();
-      }
-
-   }
-   return;
-   }
-
-   void job::operatorArc() {
+    void job::operatorArcn() {
 /*
-   arc 
-      x y r angle1 angle2 arc –
+    arcn 
+        x y r angle1 angle2 arcn –
 
-   appends an arc of a circle to the current path, possibly preceded by a straight line
-   segment. The arc is centered at coordinates (x, y) in user space, with radius r. The
-   operands angle1 and angle2 define the endpoints of the arc by specifying the angles
-   of the vectors joining them to the center of the arc. The angles are measured in degrees
-   counterclockwise from the positive x axis of the current user coordinate system
-   (see Figure 8.1).
+    (arc negative) appends an arc of a circle to the current path, possibly preceded by
+    a straight line segment. Its behavior is identical to that of arc, except that the
+    angles defining the endpoints of the arc are measured clockwise from the positive
+    x axis of the user coordinate system, rather than counterclockwise. If angle2 is
+    greater than angle1, it is decreased by multiples of 360 until it becomes less than or
+    equal to angle1.
 
-               FIGURE 8.1 arc operator
+        Example
+            newpath
+            0 0 2 0 90 arc
+            0 0 1 90 0 arcn
+            closepath
+            (0,0) (1,0)
+            45°
 
-   The arc produced is circular in user space. If user space is scaled nonuniformly
-   (that is, differently in the x and y dimensions), the resulting curve will be elliptical
-   in device space.
-
-   If there is a current point, a straight line segment from the current point to the
-   first endpoint of the arc is added to the current path preceding the arc itself. If the
-   current path is empty, this initial line segment is omitted. In either case, the second
-   endpoint of the arc becomes the new current point.
-
-   If angle2 is less than angle1, it is increased by multiples of 360 until it becomes
-   greater than or equal to angle1. No other adjustments are made to the two angles.
-   In particular, the angle subtended by the arc is not reduced modulo 360; if the difference
-   angle2 - angle1 exceeds 360, the resulting path will trace portions of the
-   circle more than once.
-
-   The arc is represented internally by one or more cubic Bézier curves (see curveto)
-   approximating the required shape. This is done with sufficient accuracy to produce
-   a faithful rendition of the required arc. However, a program that reads the
-   constructed path using pathforall will encounter curveto segments where arcs
-   were specified originally.
-*/
-   pop();
-   pop();
-   pop();
-   pop();
-   pop();
-   return;
-   }
-
-   void job::operatorArcn() {
-/*
-   arcn 
-      x y r angle1 angle2 arcn –
-
-   (arc negative) appends an arc of a circle to the current path, possibly preceded by
-   a straight line segment. Its behavior is identical to that of arc, except that the
-   angles defining the endpoints of the arc are measured clockwise from the positive
-   x axis of the user coordinate system, rather than counterclockwise. If angle2 is
-   greater than angle1, it is decreased by multiples of 360 until it becomes less than or
-   equal to angle1.
-
-      Example
-         newpath
-         0 0 2 0 90 arc
-         0 0 1 90 0 arcn
-         closepath
-         (0,0) (1,0)
-         45°
-
-   This example constructs a 90-degree “windshield wiper swath” 1 unit wide,with
-   an outer radius of 2 units, centered at the coordinate origin (see Figure 8.3).
+    This example constructs a 90-degree “windshield wiper swath” 1 unit wide,with
+    an outer radius of 2 units, centered at the coordinate origin (see Figure 8.3).
 
 */
-   pop();
-   pop();
-   pop();
-   pop();
-   pop();
-   return;
-   }
+    POINT_TYPE angle2 = pop() -> DoubleValue();
+    POINT_TYPE angle1 = pop() -> DoubleValue();
+    POINT_TYPE radius = pop() -> DoubleValue();
+    POINT_TYPE y = pop() -> DoubleValue();
+    POINT_TYPE x = pop() -> DoubleValue();
+
+    currentGS() -> arcto(x,y,radius,360.0 - angle1,360.0 - angle2);
+    return;
+    }
 
    void job::operatorArray() {
 /*
@@ -420,22 +470,22 @@
     return;
     }
 
-   void job::operatorClosepath() {
+    void job::operatorClosepath() {
 /*
-   closepath 
-      – closepath –
+    closepath 
+        – closepath –
 
-   closes the current subpath by appending a straight line segment connecting the
-   current point to the subpath’s starting point, which is generally the point most recently
-   specified by moveto (see Section 4.4, “Path Construction”).
-   closepath terminates the current subpath; appending another segment to the current
-   path will begin a new subpath, even if the new segment begins at the endpoint
-   reached by the closepath operation. If the current subpath is already closed
-   or the current path is empty, closepath does nothing.
+    closes the current subpath by appending a straight line segment connecting the
+    current point to the subpath’s starting point, which is generally the point most recently
+    specified by moveto (see Section 4.4, “Path Construction”).
+    closepath terminates the current subpath; appending another segment to the current
+    path will begin a new subpath, even if the new segment begins at the endpoint
+    reached by the closepath operation. If the current subpath is already closed
+    or the current path is empty, closepath does nothing.
 */
-   graphicsStateStack.current() -> closepath();
-   return;
-   }
+    graphicsStateStack.current() -> closepath();
+    return;
+    }
 
     void job::operatorColorimage() {
 /*
@@ -604,22 +654,64 @@
 
     }
 
-    switch ( pTop -> ObjectType() ) {
+    object *pTargetObject = pop();
+    object *pSourceObject = pop();
 
-    case object::dictionary: {
-        dictionary *pTarget = reinterpret_cast<dictionary *>(pop());
-        pTarget -> copyFrom(reinterpret_cast<dictionary *>(pop()));
-        push(pTarget);
-        }
+    dictionary *pTarget = NULL;
+
+    switch ( pTargetObject -> ObjectType() ) {
+    case object::dictionary:
+        pTarget = reinterpret_cast<dictionary *>(pTargetObject);
+        break;
+
+    case object::font:
+        pTarget = static_cast<dictionary *>(reinterpret_cast<font *>(pTargetObject));
         break;
 
     default:
         __debugbreak();
-        break;
+        return;
     }
+
+    dictionary *pSource = NULL;
+
+    switch ( pSourceObject -> ObjectType() ) {
+    case object::dictionary:
+        pSource = reinterpret_cast<dictionary *>(pSourceObject);
+        break;
+
+    case object::font:
+        pSource = static_cast<dictionary *>(reinterpret_cast<font *>(pSourceObject));
+        break;
+
+    default:
+        __debugbreak();
+        return;
+    }
+
+    pTarget -> copyFrom(pSource);
+    push(pTarget);
 
     return;
     }
+
+    void job::operatorCos() {
+/*
+    cos 
+        angle cos real
+
+    returns the cosine of angle, which is interpreted as an angle in degrees. The result
+    is a real number.
+
+    Errors: stackunderflow, typecheck
+    See Also: atan, sin
+
+*/
+    object *pCos = new (CurrentObjectHeap()) object(this,cos(graphicsState::degToRad * pop() -> DoubleValue()));
+    push(pCos);
+    return;
+    }
+
 
     void job::operatorCountdictstack() {
 /*
@@ -648,7 +740,7 @@
 
    long count = 0;
 
-   while ( object::mark != top() -> ObjectType() ) {
+   while ( ! ( top() -> ObjectType() == object::mark ) ) {
       count++;
       entries.insert(entries.end(),pop());
    }
@@ -753,6 +845,8 @@
     graphics state and pushes this modified matrix back on the operand stack (see
     Section 4.3.2, “Transformations”).
 */
+
+    currentGS() -> currentMatrix();
 
     return;
     }
@@ -1046,18 +1140,35 @@
     font *pFont = NULL;
     boolean isNew = false;
 
-    if ( object::font == po -> ObjectType() )  {
+    switch ( po -> ObjectType() ) {
+    case object::objectType::font:
         pFont = reinterpret_cast<font *>(po);
         pDictionary = static_cast<dictionary *>(pFont);
-    } else {
+        break;
+
+    case object::objectType::dictionary: {
         pDictionary = reinterpret_cast<dictionary *>(po);
         object *pName = pDictionary -> retrieve("FontName");
         if ( NULL == pName )
             pName = pKey;
         pFont = reinterpret_cast<font *>(pFontDirectory -> retrieve(pName -> pszContents));
         if ( NULL == pFont ) {
-            pFont = new (CurrentObjectHeap()) font(this,reinterpret_cast<dictionary *>(po),pName -> Contents());
+            pFont = new (CurrentObjectHeap()) font(this,pDictionary,pName -> Contents());
             isNew = true;
+        } else {
+            pFont = currentGS() -> scaleFont(1.0,pFont);
+            pFont -> copyFrom(pDictionary);
+isNew = true;
+        }
+        pDictionary = reinterpret_cast<dictionary *>(pFont);
+        }
+        break;
+
+    default: {
+        char szMessage[1024];
+        sprintf(szMessage,"operator aload: object %s is not an dictionary or font",po -> Name());
+        throw typecheck(szMessage);
+        return;
         }
     }
 
@@ -1200,41 +1311,27 @@
     return;
     }
 
-   void job::operatorDtransform() {
+    void job::operatorDtransform() {
 /*
-   dtransform 
-      dx1 dy1 dtransform dx2 dy2
-      dx1 dy1 matrix dtransform dx2 dy2
+    dtransform 
+        dx1 dy1 dtransform dx2 dy2
+        dx1 dy1 matrix dtransform dx2 dy2
 
-(delta transform) applies a transformation matrix to the distance vector (dx1, dy1),
-returning the transformed distance vector (dx2, dy2). The first form of the operator
-uses the current transformation matrix in the graphics state to transform the
-distance vector from user space to device space coordinates. The second form applies
-the transformation specified by the matrix operand rather than the CTM.
+    (delta transform) applies a transformation matrix to the distance vector (dx1, dy1),
+    returning the transformed distance vector (dx2, dy2). The first form of the operator
+    uses the current transformation matrix in the graphics state to transform the
+    distance vector from user space to device space coordinates. The second form applies
+    the transformation specified by the matrix operand rather than the CTM.
 
-A delta transformation is similar to an ordinary transformation (see Section 4.3,
-“Coordinate Systems and Transformations”), but does not use the translation
-components tx and ty of the transformation matrix. The distance vectors are thus
-positionless in both the original and target coordinate spaces, making this operator
-useful for determining how distances map from user space to device space.
+    A delta transformation is similar to an ordinary transformation (see Section 4.3,
+    “Coordinate Systems and Transformations”), but does not use the translation
+    components tx and ty of the transformation matrix. The distance vectors are thus
+    positionless in both the original and target coordinate spaces, making this operator
+    useful for determining how distances map from user space to device space.
 */
-   double x,y;
-   matrix *pMatrix = NULL;
-   switch ( top() -> ObjectType() ) {
-   case object::matrix:
-      pMatrix = reinterpret_cast<matrix *>(pop());
-      y = pop() -> Value();
-      x = pop() -> Value();
-      break;
-   default:
-      pMatrix = pCurrentMatrix;
-      y = pop() -> Value();
-      x = pop() -> Value();
-   }
-   push(new (CurrentObjectHeap()) object(this,x));
-   push(new (CurrentObjectHeap()) object(this,y));
-   return;
-   }
+
+
+    }
 
    void job::operatorDup() {
 /*
@@ -1331,67 +1428,70 @@ useful for determining how distances map from user space to device space.
     The literal/executable and access attributes of objects are not considered in comparisons
     between objects.
 */
-   object *pAny2 = pop();
-   object *pAny1 = pop();
+    object *pAny2 = pop();
+    object *pAny1 = pop();
 
-   if ( pAny1 == pAny2 ) {
-      push(pTrueConstant);
-      return;
-   }
+    if ( pAny1 == pAny2 ) {
+        push(pTrueConstant);
+        return;
+    }
 
-   if ( ! ( pAny2 -> ObjectType() == pAny1 -> ObjectType() ) ) {
-      push(pFalseConstant);
-      return;
-   }
+   //if ( ! ( pAny2 -> ObjectType() == pAny1 -> ObjectType() ) ) {
+   //   push(pFalseConstant);
+   //   return;
+   //}
 
-   switch ( pAny1 -> ObjectType() ) {
+    switch ( pAny1 -> ObjectType() ) {
 
-   case object::number:
-      if ( pAny1 -> Value() == pAny2 -> Value() )
-         push(pTrueConstant);
-      else
-         push(pFalseConstant);
-      return;
+    case object::number:
+        if ( pAny1 -> Value() == pAny2 -> Value() )
+            push(pTrueConstant);
+        else
+            push(pFalseConstant);
+        return;
 
-   case object::atom:
+    case object::atom:
+        if ( ! ( strlen(pAny1 -> Contents()) == strlen(pAny2 -> Contents()) ) ) {
+            push(pFalseConstant);
+            return;
+        }
 
-      if ( strlen(pAny1 -> Contents()) != strlen(pAny2 -> Contents()) ) {
-         push(pFalseConstant);
-         return;
-      }
+        if ( 0 == memcmp(pAny1 -> Contents(),pAny2 -> Contents(),strlen(pAny1 -> Contents())) )
+            push(pTrueConstant);
+        else
+            push(pFalseConstant);
 
-      if ( 0 == memcmp(pAny1 -> Contents(),pAny2 -> Contents(),strlen(pAny1 -> Contents())) )
-         push(pTrueConstant);
-      else
-         push(pFalseConstant);
+        return;
 
-      return;
+    case object::name:
+    case object::literal:
+        if ( 0 == strcmp(pAny1 -> Name(),pAny2 -> Name()) && strlen(pAny1 -> Name()) == strlen(pAny2 -> Name()) )
+            push(pTrueConstant);
+        else
+            push(pFalseConstant);
+        return;
 
-   case object::literal:
-      if ( 0 == strcmp(pAny1 -> Name(),pAny2 -> Name()) && strlen(pAny1 -> Name()) == strlen(pAny2 -> Name()) )
-         push(pTrueConstant);
-      else
-         push(pFalseConstant);
-      return;
+    case object::dictionary: {
 
-   case object::dictionary: {
+        if ( object::dictionary != pAny2 -> ObjectType() ) {
+            push(pFalseConstant);
+            return;
+        }
 
-      if ( object::dictionary != pAny2 -> ObjectType() ) {
-         push(pFalseConstant);
-         return;
-      }
+        dictionary *pDict1 = reinterpret_cast<dictionary *>(pAny1);
+        dictionary *pDict2 = reinterpret_cast<dictionary *>(pAny2);
+        if ( ! ( pDict1 -> size() == pDict2 -> size() ) ) {
+            push(pFalseConstant);
+            return;
+        }
 
-      dictionary *pDict1 = reinterpret_cast<dictionary *>(pAny1);
-      dictionary *pDict2 = reinterpret_cast<dictionary *>(pAny2);
-      if ( pDict1 -> size() != pDict2 -> size() ) {
-         push(pFalseConstant);
-         return;
-      }
+        // ?!?!?!?
+        // Is this right (!?)
 
-      if ( pDict1 -> hasSameEntries(pDict2) ) {
-         push(pFalseConstant);
-         return;
-      }
+        if ( pDict1 -> hasSameEntries(pDict2) ) {
+            push(pFalseConstant);
+            return;
+        }
 #if 0
       long n = pDict1 -> size();
       for ( long k = 0; k < n; k++ ) {
@@ -1404,42 +1504,43 @@ useful for determining how distances map from user space to device space.
          }
       }
 #endif
-      push(pTrueConstant);
-      }
-      return;
-   
-   case object::array: {
-      if ( object::array != pAny2 -> ObjectType() ) {
-         push(pFalseConstant);
-         return;
-      }
-      array *pDict1 = reinterpret_cast<array *>(pAny1);
-      array *pDict2 = reinterpret_cast<array *>(pAny2);
-      if ( pDict1 -> size() != pDict2 -> size() ) {
-         push(pFalseConstant);
-         return;
-      }
-      long n = pDict1 -> size();
-      for ( long k = 0; k < n; k++ ) {
-         push(pDict1 -> getElement(k));
-         push(pDict2 -> getElement(k));
-         operatorEq();
-         if ( pFalseConstant == pop() ) {
+        push(pTrueConstant);
+        }
+        return;
+
+    case object::array: {
+
+        if ( ! ( object::array == pAny2 -> ObjectType() ) ) {
             push(pFalseConstant);
             return;
-         }
-      }
-      push(pTrueConstant);
-      }
-      return;
+        }
+        array *pDict1 = reinterpret_cast<array *>(pAny1);
+        array *pDict2 = reinterpret_cast<array *>(pAny2);
+        if ( pDict1 -> size() != pDict2 -> size() ) {
+            push(pFalseConstant);
+            return;
+        }
+        long n = pDict1 -> size();
+        for ( long k = 0; k < n; k++ ) {
+            push(pDict1 -> getElement(k));
+            push(pDict2 -> getElement(k));
+            operatorEq();
+            if ( pFalseConstant == pop() ) {
+            push(pFalseConstant);
+            return;
+            }
+        }
+        push(pTrueConstant);
+        }
+        return;
 
-   default:
-      __debugbreak();
-      push(pFalseConstant);
-   }
+    default:
+        __debugbreak();
+        push(pFalseConstant);
+    }
 
-   return;
-   }
+    return;
+    }
 
 
     void job::operatorErrordict() {
@@ -1718,7 +1819,7 @@ useful for determining how distances map from user space to device space.
     findfont is not an operator, but rather a built-in procedure. It may be redefined
     a PostScript program that requires different strategies for finding fonts.
 
-   Errors: invalidfont, stackunderflow, typecheck
+    Errors: invalidfont, stackunderflow, typecheck
 */
 
     object *pKey = pop();
@@ -1738,8 +1839,9 @@ useful for determining how distances map from user space to device space.
 
     push(pFont);
 
-   return;
-   }
+    return;
+    }
+
 
     void job::operatorFindresource() {
 /*
@@ -2150,33 +2252,33 @@ useful for determining how distances map from user space to device space.
     }
 
 
-   void job::operatorIf() {
+    void job::operatorIf() {
 /*
-   if 
-      bool proc if –
+    if 
+        bool proc if –
 
-   removes both operands from the stack, then executes proc if bool is true. The if operator
-   pushes no results of its own on the operand stack, but proc may do so (see
-   Section 3.5, “Execution”).
+    removes both operands from the stack, then executes proc if bool is true. The if operator
+    pushes no results of its own on the operand stack, but proc may do so (see
+    Section 3.5, “Execution”).
 
-   Example
-      3 4 lt {(3 is less than 4)} if => (3 is less than 4)
+    Example
+        3 4 lt {(3 is less than 4)} if => (3 is less than 4)
 
-   Errors: stackunderflow, typecheck
-   See Also: ifelse
+    Errors: stackunderflow, typecheck
+    See Also: ifelse
 */
 
-   procedure *pProcedure = reinterpret_cast<procedure *>(pop());
-   booleanObject *bo = NULL;
-   try {
-   bo = reinterpret_cast<booleanObject *>(pop());
-   } catch ( typecheck etc ) {
-      throw;
-   }
-   if ( bo == pTrueConstant ) 
-      pProcedure -> execute();
-   return;
-   }
+    procedure *pProcedure = reinterpret_cast<procedure *>(pop());
+    booleanObject *bo = NULL;
+    try {
+    bo = reinterpret_cast<booleanObject *>(pop());
+    } catch ( typecheck etc ) {
+        throw;
+    }
+    if ( bo == pTrueConstant ) 
+        pProcedure -> execute();
+    return;
+    }
 
     void job::operatorIfelse() {
 /*
@@ -2286,41 +2388,47 @@ useful for determining how distances map from user space to device space.
     return;
     }
 
-void job::operatorIdtransform() {
+    void job::operatorIdtransform() {
 /*
-   idtransform 
-      dx1 dy1 idtransform dx2 dy2
-      dx1 dy1 matrix idtransform dx2 dy2
+    idtransform 
+        dx1 dy1 idtransform dx2 dy2
+        dx1 dy1 matrix idtransform dx2 dy2
 
-   (inverse delta transform) applies the inverse of a transformation matrix to the distance
-   vector (dx1, dy1), returning the transformed distance vector (dx2, dy2). The
-   first form of the operator uses the inverse of the current transformation matrix in
-   the graphics state to transform the distance vector from device space to user space
-   coordinates. The second form applies the inverse of the transformation specified
-   by the matrix operand rather than that of the CTM.
+    (inverse delta transform) applies the inverse of a transformation matrix to the distance
+    vector (dx1, dy1), returning the transformed distance vector (dx2, dy2). The
+    first form of the operator uses the inverse of the current transformation matrix in
+    the graphics state to transform the distance vector from device space to user space
+    coordinates. The second form applies the inverse of the transformation specified
+    by the matrix operand rather than that of the CTM.
 
-   A delta transformation is similar to an ordinary transformation (see Section 4.3,
-   “Coordinate Systems and Transformations”), but does not use the translation
-   components tx and ty of the transformation matrix. The distance vectors are thus
-   positionless in both the original and target coordinate spaces, making this operator
+    A delta transformation is similar to an ordinary transformation (see Section 4.3,
+    “Coordinate Systems and Transformations”), but does not use the translation
+    components tx and ty of the transformation matrix. The distance vectors are thus
+    positionless in both the original and target coordinate spaces, making this operator
 */
-   double x,y;
-   matrix *pMatrix = NULL;
-   switch ( top() -> ObjectType() ) {
-   case object::matrix:
-      pMatrix = reinterpret_cast<matrix *>(pop());
-      y = pop() -> Value();
-      x = pop() -> Value();
-      break;
-   default:
-      pMatrix = pCurrentMatrix;
-      y = pop() -> Value();
-      x = pop() -> Value();
-   }
-   push(new (CurrentObjectHeap()) object(this,x));
-   push(new (CurrentObjectHeap()) object(this,y));
-   return;
-   }
+    POINT_TYPE x,y;
+    object *pTopObject = pop();
+
+    switch ( pTopObject -> ObjectType() ) {
+    case object::matrix: {
+        matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
+        y = pop() -> DoubleValue();
+        x = pop() -> DoubleValue();
+        currentGS() -> untransformPointInPlace(pMatrix,x,y,&x,&y);
+        }
+        break;
+
+    default: {
+        y = pTopObject -> DoubleValue();
+        x = pop() -> DoubleValue();
+        currentGS() -> untransformPointInPlace(x,y,&x,&y);
+        }
+    }
+
+    push(new (CurrentObjectHeap()) object(this,x));
+    push(new (CurrentObjectHeap()) object(this,y));
+    return;
+    }
 
    void job::operatorISOLatin1Encoding() {
 /*
@@ -2367,142 +2475,164 @@ void job::operatorIdtransform() {
     See Also: defaultmatrix, setmatrix, currentmatrix
 */
 
-    currentGS() -> initMatrix();
+operatorDebug();
+    //currentGS() -> initMatrix();
     return;
     }
 
 
-   void job::operatorItransform() {
+    void job::operatorItransform() {
 /*
-   itransform 
-      x1 y1 itransform x2 y2
-      x1 y1 matrix itransform x2 y2
+    itransform 
+        x1 y1 itransform x2 y2
+        x1 y1 matrix itransform x2 y2
 
-   (inverse transform) applies the inverse of a transformation matrix to the coordinates
-   (x1, y1), returning the transformed coordinates (x2, y2). The first form of the
-   operator uses the inverse of the current transformation matrix in the graphics
-   state to transform device space coordinates to user space. The second form applies
-   the inverse of the transformation specified by the matrix operand rather than that
-   of the CTM.
+    (inverse transform) applies the inverse of a transformation matrix to the coordinates
+    (x1, y1), returning the transformed coordinates (x2, y2). The first form of the
+    operator uses the inverse of the current transformation matrix in the graphics
+    state to transform device space coordinates to user space. The second form applies
+    the inverse of the transformation specified by the matrix operand rather than that
+    of the CTM.
 */
-   double x,y;
-   matrix *pMatrix = NULL;
-   switch ( top() -> ObjectType() ) {
-   case object::matrix:
-      pMatrix = reinterpret_cast<matrix *>(pop());
-      y = pop() -> Value();
-      x = pop() -> Value();
-      break;
-   default:
-      pMatrix = pCurrentMatrix;
-      y = pop() -> Value();
-      x = pop() -> Value();
-   }
-   push(new (CurrentObjectHeap()) object(this,x));
-   push(new (CurrentObjectHeap()) object(this,y));
-   return;
-   }
+    POINT_TYPE x,y;
+    object *pTopObject = pop();
 
-   void job::operatorKnown() {
+    switch ( pTopObject -> ObjectType() ) {
+    case object::matrix: {
+        matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
+        y = pop() -> DoubleValue();
+        x = pop() -> DoubleValue();
+        currentGS() -> untransformPoint(pMatrix,x,y,&x,&y);
+        }
+        break;
+
+    default: {
+        y = pTopObject -> DoubleValue();
+        x = pop() -> DoubleValue();
+        currentGS() -> untransformPoint(x,y,&x,&y);
+        }
+    }
+
+    push(new (CurrentObjectHeap()) object(this,x));
+    push(new (CurrentObjectHeap()) object(this,y));
+    return;
+    }
+
+    void job::operatorKnown() {
 /*
-   known 
-      dict key known bool
+    known 
+        dict key known bool
 
-   returns true if there is an entry in the dictionary dict whose key is key; otherwise, it
-   returns false. dict does not have to be on the dictionary stack.
+    returns true if there is an entry in the dictionary dict whose key is key; otherwise, it
+    returns false. dict does not have to be on the dictionary stack.
 */
-   object *pKey = pop();
-   dictionary *pDict = reinterpret_cast<dictionary *>(pop());
-   if ( pDict -> exists(pKey -> Contents()) )
-      push(pTrueConstant);
-   else
-      push(pFalseConstant);
-   return;
-   }
+    object *pKey = pop();
+    object *pDictObject = pop();
+    dictionary *pDictionary = NULL;
+    if ( object::objectType::dictionary == pDictObject -> ObjectType() ) 
+        pDictionary = reinterpret_cast<dictionary *>(pDictObject);
+    else if ( object::objectType::font == pDictObject -> ObjectType() )
+        pDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pDictObject));
+    else {
+       char szMessage[1024];
+        sprintf(szMessage,"operator begin: object %s is not a dictionary",pDictObject -> Name());
+        throw typecheck(szMessage);
+        return;
+    }
 
-   void job::operatorLength() {
+    if ( pDictionary -> exists(pKey -> Contents()) )
+        push(pTrueConstant);
+    else
+        push(pFalseConstant);
+    return;
+    }
+
+    void job::operatorLength() {
 /*
-   length 
-         array length int
-         packedarray length int
-         dict length int
-         string length int
-         name length int
+    length 
+            array length int
+            packedarray length int
+            dict length int
+            string length int
+            name length int
 
-   returns the number of elements in the value of its operand if the operand is an
-   array, a packed array, or a string. If the operand is a dictionary, length returns the
-   current number of entries it contains (as opposed to its maximum capacity, which
-   is returned by maxlength). If the operand is a name object, the length returned is
-   the number of characters in the text string that defines it.
+    returns the number of elements in the value of its operand if the operand is an
+    array, a packed array, or a string. If the operand is a dictionary, length returns the
+    current number of entries it contains (as opposed to its maximum capacity, which
+    is returned by maxlength). If the operand is a name object, the length returned is
+    the number of characters in the text string that defines it.
 
-   Examples
+    Examples
 
-      [1 2 4] length => 3
-      [ ] length => 0 % An array of zero length
-      /ar 20 array def
-      ar length => 20
-      /mydict 5 dict def
-      mydict length => 0
-      mydict /firstkey (firstvalue) put
-      mydict length => 1
-      (abc\n) length => 4 % Newline (\n) is one character
-      ( ) length => 0 % No characters between ( and )
-      /foo length => 3
+        [1 2 4] length => 3
+        [ ] length => 0 % An array of zero length
+        /ar 20 array def
+        ar length => 20
+        /mydict 5 dict def
+        mydict length => 0
+        mydict /firstkey (firstvalue) put
+        mydict length => 1
+        (abc\n) length => 4 % Newline (\n) is one character
+        ( ) length => 0 % No characters between ( and )
+        /foo length => 3
 
-   Errors: invalidaccess, stackunderflow, typecheck
-   See Also: maxlength
+    Errors: invalidaccess, stackunderflow, typecheck
+    See Also: maxlength
 
 */
-   object *pItem = pop();
-   long length = 0L;
+    object *pItem = pop();
+    long length = 0L;
 
-   switch ( pItem -> ObjectType() ) {
+    switch ( pItem -> ObjectType() ) {
    
-   case object::array:
-      length = reinterpret_cast<array *>(pItem) -> size();
-      break;
+    case object::array:
+        length = reinterpret_cast<array *>(pItem) -> size();
+        break;
 
-   case object::font:
-      length = static_cast<dictionary *>(reinterpret_cast<font *>(pItem)) -> size();
-      break;
+    case object::font:
+        length = static_cast<dictionary *>(reinterpret_cast<font *>(pItem)) -> size();
+        break;
 
-   case object::dictionary:
-      length = reinterpret_cast<dictionary *>(pItem) -> size();
-      break;
+    case object::dictionary:
+        length = reinterpret_cast<dictionary *>(pItem) -> size();
+        break;
 
-   case object::atom: {
+    case object::atom: {
 
-      switch ( pItem -> ValueType() ) {
-      case object::string:
-      case object::character:
-      case object::constantString:
-         length = (DWORD)strlen(pItem -> Contents());
-         break;
+        switch ( pItem -> ValueType() ) {
+        case object::string:
+        case object::character:
+            length = (long)reinterpret_cast<string *>(pItem) -> length();
+            break;
 
-      case object::binaryString:
-         length = (DWORD)strlen(pItem -> Contents()) / 2;
-         break;
+        case object::constantString:
+            length = (long)reinterpret_cast<constantString *>(pItem) -> length();
+            break;
 
-      default: 
-         char szError[1024];
-         sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
-         throw typecheck(szError);
-      }
-      }
-      break;
+        case object::binaryString:
+            length = (DWORD)strlen(pItem -> Contents()) / 2;
+            break;
 
-   default: {
-      char szError[1024];
-      sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
-      throw typecheck(szError);
-      }
+        default: 
+            char szError[1024];
+            sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
+            throw typecheck(szError);
+        }
+        }
+        break;
 
-   }
+    default: {
+        char szError[1024];
+        sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
+        throw typecheck(szError);
+        }
 
-   push(new (CurrentObjectHeap()) object(this,length));
+    }
 
-   return;
-   }
+    push(new (CurrentObjectHeap()) object(this,length));
+
+    return;
+    }
 
    void job::operatorLineto() {
 /*

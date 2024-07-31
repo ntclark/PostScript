@@ -2,11 +2,11 @@
 #include "PostScript.h"
 
     int PStoPDF::initWindows() {
- 
+
     pIOleInPlaceSite -> GetWindow(&hwndHost);
 
     WNDCLASS gClass;
-   
+
     memset(&gClass,0,sizeof(WNDCLASS));
 
     gClass.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
@@ -34,6 +34,8 @@
 
     hwndClient = CreateWindowEx(WS_EX_CLIENTEDGE,"PStoPDF","",WS_CHILD | WS_VISIBLE,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
 
+    hwndVScroll = CreateWindowEx(0L,"SCROLLBAR","",WS_CHILD | WS_VISIBLE | SBS_VERT,0,0,GetSystemMetrics(SM_CXVSCROLL),CW_USEDEFAULT,hwndClient,NULL,NULL,NULL);
+
     DLGTEMPLATE *dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_CMD_PANE),RT_DIALOG));
     hwndCmdPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndClient,(DLGPROC)PStoPDF::cmdPaneHandler,(ULONG_PTR)(void *)this);
 
@@ -54,43 +56,46 @@
 
     SET_PANES
 
-   nativeRichEditHandler = (WNDPROC)SetWindowLongPtr(hwndLog,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
+    activePageOrigin.x = 0L;
+    activePageOrigin.y = 0L;
 
-   //SetWindowLongPtr(hwndStack,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
+    nativeRichEditHandler = (WNDPROC)SetWindowLongPtr(hwndLog,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
 
-   SetWindowLongPtr(hwndLog,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(this));
+    //SetWindowLongPtr(hwndStack,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
 
-   CHARFORMAT charFormat;
-   memset(&charFormat,0,sizeof(CHARFORMAT));
+    SetWindowLongPtr(hwndLog,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(this));
 
-   charFormat.cbSize = sizeof(CHARFORMAT);
-   charFormat.dwMask = CFM_FACE | CFM_SIZE;
+    CHARFORMAT charFormat;
+    memset(&charFormat,0,sizeof(CHARFORMAT));
 
-   strcpy(charFormat.szFaceName,"Courier New");
-   charFormat.yHeight = 10 * 20;
+    charFormat.cbSize = sizeof(CHARFORMAT);
+    charFormat.dwMask = CFM_FACE | CFM_SIZE;
 
-   SendMessage(hwndLog,EM_SETCHARFORMAT,(WPARAM)SCF_ALL,(LPARAM)&charFormat);
-   SendMessage(hwndLog,EM_SHOWSCROLLBAR,(WPARAM)SB_VERT,(LPARAM)TRUE);
-   SendMessage(hwndLog,EM_SHOWSCROLLBAR,(WPARAM)SB_HORZ,(LPARAM)TRUE);
+    strcpy(charFormat.szFaceName,"Courier New");
+    charFormat.yHeight = 10 * 20;
 
-   SETTEXTEX st;
-   memset(&st,0,sizeof(SETTEXTEX));
-   st.flags = ST_DEFAULT;
-   st.codepage = CP_ACP;
+    SendMessage(hwndLog,EM_SETCHARFORMAT,(WPARAM)SCF_ALL,(LPARAM)&charFormat);
+    SendMessage(hwndLog,EM_SHOWSCROLLBAR,(WPARAM)SB_VERT,(LPARAM)TRUE);
+    SendMessage(hwndLog,EM_SHOWSCROLLBAR,(WPARAM)SB_HORZ,(LPARAM)TRUE);
+
+    SETTEXTEX st;
+    memset(&st,0,sizeof(SETTEXTEX));
+    st.flags = ST_DEFAULT;
+    st.codepage = CP_ACP;
 
 #ifdef DO_RTF
-   SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
+    SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
 #else
-   SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,(LPARAM)0L);
+    SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,(LPARAM)0L);
 #endif
 
-   SendMessage(hwndLog,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
-   SendMessage(hwndLog,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));
+    SendMessage(hwndLog,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
+    SendMessage(hwndLog,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));
 
-   memset(&logStream,0,sizeof(EDITSTREAM));
+    memset(&logStream,0,sizeof(EDITSTREAM));
 
-   logStream.dwCookie = (DWORD_PTR)this;
-   logStream.pfnCallback = processLog;
+    logStream.dwCookie = (DWORD_PTR)this;
+    logStream.pfnCallback = processLog;
 
     return 0;
     }

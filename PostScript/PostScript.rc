@@ -48,7 +48,9 @@ BEGIN
     PUSHBUTTON "...", IDDI_CMD_PANE_ACTIVE_FILE_GET,    8 + 256 + 4, 18, 24, 16
     PUSHBUTTON "Execute", IDDI_CMD_PANE_EXECUTE,        8, 36, 36, 16, WS_DISABLED
 
-    LTEXT "", IDDI_CMD_PANE_ERROR,                      8 + 36 + 4, 36, 256, 32
+    PUSHBUTTON "Convert", IDDI_CMD_PANE_CONVERT_TO_PDF, 8 + 36 + 4, 36, 36, 16
+
+    LTEXT "", IDDI_CMD_PANE_ERROR,                      8 + 36 + 4 + 36 + 4, 36, 256, 32
 
     LTEXT "Log >>", IDDI_CMD_PANE_LOG_SHOW,             0,0,24,12
 

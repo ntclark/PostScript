@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #pragma once
 
@@ -22,6 +19,8 @@
 
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
+
+#include "CVPostscriptConverter_i.h"
 
 #ifdef GetWindowID
 #undef GetWindowID
@@ -263,7 +262,17 @@
 
         HWND HwndClient() { return hwndClient; }
 
+        HDC GetDC();
+
+        void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
+
+        long InitialCYClient() { return initialCYClient; }
+
         boolean drawGlyphRenderingPoints() { return drawGlyphPoints; }
+
+        job *currentJob() { return pJob; }
+
+        POINTL activePageOrigin{0L,0L};
 
     private:
 
@@ -275,6 +284,8 @@
         IOleClientSite *pIOleClientSite{NULL};
         IOleInPlaceSite *pIOleInPlaceSite{NULL};
 
+        ICVPostscriptConverter *pICVPostscriptConverter{NULL};
+
         job *pJob{NULL};
 
         long refCount{0L};
@@ -284,6 +295,11 @@
         boolean drawGlyphPoints{false};
 
         char szCurrentPostScriptFile[MAX_PATH];
+
+        long pageNumber{0};
+
+        std::map<size_t,HBITMAP> pageBitmaps;
+        std::map<size_t,SIZEL *> pageSizes;
 
         static char szErrorMessage[1024];
 
@@ -295,6 +311,11 @@
         static HWND hwndLogSplitter;
         static HWND hwndOperandStackSize;
         static HWND hwndCurrentDictionary;
+        static HWND hwndVScroll;
+
+        static HDC hdcSurface;
+
+        static long initialCYClient;
 
         static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
 

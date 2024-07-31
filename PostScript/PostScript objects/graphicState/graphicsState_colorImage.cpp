@@ -64,10 +64,10 @@
 
     moveto(0.0,0.0);
 
-    HDC hdcSource = CreateCompatibleDC(hdcSurface);
+    HDC hdcSource = CreateCompatibleDC(pPStoPDF -> GetDC());
     SelectObject(hdcSource,hbmResult);
 
-    StretchBlt(hdcSurface,(long)((float)PICA_FACTOR * lastPointsPoint.x),(long)(((float)PICA_FACTOR * lastPointsPoint.y) + hUserSpace),(long)wUserSpace,-(long)hUserSpace,
+    StretchBlt(pPStoPDF -> GetDC(),(long)((float)PICA_FACTOR * currentPointsPoint.x),(long)(((float)PICA_FACTOR * currentPointsPoint.y) + hUserSpace),(long)wUserSpace,-(long)hUserSpace,
                 hdcSource,0,0,pWidth -> IntValue(),pHeight -> IntValue(),SRCCOPY);
 
     DeleteObject(hbmResult);

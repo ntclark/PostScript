@@ -1,7 +1,7 @@
 
 #include "PostScript objects/filter.h"
 
-#include "ascii85.h""
+#include "ascii85.h"
 
     filter::filter(job *pJob,char *pszFilterName,object *pSource,char *pszEOD) :
         file(pJob,pszFilterName),

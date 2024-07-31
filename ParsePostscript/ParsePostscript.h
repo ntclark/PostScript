@@ -14,6 +14,7 @@
 #include "Properties_i.h"
 #include "PostScriptGen2_i.h"
 
+
 class ParsePSHost : public IUnknown {
 public:
 
@@ -41,7 +42,6 @@ public:
 
     unsigned long refCount{0L};
 
-
     static LRESULT CALLBACK frameHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
     static LRESULT CALLBACK clientHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
@@ -55,4 +55,5 @@ int pixelsToHiMetric(SIZEL *pPixels,SIZEL *phiMetric);
 int hiMetricToPixels(SIZEL *phiMetric,SIZEL *pPixels);
 
 int GetLocation(HWND hwnd,long key,char *szFolderLocation);
+
 

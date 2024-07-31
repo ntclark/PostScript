@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #define ID_GLYPH_LIST    1
 
@@ -13,6 +10,7 @@
 #define IDDI_CMD_PANE_ERROR                 103
 #define IDDI_CMD_PANE_LOG_SHOW              104
 #define IDDI_CMD_PANE_LOG_HIDE              105
+#define IDDI_CMD_PANE_CONVERT_TO_PDF        106
 
 
 #define IDDI_LOG_PANE_OPERAND_STACK_SIZE    200

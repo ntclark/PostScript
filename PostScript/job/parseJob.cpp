@@ -73,6 +73,12 @@
             return 0;
     }
 
+    // seekDefinition will replace the object at the top of the 
+    // stack with it's defined object if it is found
+    // and will leave it alone if it is not found
+
+    // (I am not sure this needs to be here ?!?!?)
+
     seekDefinition();
 
     switch ( pObject -> ObjectType() ) {
@@ -132,15 +138,10 @@
         Per the comment above from section 3.5.3: if this is a procedure, it is 
         at this point "directly encountered" by the interpreter. Therefore, 
         it is treated as data and is simply placed (actually left) on the stack.
-
-        EXCEPT if the procedure is in some dictionary because MAYBE that means
-        that the procedure ws encountered INDIRECTLY
-        Or, said another way, ????????
         */
 
         if ( object::objectType::procedure == pObj -> ObjectType() )
-            if ( NULL == pObj -> pContainingDictionary )
-                continue;
+            continue;
 
         executeObject();
 
@@ -149,61 +150,20 @@
     return 0L;
     }
 
-
-    bool job::seekOperator() {
-
-    object *pKey = top();
-
-    if ( object::number == pKey -> ObjectType() || object::literal == pKey -> ObjectType() )
-        return false;
-
-    operatorWhere();
-
-    if ( top() == pFalseConstant ) {
-        pop();
-        push(pKey);
-        return false;
-    }
-
-    pop();
-
-    dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
-
-    object *pObject = pDictionary -> retrieve(pKey -> Name());
-
-    if ( object::directExecutable == pObject -> ObjectType() ) {
-        push(pObject);
-        return true;
-    }
-
-    push(pKey);
-
-    return false;
-    }
-
-
     bool job::seekDefinition() {
 
+    // seekDefinition will replace the object at the top of the 
+    // stack with it's defined object if it is found
+    // and will leave it alone if it is not found
+
     object *pKey = top();
-
-    // I've been back and forth on this fucking issue numerous times.
-    // IF the object is a literal, there is no "other" definition!!
-
-    // On the other hand, What if it is being used expressly for the purpose as a key
-    // to find something in some dictionary !!?!?!
-
-#if 0
-    //if ( object::number == pKey -> ObjectType() || object::literal == pKey -> ObjectType() || object::string == pKey -> ObjectType() )
-    if ( object::number == pKey -> ObjectType() || object::objectType::atom == pKey -> ObjectType() || object::literal == pKey -> ObjectType() )
-        return false;
-#endif
 
     operatorWhere();
 
     if ( top() == pFalseConstant ) {
         pop();
         push(pKey);
-        return true;
+        return false;
     }
 
     pop();
@@ -212,7 +172,7 @@
 
     push(pDictionary -> retrieve(pKey -> Name()));
 
-    return false;
+    return true;
     }
 
 
@@ -240,9 +200,36 @@
         case object::objectType::number:
             continue;
 
+        case object::objectType::atom: {
+            switch ( pObject -> ValueType() ) {
+            case object::valueType::string: {
+                push(pObject);
+                if ( seekDefinition() ) {
+                    object *pResolvedObject = pop();
+                    if ( object::objectType::directExecutable == pResolvedObject -> ObjectType() ) 
+                        pProcedure -> entries[k] = pResolvedObject;
+                    continue;
+                }
+                pop();
+                }
+                break;
+            default:
+                break;
+            }
+            }
+            break;
+
         default:
             break;
 
+        }
+
+        if ( ! ( NULL == pObject -> Name() ) ) {
+            dictionary *pDict = dictionaryStack.find(pObject -> Name());
+            if ( ! ( NULL == pDict ) ) {
+                pProcedure -> entries[k] = pDict -> retrieve(pObject -> Name());
+                continue;
+            }
         }
 
         if ( ! ( NULL == containingDictionary(pObject) ) ) {
@@ -423,6 +410,8 @@ if ( *p == 0x0A || *p == 0x0D )           \
 
     if ( *ppEnd ) {
 
+        // Escape sequences are handled in the string constructor
+#if 0
         char *px = strchr(p,'\\');
 
         if ( px && px < *ppEnd ) {
@@ -455,7 +444,7 @@ if ( *p == 0x0A || *p == 0x0D )           \
             delete [] pTarget;
 
         } else
-
+#endif
             push(new (CurrentObjectHeap()) constantString(this,p,*ppEnd));
 
         *ppEnd = *ppEnd + 1;

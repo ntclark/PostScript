@@ -8,25 +8,19 @@
 #define BEZIER_CURVE_GRANULARITY  0.1
 #define GLYPH_BMP_PIXELS    128
 
+#include "gdiParameters.h"
+
 #include "PostScript objects/matrix.h"
 #include "PostScript objects/binaryString.h"
 #include "PostScript objects/dictionary.h"
-
-
-struct SplineSet{
-    double a;
-    double b;
-    double c;
-    double d;
-    double x;
-};
+#include "PostScript objects/save.h"
 
 struct POINTD;
 
     struct GS_POINT {
         GS_POINT() : x(0.0),y(0.0) {}
         GS_POINT(POINT_TYPE px,POINT_TYPE py) : x(px), y(py) {}
-        GS_POINT(POINTD *pPointd);
+        GS_POINT(GS_POINT *pPointd);
         POINT_TYPE x;
         POINT_TYPE y;
     };
@@ -152,7 +146,6 @@ struct POINTD;
     return POINTD( -that.Y(), that.X() ); 
     }
 
-
    class graphicsState {
    public:
 
@@ -169,8 +162,6 @@ struct POINTD;
       void revertMatrix();
 
       void restored();
-
-      void newPath();
 
       void moveto();
       void moveto(object *pX,object *pY);
@@ -195,35 +186,47 @@ struct POINTD;
       void rlineto(POINTD *pPointd);
 
       void curveto();
+      void curveto(GS_POINT *pPoints);
 
+      void arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2);
+
+      void newpath(POINT_TYPE x = POINT_TYPE_NAN,POINT_TYPE y = POINT_TYPE_NAN);
+      void stroke();
       void closepath();
       void fillpath();
 
+      void translate(POINT_TYPE x,POINT_TYPE y);
+      void rotate(POINT_TYPE angle);
+      void scale(POINT_TYPE scaleX,POINT_TYPE scaleY);
+
       void transformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
       void transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+      void transformPointInPlace(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+      void transformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+
       void untransformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
       void untransformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+      void untransformPointInPlace(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+      void untransformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
 
       void scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *px2,POINT_TYPE *py2);
 
-      void transform(POINTD *pPoints,uint16_t pointCount);
-      void transformInPlace(POINTD *pPoints,uint16_t pointCount);
+      void transform(GS_POINT *pPoints,uint16_t pointCount);
+      void transformInPlace(GS_POINT *pPoints,uint16_t pointCount);
 
-      void translate(POINTD *pPoints,uint16_t pointCount,POINTD *pToPoint);
-      void scale(POINTD *pPoints,uint16_t pountCount,POINT_TYPE scale);
-
-      void setLineCap(long v) { lineCap = v; }
-      void setLineJoin(long v) { lineJoin = v; }
-      void setLineWidth(POINT_TYPE v) { lineWidth = v; }
+      void translate(GS_POINT *pPoints,uint16_t pointCount,GS_POINT *pToPoint);
+      void scale(GS_POINT *pPoints,uint16_t pountCount,POINT_TYPE scale);
 
       void setPageDevice(class dictionary *pDictionary);
 
-      void initMatrix();
       void setMatrix(object *pMatrix);
+      void currentMatrix();
 
       void setGraphicsStateDict(char *pszDictName);
 
       void setFont(class font *pFont);
+      font *makeFont(class matrix *pArray,class font *pCopyFrom);
+      font *scaleFont(POINT_TYPE scaleFactor,class font *pCopyFrom);
 
       void drawGlyph(BYTE bGlyph);
       void drawType3Glyph(BYTE bGlyph);
@@ -235,57 +238,74 @@ struct POINTD;
       void gSave();
       void gRestore();
 
-      matrix *ToUserSpaceXForm() { return pToUserSpace; }
+      void save();
+      void restore(class save *pSave);
+
+      void showPage();
+
+      //matrix *ToUserSpaceXForm() { return ToUserSpace(); }
 
       void filter();
       void colorImage();
 
-      HDC activeDC() { if ( ! ( NULL == hdcAlternate ) ) return hdcAlternate; return hdcSurface; }
-
       font *findFont(char *pszFontName);
+
+
+      void setLineCap(long v);
+      void setLineJoin(long v);
+      void setLineWidth(POINT_TYPE v);
+      void setLineDash(array *pArray,POINT_TYPE offset);
+
+      void setRGBColor(COLORREF rgb);
+      void setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b);
+
+      static void SetSurface(HWND hwndSurface,long pageNumber);
+      static void initMatrix(HWND hwndClient,long pageNumber);
+
+      static matrix *ToUserSpace();
+
+      static void outlinePage();
+
+      static POINT_TYPE degToRad;
+      static POINT_TYPE piOver2;
 
    private:
 
       job *pJob{NULL};
 
-      static matrix *pFromUserSpaceToDeviceSpace;
-      matrix *pToUserSpace{NULL};
-
-      POINTD *lerp(POINTD *pStart,POINTD *pEnd,POINT_TYPE slope);
-      void lerp(GS_POINT *pStart,GS_POINT *pEnd,POINT_TYPE slope,GS_POINT *pResult);
-      void bezierCurve(POINTD *point_1,POINTD *control_1,POINTD *control_2,POINTD *point_2,POINT_TYPE angular);
-      void bezierCurve(GS_POINT *pPoint1,GS_POINT *pPoint2,GS_POINT *pPoint3,GS_POINT *pPoint4,POINT_TYPE angular);
-      void addTessellation(POINTD *point_1,POINTD *control_1,POINTD *control_2,POINTD *point_2,POINT_TYPE angular,long limit);
-      void addTessellation(GS_POINT *point_1,GS_POINT *control_1,GS_POINT *control_2,GS_POINT *point_2,POINT_TYPE angular,long limit);
+      static matrix *pUserSpaceToDeviceSpace;
+      matrix *pToUserSpace;
 
       std::vector<GS_POINT *> thesePoints;
 
-      XFORM *pTransform();
-
-      POINT_TYPE lineWidth{0.0f};
-      long lineCap{0L};
-      long lineJoin{0L};
+      static XFORM *pTransform();
 
       class font *pCurrentFont{NULL};
 
-      long pageHeightPoints{0L};
-      long pageWidthPoints{0L};
-
-      POINT_TYPE scalePointsToPixels{0.0f};
       POINT_TYPE scaleGlyphSpacetoPixels{0.0f};
-      GS_POINT glyphSpaceDomain;
 
-      GS_POINT lastUserSpacePoint;
-      GS_POINT lastUserSpaceMovedToPoint;
-      GS_POINT lastPointsPoint;
+      POINT_TYPE totalRotation{0.0};
 
+      GS_POINT pathBeginPoint;
+      GS_POINT currentUserSpacePoint;
+      GS_POINT currentPointsPoint;
+      GS_POINT userSpaceDomain;
+
+      POINT currentGDIPoint;
+
+      static gdiParametersStack gdiParametersStack;
+
+      void gdiMoveTo(POINT *pGDIPoint);
+
+      static long pageHeightPoints;
+      static long pageWidthPoints;
+      static POINT_TYPE scalePointsToPixels;
+
+      static long cyPageGutter;
+      static long pageCount;
       static long cxClient;
       static long cyClient;
       static long displayResolution;
-      static HWND hwndSurface;
-      static HDC hdcSurface;
-      static HDC hdcAlternate;
-      static HBITMAP hbmGlyph;
 
       friend class graphicsStateStack;
    };

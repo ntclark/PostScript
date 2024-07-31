@@ -7,9 +7,10 @@
 class job;
 class font;
 
-#include "PostScript objects\array.h"
-#include "PostScript objects\dictionary.h"
-#include "PostScript objects\graphicsState.h"
+#include "PostScript objects/literal.h"
+#include "PostScript objects/array.h"
+#include "PostScript objects/dictionary.h"
+#include "PostScript objects/graphicsState.h"
 
 #define DEFAULT_POINT_SIZE  12
 
@@ -56,6 +57,13 @@ v = htons(x);                   \
 pb += sizeof(int16_t);          \
 }
 
+#define BE_TO_LE_U16(pb,v) {    \
+uint16_t x = 0L;                \
+memcpy(&x,pb,sizeof(uint16_t)); \
+v = htons(x);                   \
+pb += sizeof(uint16_t);         \
+}
+
 #define BE_TO_LE_16_NO_ADVANCE(pb,v) {  \
 int16_t x = 0L;                         \
 memcpy(&x,pb,sizeof(int16_t));          \
@@ -67,6 +75,13 @@ int32_t x = 0L;                 \
 memcpy(&x,pb,sizeof(int32_t));  \
 v = htonl(x);                   \
 pb += sizeof(int32_t);          \
+}
+
+#define BE_TO_LE_U32(pb,v) {    \
+uint32_t x = 0L;                \
+memcpy(&x,pb,sizeof(uint32_t)); \
+v = htonl(x);                   \
+pb += sizeof(uint32_t);         \
 }
 
 #define BE_TO_LE_64(pb,v) {     \
@@ -123,16 +138,16 @@ struct INDEX {
 
     struct otTableRecord {
         uint8_t tag[4];     // tableTag Table identifier.
-        uint32_t checksum;  //Checksum for this table.
+        uint32_t checksum;  // Checksum for this table.
         uint32_t offset;    // Offset from beginning of font file.
-        uint32_t length;    //Length of this table.
+        uint32_t length;    // Length of this table.
 
         void load(BYTE *pb) {
             memcpy(tag,pb,4 * sizeof(uint8_t));
             pb += 4 * sizeof(uint8_t);
-            BE_TO_LE_32(pb,checksum)
-            BE_TO_LE_32(pb,offset)
-            BE_TO_LE_32(pb,length)
+            BE_TO_LE_U32(pb,checksum)
+            BE_TO_LE_U32(pb,offset)
+            BE_TO_LE_U32(pb,length)
         }
     };
 
@@ -148,6 +163,7 @@ struct INDEX {
         otTableRecord pTableRecords[32];//{NULL};
         
         BYTE *pTableDirectoryRoot{NULL};
+        boolean isCFFFont{false};
 
         BYTE *table(char *pszTableName) {
             for ( long k = 0; k < numTables; k++ ) 
@@ -166,11 +182,12 @@ struct INDEX {
 
             pTableDirectoryRoot = pb;
 
-            BE_TO_LE_32(pb,sfntVersion)
-            BE_TO_LE_16(pb,numTables)
-            BE_TO_LE_16(pb,searchRange)
-            BE_TO_LE_16(pb,entrySelector)
-            BE_TO_LE_16(pb,rangeShift)
+            BE_TO_LE_U32(pb,sfntVersion)
+            isCFFFont = ( sfntVersion == 0x4F54544F );
+            BE_TO_LE_U16(pb,numTables)
+            BE_TO_LE_U16(pb,searchRange)
+            BE_TO_LE_U16(pb,entrySelector)
+            BE_TO_LE_U16(pb,rangeShift)
 
             for ( long k = 0; k < numTables; k++ ) {
                 pTableRecords[k].load(pb);
@@ -180,62 +197,46 @@ struct INDEX {
     };
 
 
+    struct otMaxProfileTable {
+        otMaxProfileTable(BYTE *pb) {
+            BE_TO_LE_U32(pb,Version16Dot16)
+            BE_TO_LE_U16(pb,numGlyphs)
+            if ( ! ( 0x00010000 == Version16Dot16 ) )
+                return;
+            BE_TO_LE_U16(pb,maxPoints)
+            BE_TO_LE_U16(pb,maxContours)
+            BE_TO_LE_U16(pb,maxCompositePoints)
+            BE_TO_LE_U16(pb,maxCompositeContours)
+            BE_TO_LE_U16(pb,maxZones)
+            BE_TO_LE_U16(pb,maxTwilightPoints)
+            BE_TO_LE_U16(pb,maxStorage)
+            BE_TO_LE_U16(pb,maxFunctionDefs)
+            BE_TO_LE_U16(pb,maxInstructionDefs)
+            BE_TO_LE_U16(pb,maxStackElements)
+            BE_TO_LE_U16(pb,maxSizeOfInstructions)
+            BE_TO_LE_U16(pb,maxComponentElements)
+            BE_TO_LE_U16(pb,maxComponentDepth)
+        }
+        uint32_t Version16Dot16;           // version 0x00010000 for version 1.0.
+        uint16_t numGlyphs{0};             // The number of glyphs in the font.
+        uint16_t maxPoints{0};             // Maximum points in a non-composite glyph.
+        uint16_t maxContours{0};           // Maximum contours in a non-composite glyph.
+        uint16_t maxCompositePoints{0};    // Maximum points in a composite glyph.
+        uint16_t maxCompositeContours{0};  // Maximum contours in a composite glyph.
+        uint16_t maxZones{0};              // 1 if instructions do not use the twilight zone (Z0), or 2 if instructions do use Z0; should be set to 2 in most cases.
+        uint16_t maxTwilightPoints{0};     // Maximum points used in Z0.
+        uint16_t maxStorage{0};            // Number of Storage Area locations.
+        uint16_t maxFunctionDefs{0};       // Number of FDEFs, equal to the highest function number + 1.
+        uint16_t maxInstructionDefs{0};    // Number of IDEFs.
+        uint16_t maxStackElements{0};      // Maximum stack depth across Font Program ('fpgm' table), CVT Program ('prep' table) and all glyph instructions (in the 'glyf' table).
+        uint16_t maxSizeOfInstructions{0}; // Maximum byte count for glyph instructions.
+        uint16_t maxComponentElements{0};  // Maximum number of components referenced at “top level” for any composite glyph.
+        uint16_t maxComponentDepth{0};     // Maximum levels of recursion; 1 for simple components.
+    };
+
+
     struct otHeadTable {
-
-        uint16_t majorVersion;          //Major version number of the font header table — set to 1.
-        uint16_t minorVersion;          //Minor version number of the font header table — set to 0.
-        int32_t fontRevision;           //Fixed   fontRevision   Set by font manufacturer.
-        uint32_t checksumAdjustment;    // To compute: set it to 0, sum the entire font as uint32, then store 0xB1B0AFBA - sum. If the font is used as a component in a font collection file, the value of this field will be invalidated by changes to the file structure and font table directory, and must be ignored.
-        uint32_t magicNumber;           // Set to 0x5F0F3CF5.
-        uint16_t flags;                 // 
-/*
-Bit 0: Baseline for font at y=0.
-Bit 1: Left sidebearing point at x=0 (relevant only for TrueType rasterizers) — see the note below regarding variable fonts.
-Bit 2: Instructions may depend on point size.
-Bit 3: Force ppem to integer values for all internal scaler math; may use fractional ppem sizes if this bit is clear. It is strongly recommended that this be set in hinted fonts.
-Bit 4: Instructions may alter advance width (the advance widths might not scale linearly).
-Bit 5: This bit is not used in OpenType, and should not be set in order to ensure compatible behavior on all platforms. If set, it may result in different behavior for vertical layout in some platforms. (See Apple’s specification for details regarding behavior in Apple platforms.)
-Bits 6–10: These bits are not used in Opentype and should always be cleared. (See Apple’s specification for details regarding legacy used in Apple platforms.)
-Bit 11: Font data is “lossless” as a result of having been subjected to optimizing transformation and/or compression (such as e.g. compression mechanisms defined by ISO/IEC 14496-18, MicroType Express, WOFF 2.0 or similar) where the original font functionality and features are retained but the binary compatibility between input and output font files is not guaranteed. As a result of the applied transform, the DSIG table may also be invalidated.
-Bit 12: Font converted (produce compatible metrics).
-Bit 13: Font optimized for ClearType™. Note, fonts that rely on embedded bitmaps (EBDT) for rendering should not be considered optimized for ClearType, and therefore should keep this bit cleared.
-Bit 14: Last Resort font. If set, indicates that the glyphs encoded in the 'cmap' subtables are simply generic symbolic representations of code point ranges and don’t truly represent support for those code points. If unset, indicates that the glyphs encoded in the 'cmap' subtables represent proper support for those code points.
-Bit 15: Reserved, set to 0.
-*/
-        uint16_t unitsPerEm;            // Set to a value from 16 to 16384. Any value in this range is valid. In fonts that have TrueType outlines, a power of 2 is recommended as this allows performance optimizations in some rasterizers.
-        int64_t created;                // LONGDATETIME   created   Number of seconds since 12:00 midnight that started January 1st 1904 in GMT/UTC time zone.
-        int64_t modified;               // LONGDATETIME   modified   Number of seconds since 12:00 midnight that started January 1st 1904 in GMT/UTC time zone.
-        int16_t xMin;                   // Minimum x coordinate across all glyph bounding boxes.
-        int16_t yMin;                   // Minimum y coordinate across all glyph bounding boxes.
-        int16_t xMax;                   // Maximum x coordinate across all glyph bounding boxes.
-        int16_t yMax;                   // Maximum y coordinate across all glyph bounding boxes.
-        uint16_t macStyle;              // 
-/*
-Bit 0: Bold (if set to 1)
-Bit 1: Italic (if set to 1)
-Bit 2: Underline (if set to 1)
-Bit 3: Outline (if set to 1)
-Bit 4: Shadow (if set to 1)
-Bit 5: Condensed (if set to 1)
-Bit 6: Extended (if set to 1)
-Bits 7–15: Reserved (set to 0).
-*/
-
-        uint16_t lowestRecPPEM;         // Smallest readable size in pixels.
-        int16_t fontDirectionHint;      // Deprecated (Set to 2).
-/*
-0: Fully mixed directional glyphs;
-1: Only strongly left to right;
-2: Like 1 but also contains neutrals;
--1: Only strongly right to left;
--2: Like -1 but also contains neutrals.
-(A neutral character has no inherent directionality; it is not a character with zero (0) width. Spaces and punctuation are examples of neutral characters. Non-neutral characters are those with inherent directionality. For example, Roman letters (left-to-right) and Arabic letters (right-to-left) have directionality. In a “normal” Roman font where spaces and punctuation are present, the font direction hints should be set to two (2).)
-*/
-
-        int16_t indexToLocFormat;       // 0 for short offsets (Offset16), 1 for long (Offset32).
-        int16_t glyphDataFormat;        // 0 for current format.
-
-        void load(BYTE *pb) {
+        otHeadTable(BYTE *pb) {
             BE_TO_LE_16(pb,majorVersion)
             BE_TO_LE_16(pb,minorVersion)
             BE_TO_LE_32(pb,fontRevision)
@@ -255,14 +256,82 @@ Bits 7–15: Reserved (set to 0).
             BE_TO_LE_16(pb,indexToLocFormat)
             BE_TO_LE_16(pb,glyphDataFormat)
         }
+        uint16_t majorVersion;          //Major version number of the font header table — set to 1.
+        uint16_t minorVersion;          //Minor version number of the font header table — set to 0.
+        int32_t fontRevision;           //Fixed   fontRevision   Set by font manufacturer.
+        uint32_t checksumAdjustment;    // To compute: set it to 0, sum the entire font as uint32, then store 0xB1B0AFBA - sum. If the font is used as a component in a font collection file, the value of this field will be invalidated by changes to the file structure and font table directory, and must be ignored.
+        uint32_t magicNumber;           // Set to 0x5F0F3CF5.
+        uint16_t flags;                 // 
+        /*
+        Bit 0: Baseline for font at y=0.
+        Bit 1: Left sidebearing point at x=0 (relevant only for TrueType rasterizers) — see the note
+                below regarding variable fonts.
+        Bit 2: Instructions may depend on point size.
+        Bit 3: Force ppem to integer values for all internal scaler math; may use fractional ppem 
+                sizes if this bit is clear. It is strongly recommended that this be set in hinted fonts.
+        Bit 4: Instructions may alter advance width (the advance widths might not scale linearly).
+        Bit 5: This bit is not used in OpenType, and should not be set in order to ensure compatible 
+                behavior on all platforms. If set, it may result in different behavior for vertical 
+                layout in some platforms. (See Apple’s specification for details regarding behavior in Apple platforms.)
+        Bits 6–10: These bits are not used in Opentype and should always be cleared. 
+                (See Apple’s specification for details regarding legacy used in Apple platforms.)
+        Bit 11: Font data is “lossless” as a result of having been subjected to optimizing 
+                transformation and/or compression (such as e.g. compression mechanisms defined 
+                by ISO/IEC 14496-18, MicroType Express, WOFF 2.0 or similar) where the original 
+                font functionality and features are retained but the binary compatibility between 
+                input and output font files is not guaranteed. As a result of the applied transform,
+                the DSIG table may also be invalidated.
+        Bit 12: Font converted (produce compatible metrics).
+        Bit 13: Font optimized for ClearType™. Note, fonts that rely on embedded bitmaps (EBDT) 
+                for rendering should not be considered optimized for ClearType, and therefore 
+                should keep this bit cleared.
+        Bit 14: Last Resort font. If set, indicates that the glyphs encoded in the 'cmap' subtables 
+                are simply generic symbolic representations of code point ranges and don’t truly 
+                represent support for those code points. If unset, indicates that the glyphs 
+                encoded in the 'cmap' subtables represent proper support for those code points.
+        Bit 15: Reserved, set to 0.
+        */
+        uint16_t unitsPerEm;    // Set to a value from 16 to 16384. Any value in this range is valid. In fonts that have TrueType outlines, a power of 2 is recommended as this allows performance optimizations in some rasterizers.
+        int64_t created;        // LONGDATETIME   created   Number of seconds since 12:00 midnight that started January 1st 1904 in GMT/UTC time zone.
+        int64_t modified;       // LONGDATETIME   modified  Number of seconds since 12:00 midnight that started January 1st 1904 in GMT/UTC time zone.
+        int16_t xMin;           // Minimum x coordinate across all glyph bounding boxes.
+        int16_t yMin;           // Minimum y coordinate across all glyph bounding boxes.
+        int16_t xMax;           // Maximum x coordinate across all glyph bounding boxes.
+        int16_t yMax;           // Maximum y coordinate across all glyph bounding boxes.
+        uint16_t macStyle;      // 
+        /*
+        Bit 0: Bold (if set to 1)
+        Bit 1: Italic (if set to 1)
+        Bit 2: Underline (if set to 1)
+        Bit 3: Outline (if set to 1)
+        Bit 4: Shadow (if set to 1)
+        Bit 5: Condensed (if set to 1)
+        Bit 6: Extended (if set to 1)
+        Bits 7–15: Reserved (set to 0).
+        */
+
+        uint16_t lowestRecPPEM;     // Smallest readable size in pixels.
+        int16_t fontDirectionHint;  // Deprecated (Set to 2).
+        /*
+        0: Fully mixed directional glyphs;
+        1: Only strongly left to right;
+        2: Like 1 but also contains neutrals;
+        -1: Only strongly right to left;
+        -2: Like -1 but also contains neutrals.
+        (A neutral character has no inherent directionality; it is not a character with zero (0) width. Spaces and punctuation are examples of neutral characters. Non-neutral characters are those with inherent directionality. For example, Roman letters (left-to-right) and Arabic letters (right-to-left) have directionality. In a “normal” Roman font where spaces and punctuation are present, the font direction hints should be set to two (2).)
+        */
+
+        int16_t indexToLocFormat;   // 0 for short offsets (Offset16), 1 for long (Offset32).
+        int16_t glyphDataFormat;    // 0 for current format.
+
     };
 
 
     struct otGlyphHeader {
-        int16_t countourCount;   // If the number of contours is greater than or equal to zero, this is a simple glyph. If negative, this is a composite glyph — the value -1 should be used for composite glyphs.
-        int16_t xMin;               // Minimum x for coordinate data.
-        int16_t yMin;               // Minimum y for coordinate data.
-        int16_t xMax;               // Maximum x for coordinate data.
+        int16_t countourCount;  // If the number of contours is greater than or equal to zero, this is a simple glyph. If negative, this is a composite glyph — the value -1 should be used for composite glyphs.
+        int16_t xMin;           // Minimum x for coordinate data.
+        int16_t yMin;           // Minimum y for coordinate data.
+        int16_t xMax;           // Maximum x for coordinate data.
         int16_t yMax;
         void load(BYTE *pb) {
             BE_TO_LE_16(pb,countourCount)
@@ -275,26 +344,7 @@ Bits 7–15: Reserved (set to 0).
 
 
     struct otHorizHeadTable {
-        uint16_t majorVersion;      // Major version number of the horizontal header table — set to 1.
-        uint16_t minorVersion;      // Minor version number of the horizontal header table — set to 0.
-        int16_t ascender;           // FWORD Typographic ascent—see note below.
-        int16_t descender;          // FWORD Typographic descent—see note below.
-        int16_t lineGap;            // FWORD Typographic line gap.
-                                    // Negative LineGap values are treated as zero in some legacy platform implementations.
-        uint16_t advanceWidthMax;   // UFWORD Maximum advance width value in 'hmtx' table.
-        int16_t minLeftSideBearing; // FWORD Minimum left sidebearing value in 'hmtx' table for glyphs with contours (empty glyphs should be ignored).
-        int16_t minRightSideBearing;// FWORD Minimum right sidebearing value; calculated as min(aw - (lsb + xMax - xMin)) for glyphs with contours (empty glyphs should be ignored).
-        int16_t xMaxExtent;         // FWORD Max(lsb + (xMax - xMin)).
-        int16_t caretSlopeRise;     // Used to calculate the slope of the cursor (rise/run); 1 for vertical.
-        int16_t caretSlopeRun;      // 0 for vertical.
-        int16_t caretOffset;        // The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts
-        int16_t reserved;           // (reserved) set to 0
-        int16_t reserved2;          // (reserved) set to 0
-        int16_t reserved3;          // (reserved) set to 0
-        int16_t resrved4;           // (reserved) set to 0
-        int16_t metricDataFormat;   //  0 for current format.
-        uint16_t numberOfHMetrics;  // Number of hMetric entries in 'hmtx' table
-        void load(BYTE *pb) {
+        otHorizHeadTable(BYTE *pb) {
             BE_TO_LE_16(pb,majorVersion)
             BE_TO_LE_16(pb,minorVersion)
             BE_TO_LE_16(pb,ascender)
@@ -314,11 +364,48 @@ Bits 7–15: Reserved (set to 0).
             BE_TO_LE_16(pb,metricDataFormat)
             BE_TO_LE_16(pb,numberOfHMetrics)
         }
+        uint16_t majorVersion;      // Major version number of the horizontal header table — set to 1.
+        uint16_t minorVersion;      // Minor version number of the horizontal header table — set to 0.
+        int16_t ascender;           // FWORD Typographic ascent—see note below.
+        int16_t descender;          // FWORD Typographic descent—see note below.
+        int16_t lineGap;            // FWORD Typographic line gap.
+                                    // Negative LineGap values are treated as zero in some legacy platform implementations.
+        uint16_t advanceWidthMax;   // UFWORD Maximum advance width value in 'hmtx' table.
+        int16_t minLeftSideBearing; // FWORD Minimum left sidebearing value in 'hmtx' table for glyphs with contours (empty glyphs should be ignored).
+        int16_t minRightSideBearing;// FWORD Minimum right sidebearing value; calculated as min(aw - (lsb + xMax - xMin)) for glyphs with contours (empty glyphs should be ignored).
+        int16_t xMaxExtent;         // FWORD Max(lsb + (xMax - xMin)).
+        int16_t caretSlopeRise;     // Used to calculate the slope of the cursor (rise/run); 1 for vertical.
+        int16_t caretSlopeRun;      // 0 for vertical.
+        int16_t caretOffset;        // The amount by which a slanted highlight on a glyph needs to be shifted to produce the best appearance. Set to 0 for non-slanted fonts
+        int16_t reserved;           // (reserved) set to 0
+        int16_t reserved2;          // (reserved) set to 0
+        int16_t reserved3;          // (reserved) set to 0
+        int16_t resrved4;           // (reserved) set to 0
+        int16_t metricDataFormat;   //  0 for current format.
+        uint16_t numberOfHMetrics;  // Number of hMetric entries in 'hmtx' table
     };
 
 
     struct otVertHeadTable {
-
+        otVertHeadTable(BYTE *pb) {
+            BE_TO_LE_32(pb,Version16Dot16)
+            BE_TO_LE_16(pb,int16_t vertTypoAscender)
+            BE_TO_LE_16(pb,vertTypoDescender)
+            BE_TO_LE_16(pb,vertTypoLineGap)
+            BE_TO_LE_16(pb,advanceHeightMax)
+            BE_TO_LE_16(pb,minTopSideBearing)
+            BE_TO_LE_16(pb,minBottomSideBearing)
+            BE_TO_LE_16(pb,yMaxExtent)
+            BE_TO_LE_16(pb,caretSlopeRise)
+            BE_TO_LE_16(pb,caretSlopeRun)
+            BE_TO_LE_16(pb,caretOffset)
+            BE_TO_LE_16(pb,reserved)
+            BE_TO_LE_16(pb,reserved1)
+            BE_TO_LE_16(pb,reserved2)
+            BE_TO_LE_16(pb,reserved3)
+            BE_TO_LE_16(pb,metricDataFormat)
+            BE_TO_LE_16(pb,numOfLongVerMetrics)
+        }
         uint32_t Version16Dot16;        // version Version number of the vertical header table; 0x00011000 for version 1.1
         int16_t vertTypoAscender;       // The vertical typographic ascender for this font. It is the distance in FUnits from the vertical center baseline to the right edge of the design space for CJK / ideographic glyphs (or “ideographic em box”).
                                         // It is usually set to (head.unitsPerEm)/2. For example, a font with an em of 1000 FUnits will set this field to 500. See the Baseline tags section of the OpenType Layout Tag Registry for a description of the ideographic em-box.
@@ -338,33 +425,13 @@ Bits 7–15: Reserved (set to 0).
         int16_t reserved3;              // Set to 0.
         int16_t metricDataFormat;       // Set to 0.
         uint16_t numOfLongVerMetrics;   // Number of advance heights in the vertical metrics table.
-        void load(BYTE *pb) {
-            BE_TO_LE_32(pb,Version16Dot16)
-            BE_TO_LE_16(pb,int16_t vertTypoAscender)
-            BE_TO_LE_16(pb,vertTypoDescender)
-            BE_TO_LE_16(pb,vertTypoLineGap)
-            BE_TO_LE_16(pb,advanceHeightMax)
-            BE_TO_LE_16(pb,minTopSideBearing)
-            BE_TO_LE_16(pb,minBottomSideBearing)
-            BE_TO_LE_16(pb,yMaxExtent)
-            BE_TO_LE_16(pb,caretSlopeRise)
-            BE_TO_LE_16(pb,caretSlopeRun)
-            BE_TO_LE_16(pb,caretOffset)
-            BE_TO_LE_16(pb,reserved)
-            BE_TO_LE_16(pb,reserved1)
-            BE_TO_LE_16(pb,reserved2)
-            BE_TO_LE_16(pb,reserved3)
-            BE_TO_LE_16(pb,metricDataFormat)
-            BE_TO_LE_16(pb,numOfLongVerMetrics)
-        }
-
     };
 
 
     class otSimpleGlyph {
     public:
 
-        otSimpleGlyph(BYTE bGlyph,font *pFont,graphicsState *pGraphicsState,otGlyphHeader *ph,BYTE *pb,long cbPb);
+        otSimpleGlyph(BYTE bGlyph,font *pFont,graphicsState *pGraphicsState,otGlyphHeader *ph,BYTE *pb);
 
         ~otSimpleGlyph();
 
@@ -375,11 +442,12 @@ Bits 7–15: Reserved (set to 0).
         uint16_t instructionLength{0L};     // Total number of bytes for instructions. If instructionLength is zero, no instructions are present for this glyph, and this field is followed directly by the flags field.
         uint8_t *pInstructions{NULL};       // Array of instruction byte code for the glyph.
         uint8_t *pFlags{NULL};              // Array of flag elements. See below for details regarding the number of flag array elements.
-        POINT_TYPE *pXCoordinates{NULL};       // Contour point x-coordinates. See below for details regarding the number of coordinate array elements. Coordinate for the first point is relative to (0,0); others are relative to previous point.
-        POINT_TYPE *pYCoordinates{NULL};       // Contour point y-coordinates. See below for details regarding the number of coordinate array elements. Coordinate for the first point is relative to (0,0); others are relative to previous point.
 
-        POINTD *pPoints{NULL};
-        POINTD **pPointFirst{NULL};
+        POINT_TYPE *pXCoordinates{NULL};    // Contour point x-coordinates. See below for details regarding the number of coordinate array elements. Coordinate for the first point is relative to (0,0); others are relative to previous point.
+        POINT_TYPE *pYCoordinates{NULL};    // Contour point y-coordinates. See below for details regarding the number of coordinate array elements. Coordinate for the first point is relative to (0,0); others are relative to previous point.
+
+        GS_POINT *pPoints{NULL};
+        GS_POINT **pPointFirst{NULL};
 
         uint16_t *contourPointCount{NULL};
         POINT_TYPE  **pPointFirstX{NULL};
@@ -402,10 +470,10 @@ Bits 7–15: Reserved (set to 0).
 
 
     struct otLongHorizontalMetric {
-        uint16_t advanceWidth;      // Advance width, in font design units.
+        uint16_t advanceWidth;
         int16_t lsb;
         void load(BYTE *pb) {
-            BE_TO_LE_16(pb,advanceWidth)
+            BE_TO_LE_U16(pb,advanceWidth)
             BE_TO_LE_16(pb,lsb)
         }
     };
@@ -413,24 +481,20 @@ Bits 7–15: Reserved (set to 0).
 
     struct otHorizontalMetricsTable {
         otHorizontalMetricsTable(long cntGlyphs,long cntMetrics,BYTE *pb) {
-            pHorizontalMetrics = new otLongHorizontalMetric[cntMetrics];
-            pLeftSideBearings = NULL;
+            pHorizontalMetrics = new otLongHorizontalMetric[cntGlyphs];
             for ( long k = 0; k < cntMetrics; k++ ) {
                 pHorizontalMetrics[k].load(pb);
                 pb += sizeof(otLongHorizontalMetric);
             }
-            if ( cntMetrics > cntGlyphs )
+            if ( cntMetrics == cntGlyphs )
                 return;
-            pLeftSideBearings = new int16_t[cntGlyphs - cntMetrics];
             for ( long k = 0; k < cntGlyphs - cntMetrics; k++ ) {
-                BE_TO_LE_16(pb,pLeftSideBearings[k])
-                pb += sizeof(int16_t);
+                pHorizontalMetrics[cntMetrics + k].advanceWidth = pHorizontalMetrics[cntMetrics - 1].advanceWidth;
+                BE_TO_LE_16(pb,pHorizontalMetrics[cntMetrics + k].lsb)
             }
         }
-        otLongHorizontalMetric *pHorizontalMetrics; // [numberOfHMetrics]   Paired advance width and left side bearing values for each glyph. Records are indexed by glyph ID.
-        int16_t *pLeftSideBearings;                 // [numGlyphs - numberOfHMetrics] Left side bearings for glyph IDs greater than or equal to numberOfHMetrics.
-        void load(BYTE *pb) {
-        }
+        otLongHorizontalMetric *pHorizontalMetrics{NULL}; // [numberOfHMetrics]   Paired advance width and left side bearing values for each glyph. Records are indexed by glyph ID.
+        //int16_t *pLeftSideBearings{NULL};               // [numGlyphs - numberOfHMetrics] Left side bearings for glyph IDs greater than or equal to numberOfHMetrics.
     };
 
 
@@ -446,24 +510,19 @@ Bits 7–15: Reserved (set to 0).
 
     struct otVerticalMetricsTable {
         otVerticalMetricsTable(long cntGlyphs,long cntMetrics,BYTE *pb) {
-            pVerticalMetrics = new otLongVerticalMetric[cntMetrics];
-            pTopSideBearings = NULL;
+            pVerticalMetrics = new otLongVerticalMetric[cntGlyphs];
             for ( long k = 0; k < cntMetrics; k++ ) {
                 pVerticalMetrics[k].load(pb);
                 pb += sizeof(otLongVerticalMetric);
             }
-            if ( cntMetrics > cntGlyphs )
+            if ( cntMetrics == cntGlyphs )
                 return;
-            pTopSideBearings = new int16_t[cntGlyphs - cntMetrics];
             for ( long k = 0; k < cntGlyphs - cntMetrics; k++ ) {
-                BE_TO_LE_16(pb,pTopSideBearings[k])
-                pb += sizeof(int16_t);
+                pVerticalMetrics[cntMetrics + k].advanceHeight = pVerticalMetrics[cntMetrics - 1].advanceHeight;
+                BE_TO_LE_16(pb,pVerticalMetrics[cntMetrics + k].topSideBearing)
             }
         }
         otLongVerticalMetric *pVerticalMetrics;
-        int16_t *pTopSideBearings;
-        void load(BYTE *pb) {
-        }
     };
 
 
@@ -554,6 +613,129 @@ Bits 7–15: Reserved (set to 0).
     };
 
 
+    struct otCmapTable {
+        otCmapTable(BYTE *pbData) {
+            BYTE *pbStart = pbData;
+            BE_TO_LE_U16(pbData,version)
+            BE_TO_LE_U16(pbData,numTables);
+            pEncodingRecords = new otEncodingRecord[numTables];
+            for ( long k = 0; k < numTables; k++ ) {
+                BE_TO_LE_U16(pbData,pEncodingRecords[k].platformID)
+                BE_TO_LE_U16(pbData,pEncodingRecords[k].encodingID)
+                BE_TO_LE_U32(pbData,pEncodingRecords[k].subtableOffset)
+                pEncodingRecords[k].tableAddress = (UINT_PTR)(void *)(pbStart + pEncodingRecords[k].subtableOffset);
+            }
+        }
+        struct otEncodingRecord {
+            uint16_t platformID{0};        // Platform ID.
+            uint16_t encodingID{0};        // Platform-specific encoding ID.
+            uint32_t subtableOffset{0};    // Byte offset from beginning of table to the subtable for this encoding.
+            UINT_PTR tableAddress{0};
+        };
+        uint16_t version{0};        // Table version number (0).
+        uint16_t numTables{0};      // Number of encoding tables that follow.
+        otEncodingRecord  *pEncodingRecords{NULL};  //[numTables]
+    };
+
+
+    struct otCmapSubtableFormat4 {
+        otCmapSubtableFormat4(BYTE **ppbData) {
+            load(ppbData);
+        }
+        uint16_t format{0};        // Format number is set to ?
+        uint16_t length{0};        // This is the length in bytes of the subtable.
+        uint16_t language{0};      // For requirements on use of the language field, see “Use of the language field in 'cmap' subtables” in this document.
+
+        uint16_t segCountX2{0};         // 2 × segCount.
+        uint16_t searchRange{0};        // Maximum power of 2 less than or equal to segCount, times 2 ((2**floor(log2(segCount))) * 2, where “**” is an exponentiation operator)
+        uint16_t entrySelector{0};      // Log2 of the maximum power of 2 less than or equal to segCount (log2(searchRange/2), which is equal to floor(log2(segCount)))
+        uint16_t rangeShift{0};         // segCount times 2, minus searchRange ((segCount * 2) - searchRange)
+        uint16_t *pEndCode{NULL};       // [segCount]   End characterCode for each segment, last=0xFFFF.
+        uint16_t reservedPad{0};        // Set to 0.
+        uint16_t *pStartCode{NULL};     // [segCount]   Start character code for each segment.
+        int16_t *pIdDelta{NULL};        // [segCount]   Delta for all character codes in segment.
+        uint16_t *pIdRangeOffsets{NULL};// [segCount]   Offsets into glyphIdArray or 0
+        uint16_t *pGlyphIdArray{NULL};  // [ ]
+
+        void load(BYTE **ppbData) {
+            BE_TO_LE_U16(*ppbData,format)
+            BE_TO_LE_U16(*ppbData,length);
+            BE_TO_LE_U16(*ppbData,language);
+        }
+
+        void loadFormat4(BYTE **ppbData) {
+
+            BE_TO_LE_U16(*ppbData,segCountX2)
+            BE_TO_LE_U16(*ppbData,searchRange)
+            BE_TO_LE_U16(*ppbData,entrySelector)
+            BE_TO_LE_U16(*ppbData,rangeShift)
+
+            uint16_t segCount = segCountX2 / 2;
+
+            pEndCode = new uint16_t[segCount];
+            for ( long k = 0; k < segCount; k++ )
+                BE_TO_LE_U16(*ppbData,pEndCode[k])
+
+            BE_TO_LE_U16(*ppbData,reservedPad)
+
+            pStartCode = new uint16_t[segCount];
+            for ( long k = 0; k < segCount; k++ )
+                BE_TO_LE_U16(*ppbData,pStartCode[k])
+
+            pIdDelta = new int16_t[segCount];
+            for ( long k = 0; k < segCount; k++ )
+                BE_TO_LE_16(*ppbData,pIdDelta[k])
+
+            pIdRangeOffsets = new uint16_t[segCount];
+            for ( long k = 0; k < segCount; k++ )
+                BE_TO_LE_U16(*ppbData,pIdRangeOffsets[k])
+
+            pGlyphIdArray = (uint16_t *)*ppbData;
+        }
+    };
+
+
+    struct otPostTable {
+        otPostTable(BYTE *pbData) {
+            BE_TO_LE_U32(pbData,Version16Dot16)
+            BE_TO_LE_32(pbData,italicAngle)
+            BE_TO_LE_16(pbData,underlinePosition)
+            BE_TO_LE_16(pbData,underlineThickness)
+            BE_TO_LE_U32(pbData,isFixedPitch)
+            BE_TO_LE_U32(pbData,minMemType42)
+            BE_TO_LE_U32(pbData,maxMemType42)
+            BE_TO_LE_U32(pbData,minMemType1)
+            BE_TO_LE_U32(pbData,maxMemType1)
+        }
+        uint32_t Version16Dot16{0};    // version 0x00010000 for version 1.0 0x00020000 for version 2.0 0x00025000 for version 2.5 (deprecated) 0x00030000 for version 3.0
+        int32_t italicAngle{0};        // Italic angle in counter-clockwise degrees from the vertical. Zero for upright text, negative for text that leans to the right (forward).
+        int16_t underlinePosition{0};  // Suggested y-coordinate of the top of the underline.
+        int16_t underlineThickness{0}; // Suggested values for the underline thickness. In general, the underline thickness should match the thickness of the underscore character (U+005F LOW LINE), and should also match the strikeout thickness, which is specified in the OS/2 table.
+        uint32_t isFixedPitch{0};      // Set to 0 if the font is proportionally spaced, non-zero if the font is not proportionally spaced (i.e. monospaced).
+        uint32_t minMemType42{0};      // Minimum memory usage when an OpenType font is downloaded.
+        uint32_t maxMemType42{0};      // Maximum memory usage when an OpenType font is downloaded.
+        uint32_t minMemType1{0};       // Minimum memory usage when an OpenType font is downloaded as a Type 1 font.
+        uint32_t maxMemType1{0};       // Maximum memory usage when an OpenType font is downloaded as a Type 1 font.
+    };
+
+    // TrueType fonts used in the Windows or Macintosh environments will
+    // generally use the encoding specific to that system, such as ANSI for Windows ...
+    // ... If there is no post table in a TrueType font in the Windows environment,
+    // the Windows ANSI encoded can be assumed.
+#if 0
+    struct otPostTableHeader {
+        uint16_t version;           // Version16Dot16. version 0x00010000 for version 1.0  0x00020000 for version 2.0 0x00025000 for version 2.5 (deprecated) 0x00030000 for version 3.0
+        Fixed italicAngle;          // Italic angle in counter-clockwise degrees from the vertical. Zero for upright text, negative for text that leans to the right (forward).
+        FWORD underlinePosition;    // Suggested y-coordinate of the top of the underline.
+        FWORD underlineThickness;   // Suggested values for the underline thickness. In general, the underline thickness should match the thickness of the underscore character (U+005F LOW LINE), and should also match the strikeout thickness, which is specified in the OS/2 table.
+        uint32 isFixedPitch;        // Set to 0 if the font is proportionally spaced, non-zero if the font is not proportionally spaced (i.e. monospaced).
+        uint32 minMemType42;        // Minimum memory usage when an OpenType font is downloaded.
+        uint32 maxMemType42;        // Maximum memory usage when an OpenType font is downloaded.
+        uint32 minMemType1;         // Minimum memory usage when an OpenType font is downloaded as a Type 1 font.
+        uint32 maxMemType1;         // Maximum memory usage when an OpenType font is downloaded as a Type 1 font.
+    };
+#endif
+
     struct type3GlyphBoundingBox {
         type3GlyphBoundingBox() {
             memset(this,0,sizeof(type3GlyphBoundingBox));
@@ -568,10 +750,13 @@ Bits 7–15: Reserved (set to 0).
 
         font(job *pJob,char *fontName);
         font(job *pJob,dictionary *,char *fontName);
-        font(job *pJob,PdfDictionary *pFontDict,POINT_TYPE fontSize);
+        font(job *pJob,font *pCopyFrom);
+
+        static font *findFont(job *pJob,char *pszFamily);
+
         ~font();
 
-        void load(long glyphCount);
+        void load(long countGlyphs);
         void type3load();
         void type42Load(BYTE *pbData = NULL);
 
@@ -579,10 +764,10 @@ Bits 7–15: Reserved (set to 0).
 
         void scalefont(POINT_TYPE sv);
         void setFontMatrix(class matrix *pMatrix);
-        void transformGlyph(POINTD *pPointD,long countPoints);
-        void transformGlyphInPlace(POINTD *pPointD,long countPoints);
-        void transformGlyph(POINTD *pPointD,long countPoints,class matrix *pMatrix);
-        void transformGlyphInPlace(POINTD *pPointD,long countPoints,class matrix *pMatrix);
+        void transformGlyph(GS_POINT *pPointD,long countPoints);
+        void transformGlyphInPlace(GS_POINT *pPointD,long countPoints);
+        void transformGlyph(GS_POINT *pPointD,long countPoints,class matrix *pMatrix);
+        void transformGlyphInPlace(GS_POINT *pPointD,long countPoints,class matrix *pMatrix);
 
         class matrix *getMatrix(object *pMatrixName = NULL);
         void putMatrix(class matrix *,object*pMatrixName = NULL);
@@ -593,42 +778,48 @@ Bits 7–15: Reserved (set to 0).
         long UnitsPerEm() { return pHeadTable -> unitsPerEm; }
 
         enum fontType {
-        ftype0 = 0,
-        ftype1 = 1,
-        ftype2 = 2,
-        ftype3 = 3,
-        ftype9 = 9,
-        ftype10 = 10,
-        ftype11 = 11,
-        ftype14 = 14,
-        ftype32 = 32,
-        ftype42 = 42,
-        ftypeUnspecified = 99 };
+            ftype0 = 0,
+            ftype1 = 1,
+            ftype2 = 2,
+            ftype3 = 3,
+            ftype9 = 9,
+            ftype10 = 10,
+            ftype11 = 11,
+            ftype14 = 14,
+            ftype32 = 32,
+            ftype42 = 42,
+            ftypeUnspecified = 99
+        };
 
         void SetCIDFont(boolean isCID) { isCIDFont = isCID; }
 
     private:
 
+        BYTE fontDataBegin{0x00};
+
         otTableDirectory tableDirectory;
+
+        BYTE *pbFontData{NULL};
 
         BYTE *pGlyfTable{NULL};
         BYTE *pLocaTable{NULL};
-        BYTE *pHmtxTable{NULL};
-        BYTE *pVmtxTable{NULL};
-        BYTE *pHheaTable{NULL};
-        BYTE *pVheaTable{NULL};
 
+        otMaxProfileTable *pMaxProfileTable{NULL};
         otHeadTable *pHeadTable{NULL};
         otHorizHeadTable *pHorizHeadTable{NULL};
         otVertHeadTable *pVertHeadTable{NULL};
         otHorizontalMetricsTable *pHorizontalMetricsTable{NULL};
         otVerticalMetricsTable *pVerticalMetricsTable{NULL};
         otOS2Table *pOS2Table{NULL};
+        otPostTable *pPostTable{NULL};
 
         class array *pSfntsArray{NULL};
         BYTE *pSfntsTable{NULL};
 
-        uint16_t glyphCount{0};
+        dictionary *pCharStrings{NULL};
+        class array *pEncoding{NULL};
+
+        long countGlyphs{0};
 
         char szFamily[64]{'\0'};
         enum fontType fontType{fontType::ftypeUnspecified};
@@ -641,178 +832,13 @@ Bits 7–15: Reserved (set to 0).
         long charStringType{2L};
 
         boolean isCIDFont{false};
+        boolean isLoaded{false};
+
+        BYTE fontDataEnd{0x00};
+
+        std::map<uint16_t,uint16_t> glyphIDMap;
 
         friend class graphicsState;
         friend class otSimpleGlyph;
 
     };
-
-/*
-                  TABLE 5.1 Font types
-
-TYPE     DESCRIPTION
-
-Type 0   (LanguageLevel 2) A composite font—a font composed of other
-         fonts, organized hierarchically. See Section 5.10, “Composite
-         Fonts.”
-
-Type 1   A font that defines glyph shapes by using a special encoded format.
-         Details on this format are provided in a separate book, Adobe Type 1
-         Font Format.
-
-         The multiple-master font format is an extension of the Type 1 font
-         format that allows the generation of a wide variety of typeface styles
-         from a single font. For details of the construction and uses of
-         multiple-master fonts, see Adobe Technical Note #5015, Type 1 Font
-         Format Supplement.
-
-Type 2   (LanguageLevel 3) A Compact Font Format (CFF) font. See
-         Section 5.8.1, “Type 2 and Type 14 Fonts (CFF and Chameleon).”
-
-Type 3   A font that defines glyphs with ordinary PostScript procedures,
-         which are the values of entries named BuildGlyph or BuildChar in
-         the font dictionary. See Section 5.7, “Type 3 Fonts.”
-
-Types 9, 10, 11, 32 (LanguageLevel 3) 
-         These FontType values identify a class of fontlike
-         objects, called CIDFonts, that can be used as descendants in CIDkeyed
-         fonts. See Section 5.11, “CID-Keyed Fonts.” CIDFonts have
-         their own type numbering, specified by a separate CIDFontType
-         entry; a Type 0 font and a Type 0 CIDFont are entirely different
-         kinds of objects. CIDFonts are not considered to be base fonts.
-
-Type 14 (LanguageLevel 3) 
-         A Chameleon font. See Section 5.8.1, “Type 2
-         and Type 14 Fonts (CFF and Chameleon).”
-
-Type 42 (LanguageLevel 3) 
-         A font based on the TrueType font format. See
-         Section 5.8.2, “Type 42 Fonts (TrueType).”
-
-*/
-
-
-/*
-
-                     TABLE 5.2 Entries common to all font dictionaries
-
-   KEY      TYPE     VALUE
-
-   FontType integer  (Required) The font type; see Table 5.1. Indicates where the glyph descriptions
-                     are to be found and how they are represented.
-
-   FontMatrix array  (Required) An array that transforms the glyph coordinate system into the user
-                     coordinate system (see Section 5.4, “Glyph Metric Information”). For
-                     example, Type 1 font programs from Adobe are usually defined in terms of a
-                     1000-unit glyph coordinate system, and their initial font matrix is
-                     [0.001 0 0 0.001 0 0]. When a font is derived by the scalefont or makefont
-                     operator, the new matrix is concatenated with the existing font matrix to
-                     yield a new copy of the font with a different font matrix.
-
-   FontName    name  (Optional) The name of the font. This entry is for information only; it is not
-                     used by the PostScript interpreter. Ordinarily, it is the same as the key passed
-                     to definefont, but it need not be.
-
-   FontInfo    dictionary (Optional) A dictionary containing font information that is not accessed by
-                           the PostScript interpreter; see Table 5.5 on page 327.
-
-   LanguageLevel integer   (Optional) The minimum LanguageLevel required for correct behavior of the
-                        font. For example, any font that uses LanguageLevel 2 features for rendering
-                        glyphs (such as a glyph description that uses rectfill or glyphshow) should
-                        specify a LanguageLevel value of 2. On the other hand, the presence of
-                        higher-LanguageLevel information that an interpreter can safely ignore does
-                        not require LanguageLevel to be set to the higher LanguageLevel. For
-                        example, an XUID entry in the font dictionary—LanguageLevel 2 information
-                        that a LanguageLevel 1 interpreter can ignore—does not require setting
-                        LanguageLevel to 2. Default value: 1.
-
-   WMode    integer  (Optional; LanguageLevel 2) The writing mode, which determines which of
-                     two sets of metrics will be used when glyphs are shown from the font. Mode 0
-                     specifies horizontal writing; mode 1 specifies vertical writing (see Section 5.4,
-                     “Glyph Metric Information”). LanguageLevel 1 implementations lacking
-                     composite font extensions ignore this entry. Default value: 0.
-
-   FID   fontID      (Inserted by definefont) A special object of type fontID that serves internal
-                     purposes in the font machinery. The definefont operator inserts this entry. In
-                     LanguageLevel 1, an FID entry must not previously exist in the dictionary
-                     presented to definefont; the dictionary must have sufficient space to insert
-                     this entry.
-
-
-                     TABLE 5.3 Additional entries common to all base fonts
-
-   KEY      TYPE     VALUE
-
-   Encoding array    (Required) An array of character names to which character codes are
-                     mapped. See Section 5.3, “Character Encoding.”
-
-   FontBBox array    (Required) An array of four numbers in the glyph coordinate system giving
-                     the left, bottom, right, and top coordinates, respectively, of the font bounding
-                     box. The font bounding box is the smallest rectangle enclosing the shape that
-                     would result if all of the glyphs of the font were placed with their origins coincident,
-                     and then painted. This information is used in making decisions
-                     about glyph caching and clipping. If all four values are 0, the PostScript interpreter
-                     makes no assumptions based on the font bounding box.
-
-                     If any value is nonzero, it is essential that the font bounding box be accurate;
-                     if any glyph’s marks fall outside this bounding box, incorrect behavior may
-                     result.
-
-                     In many Type 1 fonts, the FontBBox array is executable, though there is no
-                     good reason for this to be so. Programs that access FontBBox should invoke
-                     an explicit get or load operator to avoid unintended execution.
-
-   UniqueID integer  (Optional) An integer in the range 0 to 16,777,215 (224 - 1) that uniquely
-                     identifies this font. See Section 5.6, “Unique ID Generation.”
-
-   XUID     array    (Optional; LanguageLevel 2) An array of integers that uniquely identifies this
-                     font or any variant of it. See Section 5.6, “Unique ID Generation.”
-
-*/   
-
-/*
-
-                     TABLE 5.4 Additional entries specific to Type 1 fonts
-   KEY         TYPE        VALUE
-   PaintType   integer     (Required) A code indicating how the glyphs of the font are to be painted:
-                           0 Glyph outlines are filled.
-                           2 Glyph outlines (designed to be filled) are stroked.
-                           To get a stroked-outline font, a program can copy the font dictionary, change
-                           the PaintType from 0 to 2, add a StrokeWidth entry, and define a new font using
-                           this dictionary. Note that the previously documented PaintType values of
-                           1 and 3 are not supported.
-
-   StrokeWidth number      (Optional) The stroke width (in units of the glyph coordinate system) for
-                           stroked-outline fonts (PaintType 2). This entry is not initially present in
-                           filled-outline fonts. It should be added (with a nonzero value) when a stroked
-                           font is created from an existing filled font. Default value: 0.
-
-   Metrics     dictionary  (Optional) A dictionary containing metric information (glyph widths and
-                           sidebearings) for writing mode 0. This entry is not normally present in the
-                           original definition of a font. Adding a Metrics entry to a font overrides the
-                           metric information encoded in the glyph descriptions. See Sections 5.4,
-                           “Glyph Metric Information,” and 5.9.2, “Changing Glyph Metrics.”
-      
-   Metrics2    dictionary  (Optional; LanguageLevel 2) Similar to Metrics, but for writing mode 1.
-                           CDevProc procedure (Optional; LanguageLevel 2) A procedure that algorithmically derives global
-                           changes to the font’s metrics. LanguageLevel 1 implementations lacking
-                           composite font extensions ignore this entry.
-
-   CharStrings dictionary  (Required) A dictionary associating character names (the keys in the dictionary)
-                           with glyph descriptions. Each entry’s value is ordinarily a string (called a
-                           charstring) that represents the glyph description for that character in a special
-                           encoded format; see Adobe Type 1 Font Format for details. The value can also
-                           be a PostScript procedure; see Section 5.9.3, “Replacing or Adding Individual
-                           Glyphs.” This dictionary must have an entry whose key is .notdef.
-   
-   Private     dictionary (Required) A dictionary containing other internal information about the
-                           font. See Adobe Type 1 Font Format for details.
-
-   WeightVector array      (Required; multiple-master fonts only) An array specifying the contribution of
-                           each master design to the current font instance. The array contains one number
-                           per master design, each typically in the range 0.0 to 1.0; the sum of the array
-                           elements must be 1.0. The values in the array are used for calculating the
-                           weighted interpolation. Elements outside the allowed range may produce unexpected
-                           results.
-   
-*/

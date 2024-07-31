@@ -319,6 +319,8 @@ Exit 0</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Fonts\font_transforms.cpp" />
+    <ClCompile Include="Fonts\font_type42.cpp" />
     <ClCompile Include="Fonts\simpleGlyph.cpp" />
     <ClCompile Include="handler.cpp" />
     <ClCompile Include="job\job.cpp" />
@@ -348,8 +350,6 @@ Exit 0</Command>
     <ClCompile Include="PostScript objects\dictionary.cpp" />
     <ClCompile Include="PostScript objects\file.cpp" />
     <ClCompile Include="PostScript objects\filter.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\cubicSpline.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_bezierCurve.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_colorImage.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType3Glyph.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_filter.cpp" />
@@ -357,7 +357,10 @@ Exit 0</Command>
     <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType42Glyph.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_paths.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_saveRestore.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_showPage.cpp" />
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_transforms.cpp" />
     <ClCompile Include="PostScript objects\literal.cpp" />
     <ClCompile Include="PostScript objects\mark.cpp" />
     <ClCompile Include="PostScript objects\matrix.cpp" />
@@ -371,11 +374,13 @@ Exit 0</Command>
     <ClCompile Include="PostScript objects\constantString.cpp" />
     <ClCompile Include="PostScript objects\structureSpec.cpp" />
     <ClCompile Include="PostScript.cpp" />
+    <ClCompile Include="PostScript_CommitCurrentPage.cpp" />
     <ClCompile Include="PostScript_DisplayStack.cpp" />
     <ClCompile Include="PostScript_initWindows.cpp" />
     <ClCompile Include="PostScript_Log.cpp" />
     <ClCompile Include="richEditHandler.cpp" />
     <ClCompile Include="Stacks\dictionaryStack.cpp" />
+    <ClCompile Include="Stacks\gdiParametersStack.cpp" />
     <ClCompile Include="Stacks\graphicsStateStack.cpp" />
     <ClCompile Include="Stacks\objectStack.cpp" />
   </ItemGroup>
@@ -392,10 +397,10 @@ Exit 0</Command>
     <ClInclude Include="include\ascii85.h" />
     <ClInclude Include="include\comment.h" />
     <ClInclude Include="include\error.h" />
+    <ClInclude Include="include\gdiParameters.h" />
     <ClInclude Include="include\job.h" />
     <ClInclude Include="include\job_operators.h" />
     <ClInclude Include="include\job_pdfOperators.h" />
-    <ClInclude Include="include\parsing.h" />
     <ClInclude Include="include\PostScript objects\array.h" />
     <ClInclude Include="include\PostScript objects\binaryString.h" />
     <ClInclude Include="include\PostScript objects\booleanObject.h" />
@@ -422,6 +427,7 @@ Exit 0</Command>
     <ClInclude Include="include\PostScript_Log.h" />
     <ClInclude Include="include\resourceIdentifiers.h" />
     <ClInclude Include="include\Stacks\dictionaryStack.h" />
+    <ClInclude Include="include\Stacks\gdiParametersStack.h" />
     <ClInclude Include="include\Stacks\graphicsStateStack.h" />
     <ClInclude Include="include\Stacks\objectStack.h" />
   </ItemGroup>

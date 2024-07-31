@@ -24,6 +24,10 @@
     currentlyAllocatedHeap = 0L;
     }
 
+    void *object::operator new(size_t theSize) {
+    return ::new BYTE(theSize);
+    }
+
     void *object::operator new(size_t theSize,void *pPtr) {
 
     if ( ((BYTE *)pNextHeap - (BYTE *)pHeap + theSize) > currentlyAllocatedHeap ) {
@@ -314,8 +318,8 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     }
 
     doubleValue = value; 
-    char szDouble[32];
-    sprintf_s<32>(szDouble,"%f",value);
+    char szDouble[64];
+    sprintf_s<64>(szDouble,"%f",value);
     Contents(szDouble);
     theObjectType = object::number;
     theValueType = object::real;
@@ -410,6 +414,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     void object::put(long,BYTE) {
     MessageBox(NULL,"put is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    pJob -> operatorDebug();
     _endthread();
     return;
     }
@@ -417,12 +422,14 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     BYTE object::get(long index) {
     MessageBox(NULL,"get is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    pJob -> operatorDebug();
     _endthread();
     return NULL;
     }
 
     void object::putElement(long index,object *) {
     MessageBox(NULL,"putElement is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    pJob -> operatorDebug();
     _endthread();
     return;
     }
@@ -430,6 +437,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     object *object::getElement(long index) {
     MessageBox(NULL,"getElement is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    pJob -> operatorDebug();
     _endthread();
     return NULL;
     }
@@ -437,11 +445,13 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     void object::execute() {
     MessageBox(NULL,"execute is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
+    pJob -> operatorDebug();
     _endthread();
     return;
     }
 
 
     char *object::ToString() {
+    pJob -> operatorDebug();
     return Contents();
     }

@@ -17,8 +17,62 @@
     string::string(job *pJob,object::valueType vt) : string(pJob,NULL,NULL,vt) {}
 
     string::string(job *pJob,char *pStart,char *pEnd,object::valueType vt) :
-        object(pJob,pStart,pEnd,object::objectType::atom,vt,object::valueClassification::composite) { }
-   
+        object(pJob,pStart,pEnd,object::objectType::atom,vt,object::valueClassification::composite)
+    { 
+
+    if ( NULL == strchr(Contents(),'\\') )
+        return;
+
+    DWORD n = strlen(Contents()) + 1;
+
+    pszUnescapedString  = new char[n];
+
+    char *pLast = pszUnescapedString + n;
+    *pLast = '\0';
+
+    strcpy(pszUnescapedString,Contents());
+
+    char *pSlash = strchr(pszUnescapedString,'\\');
+
+    while ( ! ( NULL == pSlash ) ) {
+
+        if ( isdigit(*(pSlash + 1)) ) {
+
+            char *pDigit = pSlash + 1;
+            while ( isdigit(*pDigit) && pDigit < pLast ) pDigit++;
+            char c = *pDigit;
+            *pDigit = '\0';
+
+            char szOctal[32];
+            strcpy(szOctal,pSlash + 1);
+            *pDigit = c;
+
+            long value;
+            sscanf(szOctal,"%o",&value);
+
+            char *pszRemainder = new char[pLast - pDigit];
+            strcpy(pszRemainder,pDigit);
+            *pSlash = '#';
+            strcpy(pSlash + 1,pszRemainder);
+
+            escapedValues[pSlash - pszUnescapedString] = (BYTE)value;
+
+            delete [] pszRemainder;
+            pSlash = strchr(pSlash + 1,'\\');
+            continue;
+        }
+
+        char *pszRemainder = new char[pLast - pSlash];
+        strcpy(pszRemainder,pSlash + 1);
+        strcpy(pSlash,pszRemainder);
+        delete [] pszRemainder;
+        pSlash = strchr(pSlash,'\\');
+    }
+
+    return;
+    }
+
+
     string::~string() {
     return;
     }
@@ -59,13 +113,17 @@
 
     }
 
-    if ( index >= (long)strlen(Contents()) ) {
+    if ( index >= length() ) {
         char szMessage[128];
         sprintf(szMessage,"rangecheck: attempting to retrieve character %ld past the end of string %s",index,Contents());
         throw rangecheck(szMessage);
     }
 
-    return (BYTE)Contents()[index];
-    }
+    if ( NULL == pszUnescapedString ) 
+        return (BYTE)Contents()[index];
 
-   
+    if ( 0 == escapedValues.size() || escapedValues.end() == escapedValues.find(index) )
+        return (BYTE)pszUnescapedString[index];
+
+    return escapedValues[index];
+    }

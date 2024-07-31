@@ -2,9 +2,7 @@
 #include "PostScript objects/graphicsState.h"
 #include "PostScript objects/font.h"
 
-void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
-
-    otSimpleGlyph::otSimpleGlyph(BYTE bGlyph,font *pFont,graphicsState *pGraphicsState,otGlyphHeader *ph,BYTE *pbInput,long cbGlyphData) :
+    otSimpleGlyph::otSimpleGlyph(BYTE bGlyph,font *pFont,graphicsState *pGraphicsState,otGlyphHeader *ph,BYTE *pbInput) : 
         pGlyphHeader(ph),
         pbGlyphData(pbInput)
     {
@@ -23,9 +21,9 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
     inputPointCount = pEndPtsOfContours[contourCount - 1] + 1;
 
     contourPointCount = new uint16_t[contourCount];
-    contourPointCount[0] = pEndPtsOfContours[0] + 2;
+    contourPointCount[0] = pEndPtsOfContours[0] + 1;
     for ( long k = 1; k < contourCount; k++ )
-        contourPointCount[k] = pEndPtsOfContours[k] - pEndPtsOfContours[k - 1] + 1;
+        contourPointCount[k] = pEndPtsOfContours[k] - pEndPtsOfContours[k - 1];
 
     BE_TO_LE_16(pbInput,instructionLength);
 
@@ -45,16 +43,38 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
             pointCount += *pbInput++;
     }
 
-    pointCount += contourCount;
-
     uint8_t *pFlagsInputEnd = pbInput;
+
+    pFlags = new uint8_t[pointCount];
+    memset(pFlags,0,pointCount * sizeof(uint8_t));
+
+    pointCount = 0;
+
+    pbInput = pFlagsInputStart;
+
+    while ( pointCount < inputPointCount ) {
+        pFlags[pointCount] = *pbInput;
+        if ( 0 == ( pFlags[pointCount] & REPEAT_FLAG ) ) {
+            pointCount++;
+            pbInput++;
+            continue;
+        }
+        pbInput++;
+        pFlags[pointCount] &= ~ REPEAT_FLAG;
+        uint8_t flag = pFlags[pointCount];
+        uint8_t repeatCount = *pbInput;
+        for ( uint8_t k = 0; k < repeatCount; k++ )
+            pFlags[++pointCount] = flag;
+        pointCount++;
+        pbInput++;
+    }
+
     uint8_t *pCoordinatesInputStart = pbInput;
 
     pFlagsFirst = new uint8_t *[contourCount];
     pPointFirstX = new POINT_TYPE *[contourCount];
     pPointFirstY = new POINT_TYPE *[contourCount];
 
-    pFlags = new uint8_t[pointCount];
     pXCoordinates = new POINT_TYPE[pointCount];
     pYCoordinates = new POINT_TYPE[pointCount];
 
@@ -62,7 +82,6 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
     memset(pPointFirstX,0,contourCount * sizeof(POINT_TYPE *));
     memset(pPointFirstY,0,contourCount * sizeof(POINT_TYPE *));
 
-    memset(pFlags,0,pointCount * sizeof(uint8_t));
     memset(pXCoordinates,0,pointCount * sizeof(POINT_TYPE));
     memset(pYCoordinates,0,pointCount * sizeof(POINT_TYPE));
 
@@ -74,107 +93,42 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
     POINT_TYPE x = 0;
 
     uint16_t contourIndex = 0;
-    uint16_t pointsInContour = 0;
 
-    pFlagsFirst[0] = pFResult;
-    pPointFirstX[0] = pXResult;
+    pFlagsFirst[contourIndex] = pFResult;
+    pPointFirstX[contourIndex] = pXResult;
 
-    uint8_t *pfInput = pFlagsInputStart;
-
-    while ( pfInput < pFlagsInputEnd ) {
-
-        *pFResult++ = *pfInput;
+    for ( uint8_t pointIndex = 0; pointIndex < pointCount; pointIndex++ ) {
 
         int16_t deltaX = 0;
 
-        uint8_t c = *pfInput++;
-
-        if ( c & X_SHORT_VECTOR ) {
+        if ( pFlags[pointIndex] & X_SHORT_VECTOR ) {
 
             deltaX = (uint8_t)*pXInput;
 
-            if ( 0 == ( c & X_POSITIVE ) ) 
+            if ( 0 == ( pFlags[pointIndex] & X_POSITIVE ) ) 
                 deltaX = -deltaX;
 
             pXInput += 1;
 
-        } else if ( ! ( c & X_SAME ) ) {
+        } else if ( 0 == ( pFlags[pointIndex] & X_SAME ) ) {
 
             BE_TO_LE_16(pXInput,deltaX);
 
         }
 
-        pointsInContour++;
-
-        if ( pointsInContour == contourPointCount[contourIndex] ) {
-            *pFResult++ = *pFlagsFirst[contourIndex];
-            *pXResult++ = *pPointFirstX[contourIndex];
-            contourIndex++;
-            pointsInContour = 0;
-            if ( contourIndex < contourCount ) {
-                pFlagsFirst[contourIndex] = pFResult;
-                pPointFirstX[contourIndex] = pXResult;
-            }
-        }
-
         x += (POINT_TYPE)deltaX;
 
-        *pXResult++ = x;
+        pXResult[pointIndex] = x;
 
-        if ( 0 == ( c & REPEAT_FLAG ) )
-            continue;
-
-        uint8_t count = *pfInput++;
-
-        c = c & ~REPEAT_FLAG;
-
-        for ( ; count > 0; count-- ) {
-
-            *pFResult = c;
-
-            deltaX = 0;
-
-            if ( c & X_SHORT_VECTOR ) {
-
-                deltaX = (uint8_t)*pXInput;
-
-                if ( 0 == ( c & X_POSITIVE ) ) 
-                    deltaX = -deltaX;
-
-                pXInput += 1;
-
-            } else if ( ! ( c & X_SAME ) ) {
-
-                BE_TO_LE_16(pXInput,deltaX);
-
+        if ( pointIndex == pEndPtsOfContours[contourIndex] ) {
+            contourIndex++;
+            if ( contourIndex < contourCount ) {
+                pFlagsFirst[contourIndex] = pFResult + pointIndex + 1;
+                pPointFirstX[contourIndex] = pXResult + pointIndex + 1;
             }
-
-            pointsInContour++;
-
-            if ( pointsInContour == contourPointCount[contourIndex] ) {
-                *pFResult++ = *pFlagsFirst[contourIndex];
-                *pXResult++ = *pPointFirstX[contourIndex];
-                contourIndex++;
-                pointsInContour = 0;
-                if ( contourIndex < contourCount ) {
-                    pFlagsFirst[contourIndex] = pFResult;
-                    pPointFirstX[contourIndex] = pXResult;
-                }
-            }
-
-            x += (POINT_TYPE)deltaX;
-
-            *pXResult = x;
-
-            pFResult++;
-            pXResult++;
-
         }
 
     }
-
-    if ( contourIndex < contourCount )
-        *pXResult = *pPointFirstX[contourIndex];
 
     POINT_TYPE *pYResult = pYCoordinates;
 
@@ -183,31 +137,23 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
     POINT_TYPE y = 0;
 
     contourIndex = 0;
-    pointsInContour = 0;
 
-    pPointFirstY[0] = pYResult;
+    pPointFirstY[contourIndex] = pYResult;
 
-    pfInput = pFlagsInputStart;
-
-    while ( pfInput < pFlagsInputEnd ) {
-
-        if ( 0 == pointsInContour ) 
-            pPointFirstY[contourIndex] = pYResult;
-
-        uint8_t c = *pfInput++;
+    for ( uint8_t pointIndex = 0; pointIndex < pointCount; pointIndex++ ) {
 
         int16_t deltaY = 0;
 
-        if ( c & Y_SHORT_VECTOR ) {
+        if ( pFlags[pointIndex] & Y_SHORT_VECTOR ) {
 
             deltaY = (uint8_t)*pYInput;
 
-            if ( 0 == ( c & Y_POSITIVE ) ) 
+            if ( 0 == ( pFlags[pointIndex] & Y_POSITIVE ) ) 
                 deltaY = -deltaY;
 
-            pYInput += 1;
+            pYInput += sizeof(uint8_t);
 
-        } else if ( ! ( c & Y_SAME ) ) {
+        } else if ( 0 == ( pFlags[pointIndex] & Y_SAME ) ) {
 
             BE_TO_LE_16(pYInput,deltaY);
 
@@ -215,92 +161,50 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
 
         y += (POINT_TYPE)deltaY;
 
-        pointsInContour++;
+        // Only the on-curve flag is relevant after
+        // parsing the points
 
-        if ( pointsInContour == contourPointCount[contourIndex] ) {
-            *pYResult++ = *pPointFirstY[contourIndex];
+        pFResult[pointIndex] = pFlags[pointIndex] & ON_CURVE_POINT;
+
+        pYResult[pointIndex] = y;
+
+        if ( pointIndex == pEndPtsOfContours[contourIndex] ) {
             contourIndex++;
-            pointsInContour = 0;
             if ( contourIndex < contourCount )
-                pPointFirstY[contourIndex] = pYResult;
-        }
-
-        *pYResult++ = y;
-
-        if ( 0 == ( c & REPEAT_FLAG ) )
-            continue;
-
-        uint8_t count = *pfInput++;
-
-        for ( ; count > 0; count-- ) {
-
-            deltaY = 0;
-
-            if ( c & Y_SHORT_VECTOR ) {
-
-                deltaY = (uint8_t)*pYInput;
-
-                if ( 0 == ( c & Y_POSITIVE ) ) 
-                    deltaY = -deltaY;
-
-                pYInput += 1;
-
-            } else if ( ! ( c & Y_SAME ) ) {
-
-                BE_TO_LE_16(pYInput,deltaY);
-
-            }
-
-            pointsInContour++;
-
-            if ( pointsInContour == contourPointCount[contourIndex] ) {
-                *pYResult++ = *pPointFirstY[contourIndex];
-                contourIndex++;
-                pointsInContour = 0;
-                if ( contourIndex < contourCount )
-                    pPointFirstY[contourIndex] = pYResult;
-            }
-
-            y += (POINT_TYPE)deltaY;
-
-            *pYResult++ = y;
-
+                pPointFirstY[contourIndex] = pYResult + pointIndex + 1;
         }
 
     }
 
-    if ( contourIndex < contourCount )
-        *pYResult = *pPointFirstY[contourIndex];
+    pPoints = new GS_POINT[pointCount];
+    pPointFirst = new GS_POINT *[contourCount];
 
-    pPoints = new POINTD[pointCount];
-    pPointFirst = new POINTD *[contourCount];
-    pointsInContour = 0;
     contourIndex = 0;
 
-    pPointFirst[0] = pPoints;
+    pPointFirst[contourIndex] = pPoints;
 
     for ( long k = 0; k < pointCount; k++ ) {
-
-        pPoints[k].px = pXCoordinates + k;
-        pPoints[k].py = pYCoordinates + k;
-
-        pointsInContour++;
-
-        if ( pointsInContour > contourPointCount[contourIndex] ) {
+        pPoints[k].x = *(pXCoordinates + k);
+        pPoints[k].y = *(pYCoordinates + k);
+        if ( k == pEndPtsOfContours[contourIndex] ) {
             contourIndex++;
-            pPointFirst[contourIndex] = pPoints + k;
-            pointsInContour = 1;
+            if ( contourIndex < contourCount )
+                pPointFirst[contourIndex] = pPoints + k + 1;
         }
-
     }
 
-    long hmTableIndex = min(bGlyph,pFont -> pHorizHeadTable -> numberOfHMetrics - 1);
+    uint16_t glyphId = pFont -> glyphIDMap[(uint16_t)bGlyph];
 
-    otLongHorizontalMetric horizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics[hmTableIndex];
+    long hmTableIndex = min((uint16_t)glyphId,pFont -> pHorizHeadTable -> numberOfHMetrics - 1);
 
-    advanceWidth = horizontalMetric.advanceWidth;
+    otLongHorizontalMetric *pHorizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics + hmTableIndex;
+
+    advanceWidth = pHorizontalMetric -> advanceWidth;
     advanceHeight = 0L;
-    leftSideBearing = horizontalMetric.lsb;
+    leftSideBearing = pHorizontalMetric -> lsb;
+    if ( pFont -> pHeadTable -> flags & 0x0010 )
+        leftSideBearing = pGlyphHeader -> xMin;
+
     long bearing_y = 0L;
 
     if ( ! ( NULL == pFont -> pVerticalMetricsTable ) ) {
@@ -317,10 +221,18 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
 
     }
 
-    phantomPoints[0] = { pGlyphHeader -> xMin - leftSideBearing,0L };
-    phantomPoints[1] = { 0L, pGlyphHeader -> yMax + bearing_y };
-    phantomPoints[2] = { pGlyphHeader -> xMin - leftSideBearing + advanceWidth, 0L };
-    phantomPoints[3] = { 0L, pGlyphHeader -> yMax + bearing_y - advanceHeight };
+/*
+    The Microsoft rasterizer v.1.7 or later will always add four “phantom points” to the end
+    of every outline to allow either widths or heights to be controlled.
+
+    Point “n” will be placed at the glyph left sidebearing point; point “n+1” will be placed at the
+    advance width point; point “n+2” will be placed at the top origin; and point “n+3” will
+    be placed at the advance height point.
+*/
+    phantomPoints[0] = { /*pGlyphHeader -> xMin - */leftSideBearing,0L };
+    phantomPoints[1] = { /*pGlyphHeader -> xMin - leftSideBearing + */advanceWidth, 0L };
+    phantomPoints[2] = { 0L, /*pGlyphHeader -> yMax +*/ bearing_y };
+    phantomPoints[3] = { 0L, /*pGlyphHeader -> yMax + bearing_y - */advanceHeight };
 
     rightSideBearing = advanceWidth - (leftSideBearing + pGlyphHeader -> xMax - pGlyphHeader -> xMin);
 
@@ -333,9 +245,7 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
     boundingBox[3] = -FLT_MAX;
 
     for ( long k = 0; k < pointCount; k++, pXResult++, pYResult++ ) {
-        //*pXResult += (int16_t)-phantomPoints[0].x;
         *pXResult += leftSideBearing;
-        //*pYResult += (int16_t)phantomPoints[0].y;
         boundingBox[0] = min(boundingBox[0],*pXResult);
         boundingBox[1] = min(boundingBox[1],*pYResult);
         boundingBox[2] = max(boundingBox[2],*pXResult);
@@ -362,29 +272,3 @@ void LoadGlyph(BYTE bIndex,BYTE *pbGlyphData,long cbData,BYTE *pbMetrixData);
     delete [] pFlagsFirst;
 
 }
-
-#if 0
-    void font::positionSimpleGlyph(otSimpleGlyph *pGlyph,POINTL basePoint) {
-
-    for ( long k = 0; k < pGlyph -> pointCount; k++ ) {
-        *pGlyph -> pPoints[k].px = *pGlyph -> pPoints[k].px + pHeadTable -> xMin + basePoint.x;
-        *pGlyph -> pPoints[k].py = *pGlyph -> pPoints[k].py + pHeadTable -> yMin + basePoint.y;
-    }
-
-    }
-
-    void font::scaleSimpleGlyph(otSimpleGlyph *pGlyph) {
-
-    float scaleFactor = 1000.0f / (float)pHeadTable -> unitsPerEm;
-    scaleFactor = pointSize * scaleFactor;
-    //if ( ! ( 0.0f == scale ) )
-    //    scaleFactor = scale * scaleFactor;
-
-    for ( long k = 0; k < pGlyph -> pointCount; k++ ) {
-        *pGlyph -> pPoints[k].px = scaleFactor * *pGlyph -> pPoints[k].px;
-        *pGlyph -> pPoints[k].py = scaleFactor * *pGlyph -> pPoints[k].py;
-    }
-
-    return;
-    }
-#endif

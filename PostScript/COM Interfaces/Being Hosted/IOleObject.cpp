@@ -1,6 +1,3 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include <windows.h>
 #include <olectl.h>
@@ -100,9 +97,7 @@
    GetWindowRect(pParent -> hwndHost,&rcParent);
    pSizel -> cx = rcParent.right - rcParent.left;
    pSizel -> cy = rcParent.bottom - rcParent.top;
-
    pixelsToHiMetric(pSizel,pSizel);
-
    return S_OK;
    }
  

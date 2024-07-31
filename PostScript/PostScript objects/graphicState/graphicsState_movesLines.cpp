@@ -1,20 +1,24 @@
 
 #include "PostScript objects/graphicsState.h"
-#include <vector>
 
-static long pathDepth = 0L;
+    void graphicsState::outlinePage() {
 
-    void graphicsState::newPath() {
-    memset(&lastUserSpacePoint,0xFF,sizeof(GS_POINT));
-    memset(&lastUserSpaceMovedToPoint,0xFF,sizeof(GS_POINT));
-    memset(&lastPointsPoint,0xFF,sizeof(GS_POINT));
-    if ( 0 == pathDepth ) {
-        BeginPath(activeDC());
-        pathDepth = 1L;
-    }
+    POINT currentGDIPoint;
+
+    BeginPath(pPStoPDF -> GetDC());
+
+    MoveToEx(pPStoPDF -> GetDC(),std::lround(PICA_FACTOR * 72),std::lround(PICA_FACTOR * 72),NULL);
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
+    LineTo(pPStoPDF -> GetDC(),std::lround(PICA_FACTOR * (pageWidthPoints - 72)),std::lround(PICA_FACTOR * (pageHeightPoints - 72)));
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
+    LineTo(pPStoPDF -> GetDC(),std::lround(PICA_FACTOR * 72),std::lround(PICA_FACTOR * (pageHeightPoints - 72)));
+
+    EndPath(pPStoPDF -> GetDC());
+    StrokePath(pPStoPDF -> GetDC());
+
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
     return;
     }
-
 
     void graphicsState::moveto() {
     object *pY = pJob -> pop();
@@ -30,54 +34,32 @@ static long pathDepth = 0L;
     }
 
 
-    static boolean dontRecurse = false;
-
-
     void graphicsState::moveto(POINT_TYPE x,POINT_TYPE y) {
+/*
+    moveto 
+        x y moveto –
 
-    if ( ! ( NULL == hdcAlternate ) ) {
-        MoveToEx(hdcAlternate,std::lround(scaleGlyphSpacetoPixels * x),std::lround(scaleGlyphSpacetoPixels * y),NULL);
-char szX[128];
-sprintf_s<128>(szX,"move glyph %6ld, %6ld\n",std::lround(scaleGlyphSpacetoPixels * x),std::lround(scaleGlyphSpacetoPixels * y));
-OutputDebugStringA(szX);
-        return;
+    starts a new subpath of the current path (see Section 4.4, “Path Construction”) by
+    setting the current point in the graphics state to the coordinates (x, y) in user
+    space. No new line segments are added to the current path.
+    If the previous path operation in the current path was moveto or rmoveto, that
+    point is deleted from the current path and the new moveto point replaces it.
+*/
+    if ( ! gdiParametersStack.top() -> isPathActive ) {
+SetLastError(0);
+        BeginPath(pPStoPDF -> GetDC());
+        pathBeginPoint = {x,y};
+        gdiParametersStack.top() -> isPathActive = true;
     }
 
-    lastUserSpacePoint.x = x;
-    lastUserSpacePoint.y = y;
-    if ( isnan(lastUserSpacePoint.x) )
-        lastUserSpaceMovedToPoint = lastUserSpacePoint;
+    currentUserSpacePoint = {x,y};
 
     POINT_TYPE ptx2;
     POINT_TYPE pty2;
     transformPoint(x,y,&ptx2,&pty2);
-    lastPointsPoint.x = ptx2;
-    lastPointsPoint.y = pty2;
-    if ( ! ( NULL == hdcSurface ) ) 
-        MoveToEx(hdcSurface,std::lround(PICA_FACTOR * lastPointsPoint.x),std::lround(PICA_FACTOR * lastPointsPoint.y),NULL);
-
-char szX[128];
-sprintf_s<128>(szX,"move %6ld, %6ld\n",std::lround(PICA_FACTOR * lastPointsPoint.x),std::lround(PICA_FACTOR * lastPointsPoint.y));
-OutputDebugStringA(szX);
-
-    if ( ! pPStoPDF -> drawGlyphRenderingPoints() ) 
-        return;
-
-    if ( dontRecurse )
-        return;
-
-    dontRecurse = true;
-
-    MoveToEx(hdcSurface,(long)lastPointsPoint.x + 2,(long)lastPointsPoint.y + 2,NULL);
-
-    LineTo(hdcSurface,(long)lastPointsPoint.x - 2,(long)lastPointsPoint.y + 2);
-    LineTo(hdcSurface,(long)lastPointsPoint.x - 2,(long)lastPointsPoint.y - 2);
-    LineTo(hdcSurface,(long)lastPointsPoint.x + 2,(long)lastPointsPoint.y - 2);
-    LineTo(hdcSurface,(long)lastPointsPoint.x + 2,(long)lastPointsPoint.y + 2);
-
-    MoveToEx(hdcSurface,(long)lastPointsPoint.x,(long)lastPointsPoint.y,NULL);
-
-    dontRecurse = false;
+    currentPointsPoint = {ptx2,pty2};
+    MoveToEx(pPStoPDF -> GetDC(),std::lround(PICA_FACTOR * currentPointsPoint.x),std::lround(PICA_FACTOR * currentPointsPoint.y),NULL);
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
 
     return;
     }
@@ -104,7 +86,7 @@ OutputDebugStringA(szX);
 
 
     void graphicsState::rmoveto(POINT_TYPE x,POINT_TYPE y) {
-    moveto(lastUserSpacePoint.x + x,lastUserSpacePoint.y + y);
+    moveto(currentUserSpacePoint.x + x,currentUserSpacePoint.y + y);
     return;
     }
 
@@ -136,27 +118,21 @@ OutputDebugStringA(szX);
 
 
     void graphicsState::lineto(POINT_TYPE x,POINT_TYPE y) {
-    if ( ! ( NULL == hdcAlternate ) ) {
-        LineTo(hdcAlternate,std::lround(scaleGlyphSpacetoPixels * x),std::lround(scaleGlyphSpacetoPixels * y));
-char szX[128];
-sprintf_s<128>(szX,"line glyph %6ld, %6ld\n",std::lround(scaleGlyphSpacetoPixels * x),std::lround(scaleGlyphSpacetoPixels * y));
-OutputDebugStringA(szX);
+    if ( ! gdiParametersStack.top() -> isPathActive ) {
+        char szMessage[1024];
+        sprintf(szMessage,"operator: lineto. lineto called with no current point");
+        throw nocurrentpoint(szMessage);
         return;
     }
-    lastUserSpacePoint.x = x;
-    lastUserSpacePoint.y = y;
+    currentUserSpacePoint.x = x;
+    currentUserSpacePoint.y = y;
     POINT_TYPE ptx2;
     POINT_TYPE pty2;
     transformPoint(x,y,&ptx2,&pty2);
-    lastPointsPoint.x = ptx2;
-    lastPointsPoint.y = pty2;
-    if ( ! ( NULL == hdcSurface ) ) 
-        LineTo(hdcSurface,std::lround(PICA_FACTOR * lastPointsPoint.x),std::lround(PICA_FACTOR * lastPointsPoint.y));
-
-char szX[128];
-sprintf_s<128>(szX,"line %6ld, %6ld\n",std::lround(PICA_FACTOR * lastPointsPoint.x),std::lround(PICA_FACTOR * lastPointsPoint.y));
-OutputDebugStringA(szX);
-
+    currentPointsPoint.x = ptx2;
+    currentPointsPoint.y = pty2;
+    LineTo(pPStoPDF -> GetDC(),std::lround(PICA_FACTOR * currentPointsPoint.x),std::lround(PICA_FACTOR * currentPointsPoint.y));
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
     return;
     }
 
@@ -182,7 +158,7 @@ OutputDebugStringA(szX);
 
 
     void graphicsState::rlineto(POINT_TYPE x,POINT_TYPE y) {
-    lineto(lastUserSpacePoint.x + x,lastUserSpacePoint.y + y);
+    lineto(currentUserSpacePoint.x + x,currentUserSpacePoint.y + y);
     return;
     }
 
@@ -208,55 +184,65 @@ OutputDebugStringA(szX);
     object *pY1 = pJob -> pop();
     object *pX1 = pJob -> pop();
 
-    POINT_TYPE ptx2 = pX1 -> DoubleValue();
-    POINT_TYPE pty2 = pY1 -> DoubleValue();
-    POINT_TYPE ptx3 = pX2 -> DoubleValue();
-    POINT_TYPE pty3 = pY2 -> DoubleValue();
-    POINT_TYPE ptx4 = pX3 -> DoubleValue();
-    POINT_TYPE pty4 = pY3 -> DoubleValue();
+    GS_POINT points[3] { {pX1 -> DoubleValue(),pY1 -> DoubleValue()},
+                         {pX2 -> DoubleValue(),pY2 -> DoubleValue()},
+                         {pX3 -> DoubleValue(),pY3 -> DoubleValue()} };
 
-    transformPoint(ptx2,pty2,&ptx2,&pty2);
-    transformPoint(ptx3,pty3,&ptx3,&pty3);
-    transformPoint(ptx4,pty4,&ptx4,&pty4);
-
-    POINT pts[3];
-
-    POINT_TYPE factor = PICA_FACTOR;
-    if ( ! ( NULL == hdcAlternate ) )
-        factor = scaleGlyphSpacetoPixels;
-
-    pts[0].x = std::lround(factor * ptx2);
-    pts[0].y = std::lround(factor * pty2);
-    pts[1].x = std::lround(factor * ptx3);
-    pts[1].y = std::lround(factor * pty3);
-    pts[2].x = std::lround(factor * ptx4);
-    pts[2].y = std::lround(factor * pty4);
-
-    PolyBezierTo(activeDC(),pts,3);
+    curveto(points);
 
     return;
     }
 
 
-    void graphicsState::closepath() {
+    void graphicsState::curveto(GS_POINT *pPoints) {
 
-if ( 1L == pathDepth ) {
-    EndPath(activeDC());
-    StrokePath(activeDC());
-    pathDepth = 0L;
-}
-//    lineto(lastUserSpaceMovedToPoint.x,lastUserSpaceMovedToPoint.y);
+    POINT *pThePts = new POINT[3];
+
+    GS_POINT pts[3]{*pPoints,*(pPoints + 1),*(pPoints + 2)};
+
+    transform(pts,3);
+
+    for ( long k = 0; k < 3; k++ ) {
+        pThePts[k].x = std::lround((POINT_TYPE)PICA_FACTOR * pts[k].x);
+        pThePts[k].y = std::lround((POINT_TYPE)PICA_FACTOR * pts[k].y);
+    }
+
+    PolyBezierTo(pPStoPDF -> GetDC(),pThePts,3);
+
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
+
+    untransformPoint((POINT_TYPE)pThePts[2].x / (POINT_TYPE)PICA_FACTOR,
+                        (POINT_TYPE)pThePts[2].y / (POINT_TYPE)PICA_FACTOR,
+                            &currentUserSpacePoint.x,&currentUserSpacePoint.y);
+
+    delete [] pThePts;
+
     return;
     }
 
 
-    void graphicsState::fillpath() {
-//    lineto(lastUserSpaceMovedToPoint.x,lastUserSpaceMovedToPoint.y);
-if ( 1L == pathDepth ) {
-    EndPath(activeDC());
-    //StrokePath(hdcSurface);
-    FillPath(activeDC());
-    pathDepth = 0L;
-}
+    void graphicsState::arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2) {
+
+    if ( isnan(pathBeginPoint.x) ) 
+        moveto(xCenter + radius * cos(degToRad * (angle1 )),yCenter + radius * sin(degToRad * (angle1 )));
+
+    GS_POINT center{xCenter,yCenter};
+    transform(&center,1);
+
+    BOOL rv = AngleArc(pPStoPDF -> GetDC(),std::lround((POINT_TYPE)PICA_FACTOR * center.x),
+                            std::lround((POINT_TYPE)PICA_FACTOR * center.y),
+                            std::lround((POINT_TYPE)PICA_FACTOR * radius),(float)(angle1 + totalRotation),(float)(angle1 - angle2));
+
+    GetCurrentPositionEx(pPStoPDF -> GetDC(),&currentGDIPoint);
+    untransformPoint((POINT_TYPE)currentGDIPoint.x / (POINT_TYPE)PICA_FACTOR,
+                        (POINT_TYPE)currentGDIPoint.y / (POINT_TYPE)PICA_FACTOR,
+                            &currentUserSpacePoint.x,&currentUserSpacePoint.y);
+
+    return;
+    }
+
+
+    void graphicsState::gdiMoveTo(POINT *pGDIPoint) {
+    MoveToEx(pPStoPDF -> GetDC(),pGDIPoint -> x,pGDIPoint -> y,NULL);
     return;
     }

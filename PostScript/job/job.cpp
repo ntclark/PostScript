@@ -44,11 +44,15 @@
 
     pFontDirectory = new (CurrentObjectHeap()) dictionary(this,"font directory");
 
-    pStandardEncoding = new (CurrentObjectHeap()) array(this,"StandardEncoding",256);
-    pISOLatin1Encoding = new (CurrentObjectHeap()) array(this,"ISOLatin1Encoding",256);
+    pStandardEncoding = new (CurrentObjectHeap()) array(this,"StandardEncoding");
 
-    pDefaultMatrix = new (CurrentObjectHeap()) matrix(this);
-    pCurrentMatrix = pDefaultMatrix;
+    for ( long k = 0; k < 256; k++ )
+        pStandardEncoding -> putElement(k,new (CurrentObjectHeap()) object(this,k));
+
+    pISOLatin1Encoding = new (CurrentObjectHeap()) array(this,"ISOLatin1Encoding");
+
+    for ( long k = 0; k < 256; k++ )
+        pISOLatin1Encoding -> putElement(k,new (CurrentObjectHeap()) object(this,k));
 
     pDefaultColorSpace = new (CurrentObjectHeap()) colorSpace(this,"DeviceGray");
     pCurrentColorSpace = pDefaultColorSpace;
@@ -160,29 +164,28 @@
     pFontTypeLiteral = new (CurrentObjectHeap()) object(this,"FontType");
     pFontNameLiteral = new (CurrentObjectHeap()) object(this,"FontName");
     pFontMatrixLiteral = new (CurrentObjectHeap()) object(this,"FontMatrix");
+    pFontBoundingBoxLiteral = new (CurrentObjectHeap()) literal(this,"FontBBox");
 
     pEncodingArrayLiteral = new (CurrentObjectHeap()) literal(this,"Encoding");
+    pNotdefLiteral = new (CurrentObjectHeap()) class literal(this,".notdef");
     pCharStringsLiteral = new (CurrentObjectHeap()) literal(this,"CharStrings");
+
     pGlyphDirectoryLiteral = new (CurrentObjectHeap()) literal(this,"GlyphDirectory");
     pSfntsLiteral = new (CurrentObjectHeap()) literal(this,"sfnts");
     pPageSizeLiteral = new (CurrentObjectHeap()) literal(this,"PageSize");
-    pFontBoundingBoxLiteral = new (CurrentObjectHeap()) literal(this,"FontBBox");
     pFontMatrixLiteral = new (CurrentObjectHeap()) literal(this,"FontMatrix");
     pRestoreFontMatrixLiteral = new (CurrentObjectHeap()) literal(this,"RestoreFontMatrix");
     pBuildGlyphLiteral = new (CurrentObjectHeap()) literal(this,"BuildGlyph");
     pBuildCharLiteral = new (CurrentObjectHeap()) literal(this,"BuildChar");
 
-    pCourier = new (CurrentObjectHeap()) class font(this,"Courier");
-
-    // Consider loading the fontDirectory from the font constructor
-    pFontDirectory -> put("Courier",pCourier);
-
     pSystemDict -> put("true",pTrueConstant);
     pSystemDict -> put("false",pFalseConstant);
     pSystemDict -> put("null",pNullConstant);
-    pSystemDict -> put("Courier",pCourier);
     pSystemDict -> put("DeviceGray",pDefaultColorSpace);
     pSystemDict -> put("DeviceRGB",new (CurrentObjectHeap()) colorSpace(this,"DeviceRGB"));
+
+    pSystemDict -> put("=string",new (CurrentObjectHeap()) string(this,"=string"));
+    pSystemDict -> put("=print",new (CurrentObjectHeap()) string(this,"=print"));
 
     dictionaryStack.setCurrent(pGlobalDict);
     dictionaryStack.setCurrent(pStatusDict);

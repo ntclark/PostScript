@@ -88,6 +88,18 @@
     }
 
 
+    object *dictionary::retrieveKey(char *pszName) {
+    long nName = (long)strlen(pszName);
+    for ( entry *pEntry : entries ) {
+        if ( ! ( nName == pEntry -> nName ) )
+            continue;
+        if ( 0 == strcmp(pEntry -> szName,pszName) )
+            return pEntry -> pKey;
+    }
+    return NULL;
+    }
+
+
     char *dictionary::ToString() {
     if ( ! ( NULL == pszContents ) )
         return pszContents;
@@ -104,7 +116,6 @@
 
     boolean dictionary::exists(char *pszName) {
     return ! ( NULL == retrieve(pszName) );
-
     }
 
 

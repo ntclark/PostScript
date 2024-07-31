@@ -195,9 +195,6 @@
     <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\cubicSpline.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
@@ -205,9 +202,6 @@
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_bezierCurve.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="..\freetype-2.13.2\freetype-2.13.2\src\base\ftoutln.c">
@@ -242,6 +236,27 @@
     </ClCompile>
     <ClCompile Include="operators\operators_MtoZ.cpp">
       <Filter>Source Files\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_transforms.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="Fonts\font_transforms.cpp">
+      <Filter>Source Files\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Fonts\font_type42.cpp">
+      <Filter>Source Files\Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_showPage.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript_CommitCurrentPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_paths.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacks\gdiParametersStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -357,10 +372,13 @@
     <ClInclude Include="include\PostScript objects\filter.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
-    <ClInclude Include="include\parsing.h">
+    <ClInclude Include="include\ascii85.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ascii85.h">
+    <ClInclude Include="include\Stacks\gdiParametersStack.h">
+      <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gdiParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

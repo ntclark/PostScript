@@ -13,6 +13,8 @@
 
       virtual char *ToString();
 
+      void identity();
+
       void concat(matrix *);
       void concat(array *);
       void concat(POINT_TYPE *);

@@ -41,5 +41,6 @@ class job;
 
       std::map<long,object *> entries;
 
+      friend class job;
    };
    

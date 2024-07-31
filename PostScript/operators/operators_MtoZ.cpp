@@ -65,9 +65,14 @@
 
     Errors: invalidfont, rangecheck, stackunderflow, typecheck, VMerror
 */
-    object *pMatrix = pop();
-    font *pFont = reinterpret_cast<font *>(top());
-    pFont -> setFontMatrix(reinterpret_cast<matrix *>(pMatrix));
+    matrix *pMatrix = reinterpret_cast<matrix *>(pop());
+
+    font *pFont = currentGS() -> makeFont(pMatrix,reinterpret_cast<font *>(pop()));
+
+    pFontDirectory -> put(pFont -> fontName(),pFont);
+
+    push(pFont);
+
     return;
     }
 
@@ -279,31 +284,31 @@
    return;
    }
 
-   void job::operatorMatrix() {
+    void job::operatorMatrix() {
 /*
-   matrix 
-      – matrix matrix
+    matrix 
+        – matrix matrix
 
-   returns a six-element array object filled with the identity matrix
+    returns a six-element array object filled with the identity matrix
 
-         [1 0 0 1 0 0]
+            [1 0 0 1 0 0]
 
-   This matrix represents the identity transformation, which leaves all coordinates
-   unchanged. The array is allocated in local or global VM according to the current
-   VM allocation mode (see Section 3.7.2, “Local and Global VM”).
+    This matrix represents the identity transformation, which leaves all coordinates
+    unchanged. The array is allocated in local or global VM according to the current
+    VM allocation mode (see Section 3.7.2, “Local and Global VM”).
 
-   Example
-      matrix
-      6 array identmatrix
+    Example
+        matrix
+        6 array identmatrix
 
-   Both lines of code above return the same result on the stack.
+    Both lines of code above return the same result on the stack.
 
 */
 
-   push(new (CurrentObjectHeap()) matrix(this));
+    push(new (CurrentObjectHeap()) matrix(this));
 
-   return;
-   }
+    return;
+    }
 
 
     void job::operatorMoveto() {
@@ -396,7 +401,7 @@
     initializes the current path in the graphics state to an empty path. The current
     point becomes undefined.
 */
-    currentGS() -> newPath();
+    currentGS() -> newpath();
     return;
     }
 
@@ -498,62 +503,71 @@
    }
 
 
-   void job::operatorPut() {
+    void job::operatorPut() {
 /*
-   put 
-      array index any put –
-      dict key any put –
-      string index int put –
+    put 
+        array index any put –
+        dict key any put –
+        string index int put –
 
-   replaces a single element of the value of the first operand. If the first operand is an
-   array or a string, put treats the second operand as an index and stores the third
-   operand at the position identified by the index, counting from 0. index must be in
-   the range 0 to n - 1, where n is the length of the array or string. If it is outside this
-   range, a rangecheck error occurs.
+    replaces a single element of the value of the first operand. If the first operand is an
+    array or a string, put treats the second operand as an index and stores the third
+    operand at the position identified by the index, counting from 0. index must be in
+    the range 0 to n - 1, where n is the length of the array or string. If it is outside this
+    range, a rangecheck error occurs.
 
-   If the first operand is a dictionary, put uses the second operand as a key and the
-   third operand as a value, and stores this key-value pair into dict. If key is already
-   present as a key in dict, put simply replaces its value by any; otherwise, put creates
-   a new entry for key and associates any with it. In LanguageLevel 1, if dict is already
-   full, a dictfull error occurs.
+    If the first operand is a dictionary, put uses the second operand as a key and the
+    third operand as a value, and stores this key-value pair into dict. If key is already
+    present as a key in dict, put simply replaces its value by any; otherwise, put creates
+    a new entry for key and associates any with it. In LanguageLevel 1, if dict is already
+    full, a dictfull error occurs.
 
-   If the value of array or dict is in global VM and any is a composite object whose
-   value is in local VM, an invalidaccess error occurs (see Section 3.7.2, “Local and
-   Global VM”).
+    If the value of array or dict is in global VM and any is a composite object whose
+    value is in local VM, an invalidaccess error occurs (see Section 3.7.2, “Local and
+    Global VM”).
 */
 
-   object *pValue = pop();
-   object *pIndex = pop();
-   object *pTarget = pop();
+    object *pValue = pop();
+    object *pIndex = pop();
+    object *pTarget = pop();
 
-   switch ( pTarget -> ObjectType() ) {
+    switch ( pTarget -> ObjectType() ) {
 
-   case object::array:
-      reinterpret_cast<array *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
-      break;
+    case object::array:
+        reinterpret_cast<array *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
+        break;
 
-   case object::dictionary:
-      reinterpret_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
-      break;
+    case object::dictionary:
+        reinterpret_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
+        break;
 
-   case object::font:
-      static_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
-      break;
+    case object::font:
+        static_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
+        break;
 
-   case object::procedure:
-      reinterpret_cast<procedure *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
-      break;
+    case object::procedure:
+        reinterpret_cast<procedure *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
+        break;
 
-   case object::matrix:
-      reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> OBJECT_POINT_TYPE_VALUE);
-      break;
+    case object::matrix:
+        reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> OBJECT_POINT_TYPE_VALUE);
+        break;
 
-   default:
-      __debugbreak();
-      break;
-   }
-   return;
-   }
+    case object::atom:
+        switch ( pTarget -> ValueType() ) {
+        case object::valueType::string: {
+            string *pString = static_cast<string *>(pTarget);
+            pString -> put(pIndex -> IntValue(),(BYTE)pValue -> IntValue());
+            }
+            break;
+        }
+
+    default:
+        __debugbreak();
+        break;
+    }
+    return;
+    }
 
 
     void job::operatorPutinterval() {
@@ -651,30 +665,31 @@
     }
 
 
-   void job::operatorReadonly() {
+    void job::operatorReadonly() {
 /*
-   readonly
+    readonly
 
-      array readonly array
-      packedarray readonly packedarray
-      dict readonly dict
-      file readonly file
-      string readonly string
+        array readonly array
+        packedarray readonly packedarray
+        dict readonly dict
+        file readonly file
+        string readonly string
 
-   reduces the access attribute of an array, packed array, dictionary, file, or string object
-   to read-only (see Section 3.3.2, “Attributes of Objects”). Access can only be
-   reduced by this operator, never increased. When an object is read-only, its value
-   cannot be modified by PostScript operators (an invalidaccess error will result),
-   but it can still be read by operators or executed by the PostScript interpreter.
-   For an array, packed array, file, or string object, readonly affects the access attribute
-   only of the object that it returns. If there are other objects that share the
-   same value, their access attributes are unaffected. However, in the case of a dictionary,
-   readonly affects the value of the object, so all dictionary objects sharing
-   the same dictionary are affected.
+    reduces the access attribute of an array, packed array, dictionary, file, or string object
+    to read-only (see Section 3.3.2, “Attributes of Objects”). Access can only be
+    reduced by this operator, never increased. When an object is read-only, its value
+    cannot be modified by PostScript operators (an invalidaccess error will result),
+    but it can still be read by operators or executed by the PostScript interpreter.
+    For an array, packed array, file, or string object, readonly affects the access attribute
+    only of the object that it returns. If there are other objects that share the
+    same value, their access attributes are unaffected. However, in the case of a dictionary,
+    readonly affects the value of the object, so all dictionary objects sharing
+    the same dictionary are affected.
 
 */
-   return;
-   }
+    top() -> theAccessAttribute = object::accessAttribute::readOnly;
+    return;
+    }
 
    void job::operatorRectclip() {
 /*
@@ -797,24 +812,37 @@
    return;
    }
 
-   void job::operatorRepeat() {
+    void job::operatorRepeat() {
 /*
-   repeat 
-      int proc repeat –
+    repeat 
+        int proc repeat –
 
-   executes the procedure proc int times, where int is a nonnegative integer. This operator
-   removes both operands from the stack before executing proc for the first
-   time. If proc executes the exit operator, repeat terminates prematurely. repeat
-   leaves no results of its own on the stack, but proc may do so.
+    executes the procedure proc int times, where int is a nonnegative integer. This operator
+    removes both operands from the stack before executing proc for the first
+    time. If proc executes the exit operator, repeat terminates prematurely. repeat
+    leaves no results of its own on the stack, but proc may do so.
 */
-   procedure *pProcedure = reinterpret_cast<procedure *>(pop());
-   object *pCount = pop();
+    procedure *pProcedure = reinterpret_cast<procedure *>(pop());
+    object *pCount = pop();
 
-   for ( long k = 0; k < pCount -> IntValue(); k++ )
-      pProcedure -> execute();
+    for ( long k = 0; k < pCount -> IntValue(); k++ )
+        pProcedure -> execute();
 
-   return;
-   }
+    return;
+    }
+
+   void job::operatorRestore() {
+/*
+    restore
+        save restore -
+
+*/
+    save *pSave = reinterpret_cast<save *>(pop());
+
+    currentGS() -> restore(pSave);
+
+    return;
+    }
 
     void job::operatorRlineto() {
 /*
@@ -945,44 +973,62 @@
     return;
     }
 
-   void job::operatorRotate() {
+    void job::operatorRotate() {
 /*
-   rotate 
-      angle rotate –
-      angle matrix rotate matrix
+    rotate 
+        angle rotate –
+        angle matrix rotate matrix
 
-   rotates the axes of the user coordinate space by angle degrees counterclockwise
-   about the origin, or returns a matrix representing this transformation. The position
-   of the coordinate origin and the sizes of the coordinate units are unaffected.
+    rotates the axes of the user coordinate space by angle degrees counterclockwise
+    about the origin, or returns a matrix representing this transformation. The position
+    of the coordinate origin and the sizes of the coordinate units are unaffected.
 
-   The transformation is represented by the matrix
+    The transformation is represented by the matrix
 
-                     | cosA  sinA   0 |
-               R  =  | -sinA cosA   0 |
-                     | 0     0      1 |
+                        | cosA  sinA   0 |
+                  R  =  | -sinA cosA   0 |
+                        | 0     0      1 |
 
 
-   where A is the angle specified by the angle operand. The first form of the operator
-   applies this transformation to the user coordinate system by concatenating matrix
-   R with the current transformation matrix (CTM); that is, it replaces the CTM
-   with the matrix product R X CTM. The second form replaces the value of the
-   matrix operand with an array representing matrix R and pushes the result back on
-   the operand stack without altering the CTM. See Section 4.3.3, “Matrix Representation
-   and Manipulation,” for a discussion of how matrices are represented as
-   arrays.
+    where A is the angle specified by the angle operand. The first form of the operator
+    applies this transformation to the user coordinate system by concatenating matrix
+    R with the current transformation matrix (CTM); that is, it replaces the CTM
+    with the matrix product R X CTM. The second form replaces the value of the
+    matrix operand with an array representing matrix R and pushes the result back on
+    the operand stack without altering the CTM. See Section 4.3.3, “Matrix Representation
+    and Manipulation,” for a discussion of how matrices are represented as
+    arrays.
 
 */
-   object *pTop = pop();
-Beep(2000,200);
+    object *pTop = pop();
+    POINT_TYPE angle;
 
-   if ( object::matrix == pTop -> ObjectType() )
-      pop();
+    switch ( pTop -> ObjectType() ) {
+    case object::objectType::matrix: 
+        angle = pop() -> DoubleValue();
+        break;
 
-   if ( object::matrix == pTop -> ObjectType() )
-      push(pTop);
+    default:
+        angle = pTop -> DoubleValue();
+        currentGS() -> rotate(angle);
+        return;
+    }
 
-   return;
-   }
+    //!!???!!! angle = -angle;
+
+    POINT_TYPE cosAngle = cos(angle * graphicsState::degToRad);
+    POINT_TYPE sinAngle = sin(angle * graphicsState::degToRad);
+
+    matrix *pMatrix = new (CurrentObjectHeap()) matrix(this);
+    pMatrix -> a(cosAngle);
+    pMatrix -> b(sinAngle);
+    pMatrix -> c(-sinAngle);
+    pMatrix -> d(cosAngle);
+
+    push(pMatrix);
+
+    return;
+    }
 
    void job::operatorRound() {
 /*
@@ -1020,65 +1066,74 @@ Beep(2000,200);
    return;
    }
 
-   void job::operatorSave() {
+    void job::operatorSave() {
 /*
-   save 
-      – save save
+    save 
+        – save save
 
-   creates a snapshot of the current state of virtual memory (VM) and returns a save
-   object representing that snapshot. The save object is composite and logically belongs
-   to the local VM, regardless of the current VM allocation mode.
+    creates a snapshot of the current state of virtual memory (VM) and returns a save
+    object representing that snapshot. The save object is composite and logically belongs
+    to the local VM, regardless of the current VM allocation mode.
 
-   Subsequently, the returned save object may be presented to restore to reset VM to
-   this snapshot. See Section 3.7, “Memory Management,” for a description of VM
-   and of the effects of save and restore. See the restore operator for a detailed description
-   of what is saved in the snapshot.
+    Subsequently, the returned save object may be presented to restore to reset VM to
+    this snapshot. See Section 3.7, “Memory Management,” for a description of VM
+    and of the effects of save and restore. See the restore operator for a detailed description
+    of what is saved in the snapshot.
 
-   save also saves the current graphics state by pushing a copy of it on the graphics
-   state stack in a manner similar to gsave. This saved graphics state is restored by
-   restore and grestoreall.
+    save also saves the current graphics state by pushing a copy of it on the graphics
+    state stack in a manner similar to gsave. This saved graphics state is restored by
+    restore and grestoreall.
 */
-   push(new (CurrentObjectHeap()) save(this));
-   return;
-   }
+    currentGS() -> save();
+    return;
+    }
 
-   void job::operatorScale() {
+    void job::operatorScale() {
 /*
-   scale 
-      sx sy scale –
-      sx sy matrix scale matrix
+    scale 
+        sx sy scale –
+        sx sy matrix scale matrix
 
-   scales the units of the user coordinate space by a factor of sx units horizontally and
-   sy units vertically, or returns a matrix representing this transformation. The position
-   of the coordinate origin and the orientation of the axes are unaffected.
-   The transformation is represented by the matrix
+    scales the units of the user coordinate space by a factor of sx units horizontally and
+    sy units vertically, or returns a matrix representing this transformation. The position
+    of the coordinate origin and the orientation of the axes are unaffected.
+    The transformation is represented by the matrix
 
-                     | sx 0   0 |
-               S  =  | 0  sy  0 |
-                     | 0  0   1 |
+                        | sx 0   0 |
+                  S  =  | 0  sy  0 |
+                        | 0  0   1 |
 
-   The first form of the operator applies this transformation to the user coordinate
-   system by concatenating matrix S with the current transformation matrix (CTM);
-   that is, it replaces the CTM with the matrix product S ´ CTM. The second form
-   replaces the value of the matrix operand with an array representing matrix S and
-   pushes the result back on the operand stack without altering the CTM. See
-   Section 4.3.3, “Matrix Representation and Manipulation,” for a discussion of how
-   matrices are represented as arrays.
+    The first form of the operator applies this transformation to the user coordinate
+    system by concatenating matrix S with the current transformation matrix (CTM);
+    that is, it replaces the CTM with the matrix product S ´ CTM. The second form
+    replaces the value of the matrix operand with an array representing matrix S and
+    pushes the result back on the operand stack without altering the CTM. See
+    Section 4.3.3, “Matrix Representation and Manipulation,” for a discussion of how
+    matrices are represented as arrays.
 
 */
-   object *pTop = pop();
-Beep(2000,200);
+    object *pTop = pop();
+    POINT_TYPE sx,sy;
 
-   if ( object::matrix == pTop -> ObjectType() )
-      pop();
+    switch ( pTop -> ObjectType() ) {
+    case object::objectType::matrix: 
+        sy = pop() -> DoubleValue();
+        sx = pop() -> DoubleValue();
+        break;
 
-   pop();
+    default:
+        sy = pTop -> DoubleValue();
+        sx = pop() -> DoubleValue();
+        currentGS() -> scale(sx,sy);
+        return;
+    }
 
-   if ( object::matrix == pTop -> ObjectType() )
-      push(pTop);
-   
-   return;
-   }
+    matrix *pMatrix = new (CurrentObjectHeap()) matrix(this);
+    pMatrix -> a(sx);
+    pMatrix -> d(sy);
+    push(pMatrix);
+    return;
+    }
 
     void job::operatorScalefont() {
 /*
@@ -1102,8 +1157,13 @@ Beep(2000,200);
 
 */
     object *pFontScale = pop();
-    font *pFont = reinterpret_cast<font *>(top());
-    pFont -> scalefont(pFontScale -> OBJECT_POINT_TYPE_VALUE);
+
+    font *pFont = currentGS() -> scaleFont(pFontScale -> OBJECT_POINT_TYPE_VALUE,reinterpret_cast<font *>(pop()));
+
+    pFontDirectory -> put(pFont -> fontName(),pFont);
+
+    push(pFont);
+
     return;
     }
 
@@ -1374,8 +1434,11 @@ Beep(2000,200);
       [2 3] 11 setdash % 1 on, 3 off, 2 on, 3 off, 2 on, …
 
 */
-   pop();
-   pop();
+
+   POINT_TYPE offset = pop() -> DoubleValue();
+   class array *pArray = reinterpret_cast<array *>(pop());
+
+   currentGS() -> setLineDash(pArray,offset);
    return;
    }
 
@@ -1584,7 +1647,8 @@ Beep(2000,200);
     the CTM with the translate, scale, rotate, and concat operators rather than replace
     it.
 */
-    object *pObject = pop();
+    object *pMatrix = pop();
+    currentGS() -> setMatrix(pMatrix);
     return;
     }
 
@@ -1697,11 +1761,10 @@ Beep(2000,200);
     setcmykcolor
 
 */
-
-    pop();
-    pop();
-    pop();
-
+    object *pBlue = pop();
+    object *pGreen = pop();
+    object *pRed = pop();
+    currentGS() -> setRGBColor(pRed -> DoubleValue(),pGreen -> DoubleValue(),pBlue -> DoubleValue());
     return;
     }
 
@@ -1784,12 +1847,13 @@ Beep(2000,200);
 
     for ( long k = 0; k < strSize; k++ ) {
 
-        object *pChar = NULL;
-
-        if ( pBinary ) 
-            currentGS() -> drawGlyph(pBinary -> get(k));
+        BYTE glyphIndex;
+        if ( ! ( NULL == pBinary ) )
+            glyphIndex = pBinary -> get(k);
         else
-            pChar = pString -> getElement(k);
+            glyphIndex = pString -> get(k);
+
+        currentGS() -> drawGlyph(glyphIndex);
 
     }
 
@@ -1857,8 +1921,29 @@ Beep(2000,200);
 
       Errors: limitcheck, undefined
 */
+
+    currentGS() -> showPage();
+
    return;
    }
+
+    void job::operatorSin() {
+/*
+    sin 
+        angle sin real
+
+    returns the sine of angle, which is interpreted as an angle in degrees. The result is a
+    real number.
+
+    Errors: stackunderflow, typecheck
+    See Also: cos, atan
+
+*/
+    object *pSin = new (CurrentObjectHeap()) object(this,sin(graphicsState::degToRad * pop() -> DoubleValue()));
+    push(pSin);
+    return;
+    }
+
 
    void job::operatorStandardEncoding() {
 /*
@@ -1959,39 +2044,41 @@ Beep(2000,200);
    }
 
 
-   void job::operatorStroke() {
+    void job::operatorStroke() {
 /*
-   stroke 
-      – stroke –
+    stroke 
+        – stroke –
 
-   paints a line centered on the current path, with sides parallel to the path segments.
-   The line’s graphical properties are defined by various parameters of the graphics
-   state. Its thickness is determined by the current line width parameter (see
-   setlinewidth) and its color by the current color (see setcolor). The joints between
-   connected path segments and the ends of open subpaths are painted with the current
-   line join (see setlinejoin) and the current line cap (see setlinecap), respectively.
-   The line is either solid or broken according to the dash pattern established by
-   setdash. Uniform stroke width can be ensured by enabling automatic stroke adjustment
-   (see setstrokeadjust). All of these graphics state parameters are consulted
-   at the time stroke is executed; their values during the time the path is being
-   constructed are irrelevant.
+    paints a line centered on the current path, with sides parallel to the path segments.
+    The line’s graphical properties are defined by various parameters of the graphics
+    state. Its thickness is determined by the current line width parameter (see
+    setlinewidth) and its color by the current color (see setcolor). The joints between
+    connected path segments and the ends of open subpaths are painted with the current
+    line join (see setlinejoin) and the current line cap (see setlinecap), respectively.
+    The line is either solid or broken according to the dash pattern established by
+    setdash. Uniform stroke width can be ensured by enabling automatic stroke adjustment
+    (see setstrokeadjust). All of these graphics state parameters are consulted
+    at the time stroke is executed; their values during the time the path is being
+    constructed are irrelevant.
 
-   If a subpath is degenerate (consists of a single-point closed path or of two or more
-   points at the same coordinates), stroke paints it only if round line caps have been
-   specified, producing a filled circle centered at the single point. If butt or projecting
-   square line caps have been specified, stroke produces no output, because the
-   orientation of the caps would be indeterminate. A subpath consisting of a singlepoint
-   open path produces no output.
+    If a subpath is degenerate (consists of a single-point closed path or of two or more
+    points at the same coordinates), stroke paints it only if round line caps have been
+    specified, producing a filled circle centered at the single point. If butt or projecting
+    square line caps have been specified, stroke produces no output, because the
+    orientation of the caps would be indeterminate. A subpath consisting of a singlepoint
+    open path produces no output.
 
-   After painting the current path, stroke clears it with an implicit newpath operation. 
-   To preserve the current path across a stroke operation, use the sequence
+    After painting the current path, stroke clears it with an implicit newpath operation. 
+    To preserve the current path across a stroke operation, use the sequence
 
-      gsave
-      fill
-      grestore
+        gsave
+        fill
+        grestore
 */
-   return;
-   }
+
+    currentGS() -> stroke();
+    return;
+    }
 
    void job::operatorSub() {
 /*
@@ -2011,70 +2098,86 @@ Beep(2000,200);
    return;
    }
 
-   void job::operatorTransform() {
+    void job::operatorTransform() {
 /*
-   transform 
-      x1 y1 transform x2 y2
-      x1 y1 matrix transform x2 y2
+    transform 
+        x1 y1 transform x2 y2
+        x1 y1 matrix transform x2 y2
 
-   applies a transformation matrix to the coordinates (x1, y1), returning the transformed
-   coordinates (x2, y2). The first form of the operator uses the current transformation
-   matrix in the graphics state to transform user space coordinates to
-   device space. The second form applies the transformation specified by the matrix
-   operand rather than the CTM.
-*/
-Beep(2000,200);
-   double x,y;
-   matrix *pMatrix = NULL;
-   switch ( top() -> ObjectType() ) {
-   case object::matrix:
-      pMatrix = reinterpret_cast<matrix *>(pop());
-      y = pop() -> Value();
-      x = pop() -> Value();
-      break;
-   default:
-      pMatrix = pCurrentMatrix;
-      y = pop() -> Value();
-      x = pop() -> Value();
-   }
-   push(new (CurrentObjectHeap()) object(this,x));
-   push(new (CurrentObjectHeap()) object(this,y));
-   return;
-   }
-
-   void job::operatorTranslate() {
-/*
-   translate 
-      tx ty translate –
-      tx ty matrix translate matrix
-
-   moves the origin of the user coordinate space by tx units horizontally and ty units
-   vertically, or returns a matrix representing this transformation. The orientation of
-   the axes and the sizes of the coordinate units are unaffected.
-   The transformation is represented by the matrix
-
-                     | 1  0  0 |
-               T  =  | 0  1  0 |
-                     | tx ty 1 |
-
-   The first form of the operator applies this transformation to the user coordinate
-   system by concatenating matrix T with the current transformation matrix (CTM);
-   that is, it replaces the CTM with the matrix product T ´ CTM. The second form
-   replaces the value of the matrix operand with an array representing matrix T and
-   pushes the result back on the operand stack without altering the CTM. See
-   Section 4.3.3, “Matrix Representation and Manipulation,” for a discussion of how
-   matrices are represented as arrays.
+    applies a transformation matrix to the coordinates (x1, y1), returning the transformed
+    coordinates (x2, y2). The first form of the operator uses the current transformation
+    matrix in the graphics state to transform user space coordinates to
+    device space. The second form applies the transformation specified by the matrix
+    operand rather than the CTM.
 */
 
-Beep(2000,200);
+    POINT_TYPE x,y;
+    object *pTopObject = pop();
 
-   object *pTop = pop();
-   if ( object::matrix == pTop -> ObjectType() )
-      pop();
-   pop();
+    switch ( pTopObject -> ObjectType() ) {
+    case object::matrix: {
+        matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
+        y = pop() -> DoubleValue();
+        x = pop() -> DoubleValue();
+        currentGS() -> transformPoint(pMatrix,x,y,&x,&y);
+        }
+        break;
 
-   if ( object::matrix == pTop -> ObjectType() )
-      push(pTop);
+    default: {
+        y = pTopObject -> DoubleValue();
+        x = pop() -> DoubleValue();
+        currentGS() -> transformPoint(x,y,&x,&y);
+        }
+    }
+
+    push(new (CurrentObjectHeap()) object(this,x));
+    push(new (CurrentObjectHeap()) object(this,y));
+    return;
+    }
+
+    void job::operatorTranslate() {
+/*
+    translate 
+        tx ty translate –
+        tx ty matrix translate matrix
+
+    moves the origin of the user coordinate space by tx units horizontally and ty units
+    vertically, or returns a matrix representing this transformation. The orientation of
+    the axes and the sizes of the coordinate units are unaffected.
+    The transformation is represented by the matrix
+
+                        | 1  0  0 |
+                  T  =  | 0  1  0 |
+                        | tx ty 1 |
+
+    The first form of the operator applies this transformation to the user coordinate
+    system by concatenating matrix T with the current transformation matrix (CTM);
+    that is, it replaces the CTM with the matrix product T ´ CTM. The second form
+    replaces the value of the matrix operand with an array representing matrix T and
+    pushes the result back on the operand stack without altering the CTM. See
+    Section 4.3.3, “Matrix Representation and Manipulation,” for a discussion of how
+    matrices are represented as arrays.
+*/
+
+    object *pTop = pop();
+    POINT_TYPE ty;
+
+    switch ( pTop -> ObjectType() ) {
+    case object::objectType::matrix: 
+        ty = pop() -> DoubleValue();
+        break;
+
+    default:
+        ty = pTop -> DoubleValue();
+        currentGS() -> translate(pop() -> DoubleValue(),ty);
+        return;
+    }
+
+    matrix *pMatrix = new (CurrentObjectHeap()) matrix(this);
+    pMatrix -> tx(pop() -> DoubleValue());
+    pMatrix -> ty(ty);
+
+    push(pMatrix);
 
    return;
    }
@@ -2117,33 +2220,45 @@ Beep(2000,200);
     return;
     }
 
-   void job::operatorUndef() {
+    void job::operatorUndef() {
 /*
-   undef 
-      dict key undef –
+    undef 
+        dict key undef –
 
-   removes key and its associated value from the dictionary dict. dict does not need to
-   be on the dictionary stack. No error occurs if key is not present in dict.
+    removes key and its associated value from the dictionary dict. dict does not need to
+    be on the dictionary stack. No error occurs if key is not present in dict.
 
-   If the value of dict is in local VM, the effect of undef can be undone by a subsequent
-   restore operation. That is, if key was present in dict at the time of the matching
-   save operation, restore will reinstate key and its former value. But if dict is in
-   global VM, the effect of undef is permanent.
+    If the value of dict is in local VM, the effect of undef can be undone by a subsequent
+    restore operation. That is, if key was present in dict at the time of the matching
+    save operation, restore will reinstate key and its former value. But if dict is in
+    global VM, the effect of undef is permanent.
 
-   Errors: invalidaccess, stackunderflow, typecheck
-   See Also: def, put, undefinefont
+    Errors: invalidaccess, stackunderflow, typecheck
+    See Also: def, put, undefinefont
 */
 
-   object *pKey = pop();
-   dictionary *pDict = reinterpret_cast<dictionary *>(pop());
+    object *pKey = pop();
+    object *pDictObject = pop();
+    dictionary *pDict = NULL;
 
-   if ( ! pDict -> exists(pKey -> Name()) )
-      return;
+    if ( object::dictionary == pDictObject -> ObjectType() )
+        pDict = reinterpret_cast<dictionary *>(pDictObject);
+    else if ( object::font == pDictObject -> ObjectType() )
+        pDict = static_cast<dictionary *>(reinterpret_cast<font *>(pDictObject));
+    else {
+        char szMessage[1024];
+        sprintf_s<1024>(szMessage,"Operator undef: the type of the dict operand is invalid");
+        throw typecheck(szMessage);
+        return;
+    }
 
-   pDict -> remove(pKey -> Name());
+    if ( ! pDict -> exists(pKey -> Name()) )
+        return;
 
-   return;
-   }
+    pDict -> remove(pKey -> Name());
+
+    return;
+    }
 
     void job::operatorUndefinefont() {
 /*
@@ -2351,10 +2466,13 @@ Beep(2000,200);
 
         object *pChar = NULL;
 
-        if ( pBinary ) 
-            currentGS() -> drawGlyph(pBinary -> get(k));
+        BYTE glyphIndex;
+        if ( ! ( NULL == pBinary ) )
+            glyphIndex = pBinary -> get(k);
         else
-            pChar = pString -> getElement(k);
+            glyphIndex = pString -> get(k);
+
+        currentGS() -> drawGlyph(glyphIndex);
 
         object *pX = pNumberArray -> getElement(k);
         push(pX);

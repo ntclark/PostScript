@@ -4,9 +4,12 @@
 #include <windows.h>
 #include <float.h>
 
-#define OBJECT_HEAP_SIZE   104857600
+#define OBJECT_HEAP_SIZE   2 * 104857600
 
 typedef double POINT_TYPE;
+
+#define POINT_TYPE_NAN std::numeric_limits<double>::quiet_NaN()
+#define POINT_TYPE_NAN_POINT {POINT_TYPE_NAN,POINT_TYPE_NAN}
 
 #define OBJECT_POINT_TYPE_VALUE DoubleValue()
 #define OBJECT_SET_POINT_TYPE_VALUE(v) DoubleValue(v)
@@ -81,6 +84,7 @@ typedef double POINT_TYPE;
         };
 
         static void initializeStorage();
+        void *operator new (size_t size);
         void *operator new(size_t size,void *pPtr);
         static void releaseStorage();
 

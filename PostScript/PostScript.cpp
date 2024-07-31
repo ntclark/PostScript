@@ -1,11 +1,9 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript.h"
 
 #include "Properties_i.c"
 #include "PostScript_i.c"
+#include "CVPostscriptConverter_i.c"
 
     CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
     bool PStoPDF::logPaintPending = false;
@@ -22,6 +20,11 @@
     HWND PStoPDF::hwndLogSplitter = NULL;
     HWND PStoPDF::hwndOperandStackSize = NULL;
     HWND PStoPDF::hwndCurrentDictionary = NULL;
+    HWND PStoPDF::hwndVScroll = NULL;
+
+    HDC PStoPDF::hdcSurface = NULL;
+
+    long PStoPDF::initialCYClient = -1L;
 
     char PStoPDF::szErrorMessage[1024];
 
@@ -92,6 +95,9 @@
 
     pIGProperties -> Save();
     pIGProperties -> Release();
+
+    if ( ! ( NULL == pICVPostscriptConverter ) ) 
+        pICVPostscriptConverter -> Release();
 
     if ( ! ( NULL == PStoPDF::nativeHostFrameHandler ) )
         SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PStoPDF::nativeHostFrameHandler);

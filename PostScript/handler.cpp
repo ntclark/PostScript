@@ -1,8 +1,9 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
 #include "PostScript.h"
+
+#define SCROLL_DELTA 16
+
+    long windowTop = 0L;
 
     LRESULT CALLBACK PStoPDF::handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
@@ -13,6 +14,7 @@
         CREATESTRUCT *pc = reinterpret_cast<CREATESTRUCT *>(lParam);
         p = reinterpret_cast<PStoPDF *>(pc -> lpCreateParams);
         SetWindowLongPtr(hwnd,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(p));
+        windowTop = 0L;
         }
         break;
 
@@ -23,7 +25,20 @@
     case WM_PAINT: {
         PAINTSTRUCT ps;
         BeginPaint(hwnd,&ps);
+        ps.rcPaint.right -= GetSystemMetrics(SM_CXVSCROLL);
         FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_WINDOW + 1));
+
+        long y = windowTop;
+        for ( std::pair<size_t,HBITMAP> pPair : pPStoPDF -> pageBitmaps ) {
+            SIZEL *pSizel = pPStoPDF -> pageSizes[pPair.first];
+            HDC hdcSource = CreateCompatibleDC(ps.hdc);
+            HGDIOBJ oldObj = SelectObject(hdcSource,pPair.second);
+            BitBlt(ps.hdc,0,y,pSizel -> cx,pSizel -> cy,hdcSource,0,0,SRCCOPY);
+            SelectObject(hdcSource,oldObj);
+            DeleteDC(hdcSource);
+            y += pSizel -> cy;
+        }
+
         EndPaint(hwnd,&ps);
         return (LRESULT)TRUE;
         }
@@ -39,6 +54,121 @@
         }
         break;
 
+    case WM_SIZE: {
+        RECT rcClient;
+        GetClientRect(hwnd,&rcClient);
+        if ( 0 == (rcClient.bottom - rcClient.top) ) 
+            break;
+        if ( -1L == PStoPDF::initialCYClient )
+            PStoPDF::initialCYClient = rcClient.bottom - rcClient.top;
+        SetWindowPos(hwndVScroll,HWND_TOP,rcClient.right - GetSystemMetrics(SM_CXVSCROLL),0,GetSystemMetrics(SM_CXVSCROLL),PStoPDF::initialCYClient,0L);
+        SCROLLINFO scrollInfo{0};
+        scrollInfo.cbSize = sizeof(SCROLLINFO);
+        scrollInfo.fMask = SIF_PAGE | SIF_RANGE;
+        scrollInfo.nPage = PStoPDF::initialCYClient;
+        scrollInfo.nMin = 0;
+        scrollInfo.nMax = rcClient.bottom - rcClient.top;
+        SetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo,TRUE);
+        }
+        break;
+
+    /*
+        Doesn't work at this point, probably the hosting frame get's the keystrokes
+    */
+    case WM_KEYDOWN: {
+        switch ( (char)wParam ) {
+        case VK_PRIOR:
+            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_PAGEUP,0L),0L);
+            break;
+        case VK_NEXT:
+            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
+            break;
+        case VK_UP:
+            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0L),0L);
+            break;
+        case VK_DOWN:
+            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_LINEDOWN,0L),0L);
+            break;
+        default:
+            break;
+        }
+        }
+        break;
+
+    case WM_MOUSEWHEEL:
+    case WM_VSCROLL: {
+
+        SCROLLINFO scrollInfo{0};
+
+        scrollInfo.cbSize = sizeof(SCROLLINFO);
+        scrollInfo.fMask = SIF_ALL;
+        GetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo);
+
+        long yDelta = 0L;
+
+        if ( WM_MOUSEWHEEL == msg ) {
+
+            yDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+        } else {
+
+            switch ( LOWORD(wParam) ) {
+            case SB_LINEDOWN:
+                yDelta -= SCROLL_DELTA;
+                break;
+
+            case SB_LINEUP:
+                yDelta += SCROLL_DELTA;
+                break;
+
+            case SB_PAGEDOWN:
+                yDelta = -scrollInfo.nPage;
+                break;
+
+            case SB_PAGEUP:
+                yDelta = scrollInfo.nPage;
+                break;
+
+            case SB_THUMBTRACK:
+                yDelta = scrollInfo.nPos - HIWORD(wParam);
+                break;
+
+            default:
+                break;
+            }
+
+        }
+
+        if ( 0 == yDelta )
+            break;
+
+        if ( 0 > yDelta && scrollInfo.nMax <= (long)scrollInfo.nPage - windowTop ) 
+            break;
+
+        if ( 0 > yDelta && scrollInfo.nMax <= (long)scrollInfo.nPage - windowTop - yDelta ) 
+            yDelta = scrollInfo.nPage - windowTop - scrollInfo.nMax;
+
+        if ( 0 < (windowTop + yDelta ) )
+            yDelta = -windowTop;
+
+        windowTop += yDelta;
+
+        if ( 0 < windowTop ) {
+            windowTop = 0;
+            break;
+        } 
+
+        ScrollWindowEx(hwnd,0L,yDelta,NULL,NULL,NULL,NULL,SW_ERASE);
+
+        scrollInfo.fMask = SIF_POS;
+        scrollInfo.nPos -= yDelta;
+
+        SetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo,TRUE);
+
+        InvalidateRect(hwnd,NULL,TRUE);
+        }
+        break;
+
     case WM_FLUSH_LOG: {
         return 0L;
         }
@@ -50,6 +180,7 @@
 
     return DefWindowProc(hwnd,msg,wParam,lParam);
     }
+
 
     static POINT ptDragStart;
     static boolean isCaptured = false;
@@ -134,26 +265,6 @@
     case WM_SIZE:
     case WM_MOVE: {
         SET_PANES
-#if 0
-        RECT rcHost;
-        HWND hwndHost;
-        pPStoPDF -> pIOleInPlaceSite -> GetWindow(&hwndHost);
-        GetWindowRect(hwndHost,&rcHost);
-        long cx = rcHost.right - rcHost.left - SPLITTER_WIDTH;
-        long cy = rcHost.bottom - rcHost.top;
-        long cxClient = cx - (pPStoPDF -> logIsVisible ? pPStoPDF -> logPaneWidth : 0);
-        SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANEL_HEIGHT,cxClient,cy - CMD_PANEL_HEIGHT,0L);
-        SetWindowPos(hwndCmdPane,HWND_TOP,rcHost.left,rcHost.top ,cxClient,CMD_PANEL_HEIGHT,0L);
-        if ( 0 < pPStoPDF -> logPaneWidth && pPStoPDF -> logIsVisible ) {
-            SetWindowPos(hwndLog,HWND_TOP,cxClient,0,pPStoPDF -> logPaneWidth,cy,SWP_SHOWWINDOW);
-            SetWindowPos(hwndLogSplitter,HWND_TOP,cxClient,0,32,cy,SWP_SHOWWINDOW);
-            SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"Log >>");
-        } else {
-            ShowWindow(hwndLog,SW_HIDE);
-            ShowWindow(hwndLogSplitter,SW_HIDE);
-            SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"<< Log");
-        }
-#endif
         }
         break;
 

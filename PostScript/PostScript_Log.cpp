@@ -31,8 +31,6 @@
 
    long PStoPDF::queueLog(char *pszOutput,char *pEnd,bool isError) {
 
-//OutputDebugStringA(pszOutput);
-
    if ( none == theLogLevel )
       return 0L;
 
@@ -40,11 +38,11 @@
 
    static char szOperandStackSize[64];
    sprintf_s<64>(szOperandStackSize,"%ld",(long)pJob -> operandStack.size());
-   SendMessage(hwndOperandStackSize,WM_SETTEXT,0L,(LPARAM)szOperandStackSize);
+   PostMessage(hwndOperandStackSize,WM_SETTEXT,0L,(LPARAM)szOperandStackSize);
 
    static char szCurrentDictionary[64];
    sprintf_s<64>(szCurrentDictionary,"%s",pJob -> dictionaryStack.top() -> Name());
-   SendMessage(hwndCurrentDictionary,WM_SETTEXT,0L,(LPARAM)szCurrentDictionary);
+   PostMessage(hwndCurrentDictionary,WM_SETTEXT,0L,(LPARAM)szCurrentDictionary);
 
    long n = 0L;
 

@@ -3,6 +3,7 @@
     pSystemDict -> put("=",&job::operatorStdout);
 
     pSystemDict -> put("add",&job::operatorAdd);
+    pSystemDict -> put("aload",&job::operatorAload);
     pSystemDict -> put("and",&job::operatorAnd);
     pSystemDict -> put("arc",&job::operatorArc);
     pSystemDict -> put("arcn",&job::operatorArcn);
@@ -18,6 +19,7 @@
     pSystemDict -> put("colorimage",&job::operatorColorimage);
     pSystemDict -> put("concat",&job::operatorConcat);
     pSystemDict -> put("copy",&job::operatorCopy);
+    pSystemDict -> put("cos",&job::operatorCos);
     pSystemDict -> put("countdictstack",&job::operatorCountdictstack);
     pSystemDict -> put("counttomark",&job::operatorCounttomark);
     pSystemDict -> put("currentdict",&job::operatorCurrentdict);
@@ -95,6 +97,7 @@
     pSystemDict -> put("rectfill",&job::operatorRectfill);
     pSystemDict -> put("rectstroke",&job::operatorRectstroke);
     pSystemDict -> put("repeat",&job::operatorRepeat);
+    pSystemDict -> put("restore",&job::operatorRestore);
     pSystemDict -> put("rlineto",&job::operatorRlineto);
     pSystemDict -> put("rmoveto",&job::operatorRmoveto);
     pSystemDict -> put("roll",&job::operatorRoll);
@@ -122,6 +125,7 @@
     pSystemDict -> put("setuserparams",&job::operatorSetuserparams);
     pSystemDict -> put("show",&job::operatorShow);
     pSystemDict -> put("showpage",&job::operatorShowpage);
+    pSystemDict -> put("sin",&job::operatorSin);
     pSystemDict -> put("StandardEncoding",&job::operatorStandardEncoding);
     pSystemDict -> put("stopped",&job::operatorStopped);
     pSystemDict -> put("string",&job::operatorString);

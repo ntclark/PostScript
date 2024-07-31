@@ -36,6 +36,7 @@ class job;
         void put(char *pszKey,void (job::*theProcedure)());
 
         object *retrieve(char *);
+        object *retrieveKey(char *);
 
         virtual char *ToString();
 

@@ -77,9 +77,8 @@
         }
         return (LRESULT)TRUE;
 
-    case WM_PARSE_PS: {
+    case WM_PARSE_PS:
         p -> pIPostScript -> Parse((char *)lParam);
-        }
         return (LRESULT)FALSE;
 
     case WM_SYSCOMMAND: {

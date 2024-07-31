@@ -6,25 +6,26 @@
 #include "parsing.h"
 
 #include "PdfEnabler_i.h"
-#include "pdfEnabler\Page.h"
+#include "pdfEnabler/Page.h"
 #include "PostScriptGen2_i.h"
 
-#include "Stacks\graphicsStateStack.h"
-#include "Stacks\objectStack.h"
-#include "Stacks\dictionaryStack.h"
+#include "Stacks/graphicsStateStack.h"
+#include "Stacks/objectStack.h"
+#include "Stacks/dictionaryStack.h"
+#include "Stacks/gdiParametersStack.h"
 
 #include "comment.h"
 #include "error.h"
 
-#include "PostScript objects\procedure.h"
-#include "PostScript objects\string.h"
-#include "PostScript objects\structureSpec.h"
-#include "PostScript objects\resource.h"
-#include "PostScript objects\booleanObject.h"
-#include "PostScript objects\name.h"
-#include "PostScript objects\array.h"
-#include "PostScript objects\colorSpace.h"
-#include "PostScript objects\matrix.h"
+#include "PostScript objects/procedure.h"
+#include "PostScript objects/string.h"
+#include "PostScript objects/structureSpec.h"
+#include "PostScript objects/resource.h"
+#include "PostScript objects/booleanObject.h"
+#include "PostScript objects/name.h"
+#include "PostScript objects/array.h"
+#include "PostScript objects/colorSpace.h"
+#include "PostScript objects/matrix.h"
 
     class job {
     public:
@@ -82,7 +83,7 @@
         void resolve();
         object *resolve(char *pszObjectName);
         bool seekDefinition();
-        bool seekOperator();
+        //bool seekOperator();
         dictionary *containingDictionary(object *pObj);
 
         long getPageCount(char *pszFileName);
@@ -134,21 +135,22 @@
         object *pNullConstant{NULL};
         object *pZeroConstant{NULL};
         object *pOneConstant{NULL};
+
         object *pFontTypeLiteral{NULL};
         object *pFontNameLiteral{NULL};
         object *pFontMatrixLiteral{NULL};
-        object *pEncodingArrayLiteral{NULL};
-        object *pCharStringsLiteral{NULL};
-        object *pGlyphDirectoryLiteral{NULL};
         object *pFontBoundingBoxLiteral{NULL};
-        object *pFontMatrixLiteral{NULL};
+
+        object *pEncodingArrayLiteral{NULL};
+        object *pNotdefLiteral{NULL};
+        object *pCharStringsLiteral{NULL};
+
+        object *pGlyphDirectoryLiteral{NULL};
         object *pRestoreFontMatrixLiteral{NULL};
         object *pSfntsLiteral{NULL};
         object *pPageSizeLiteral{NULL};
         object *pBuildGlyphLiteral{NULL};
         object *pBuildCharLiteral{NULL};
-
-        class font *pCourier{NULL};
 
         name *pStringType{NULL};
         name *pArrayType{NULL};
@@ -168,9 +170,6 @@
 
         array *pStandardEncoding{NULL};
         array *pISOLatin1Encoding{NULL};
-
-        matrix *pDefaultMatrix{NULL};
-        matrix *pCurrentMatrix{NULL};
 
         colorSpace *pDefaultColorSpace{NULL};
         colorSpace *pCurrentColorSpace{NULL};

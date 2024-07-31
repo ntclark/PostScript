@@ -1,6 +1,5 @@
 #include "job.h"
 
-
     long job::execute(char *pBegin) {
 
     pStart = pBegin;
@@ -70,20 +69,6 @@
             executeProcedure(reinterpret_cast<procedure *>(po));
         } else
             executeObject();
-//
-//NTC: 02-19-2012: Inline images start with the BI operator, and end with the EI operator, with an intervening
-// ID "operator" that contains the image data after the operator.
-// Until inline images are implemented completely and correctly, I am going to parse from any ID operator, through to the EI operator
-// and ignore the inline image image data.
-//
-        if ( ! ( NULL == po -> Contents() ) && 2 == strlen(po -> Contents()) && 0 == strncmp(po -> Contents(),"ID",2) ) {
-
-            while ( ! ( 'E' == pNext[0] && 'I' == pNext[1] && ( 0x0A == pNext[2] || 0x0D == pNext[2] || ' ' == pNext[2] ) ) )
-                pNext++;
-
-            pNext += 3;
-
-        }
 
         ADVANCE_THRU_WHITE_SPACE(pNext)
 
@@ -155,12 +140,8 @@
             resolve();
             po = pop();
             p = pNext;
-        } else {
-            char *pObjectName = parseObject(p,&p);
-            po = resolve(pObjectName);
-            if ( NULL == po )
-                po = new (CurrentObjectHeap()) object(this,pObjectName);
-        }
+        } else 
+            po = new (CurrentObjectHeap()) object(this,parseObject(p,&p));
 
         pProcedure -> insert(po);
 

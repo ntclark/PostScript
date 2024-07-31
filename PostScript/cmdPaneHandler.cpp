@@ -81,6 +81,18 @@
             p -> Parse();
             break;
 
+        case IDDI_CMD_PANE_CONVERT_TO_PDF: {
+
+            if ( NULL == p -> pICVPostscriptConverter )
+                CoCreateInstance(CLSID_CVPostscriptConverter,NULL,CLSCTX_ALL,IID_ICVPostscriptConverter,reinterpret_cast<void **>(&p -> pICVPostscriptConverter));
+
+            char szTemp[MAX_PATH];
+            GetDlgItemText(hwnd,IDDI_CMD_PANE_ACTIVE_FILE,szTemp,MAX_PATH);
+            p -> pICVPostscriptConverter -> ConvertToPDF(szTemp);
+
+            }
+            break;
+
         default:
             break;
         }

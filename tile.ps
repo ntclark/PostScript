@@ -1,0 +1,59 @@
+
+   /inch {72 mul} def % define one inch
+   0.1 setlinewidth  
+ 
+%  define parameters of figure:
+
+  /R 2.5 inch def                   % the scale: radius of limit circle  
+  /a 60 def                         % the central half-angle  
+  /b 90 a sub 2 mul def             % the angle subtended by the arc  
+  /c a 2 mul def                    % the angle of rotation  
+  /r R a sin a cos div mul def      % initial radius  
+  /n 3 def                          % the number of arcs
+  /N 10 def                         % number of layers 
+ 
+% define basic arc (rotate after drawing it to get ready for next one):
+  
+  /ARC {
+     r R r 180 180 b add arc  
+     stroke  
+     c rotate
+  } def 
+ 
+% procedure to update parameters for successive layers of tiling:
+ 
+  /update { 
+    /a a 2 div def                  % update a: a <== a/2 
+    /b 90 a sub 2 mul def           % update b: b <== (90 - a)/2 
+    /c a 2 mul def                  % update c: c <== 2a  
+    /r R a sin a cos div mul def    % update r: r <== R tan a  
+    /n n 2 mul def                  % update n: n <== 2n 
+  } def  
+ 
+gsave % save graphics state
+
+/Helvetica findfont 
+72 scalefont 
+setfont 
+
+1 inch 1 inch moveto
+   
+(Tiling of Hyperbolic Plane) 
+%(P) 
+show
+
+4.25 inch 5.5 inch translate
+
+  newpath  
+  0 0 R 0 360 arc stroke  
+
+  1 1 n { ARC } for 
+
+1 1 N 1 sub { 
+  update 
+  1 1 n {ARC} for 
+  } for
+
+grestore
+
+showpage 

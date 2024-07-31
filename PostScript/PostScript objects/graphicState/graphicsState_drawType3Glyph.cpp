@@ -61,29 +61,14 @@
     pJob -> push(pCurrentFont);
     pJob -> push(pCharacterName);
 
-#if 1
-
     concat(pCurrentFont -> getMatrix());
 
-    pToUserSpace -> tx(lastPointsPoint.x);
-    pToUserSpace -> ty(lastPointsPoint.y);
+    ToUserSpace() -> tx(currentPointsPoint.x);
+    ToUserSpace() -> ty(currentPointsPoint.y);
 
     pJob -> executeProcedure(pBuildGlyph);
 
     revertMatrix();
-
-#else
-
-    pJob -> executeProcedure(pBuildGlyph);
-
-BitBlt(hdcSurface,128,128,GLYPH_BMP_PIXELS,GLYPH_BMP_PIXELS,hdcAlternate,0,0,SRCCOPY);
-BitBlt(GetDC(HWND_DESKTOP),0,0,GLYPH_BMP_PIXELS,GLYPH_BMP_PIXELS,hdcAlternate,0,0,SRCCOPY);
-
-DeleteObject(hbmGlyph);
-hbmGlyph = NULL;
-DeleteDC(hdcAlternate);
-hdcAlternate = NULL;
-#endif
 
     return;
     }
@@ -104,41 +89,6 @@ hdcAlternate = NULL;
     pCurrentFont -> type3GlyphBoundingBox.upperRight.y = pUpperRightY -> OBJECT_POINT_TYPE_VALUE;
     pCurrentFont -> type3GlyphBoundingBox.advance.x = pWidthX -> OBJECT_POINT_TYPE_VALUE;
     pCurrentFont -> type3GlyphBoundingBox.advance.y = pWidthY -> OBJECT_POINT_TYPE_VALUE;
-
-#if 0
-
-    if ( ! ( NULL == hdcAlternate ) )
-        DeleteDC(hdcAlternate);
-
-    hdcAlternate = CreateCompatibleDC(NULL);
-
-RECT rc{0,0.0,0};
-rc.right = GLYPH_BMP_PIXELS;
-rc.bottom = GLYPH_BMP_PIXELS;
-
-    hbmGlyph = CreateBitmap(GLYPH_BMP_PIXELS,GLYPH_BMP_PIXELS,1,GetDeviceCaps(hdcAlternate,BITSPIXEL),NULL);
-    SelectObject(hdcAlternate,hbmGlyph);
-
-FillRect(hdcAlternate,&rc,CreateSolidBrush(RGB(255,255,255)));
-
-    HPEN hPen = CreatePen(PS_SOLID,0,RGB(0,0,0));
-    SelectObject(hdcAlternate,hPen);
-    HBRUSH hBrush = CreateSolidBrush(RGB(0,0,0));
-    SelectObject(hdcAlternate,hBrush);
-
-    glyphSpaceDomain.x = (long)(pCurrentFont -> type3GlyphBoundingBox.upperRight.x - pCurrentFont -> type3GlyphBoundingBox.lowerLeft.x);
-    glyphSpaceDomain.y = (long)(pCurrentFont -> type3GlyphBoundingBox.upperRight.y - pCurrentFont -> type3GlyphBoundingBox.lowerLeft.y);
-
-    scaleGlyphSpacetoPixels = GLYPH_BMP_PIXELS / (float)glyphSpaceDomain.x;
-
-    SelectObject(hdcAlternate,hbmGlyph);
-
-//MoveToEx(hdcAlternate,2,2,NULL);
-//LineTo(hdcAlternate,(cx - 2),(cy - 2));
-
-//BitBlt(GetDC(HWND_DESKTOP),0,0,GLYPH_BMP_PIXELS,GLYPH_BMP_PIXELS,hdcAlternate,0,0,SRCCOPY);
-//BitBlt(hdcSurface,100,100,GLYPH_BMP_PIXELS,GLYPH_BMP_PIXELS,hdcAlternate,0,0,SRCCOPY);
-#endif
 
     return;
     }

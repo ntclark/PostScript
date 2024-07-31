@@ -61,35 +61,28 @@
 
     font *graphicsState::findFont(char *pszFontName) {
 
-    LOGFONT logFont{0};
-
-    strcpy(logFont.lfFaceName,pszFontName);
-
-    HFONT hFont = CreateFontIndirect(&logFont);
-
-    if ( NULL == hFont )
+    /*font *pFont = */
+    return font::findFont(pJob,pszFontName);
+#if 0
+    if ( NULL == pFont )
         return NULL;
 
-    HGDIOBJ oldFont = SelectFont(hdcSurface,hFont);
-
-    DWORD cbFont = GetFontData(hdcSurface,0L,0L,NULL,0L);
-
-    SelectFont(hdcSurface,oldFont);
-
-    if ( GDI_ERROR == cbFont ) 
-        return NULL;
-
-    BYTE *pbFont = new BYTE[cbFont];
-
-    DWORD rv = GetFontData(hdcSurface,0L,0L,pbFont,cbFont);
-
-    pCurrentFont = new (pJob -> CurrentObjectHeap()) class font(pJob,pszFontName);
-
-    pCurrentFont -> fontType = font::ftype42;
-
-    pCurrentFont -> pSfntsArray = NULL;
-
-    pCurrentFont -> type42Load(pbFont);
+    pCurrentFont = pFont;
 
     return pCurrentFont;
+#endif
+    }
+
+
+    font *graphicsState::makeFont(matrix *pTransform,font *pCopyFrom) {
+    font *pFont = new (pJob -> CurrentObjectHeap()) font(pJob,pCopyFrom);
+    pFont -> setFontMatrix(pTransform);
+    return pFont;
+    }
+
+
+    font *graphicsState::scaleFont(POINT_TYPE scaleFactor,font *pCopyFrom) {
+    font *pFont = new (pJob -> CurrentObjectHeap()) font(pJob,pCopyFrom);
+    pFont -> scalefont(scaleFactor);
+    return pFont;
     }

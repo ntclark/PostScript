@@ -2,6 +2,7 @@
         void operatorStdout();
 
         void operatorAdd();
+        void operatorAload();
         void operatorAnd();
         void operatorArc();
         void operatorArcn();
@@ -17,6 +18,7 @@
         void operatorColorimage();
         void operatorConcat();
         void operatorCopy();
+        void operatorCos();
         void operatorCountdictstack();
         void operatorCounttomark();
         void operatorCurrentdict();
@@ -100,6 +102,7 @@
         void operatorRectfill();
         void operatorRectstroke();
         void operatorRepeat();
+        void operatorRestore();
         void operatorRlineto();
         void operatorRmoveto();
         void operatorRoll();
@@ -127,6 +130,7 @@
         void operatorSetuserparams();
         void operatorShow();
         void operatorShowpage();
+        void operatorSin();
         void operatorStandardEncoding();
         void operatorStopped();
         void operatorString();

@@ -956,7 +956,7 @@ Beep(2000,200);
       The matrix specified by the operands shall not be concatenated onto the current text matrix, 
       but shall replace it.
 */
-   float d[6];
+   POINT_TYPE d[6];
    for ( long k = 5; k > -1; k-- )
       d[k] = pop() -> OBJECT_POINT_TYPE_VALUE;
 
