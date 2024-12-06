@@ -3,6 +3,8 @@
 
 #include "ascii85.h"
 
+    int32_t runLengthDecode(uint8_t *pbInput,int32_t cbInput,uint8_t **ppbOutput);
+
     filter::filter(job *pJob,char *pszFilterName,object *pSource,char *pszEOD) :
         file(pJob,pszFilterName),
         pDataSource(pSource)
@@ -17,12 +19,13 @@
 
     filter::~filter() {}
 
-    BYTE *filter::getBinaryData(DWORD *pcbSize,char *pszEndDelimiter) {
+    uint8_t *filter::getBinaryData(DWORD *pcbSize,char *pszEndDelimiter) {
 
     if ( NULL == pDataSource )
         return NULL;
 
-    BYTE *pbSource = NULL;
+    uint8_t *pbSource = NULL;
+
     *pcbSize = 0L;
 
     if ( object::objectType::file == pDataSource -> ObjectType() ) 
@@ -34,15 +37,23 @@
     else 
         return NULL;
 
-    if ( 0 == strcmp(szFilterName,"ASCII85Decode") ) {
+    if ( 0 == _stricmp(szFilterName,"ASCII85Decode") ) {
         pbData = new BYTE[*pcbSize * 4];
-        int32_t rv = decode_ascii85(pbSource,(int32_t)*pcbSize, pbData, (int32_t)*pcbSize * 4);
+        *pcbSize = decode_ascii85(pbSource,(int32_t)*pcbSize, pbData, (int32_t)*pcbSize * 4);
         reinterpret_cast<file *>(pDataSource) -> releaseData();
         return pbData;
     }
 
-    if ( 0 == strcmp(szFilterName,"DCTDecode") ) {
+    if ( 0 == _stricmp(szFilterName,"DCTDecode") ) {
         return pbSource;
     }
 
+    if ( 0 == _stricmp(szFilterName,"RunLengthDecode") ) {
+        pbData = NULL;
+        *pcbSize = runLengthDecode(pbSource,(int32_t)*pcbSize, &pbData);
+        reinterpret_cast<file *>(pDataSource) -> releaseData();
+        return pbData;
+    }
+
+    return NULL;
     }

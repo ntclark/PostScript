@@ -22,6 +22,7 @@
     pSystemDict -> put("cos",&job::operatorCos);
     pSystemDict -> put("countdictstack",&job::operatorCountdictstack);
     pSystemDict -> put("counttomark",&job::operatorCounttomark);
+    pSystemDict -> put("currentcolorspace",&job::operatorCurrentcolorspace);
     pSystemDict -> put("currentdict",&job::operatorCurrentdict);
     pSystemDict -> put("currentfile",&job::operatorCurrentfile);
     pSystemDict -> put("currentfont",&job::operatorCurrentfont);
@@ -67,6 +68,7 @@
     pSystemDict -> put("idtransform",&job::operatorIdtransform);
     pSystemDict -> put("if",&job::operatorIf);
     pSystemDict -> put("ifelse",&job::operatorIfelse);
+    pSystemDict -> put("image",&job::operatorImage);
     pSystemDict -> put("imagemask",&job::operatorImagemask);
     pSystemDict -> put("index",&job::operatorIndex);
     pSystemDict -> put("initmatrix",&job::operatorInitmatrix);

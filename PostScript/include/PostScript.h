@@ -19,7 +19,6 @@
 
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
-
 #include "CVPostscriptConverter_i.h"
 
 #ifdef GetWindowID
@@ -27,14 +26,11 @@
 #endif
 
 #include "Properties_i.h"
-
 #include "PostScriptGen2_i.h"
 
 #undef ADVANCE_THRU_EOL
 
 #include "resourceIdentifiers.h"
-
-#include "job.h"
 
 //#define DO_RTF
 #define PS_VERSION   3000L
@@ -44,6 +40,9 @@
 #define CMD_PANE_HEIGHT     96
 #define LOG_PANE_HEIGHT     72
 #define SPLITTER_WIDTH      12
+
+
+class job;
 
 // Implementation rules:
 //
@@ -266,6 +265,8 @@
 
         void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
 
+        void BeginPath();
+
         long InitialCYClient() { return initialCYClient; }
 
         boolean drawGlyphRenderingPoints() { return drawGlyphPoints; }
@@ -300,6 +301,8 @@
 
         std::map<size_t,HBITMAP> pageBitmaps;
         std::map<size_t,SIZEL *> pageSizes;
+
+        std::function<void(void)> beginPathAction{NULL};
 
         static char szErrorMessage[1024];
 

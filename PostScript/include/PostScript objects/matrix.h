@@ -20,7 +20,7 @@
       void concat(POINT_TYPE *);
       void concat(XFORM &);
 
-      void revertTransform();
+      void revertMatrix();
 
       void copyFrom(matrix *);
 
@@ -33,12 +33,12 @@
       POINT_TYPE tx();
       POINT_TYPE ty();
 
-      POINT_TYPE aInverse();
-      POINT_TYPE bInverse();
-      POINT_TYPE cInverse();
-      POINT_TYPE dInverse();
-      POINT_TYPE txInverse();
-      POINT_TYPE tyInverse();
+      POINT_TYPE aInverse(boolean force = false);
+      POINT_TYPE bInverse(boolean force = false);
+      POINT_TYPE cInverse(boolean force = false);
+      POINT_TYPE dInverse(boolean force = false);
+      POINT_TYPE txInverse(boolean force = false);
+      POINT_TYPE tyInverse(boolean force = false);
 
       void a(POINT_TYPE v);
       void b(POINT_TYPE v);

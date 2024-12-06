@@ -1,16 +1,5 @@
 
 #include "job.h"
-#include "PostScript objects\graphicsState.h"
-
-#include "PostScript objects\font.h"
-#include "PostScript objects\string.h"
-#include "PostScript objects\binaryString.h"
-#include "PostScript objects\pattern.h"
-#include "PostScript objects\mark.h"
-#include "PostScript objects\literal.h"
-#include "PostScript objects\directExec.h"
-#include "PostScript objects\file.h"
-#include "PostScript objects\save.h"
 
     void job::operatorMakefont() {
 /*
@@ -831,7 +820,7 @@
     return;
     }
 
-   void job::operatorRestore() {
+    void job::operatorRestore() {
 /*
     restore
         save restore -
@@ -1300,58 +1289,61 @@
     return;
     }
 
-   void job::operatorSetcolor() {
+    void job::operatorSetcolor() {
 /*
-   setcolor
+    setcolor
  
-      comp1 … compn setcolor –
-      pattern setcolor –
-      comp1 … compn pattern setcolor –
+        comp1 … compn setcolor –
+        pattern setcolor –
+        comp1 … compn pattern setcolor –
 
-   sets the current color in the graphics state.
+    sets the current color in the graphics state.
 
-   The appropriate form of the operator depends on the current color space. All
-   color spaces except Pattern use the first form, in which the operands comp1
-   through compn specify the values of the color components describing the desired
-   color. The number of components and the valid ranges of their values depend on
-   the specific characteristics of the color space; see Section 4.8, “Color Spaces.” (In
-   the case of an Indexed color space, the single operand comp1 is actually an index
-   into the space’s color table rather than a true color component.) If the wrong
-   number of components is specified, an error will occur, such as stackunderflow or
-   typecheck. If a component value is outside the valid range, the nearest valid value
-   will be substituted without error indication.
+    The appropriate form of the operator depends on the current color space. All
+    color spaces except Pattern use the first form, in which the operands comp1
+    through compn specify the values of the color components describing the desired
+    color. The number of components and the valid ranges of their values depend on
+    the specific characteristics of the color space; see Section 4.8, “Color Spaces.” (In
+    the case of an Indexed color space, the single operand comp1 is actually an index
+    into the space’s color table rather than a true color component.) If the wrong
+    number of components is specified, an error will occur, such as stackunderflow or
+    typecheck. If a component value is outside the valid range, the nearest valid value
+    will be substituted without error indication.
 
-   The second and third forms of setcolor are used when the current color space is a
-   Pattern space. In both forms, the pattern operand is a pattern dictionary describing
-   the pattern to be established as the current color. The values of the dictionary’s
-   PatternType and PaintType entries determine whether additional operands
-   are needed:
+    The second and third forms of setcolor are used when the current color space is a
+    Pattern space. In both forms, the pattern operand is a pattern dictionary describing
+    the pattern to be established as the current color. The values of the dictionary’s
+    PatternType and PaintType entries determine whether additional operands
+    are needed:
 
-      • Shading patterns (PatternType 2) or colored tiling patterns (PatternType 1,
+        • Shading patterns (PatternType 2) or colored tiling patterns (PatternType 1,
         PaintType 1) use the second form of the operator, in which the pattern dictionary
         is the only operand.
 
-      • Uncolored tiling patterns (PatternType 1, PaintType 2) use the third form, in
+        • Uncolored tiling patterns (PatternType 1, PaintType 2) use the third form, in
         which the dictionary is accompanied by one or more component values in the
         pattern’s underlying color space, defining the color in which the pattern is to
         be painted.
 
-   The setcolorspace operator initializes the current color to a value that depends on
-   the specific color space selected.
+    The setcolorspace operator initializes the current color to a value that depends on
+    the specific color space selected.
 
-   Execution of this operator is not permitted in certain circumstances; see
-   Section 4.8.1, “Types of Color Space.”
+    Execution of this operator is not permitted in certain circumstances; see
+    Section 4.8.1, “Types of Color Space.”
 */
 
-   long size = pCurrentColorSpace -> ParameterCount();
+    if ( object::pattern == top() -> ObjectType() ) {
+        char szMessage[1024];
+        sprintf_s<1024>(szMessage,"Not Implemented: the setcolor operator is not implemented for pattern colors");
+        throw notimplemented(szMessage);
+        return;
+    }
 
-   pCurrentColorSpace -> clear();
+    currentGS() -> getColorSpace() -> setColor();
+    currentGS() -> setColor(currentGS() -> getColorSpace());
 
-   for ( long k = 0; k < size; k++ )
-      pCurrentColorSpace -> insert(pop());
-
-   return;
-   }
+    return;
+    }
 
     void job::operatorSetcolorspace() {
 /*
@@ -1362,6 +1354,7 @@
     sets the current color space in the graphics state. It also initializes the current
     color to a value that depends on the specific color space selected. The initial value
     of the current color space is DeviceGray.
+
     In the first form of the operator, the color space is specified by an array of the
     form
 
@@ -1385,9 +1378,9 @@
     object *pTop = pop();
 
     if ( object::array == pTop -> ObjectType() )
-        pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop));
+        currentGS() -> setColorSpace(new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop)));
     else
-        pCurrentColorSpace = new (CurrentObjectHeap()) colorSpace(this,pTop -> Name());
+        currentGS() -> setColorSpace(new (CurrentObjectHeap()) colorSpace(this,pTop -> Name()));
 
     return;
     }

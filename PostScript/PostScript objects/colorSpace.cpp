@@ -1,45 +1,74 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-#include "PostScript objects\colorSpace.h"
 
 #include "job.h"
+#include "PostScript objects\colorSpace.h"
 
-   colorSpace::colorSpace(job *pj,object *po) :
-      parameterCount(0),
-      array(pj,po -> Name())
-   {
-   if ( object::matrix == po -> ObjectType() ) {
-      __debugbreak();
-   }
-   parameterCount = size() - 1;
-   return;
-   }
+    colorSpace::colorSpace(job *pj,object *po) :
+        parameterCount(0),
+        array(pj,po -> Name())
+    {
+    if ( object::matrix == po -> ObjectType() ) {
+        __debugbreak();
+    }
+    pFamilyName = po -> getElement(0);
+    putElement(0,pFamilyName);
+    if ( 0 == strcmp(pFamilyName -> Contents(),"Indexed") ) {
+        pBaseName = po -> getElement(1);
+        hiVal = (uint16_t)po -> getElement(2) -> IntValue();
+        pLookup = po -> getElement(3);
+        putElement(1,pBaseName);
+    }
+    parameterCount = size() - 1;
+    return;
+    }
 
-   colorSpace::colorSpace(job *pj,char *pszName) :
-      parameterCount(0),
-      array(pj,pszName)
-   {
-   return;
-   }
+    colorSpace::colorSpace(job *pj,char *pszName) :
+        parameterCount(0),
+        array(pj,pszName)
+    {
+    pFamilyName = new (pJob -> CurrentObjectHeap()) object(pj,pszName);
+    putElement(0,pFamilyName);
+    return;
+    }
 
 
-   colorSpace::~colorSpace() {
-   return;
-   }
+    colorSpace::~colorSpace() {
+    return;
+    }
 
 
-   long colorSpace::ParameterCount() {
-   if ( parameterCount )
-      return size() - 1;
-   if ( 0 == strcmp(Name(),"DeviceGray") )
-      return 1;
-   if ( 0 == strcmp(Name(),"DeviceRGB") ) 
-      return 3;
-//_asm {
-//int 3;
-//}
-   return 3;
-   }
+    void colorSpace::setColor() {
+
+    long size = ParameterCount();
+
+    clear();
+
+    insert(pFamilyName);
+
+    for ( long k = size; k > 0; k-- )
+        putElement(k,pJob -> pop());
+
+    return;
+    }
+
+
+    long colorSpace::ParameterCount() {
+
+    if ( 0 == strcmp(pFamilyName -> Contents(),"DeviceGray") )
+        return 1;
+
+    if ( 0 == strcmp(pFamilyName -> Contents(),"DeviceRGB") ) 
+        return 3;
+
+    if ( 0 == strcmp(pFamilyName -> Contents(),"Indexed") ) {
+        if ( 0 == strcmp(pBaseName -> Contents(),"DeviceGray") )
+            return 1;
+        if ( 0 == strcmp(pBaseName -> Contents(),"DeviceRGB") )
+            return 3;
+    }
+
+    char szMessage[1024];
+    sprintf_s<1024>(szMessage,"Error: ColorSpace family %s is not implemented",pFamilyName -> Contents());
+    throw notimplemented(szMessage);
+    return -1;
+    }
 

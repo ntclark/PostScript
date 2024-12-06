@@ -1,8 +1,5 @@
-#include "utilities.h"
 
-#include "PostScript objects\dictionary.h"
-#include "PostScript objects\directExec.h"
-#include "PostScript objects\procedure.h"
+#include "job.h"
 
     long dictionary::countAutoCreated = 0;
 

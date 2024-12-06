@@ -64,12 +64,12 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     POINT_TYPE matrix::tx() { return getElement(TX) -> OBJECT_POINT_TYPE_VALUE; }
     POINT_TYPE matrix::ty() { return getElement(TY) -> OBJECT_POINT_TYPE_VALUE; }
 
-    POINT_TYPE matrix::aInverse() { if ( invalidated ) invert(); return inverse[0]; }
-    POINT_TYPE matrix::bInverse() { if ( invalidated ) invert(); return inverse[1]; }
-    POINT_TYPE matrix::cInverse() { if ( invalidated ) invert(); return inverse[2]; }
-    POINT_TYPE matrix::dInverse() { if ( invalidated ) invert(); return inverse[3]; }
-    POINT_TYPE matrix::txInverse() { if ( invalidated ) invert(); return inverse[4]; }
-    POINT_TYPE matrix::tyInverse() { if ( invalidated ) invert(); return inverse[5]; }
+    POINT_TYPE matrix::aInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[0]; }
+    POINT_TYPE matrix::bInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[1]; }
+    POINT_TYPE matrix::cInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[2]; }
+    POINT_TYPE matrix::dInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[3]; }
+    POINT_TYPE matrix::txInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[4]; }
+    POINT_TYPE matrix::tyInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[5]; }
 
     void matrix::a(POINT_TYPE v) { invalidated = true; getElement(A) -> OBJECT_SET_POINT_TYPE_VALUE(v); }
     void matrix::b(POINT_TYPE v) { invalidated = true; getElement(B) -> OBJECT_SET_POINT_TYPE_VALUE(v); }
@@ -130,7 +130,7 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
-    void matrix::revertTransform() {
+    void matrix::revertMatrix() {
     a(revertValues[A]);
     b(revertValues[B]);
     c(revertValues[C]);
@@ -156,12 +156,13 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
 
     theMatrix[0][0] = (double)a();
     theMatrix[0][1] = (double)b();
-    theMatrix[0][2] = 0.0f;
+    theMatrix[0][2] = (double)tx();
     theMatrix[1][0] = (double)c();
     theMatrix[1][1] = (double)d();
-    theMatrix[1][2] = 0.0f;
-    theMatrix[2][0] = (double)tx();
-    theMatrix[2][1] = (double)ty();
+    theMatrix[1][2] = (double)ty();
+
+    theMatrix[2][0] = 0.0;
+    theMatrix[2][1] = 0.0;
     theMatrix[2][2] = 1.0f;
 
     Mx3Inverse(&theMatrix[0][0],&theMatrixInverted[0][0]);
@@ -170,8 +171,9 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     inverse[B] = (POINT_TYPE)theMatrixInverted[0][1];
     inverse[C] = (POINT_TYPE)theMatrixInverted[1][0];
     inverse[D] = (POINT_TYPE)theMatrixInverted[1][1];
-    inverse[TX] = (POINT_TYPE)theMatrixInverted[2][0];
-    inverse[TY] = (POINT_TYPE)theMatrixInverted[2][1];
+
+    inverse[TX] = (POINT_TYPE)theMatrixInverted[0][2];
+    inverse[TY] = (POINT_TYPE)theMatrixInverted[1][2];
 
     invalidated = false;
 

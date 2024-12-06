@@ -1,15 +1,15 @@
 
-#include "PostScript objects/graphicsState.h"
-#include "PostScript objects/font.h"
+#include "job.h"
 
-#include <math.h>
-#include "utilities.h"
+#include "pathParameters.h"
+#include "gdiParameters.h"
 
     long graphicsState::cyPageGutter = 32L;
     long graphicsState::pageCount = 0L;
     long graphicsState::displayResolution = 0L;
     long graphicsState::cxClient = 0L;
     long graphicsState::cyClient = 0L;
+    long graphicsState::cyWindow = 0L;
 
     long graphicsState::pageHeightPoints = 792;
     long graphicsState::pageWidthPoints = 612;
@@ -18,9 +18,9 @@
     POINT_TYPE graphicsState::piOver2 = 2.0 * atan(1.0);
     POINT_TYPE graphicsState::degToRad = piOver2 / 90.0;
 
-    matrix *graphicsState::pUserSpaceToDeviceSpace = NULL;
-
     gdiParametersStack graphicsState::gdiParametersStack;
+    pathParametersStack graphicsState::pathParametersStack;
+    fontStack graphicsState::fontStack;
 
     GS_POINT::GS_POINT(GS_POINT *pPointd) {
         x = pPointd -> x;
@@ -28,49 +28,10 @@
     }
 
 
-    graphicsState::graphicsState(job *pj,HWND hwndSur) :
-        pJob(pj)
-    {
-
-    pToUserSpace = new (pJob -> CurrentObjectHeap()) matrix(pJob);
-
-    memset(&currentUserSpacePoint,0,sizeof(GS_POINT));
-
-    pathBeginPoint.x = POINT_TYPE_NAN;
-    pathBeginPoint.y = POINT_TYPE_NAN;
-
-    memset(&currentPointsPoint,0,sizeof(GS_POINT));
-    memset(&currentGDIPoint,0,sizeof(POINT));
-    memset(&userSpaceDomain,0,sizeof(GS_POINT));
-
-    pUserSpaceToDeviceSpace = new (pJob -> CurrentObjectHeap()) matrix(pJob);
-
-    return;
-    }
-
-
-    // I don't think I can use an actual copy constructor with positional new
-    // Probably for the same or similar reason as mentioned in this object
-    // constructor.
-
-    void graphicsState::copyFrom(graphicsState *pOther) {
-
-    pUserSpaceToDeviceSpace -> copyFrom(pOther -> pUserSpaceToDeviceSpace);
-
-    pToUserSpace -> copyFrom(pOther -> pToUserSpace);
-
-    currentUserSpacePoint = pOther -> currentUserSpacePoint;
-    pathBeginPoint = pOther -> pathBeginPoint;
-    currentPointsPoint = pOther -> currentPointsPoint;
-
-    gdiParametersStack.top() -> lineCap = pOther -> gdiParametersStack.top() -> lineCap;
-    gdiParametersStack.top() -> lineJoin = pOther -> gdiParametersStack.top() -> lineJoin;
-
-    pageHeightPoints = pOther -> pageHeightPoints;
-    pageWidthPoints = pOther -> pageWidthPoints;
-
-    scalePointsToPixels = pOther -> scalePointsToPixels;
-
+    graphicsState::graphicsState(job *pj) : pJob(pj) {
+    setFont(findFont("Courier New"));
+    pathParametersStack.top() -> pToUserSpace = new (pJob -> CurrentObjectHeap()) matrix(pJob);
+    pathParametersStack.top() -> pUserSpaceToDeviceSpace = new (pJob -> CurrentObjectHeap()) matrix(pJob);
     return;
     }
 
@@ -81,6 +42,13 @@
 
 
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
+
+    pathParametersStack.top() -> currentUserSpacePoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
+    pathParametersStack.top() -> pathBeginPoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
+    pathParametersStack.top() -> currentPointsPoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
+    pathParametersStack.top() -> userSpaceDomain = {POINT_TYPE_NAN,POINT_TYPE_NAN};
+
+    memset(&pathParametersStack.top() -> currentGDIPoint,0,sizeof(POINT));
 
     SetGraphicsMode(pPStoPDF -> GetDC(),GM_ADVANCED);
     SetMapMode(pPStoPDF -> GetDC(),MM_ANISOTROPIC);
@@ -98,7 +66,7 @@
 
 
     void graphicsState::restored() {
-    SetWorldTransform(pPStoPDF -> GetDC(),pTransform());
+    SetWorldTransform(pPStoPDF -> GetDC(),pathParameters::pTransform());
     return;
     }
 
@@ -145,6 +113,22 @@ return;
     void graphicsState::setGraphicsStateDict(char *pszDictName) {
 Beep(2000,200);
     return;
+    }
+
+
+    void graphicsState::setColorSpace(colorSpace *pcs) {
+    gdiParametersStack.top() -> setColorSpace(pcs);
+    return;
+    }
+
+
+    colorSpace *graphicsState::getColorSpace() {
+    return gdiParametersStack.top() -> getColorSpace();
+    }
+
+
+    void graphicsState::setColor(colorSpace *pColorSpace) {
+    return gdiParametersStack.top() -> setColor(pColorSpace);
     }
 
 

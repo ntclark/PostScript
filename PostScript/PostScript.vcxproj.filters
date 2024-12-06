@@ -141,9 +141,6 @@
     <ClCompile Include="Stacks\dictionaryStack.cpp">
       <Filter>Source Files\Stacks</Filter>
     </ClCompile>
-    <ClCompile Include="Stacks\graphicsStateStack.cpp">
-      <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
     <ClCompile Include="Stacks\objectStack.cpp">
       <Filter>Source Files\Stacks</Filter>
     </ClCompile>
@@ -204,9 +201,6 @@
     <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="..\freetype-2.13.2\freetype-2.13.2\src\base\ftoutln.c">
-      <Filter>Source Files\Fonts</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType3Glyph.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
@@ -216,7 +210,7 @@
     <ClCompile Include="PostScript objects\file.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_colorImage.cpp">
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_images.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_filter.cpp">
@@ -257,6 +251,39 @@
     </ClCompile>
     <ClCompile Include="Stacks\gdiParametersStack.cpp">
       <Filter>Source Files\Stacks</Filter>
+    </ClCompile>
+    <ClCompile Include="runLengthEncodeDecode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\gdiParameters.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_movesLines.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacks\pathParametersStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_transforms.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_path.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="Stacks\fontStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_initialize.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_rasterize.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_freetype.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -324,9 +351,6 @@
     <ClInclude Include="include\Stacks\dictionaryStack.h">
       <Filter>Header Files\Stacks</Filter>
     </ClInclude>
-    <ClInclude Include="include\Stacks\graphicsStateStack.h">
-      <Filter>Header Files\Stacks</Filter>
-    </ClInclude>
     <ClInclude Include="include\Stacks\objectStack.h">
       <Filter>Header Files\Stacks</Filter>
     </ClInclude>
@@ -380,6 +404,21 @@
     </ClInclude>
     <ClInclude Include="include\gdiParameters.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Stacks\pathParametersStack.h">
+      <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\pathParameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\pointType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Stacks\fontStack.h">
+      <Filter>Header Files\Stacks</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

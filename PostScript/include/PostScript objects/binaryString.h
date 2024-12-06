@@ -14,11 +14,11 @@
       virtual void put(long index,BYTE v);
       virtual BYTE get(long index);
 
-      BYTE *getData();
+      uint8_t *getData();
       
    private:
 
       DWORD dwLength{0L};
-      BYTE *pbData{NULL};
+      uint8_t *pbData{NULL};
 
    };

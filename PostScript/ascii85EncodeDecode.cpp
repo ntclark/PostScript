@@ -71,7 +71,7 @@
 
 static const uint8_t base_char = 33u; // '!' -- note that (85 + 33) < 128
 
-static const int32_t ascii85_in_length_max = 2 * 65536;
+//static const int32_t ascii85_in_length_max = 2 * 65536;
 
 static const bool ascii85_decode_z_for_zero  = true;
 static const bool ascii85_encode_z_for_zero  = true;
@@ -94,20 +94,10 @@ static inline bool ascii85_char_ng (uint8_t c)
  * ascii85_errs_e if negative
  * @par Possible errors include: ascii85_err_in_buf_too_large, ascii85_err_out_buf_too_small
  */
-int32_t encode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, int32_t out_max_length)
+int32_t encode_ascii85(const uint8_t *inp, int32_t in_length, uint8_t *outp, int32_t out_max_length)
 {
-    int32_t out_length = ascii85_get_max_encoded_length(in_length);
+    int32_t out_length = ((in_length + 3) / 4) * 5;//ascii85_get_max_encoded_length(in_length);
 
-    if (out_length < 0)
-    {
-        // ascii85_get_max_encoded_length() already returned an error, so return that
-    }
-    else if (out_length > out_max_length)
-    {
-        out_length = (int32_t )ascii85_err_out_buf_too_small;
-    }
-    else
-    {
         int32_t in_rover = 0;
 
         out_length = 0; // we know we can increment by 5 * ceiling(in_length/4)
@@ -159,7 +149,6 @@ int32_t encode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
                 }
             }
         }
-    }
 
     return out_length;
 }
@@ -178,18 +167,8 @@ int32_t encode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
  */
 int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, int32_t out_max_length)
 {
-    int32_t out_length = ascii85_get_max_decoded_length(in_length);
+    int32_t out_length = ((in_length + 4) / 5) * 4;
 
-    if (out_length < 0)
-    {
-        // get_max_decoded_length() already returned an error, so return that
-    }
-    else if (out_length > out_max_length)
-    {
-        out_length = (int32_t )ascii85_err_out_buf_too_small;
-    }
-    else
-    {
         int32_t in_rover = 0;
 
         out_length = 0; // we know we can increment by 4 * ceiling(in_length/5)
@@ -244,9 +223,7 @@ int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
                         break; // leave while loop early to report error
                     }
                     else
-                    {
                         chunk += addend;
-                    }
                 }
             }
             else
@@ -278,9 +255,7 @@ int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
                         break; // leave while loop early to report error
                     }
                     else
-                    {
                         chunk += addend;
-                    }
                 }
             }
 
@@ -294,69 +269,10 @@ int32_t decode_ascii85 (const uint8_t *inp, int32_t in_length, uint8_t *outp, in
             // we don't need (chunk % 256u) on the last line since ((((2^32 - 1) / 256u) / 256u) / 256u) = 255
 
             if (chunk_len >= 5)
-            {
                 out_length += 4;
-            }
             else
-            {
                 out_length += (chunk_len - 1); // see note above re: Ascii85 length
-            }
         }
-    }
-
-    return out_length;
-}
-
-/*!
- * @brief ascii85_get_max_encoded_length: get the maximum length a block of data will encode to
- * @param[in] in_length the number of data bytes to encode
- * @return maximum number of bytes the encoded buffer could be if non-negative; error code from
- * ascii85_errs_e if negative
- * @par Possible errors include: ascii85_err_in_buf_too_large
- */
-int32_t ascii85_get_max_encoded_length (int32_t in_length)
-{
-    int32_t out_length;
-
-    if ((in_length < 0) || (in_length > ascii85_in_length_max))
-    {
-        out_length = (int32_t )ascii85_err_in_buf_too_large;
-    }
-    else
-    {
-        // (in_length + 3) will not overflow since ascii85_in_length_max
-        // is < (INT32_MAX - 3), and similar reasoning for the final * 5
-        out_length = ((in_length + 3) / 4) * 5; // ceiling
-    }
-
-    return out_length;
-}
-
-/*!
- * @brief ascii85_get_max_encoded_length: get the maximum length a block of data will decode to
- * @param[in] in_length the number of encoded bytes to decode
- * @return maximum number of bytes the decoded buffer could be if non-negative; error code from
- * ascii85_errs_e if negative
- * @par Possible errors include: ascii85_err_in_buf_too_large
- */
-int32_t ascii85_get_max_decoded_length (int32_t in_length)
-{
-    int32_t out_length;
-
-    if ((in_length < 0) || (in_length > ascii85_in_length_max))
-    {
-        out_length = (int32_t )ascii85_err_in_buf_too_large;
-    }
-    else if (/*lint -e{506} -e{774}*/ascii85_decode_z_for_zero)
-    {
-        out_length = in_length * 4;
-    }
-    else
-    {
-        // (in_length + 4) will not overflow since ascii85_in_length_max
-        // is < (INT32_MAX - 4)
-        out_length = ((in_length + 4) / 5) * 4; // ceiling
-    }
 
     return out_length;
 }

@@ -10,11 +10,12 @@ struct gdiParameters;
       gdiParametersStack();
       ~gdiParametersStack();
 
+      void initialize();
+
       void setupDC();
 
       void gSave();
       void gRestore();
-      //gdiParameters *current();
 
    private:
 

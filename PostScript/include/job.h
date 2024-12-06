@@ -3,29 +3,29 @@
 
 #include <string>
 
-#include "parsing.h"
-
 #include "PdfEnabler_i.h"
 #include "pdfEnabler/Page.h"
 #include "PostScriptGen2_i.h"
 
-#include "Stacks/graphicsStateStack.h"
-#include "Stacks/objectStack.h"
-#include "Stacks/dictionaryStack.h"
-#include "Stacks/gdiParametersStack.h"
-
+#include "parsing.h"
 #include "comment.h"
 #include "error.h"
 
-#include "PostScript objects/procedure.h"
-#include "PostScript objects/string.h"
-#include "PostScript objects/structureSpec.h"
-#include "PostScript objects/resource.h"
-#include "PostScript objects/booleanObject.h"
-#include "PostScript objects/name.h"
-#include "PostScript objects/array.h"
-#include "PostScript objects/colorSpace.h"
-#include "PostScript objects/matrix.h"
+#include "PostScript objects.h"
+
+#include "Stacks/objectStack.h"
+#include "Stacks/dictionaryStack.h"
+//
+//#include "Stacks/gdiParametersStack.h"
+//#include "PostScript objects/string.h"
+//#include "PostScript objects/structureSpec.h"
+//#include "PostScript objects/resource.h"
+//#include "PostScript objects/booleanObject.h"
+//#include "PostScript objects/name.h"
+//#include "PostScript objects/array.h"
+//#include "PostScript objects/colorSpace.h"
+//#include "PostScript objects/matrix.h"
+
 
     class job {
     public:
@@ -83,7 +83,7 @@
         void resolve();
         object *resolve(char *pszObjectName);
         bool seekDefinition();
-        //bool seekOperator();
+
         dictionary *containingDictionary(object *pObj);
 
         long getPageCount(char *pszFileName);
@@ -116,10 +116,11 @@
 
         objectStack operandStack;
         dictionaryStack dictionaryStack;
-        graphicsStateStack graphicsStateStack;
 
         std::list<resource *> resourceList;
         std::list<procedure *> procedureList;
+
+        graphicsState *pGraphicsState{NULL};
 
         dictionary *pGlobalDict{NULL};
         dictionary *pSystemDict{NULL};
@@ -172,7 +173,6 @@
         array *pISOLatin1Encoding{NULL};
 
         colorSpace *pDefaultColorSpace{NULL};
-        colorSpace *pCurrentColorSpace{NULL};
 
         char szPostScriptSourceFile[MAX_PATH];
         FILE *pPostScriptSourceFile{NULL};

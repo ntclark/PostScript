@@ -94,7 +94,8 @@ RECT rcFrame{512,512,1024,768};
 
     pParsePSHost -> pIOleObject_HTML -> SetClientSite(pParsePSHost -> pIOleClientSite_HTML_Host);
 
-    pParsePSHost -> pIPostScript -> SetSource((char *)argv[1]);
+    if ( 1 < argc )
+        pParsePSHost -> pIPostScript -> SetSource((char *)argv[1]);
 
     //pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
     pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);

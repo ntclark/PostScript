@@ -73,5 +73,3 @@
         void pdfOperator_W();
         void pdfOperator_WStar();
         void pdfOperator_y();
-
-

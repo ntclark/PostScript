@@ -1,12 +1,5 @@
 
-#include "utilities.h"
-
 #include "job.h"
-
-#include "PostScript objects\matrix.h"
-#include "PostScript objects\font.h"
-#include "PostScript objects\literal.h"
-#include "PostScript objects\graphicsState.h"
 
     PdfUtility *job::pPdfUtility = NULL;
 
@@ -24,9 +17,7 @@
         inputLineNumber(1L),
         procedureDefinitionLevel(0L),
 
-        hwndSurface(hwndSurf),
-
-        graphicsStateStack(this)
+        hwndSurface(hwndSurf)
 
     {
 
@@ -54,8 +45,8 @@
     for ( long k = 0; k < 256; k++ )
         pISOLatin1Encoding -> putElement(k,new (CurrentObjectHeap()) object(this,k));
 
+// move to graphicsState (really gdiParameters) ?
     pDefaultColorSpace = new (CurrentObjectHeap()) colorSpace(this,"DeviceGray");
-    pCurrentColorSpace = pDefaultColorSpace;
 
     memset(szPostScriptSourceFile,0,MAX_PATH * sizeof(char));
 
@@ -194,7 +185,7 @@
     dictionaryStack.setCurrent(pUserDict);
     dictionaryStack.setCurrent(pSystemDict);
 
-    graphicsStateStack.push(new graphicsState(this,hwndSurface));
+    pGraphicsState = new (CurrentObjectHeap()) graphicsState(this);
 
     return;
     }
@@ -315,5 +306,5 @@
 
 
     graphicsState *job::currentGS() {
-    return graphicsStateStack.top();
+    return pGraphicsState;
     }

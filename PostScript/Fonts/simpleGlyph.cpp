@@ -1,6 +1,5 @@
 
-#include "PostScript objects/graphicsState.h"
-#include "PostScript objects/font.h"
+#include "job.h"
 
     otSimpleGlyph::otSimpleGlyph(BYTE bGlyph,font *pFont,graphicsState *pGraphicsState,otGlyphHeader *ph,BYTE *pbInput) : 
         pGlyphHeader(ph),

@@ -1,10 +1,6 @@
 
 #include "job.h"
 
-#include "PostScript objects/font.h"
-#include "PostScript objects/matrix.h"
-#include "PostScript objects/binaryString.h"
-
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
     {
@@ -93,14 +89,19 @@
 
     if ( strchr(logFont.lfFaceName,'-') ) {
         char *p = strchr(logFont.lfFaceName,'-') + 1;
-        if ( 0 == _stricmp("bold",p) ) {
+        char c = p[4];
+        *(p + 4) = '\0';
+        if ( 0 == _stricmp("bold",p) )
             *(p - 1) = '\0';
-        }
+        else
+            *(p + 4) = c;
     }
 
-    if ( 0 == _stricmp(logFont.lfFaceName,"Courier") ) {
+    if ( 0 == _stricmp(logFont.lfFaceName,"Courier") ) 
         strcpy(logFont.lfFaceName,"Courier New");
-    }
+
+    if ( 0 == _stricmp(logFont.lfFaceName,"Times-Roman") )
+        strcpy(logFont.lfFaceName,"Times New Roman");
 
     HFONT hFont = CreateFontIndirect(&logFont);
 

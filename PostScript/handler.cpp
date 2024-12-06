@@ -122,7 +122,7 @@
                 break;
 
             case SB_PAGEDOWN:
-                yDelta = -scrollInfo.nPage;
+                yDelta = -1 * scrollInfo.nPage;
                 break;
 
             case SB_PAGEUP:

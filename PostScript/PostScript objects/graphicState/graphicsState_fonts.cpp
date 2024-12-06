@@ -1,16 +1,12 @@
-
 #include "job.h"
-
-#include "PostScript objects\graphicsState.h"
-#include "PostScript objects\font.h"
 
     void graphicsState::setFont(class font *pFont) {
 
-    pCurrentFont = pFont;
+    fontStack.push(pFont);
 
-    pCurrentFont -> pSfntsArray = NULL;
+    fontStack.top() -> pSfntsArray = NULL;
 
-    pJob -> push(pCurrentFont);
+    pJob -> push(fontStack.top());
 
     pJob -> operatorBegin();
 
@@ -27,9 +23,9 @@
         pJob -> push(pJob -> pSfntsLiteral);
         pJob -> operatorGet();
 
-        pCurrentFont -> pSfntsArray = reinterpret_cast<class array *>(pJob -> pop());
+        fontStack.top() -> pSfntsArray = reinterpret_cast<class array *>(pJob -> pop());
 
-        pJob -> push(pCurrentFont);
+        pJob -> push(fontStack.top());
         pJob -> push(pJob -> pCharStringsLiteral);
         pJob -> operatorGet();
         pJob -> operatorLength();
@@ -38,7 +34,7 @@
 
     }
 
-    pJob -> push(pCurrentFont);
+    pJob -> push(fontStack.top());
     pJob -> push(pJob -> pFontTypeLiteral);
     pJob -> operatorGet();
 
@@ -46,14 +42,14 @@
 
     switch ( pFontType -> IntValue() ) {
     case 3:
-        pCurrentFont -> fontType = font::ftype3;
+        fontStack.top() -> fontType = font::ftype3;
         break;
     case 42:
-        pCurrentFont -> fontType = font::ftype42;
+        fontStack.top() -> fontType = font::ftype42;
         break;
     }
 
-    pCurrentFont -> load(countGlyphs);
+    fontStack.top() -> load(countGlyphs);
 
     return;
     }

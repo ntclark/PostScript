@@ -1,5 +1,5 @@
 
-#include "PostScript objects/font.h"
+#include "job.h"
 
     static char szMessage[1024];
 
@@ -149,44 +149,48 @@
                 char szCharCode[8];
                 sprintf_s<8>(szCharCode,"%ld",charCode);
 
-                // You search for the first endCode that is greater than or equal 
-                // to the character code you want to map
+                /*
+                You search for the first endCode that is greater than or equal 
+                to the character code you want to map
+                */
 
                 uint16_t endCodeIndex = 0xFFFF;
                 for ( uint16_t k = 0; 1; k++ ) {
-                    if ( 0xFFFF == theCmapSubtable.pEndCode[k] )
-                        break;
-                    if ( theCmapSubtable.pEndCode[k] >= charCode ) {
+                    if ( 0xFFFF == theCmapSubtable.pEndCode[k] || theCmapSubtable.pEndCode[k] >= charCode ) {
                         endCodeIndex = k;
                         break;
                     }
                 }
 
-                if ( 0xFFFF == endCodeIndex ) {
-                    pCharStrings -> put(szCharCode,pJob -> pZeroConstant);
-                    continue;
-                }
-
                 uint16_t startCode = theCmapSubtable.pStartCode[endCodeIndex];
+                uint16_t idRangeOffset = theCmapSubtable.pIdRangeOffsets[endCodeIndex];
+                uint16_t idDelta = theCmapSubtable.pIdDelta[endCodeIndex];
 
                 /*
-                If the corresponding startCode is less than or equal to the character code, then 
-                you use the corresponding idDelta and idRangeOffset to map the character code to a 
-                glyph index
+                If the corresponding startCode is less than or equal to the 
+                character code, then you use the corresponding idDelta and 
+                idRangeOffset to map the character code to a glyph index 
+                (otherwise, the missingGlyph is returned). 
                 */
 
                 uint16_t glyphId = 0;
 
                 if ( startCode <= charCode ) {
 
-                    if ( 0 == theCmapSubtable.pIdRangeOffsets[endCodeIndex] ) {
+                    if ( 0 == idRangeOffset ) {
 
                         /*
-                        If the idRangeOffset is 0, the idDelta value is added directly to 
-                        the character code offset (i.e. idDelta[i] + c) to get the corresponding 
-                        glyph index. Again, the idDelta arithmetic is modulo 65536.
+                        If the idRangeOffset is 0, the idDelta value is added directly 
+                        to the character code offset (i.e. idDelta[i] + c) to get the 
+                        corresponding glyph index. Again, the idDelta arithmetic is modulo 65536. 
+                        If the result after adding idDelta[i] + c is less than zero, add 65536 
+                        to obtain a valid glyph ID.
                         */
-                        glyphId = theCmapSubtable.pIdDelta[endCodeIndex] + charCode;
+
+                        glyphId = idDelta + charCode;
+
+                        if ( 0 > glyphId )
+                            glyphId += (uint16_t)65536;
 
                     } else {
 
@@ -201,8 +205,8 @@
                         glyphId = *(idRangeOffset[i] / 2 + (c - startCode[i]) + &idRangeOffset[i])
                         */
 
-                        BYTE *pbGlyphId = (BYTE *)&theCmapSubtable.pIdRangeOffsets[endCodeIndex];
-                        pbGlyphId += theCmapSubtable.pIdRangeOffsets[endCodeIndex];
+                        uint16_t *pbGlyphId = &theCmapSubtable.pIdRangeOffsets[endCodeIndex];
+                        pbGlyphId += idRangeOffset / 2;
                         pbGlyphId += (charCode - startCode);
 
                         glyphId = *(uint16_t *)pbGlyphId;
@@ -212,8 +216,12 @@
                         If the value obtained from the indexing operation is not 0 (which indicates missingGlyph), 
                         idDelta[i] is added to it to get the glyph index. The idDelta arithmetic is modulo 65536.
                         */
-                        if ( ! ( 0 == glyphId ) )
-                            glyphId += theCmapSubtable.pIdDelta[endCodeIndex] % 65536;
+
+                        if ( ! ( 0 == glyphId ) ) {
+                            glyphId += idDelta;
+                            if ( 0 > glyphId )
+                                glyphId += (uint16_t)65536;
+                        }
 
                     }
 

@@ -23,7 +23,7 @@
     if ( NULL == strchr(Contents(),'\\') )
         return;
 
-    DWORD n = strlen(Contents()) + 1;
+    DWORD n = (DWORD)strlen(Contents()) + 1;
 
     pszUnescapedString  = new char[n];
 
@@ -55,7 +55,7 @@
             *pSlash = '#';
             strcpy(pSlash + 1,pszRemainder);
 
-            escapedValues[pSlash - pszUnescapedString] = (BYTE)value;
+            escapedValues[(uint16_t)(pSlash - pszUnescapedString)] = (BYTE)value;
 
             delete [] pszRemainder;
             pSlash = strchr(pSlash + 1,'\\');
@@ -122,8 +122,8 @@
     if ( NULL == pszUnescapedString ) 
         return (BYTE)Contents()[index];
 
-    if ( 0 == escapedValues.size() || escapedValues.end() == escapedValues.find(index) )
+    if ( 0 == escapedValues.size() || escapedValues.end() == escapedValues.find((uint16_t)index) )
         return (BYTE)pszUnescapedString[index];
 
-    return escapedValues[index];
+    return escapedValues[(uint16_t)index];
     }

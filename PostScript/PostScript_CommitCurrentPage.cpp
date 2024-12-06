@@ -10,20 +10,36 @@
     hdcSurface = ::GetDC(hwndClient);
 
     if ( 0 < activePageOrigin.y ) {
-        RECT rcClient;
-        GetWindowRect(hwndClient,&rcClient);
-        SetWindowPos(hwndClient,HWND_TOP,0,0,rcClient.right - rcClient.left,activePageOrigin.y + initialCYClient,SWP_NOMOVE);
-        SendMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
-        GetClientRect(hwndClient,&rcClient);
-        rcClient.right -= GetSystemMetrics(SM_CXVSCROLL);
-        FillRect(hdcSurface,&rcClient,(HBRUSH)(COLOR_WINDOW + 1));
-    }
 
-    graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
+        beginPathAction = [this]() { 
+
+            RECT rcClient;
+            GetWindowRect(hwndClient,&rcClient);
+            SetWindowPos(hwndClient,HWND_TOP,0,0,rcClient.right - rcClient.left,activePageOrigin.y + initialCYClient,SWP_NOMOVE);
+            SendMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
+            GetClientRect(hwndClient,&rcClient);
+            rcClient.right -= GetSystemMetrics(SM_CXVSCROLL);
+            FillRect(hdcSurface,&rcClient,(HBRUSH)(COLOR_WINDOW + 1));
+
+            graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
+
+            beginPathAction = NULL;
+        };
+
+    } else
+
+        graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
 
 //pJob -> currentGS() -> outlinePage();
 
     return hdcSurface;
+    }
+
+
+    void PStoPDF::BeginPath() {
+    if ( ! ( NULL == beginPathAction ) )
+        beginPathAction();
+    return;
     }
 
 

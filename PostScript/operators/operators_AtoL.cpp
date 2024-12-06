@@ -1,17 +1,5 @@
 
 #include "job.h"
-#include "PostScript objects\graphicsState.h"
-
-#include "PostScript objects\font.h"
-#include "PostScript objects\string.h"
-#include "PostScript objects\constantString.h"
-#include "PostScript objects\binaryString.h"
-#include "PostScript objects\pattern.h"
-#include "PostScript objects\mark.h"
-#include "PostScript objects\literal.h"
-#include "PostScript objects\directExec.h"
-#include "PostScript objects\file.h"
-#include "PostScript objects\save.h"
 
    void job::operatorStdout() {
 /*
@@ -483,7 +471,7 @@
     reached by the closepath operation. If the current subpath is already closed
     or the current path is empty, closepath does nothing.
 */
-    graphicsStateStack.current() -> closepath();
+    pGraphicsState -> closepath();
     return;
     }
 
@@ -754,6 +742,27 @@
 
    return;
    }
+
+
+    void job::operatorCurrentcolorspace() {
+/*
+    currentcolorspace – 
+        currentcolorspace array
+
+    returns an array containing the family name and parameters of the current color
+    space in the graphics state (see setcolorspace). The results are always returned in
+    an array, even if the color space has no parameters and was specified to
+    setcolorspace by name.
+
+    Errors: stackoverflow
+    See Also: setcolorspace, setcolor
+*/
+
+    push(currentGS() -> getColorSpace());
+
+    return;
+    }
+
 
     void job::operatorCurrentdict() {
 /*
@@ -1394,17 +1403,20 @@ isNew = true;
     return;
     }
 
-   void job::operatorEofill() {
+    void job::operatorEofill() {
 /*
-   eofill 
-      – eofill –
+    eofill 
+        – eofill –
 
-   paints the area inside the current path with the current color. The even-odd rule is
-   used to determine what points lie inside the path (see “Even-Odd Rule” on
-   page 196). In all other respects, the behavior of eofill is identical to that of fill.
+    paints the area inside the current path with the current color. The even-odd rule is
+    used to determine what points lie inside the path (see “Even-Odd Rule” on
+    page 196). In all other respects, the behavior of eofill is identical to that of fill.
 */
-   return;
-   }
+
+    currentGS() -> eofillpath();
+
+    return;
+    }
 
     void job::operatorEq() {
 /*
@@ -1470,6 +1482,20 @@ isNew = true;
         else
             push(pFalseConstant);
         return;
+#if 0
+    case object::matrix: {
+
+        if ( object::matrix != pAny2 -> ObjectType() ) {
+            push(pFalseConstant);
+            return;
+        }
+
+        // ?? got an instance of a matrix testing is equal to an integer ???
+        // don't know if that is valid, 
+        push(pTrueConstant);
+        return;
+        }
+#endif
 
     case object::dictionary: {
 
@@ -1508,9 +1534,11 @@ isNew = true;
         }
         return;
 
+    case object::matrix:
+printf("wtf");
     case object::array: {
 
-        if ( ! ( object::array == pAny2 -> ObjectType() ) ) {
+        if ( ! ( object::array == pAny2 -> ObjectType() ) && ! ( object::matrix == pAny2 -> ObjectType() ) ) {
             push(pFalseConstant);
             return;
         }
@@ -1921,9 +1949,9 @@ isNew = true;
 
     }
 
-    pPStoPDF -> queueLog("\n");
-    pPStoPDF -> queueLog("NOT IMPLEMENTED: findresource");
-    pPStoPDF -> queueLog("\n");
+    char szMessage[1024];
+    sprintf_s<1024>(szMessage,"Not implemented: findresource is not implemented for key: %s and category: %s",pKey -> Contents(),pCategory -> Contents());
+    throw notimplemented(szMessage);
 
     return;
     }
@@ -2300,6 +2328,63 @@ isNew = true;
     return;
     }
 
+
+    void job::operatorImage() {
+/*
+    image 
+
+        width height bits/sample matrix datasrc image –
+        dict image – (LanguageLevel 2)
+
+    paints a sampled image onto the current page. This description only summarizes
+    the general behavior of the image operator; see Section 4.10, “Images,” for full details.
+
+    The image is a rectangular array of width × height sample values, each consisting
+    of bits/sample bits of data. Valid values of bits/sample are 1, 2, 4, 8, or 12. The data
+    is received as a sequence of characters—that is, 8-bit integers in the range 0 to 255.
+    If bits/sample is less than 8, sample values are packed from left to right within a
+    character (see Section 4.10.2, “Sample Representation”).
+
+    The image is considered to exist in its own coordinate system, or image space. The
+    rectangular boundary of the image has its lower-left corner at coordinates (0, 0)
+    and its upper-right corner at (width, height). The matrix operand defines a 
+    transformation from user space to image space.
+
+    In the first form of the operator, the parameters are specified as separate operands. 
+    This form always renders a monochrome image according to the
+    DeviceGray color space, regardless of the current color space in the graphics state.
+    This is the only form supported in LanguageLevel 1.
+
+    In the second form (LanguageLevel 2), the parameters are contained as entries in
+    an image dictionary dict, which is supplied as the single operand. This form 
+    renders either a monochrome or a color image, according to the current color space.
+    The number of component values per source sample and the interpretation of
+    those values depend on the color space.
+
+    In LanguageLevel 1, datasrc must be a procedure. In LanguageLevel 2 or 3, it may
+    be any data source—a procedure, a string, or a readable file, including a filtered
+    file (see Section 3.13, “Filtered Files Details”).
+
+    If datasrc is a procedure, it is executed repeatedly to obtain the actual image data.
+    datasrc must return a string on the operand stack containing any number of additional 
+    characters of sample data. The sample values are assumed to be received in
+    a fixed order: (0,0) to (widtrh - 1,0), then (0,1) to (width - 1,1), and so on. If
+    datasrc returns a string of length 0, image will terminate execution prematurely.
+    Execution of this operator is not permitted in certain circumstances; see
+
+    Section 4.8.1, “Types of Color Space.”
+
+    Errors: invalidaccess, ioerror, limitcheck, rangecheck, stackunderflow,
+    typecheck, undefined, undefinedresult
+    See Also: imagemask, colorimage
+*/
+
+    currentGS() -> image();
+
+    return;
+    }
+
+
     void job::operatorImagemask() {
 /*
     imagemask 
@@ -2645,7 +2730,7 @@ operatorDebug();
    If the current point is undefined because the current path is empty, a nocurrentpoint
    error occurs.
 */
-   graphicsStateStack.current() -> lineto();
+   pGraphicsState -> lineto();
    return;
    }
 

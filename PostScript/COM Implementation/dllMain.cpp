@@ -17,6 +17,8 @@
 #include "PostScript.h"
 #include "PostScriptGen2_i.c"
 
+#include "PostScript objects/object.h"
+
    OLECHAR wstrModuleName[256];
 
     extern "C" BOOL WINAPI DllMain(HINSTANCE hI, DWORD dwReason, LPVOID) {

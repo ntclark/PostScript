@@ -12,7 +12,7 @@
     file::~file() {}
 
 
-    BYTE *file::getBinaryData(DWORD *pcbData,char *pszEndDelimiter) {
+    uint8_t *file::getBinaryData(DWORD *pcbData,char *pszEndDelimiter) {
 
 #if 0
     FILE *psInputFile = fopen(szFileName,"rb");
@@ -31,7 +31,7 @@ fread(pbTest,1,1024,psInputFile);
 
     long cbData = (long)(ppEnd - pStart);
 
-    BYTE *pbTemp = new BYTE[cbData];
+    uint8_t *pbTemp = new uint8_t[cbData];
 
     memcpy(pbTemp,pStart,cbData);
 
@@ -51,7 +51,7 @@ fread(pbTest,1,1024,psInputFile);
 
     *pcbData = cbResult;
 
-    pbData = new BYTE[cbResult];
+    pbData = new uint8_t[cbResult];
 
     k = 0;
     cbResult = 0;

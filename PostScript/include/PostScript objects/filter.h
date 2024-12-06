@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdint.h>
 #include "PostScript Objects/file.h"
 
     class filter : public file {
@@ -10,7 +11,7 @@
 
         void setSource(object *pFilterSource);
 
-        virtual BYTE *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
+        virtual uint8_t *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
 
     private:
 

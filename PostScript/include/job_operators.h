@@ -21,6 +21,7 @@
         void operatorCos();
         void operatorCountdictstack();
         void operatorCounttomark();
+        void operatorCurrentcolorspace();
         void operatorCurrentdict();
         void operatorCurrentfile();
         void operatorCurrentfont();
@@ -66,6 +67,7 @@
         void operatorIdtransform();
         void operatorIf();
         void operatorIfelse();
+        void operatorImage();
         void operatorImagemask();
         void operatorIndex();
         void operatorInitmatrix();

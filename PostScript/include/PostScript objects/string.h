@@ -13,7 +13,7 @@
       ~string();
 
       virtual BYTE get(long index);
-      virtual void put(long index,BYTE);
+      virtual void put(long index,BYTE v);
 
       size_t length() { return NULL == pszUnescapedString ? strlen(Contents()) : strlen(pszUnescapedString); };
 

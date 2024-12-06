@@ -568,7 +568,8 @@ Same as G but used for nonstroking operations.
    gsave
       Save graphics state
 */
-   graphicsStateStack.gSave();
+Beep(2000,200);
+   //graphicsStateStack.gSave();
    return;
    }
 
@@ -578,7 +579,8 @@ Same as G but used for nonstroking operations.
       Restore the graphics state by removing the most recently saved state from the stack and making it 
       the current state (see 8.4.2, "Graphics State Stack").
 */
-   graphicsStateStack.gRestore();
+Beep(2000,200);
+   //graphicsStateStack.gRestore();
    return;
    }
 

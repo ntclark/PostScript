@@ -1,43 +1,42 @@
+#include "job.h"
 
-#include "PostScript objects/graphicsState.h"
+#include "pathParameters.h"
 
     void graphicsState::newpath(POINT_TYPE x,POINT_TYPE y) {
-    currentUserSpacePoint = POINT_TYPE_NAN_POINT;
-    currentPointsPoint = POINT_TYPE_NAN_POINT;
-    gdiParametersStack.top() -> isPathActive = false;
+    pathParametersStack.top() -> newpath(x,y);
     return;
     }
 
 
     void graphicsState::stroke() {
-    if ( gdiParametersStack.top() -> isPathActive ) {
-        EndPath(pPStoPDF -> GetDC());
-if ( 1003 == GetLastError() )
-printf("hello world");
-        StrokePath(pPStoPDF -> GetDC());
-    }
-    gdiParametersStack.top() -> isPathActive = false;
-if ( 1003 == GetLastError() )
-printf("hello world");
+    pathParametersStack.top() -> stroke();
     return;
     }
 
 
     void graphicsState::closepath() {
-    if ( gdiParametersStack.top() -> isPathActive )
-        EndPath(pPStoPDF -> GetDC());
-if ( 1003 == GetLastError() )
-printf("hello world");
-    newpath();
+    pathParametersStack.top() -> closepath();
     return;
     }
 
 
-    void graphicsState::fillpath() {
-    if ( gdiParametersStack.top() -> isPathActive )
-        closepath();
-    StrokeAndFillPath(pPStoPDF -> GetDC());
-if ( 1003 == GetLastError() )
-printf("hello world");
+    void graphicsState::fillpath(boolean doRasterization) {
+    pathParametersStack.top() -> fillpath(doRasterization);
     return;
+    }
+
+
+    void graphicsState::eofillpath(boolean doRasterization) {
+    pathParametersStack.top() -> eofillpath(doRasterization);
+    return;
+    }
+
+
+    boolean graphicsState::savePath(boolean doSave) {
+    return pathParametersStack.top() -> savePath(doSave);
+    }
+
+
+    boolean graphicsState::setDefaultToRasterize(boolean doRasterization) {
+    return pathParametersStack.top() -> setDefaultToRasterize(doRasterization);
     }

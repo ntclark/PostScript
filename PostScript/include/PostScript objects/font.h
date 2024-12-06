@@ -1,16 +1,9 @@
 
 #pragma once
 
-#include "PdfEnabler_i.h"
-#include "pdfEnabler\Page.h"
-
 class job;
 class font;
-
-#include "PostScript objects/literal.h"
-#include "PostScript objects/array.h"
-#include "PostScript objects/dictionary.h"
-#include "PostScript objects/graphicsState.h"
+class graphicsState;
 
 #define DEFAULT_POINT_SIZE  12
 
@@ -840,5 +833,6 @@ struct INDEX {
 
         friend class graphicsState;
         friend class otSimpleGlyph;
+        friend struct pathParameters;
 
     };

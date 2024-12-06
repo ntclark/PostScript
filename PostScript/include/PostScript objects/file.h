@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include "PostScript objects/object.h"
 
@@ -11,7 +12,7 @@
 
         virtual ~file();
 
-        virtual BYTE *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
+        virtual uint8_t *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
 
         virtual void releaseData() { 
             if ( ! ( NULL == pbData ) ) 
@@ -20,7 +21,7 @@
 
     protected:
 
-        BYTE *pbData{NULL};
+        uint8_t *pbData{NULL};
 
     private:
 

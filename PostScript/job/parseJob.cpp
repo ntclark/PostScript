@@ -1,13 +1,6 @@
 
-#include "utilities.h"
-
 #include "job.h"
 
-#include "PostScript objects\directExec.h"
-#include "PostScript objects\literal.h"
-#include "PostScript objects\string.h"
-#include "PostScript objects\constantString.h"
-#include "PostScript objects\binaryString.h"
 
     long job::parseJob(bool useThread) {
 

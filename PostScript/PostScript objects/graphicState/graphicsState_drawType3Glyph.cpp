@@ -1,11 +1,10 @@
+#include "job.h"
 
-#include "PostScript objects/graphicsState.h"
-#include "PostScript objects/font.h"
-
+#include "pathParameters.h"
 
     void graphicsState::drawType3Glyph(BYTE bGlyph) {
 
-    pJob -> push(pCurrentFont);
+    pJob -> push(fontStack.top());
     pJob -> operatorBegin();
     pJob -> push(pJob -> pBuildGlyphLiteral);
     pJob -> operatorDup();
@@ -13,7 +12,7 @@
 
     if ( pJob -> pFalseConstant == pJob -> pop() ) {
         pJob -> pop();
-        pJob -> push(pCurrentFont);
+        pJob -> push(fontStack.top());
         pJob -> push(pJob -> pBuildCharLiteral);
     } else
         pJob -> operatorExch();
@@ -24,7 +23,7 @@
 
     procedure *pBuildGlyph = reinterpret_cast<procedure *>(pJob -> pop());
 
-    pJob -> push(pCurrentFont);
+    pJob -> push(fontStack.top());
     pJob -> push(pJob -> pEncodingArrayLiteral);
     pJob -> operatorGet();
 
@@ -58,17 +57,25 @@
 
     object *pCharacterName = pJob -> pop();
 
-    pJob -> push(pCurrentFont);
+    pJob -> push(fontStack.top());
     pJob -> push(pCharacterName);
 
-    concat(pCurrentFont -> getMatrix());
+    concat(fontStack.top() -> getMatrix());
 
-    ToUserSpace() -> tx(currentPointsPoint.x);
-    ToUserSpace() -> ty(currentPointsPoint.y);
+    pathParametersStack.top() -> pToUserSpace -> tx(pathParametersStack.top() -> currentPointsPoint.x);
+    pathParametersStack.top() -> pToUserSpace -> ty(pathParametersStack.top() -> currentPointsPoint.y);
+
+    boolean oldDoRasterize = setDefaultToRasterize(true);
+
+    savePath(true);
 
     pJob -> executeProcedure(pBuildGlyph);
 
     revertMatrix();
+
+    fillpath(true);
+
+    setDefaultToRasterize(oldDoRasterize);
 
     return;
     }
@@ -83,12 +90,12 @@
     object *pWidthY = pJob -> pop();
     object *pWidthX = pJob -> pop();
 
-    pCurrentFont -> type3GlyphBoundingBox.lowerLeft.x = pLowerLeftX -> OBJECT_POINT_TYPE_VALUE;
-    pCurrentFont -> type3GlyphBoundingBox.lowerLeft.y = pLowerLeftY -> OBJECT_POINT_TYPE_VALUE;
-    pCurrentFont -> type3GlyphBoundingBox.upperRight.x = pUpperRightX -> OBJECT_POINT_TYPE_VALUE;
-    pCurrentFont -> type3GlyphBoundingBox.upperRight.y = pUpperRightY -> OBJECT_POINT_TYPE_VALUE;
-    pCurrentFont -> type3GlyphBoundingBox.advance.x = pWidthX -> OBJECT_POINT_TYPE_VALUE;
-    pCurrentFont -> type3GlyphBoundingBox.advance.y = pWidthY -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.lowerLeft.x = pLowerLeftX -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.lowerLeft.y = pLowerLeftY -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.upperRight.x = pUpperRightX -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.upperRight.y = pUpperRightY -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.advance.x = pWidthX -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.advance.y = pWidthY -> OBJECT_POINT_TYPE_VALUE;
 
     return;
     }
