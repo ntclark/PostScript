@@ -32,14 +32,12 @@
         pPStoPDF -> queueLog("\nStack Trace:\n");
         pThis -> operatorPstack();
     }
-
+#if 0
     catch ( std::exception ex ) {
-
         pPStoPDF -> queueLog("\n\nThe job is cancelled due to errors");
         _endthread();
-
     }
-
+#endif
     return 0L;
     }
 

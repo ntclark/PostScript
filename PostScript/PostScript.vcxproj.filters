@@ -96,9 +96,6 @@
     <ClCompile Include="Fonts\font.cpp">
       <Filter>Source Files\Fonts</Filter>
     </ClCompile>
-    <ClCompile Include="Fonts\font_FontFile.cpp">
-      <Filter>Source Files\Fonts</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\array.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
@@ -186,22 +183,16 @@
     <ClCompile Include="job\job_pdfOperators.cpp">
       <Filter>Source Files\job</Filter>
     </ClCompile>
-    <ClCompile Include="Fonts\simpleGlyph.cpp">
-      <Filter>Source Files\Fonts</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType42Glyph.cpp">
+    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawGlyph.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawType3Glyph.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_saveRestore.cpp">
@@ -237,9 +228,6 @@
     <ClCompile Include="Fonts\font_transforms.cpp">
       <Filter>Source Files\Fonts</Filter>
     </ClCompile>
-    <ClCompile Include="Fonts\font_type42.cpp">
-      <Filter>Source Files\Fonts</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_showPage.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
@@ -258,7 +246,7 @@
     <ClCompile Include="PostScript objects\graphicState\gdiParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_movesLines.cpp">
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_GDI.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="Stacks\pathParametersStack.cpp">
@@ -270,19 +258,25 @@
     <ClCompile Include="PostScript objects\graphicState\pathParameters_path.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="Stacks\fontStack.cpp">
-      <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_initialize.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\pathParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_rasterize.cpp">
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_freetype.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_freetype.cpp">
+    <ClCompile Include="Stacks\psTransformsStack.cpp">
+      <Filter>Source Files\Stacks</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_GDIorRenderer.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_IGraphicElements.cpp">
+      <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="PostScript objects\graphicState\gdiParameters_IGraphicParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
   </ItemGroup>
@@ -418,6 +412,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Stacks\fontStack.h">
+      <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Stacks\psTransformsStack.h">
       <Filter>Header Files\Stacks</Filter>
     </ClInclude>
   </ItemGroup>

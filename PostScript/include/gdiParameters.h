@@ -1,52 +1,74 @@
 #pragma once
 
-   struct gdiParameters {
+    class gdiParameters {
+    public:
 
-      gdiParameters() {}
-      gdiParameters(gdiParameters *pRHS) {
-         lineWidth = pRHS -> lineWidth;
-         lineCap = pRHS -> lineCap;
-         lineJoin = pRHS -> lineJoin;
-         rgbColor = pRHS -> rgbColor;
-         if ( ! ( NULL == pRHS -> pLineStyles ) ) {
-            pLineStyles = new DWORD[pRHS -> countDashSizes];
-            memcpy(pLineStyles,pRHS -> pLineStyles,pRHS -> countDashSizes * sizeof(DWORD));
-         }
-         pColorSpace = pRHS -> pColorSpace;
-         return;
-      }
+        gdiParameters();
 
-      ~gdiParameters() {
-      if ( ! ( NULL == pLineStyles ) )
-         delete [] pLineStyles;
-      }
+        gdiParameters(gdiParameters *pRHS);
 
-      void initialize();
+        ~gdiParameters();
 
-      void setupDC();
+        void initialize();
 
-      POINT_TYPE lineWidth{gdiParameters::defaultLineWidth};
-      long lineCap{gdiParameters::defaultLineCap};
-      long lineJoin{gdiParameters::defaultLineJoin};
-      COLORREF rgbColor{gdiParameters::defaultRGBColor};
-      DWORD *pLineStyles{NULL};
-      DWORD countDashSizes{0};
-      colorSpace *pColorSpace{NULL};
+        void setupDC();
 
-      void setLineCap(long v);
-      void setLineJoin(long v);
-      void setLineWidth(POINT_TYPE v);
-      void setLineDash(array *pArray,POINT_TYPE offset);
+        void forwardToRenderer();
 
-      void setColorSpace(colorSpace *pColorSpace);
-      colorSpace *getColorSpace();
+        void revertToGDI() {
+            pIGraphicParameters = pIGraphicParameters_GDI;
+        }
 
-      void setColor(colorSpace *pColorSpace);
-      void setRGBColor(COLORREF rgb);
-      void setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b);
+        class GraphicParameters : IGraphicParameters {
+        public:
 
-      static POINT_TYPE defaultLineWidth;
-      static long defaultLineCap;
-      static long defaultLineJoin;
-      static COLORREF defaultRGBColor;
-   };
+            GraphicParameters(gdiParameters *pp) : pParent(pp) {}
+
+            //   IUnknown
+
+            STDMETHOD (QueryInterface)(REFIID riid,void **ppv) { return E_NOTIMPL; }
+            STDMETHOD_ (ULONG, AddRef)() { return 0; }
+            STDMETHOD_ (ULONG, Release)() { return 0; }
+
+        private:
+
+            STDMETHOD(put_LineWidth)(FLOAT lw);
+            STDMETHOD(put_LineJoin)(long lj);
+            STDMETHOD(put_LineCap)(long lc);
+            STDMETHOD(put_LineDash)(FLOAT *pValues,long countValues,FLOAT offset);
+            STDMETHOD(put_RGBColor)(COLORREF rgb);
+
+            gdiParameters *pParent{NULL};
+
+            friend class gdiParameters;
+
+        } *pIGraphicParameters_GDI{NULL};
+
+        IGraphicParameters *pIGraphicParameters{NULL};
+
+        POINT_TYPE lineWidth{gdiParameters::defaultLineWidth};
+        long lineCap{gdiParameters::defaultLineCap};
+        long lineJoin{gdiParameters::defaultLineJoin};
+        COLORREF rgbColor{gdiParameters::defaultRGBColor};
+        DWORD *pLineStyles{NULL};
+        DWORD countDashSizes{0};
+        colorSpace *pColorSpace{NULL};
+
+        void setLineCap(long v);
+        void setLineJoin(long v);
+        void setLineWidth(POINT_TYPE v);
+        void setLineDash(POINT_TYPE *pValues,long countValues,POINT_TYPE offset);
+
+        void setColorSpace(colorSpace *pColorSpace);
+        colorSpace *getColorSpace();
+
+        void setColor(colorSpace *pColorSpace);
+        void setRGBColor(COLORREF rgb);
+        void setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b);
+
+        static POINT_TYPE defaultLineWidth;
+        static long defaultLineCap;
+        static long defaultLineJoin;
+        static COLORREF defaultRGBColor;
+
+    };

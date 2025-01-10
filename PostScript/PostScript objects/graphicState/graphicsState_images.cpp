@@ -190,9 +190,6 @@ DeleteDC(hdcx);
 
     } 
 
-    POINT_TYPE dMin[3];
-    POINT_TYPE dMax[3];
-
     uint8_t TwoNminus1 = (uint8_t)pow(2,pBitsPerComponent -> IntValue()) - 1;
 
 #if 0
@@ -214,8 +211,8 @@ DeleteDC(hdcx);
 if ( 2 * k >= pDecodeArray -> size() )
 break;
 
-        POINT_TYPE dMin = pDecodeArray -> getElement(0 + 2 * k) -> DoubleValue();
-        POINT_TYPE dMax = pDecodeArray -> getElement(1 + 2 * k) -> DoubleValue();
+        POINT_TYPE dMin = pDecodeArray -> getElement(0 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
+        POINT_TYPE dMax = pDecodeArray -> getElement(1 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
 
         if ( 0.0 == dMin && 1.0 == dMax )
             continue;
@@ -318,8 +315,8 @@ break;
     HDC hdcSource = CreateCompatibleDC(pPStoPDF -> GetDC());
     SelectObject(hdcSource,hbmResult);
 
-    StretchBlt(pPStoPDF -> GetDC(),(long)((float)pathParametersStack.top() -> currentPointsPoint.x),
-                                        (long)(((float)pathParametersStack.top() -> currentPointsPoint.y) + hUserSpace),(long)wUserSpace,-(long)hUserSpace,
+    StretchBlt(pPStoPDF -> GetDC(),(long)((float)pathParametersStack.top() -> CurrentDevicePoint() -> x),
+                                        (long)(((float)pathParametersStack.top() -> CurrentDevicePoint() -> y) + hUserSpace),(long)wUserSpace,-(long)hUserSpace,
                 hdcSource,0,0,width,height,SRCCOPY);
 
 //POINT pts[] = { {0,0},{width,0},{width,height}};
@@ -331,7 +328,7 @@ break;
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,object *pWidth,object *pHeight) {
-    renderImage(hbmResult,pWidth -> IntValue(),pHeight -> IntValue());
+    renderImage(hbmResult,(uint16_t)pWidth -> IntValue(),(uint16_t)pHeight -> IntValue());
     return;
     }
 

@@ -1,60 +1,54 @@
 
-#include "job.h"
+#include "EnVisioNateSW_FontManager.h"
 
-    static char szMessage[1024];
+    HRESULT font::type42Load(BYTE *pbData) {
 
-    void font::type42Load(BYTE *pbData) {
-
-    if ( ! ( NULL == pSfntsArray ) ) {
-        pSfntsTable = reinterpret_cast<class binaryString *>(pSfntsArray -> getElement(0)) -> getData();
-        tableDirectory.load(pSfntsTable);
-    } else
+    //if ( ! ( NULL == pSfntsArray ) ) {
+    //    pSfntsTable = reinterpret_cast<class binaryString *>(pSfntsArray -> getElement(0)) -> getData();
+    //    tableDirectory.load(pSfntsTable);
+    //} else
         tableDirectory.load(pbData);
 
     if ( NULL == tableDirectory.table("maxp") ) {
-        sprintf(szMessage,"font %s is invalid, it does not have a maxp table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a maxp table",szFamily);
+        return E_FAIL;
     }
 
     if ( NULL == tableDirectory.table("head") ) {
-        sprintf(szMessage,"font %s is invalid, it does not have a head table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a head table",szFamily);
+        return E_FAIL;
     }
 
     if ( NULL == tableDirectory.table("hhea") ) {
-        sprintf(szMessage,"font %s is invalid, it does not have a hhea table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a hhea table",szFamily);
+        return E_FAIL;
     }
 
     if ( NULL == tableDirectory.table("hmtx") ) {
-        sprintf(szMessage,"font %s is invalid, it does not have a hmtx table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a hmtx table",szFamily);
+        return E_FAIL;
     }
 
     if ( ! ( NULL == tableDirectory.table("vhea") ) && ( NULL == tableDirectory.table("vmtx") ) ) {
-        sprintf(szMessage,"font %s is invalid, it contains a vhea table, but does not contain a vmtx table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it contains a vhea table, but does not contain a vmtx table",szFamily);
+        return E_FAIL;
     }
 
+#if 0
     if ( NULL == pSfntsArray && NULL == tableDirectory.table("cmap") ) {
         sprintf(szMessage,"font %s is invalid, it does not contain a cmap table",szFamily);
         throw invalidfont(szMessage);
         return;
     }
+#endif
 
     pGlyfTable = tableDirectory.table("glyf");
     if ( NULL == pGlyfTable )
         pGlyfTable = tableDirectory.table("glyx");
 
     if ( NULL == pGlyfTable ) {
-        sprintf(szMessage,"font %s is invalid, it does not have a glyf (or glyx) table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a glyf (or glyx) table",szFamily);
+        return E_FAIL;
     }
 
     pLocaTable = tableDirectory.table("loca");
@@ -62,9 +56,8 @@
         pLocaTable = tableDirectory.table("locx");
 
     if ( NULL == pLocaTable ) {
-        sprintf(szMessage,"font %s is invalid, it does not have a loca (or locx ) table",szFamily);
-        throw invalidfont(szMessage);
-        return;
+        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a loca (or locx ) table",szFamily);
+        return E_FAIL;
     }
 
     pMaxProfileTable = new otMaxProfileTable(tableDirectory.table("maxp"));
@@ -85,35 +78,12 @@
     if ( ! ( NULL == tableDirectory.table("os2") ) )
         pOS2Table = new otOS2Table(tableDirectory.table("os2"));
 
-    scaleFUnitsToPoints = pointSize / (float)pHeadTable -> unitsPerEm;
+    scaleFUnitsToPoints = 1.0f / (float)pHeadTable -> unitsPerEm;
 
     if ( ! ( NULL == pOS2Table ) )
-        scaleFUnitsToPoints = scaleFUnitsToPoints * (float)pHeadTable -> unitsPerEm / (float)(pOS2Table -> sTypoAscender - pOS2Table -> sTypoDescender);
-
-    if ( ! exists(pJob -> pFontTypeLiteral -> Name()) )
-        put(pJob -> pFontTypeLiteral -> Name(),"42");
-
-    if ( ! exists(pJob -> pFontNameLiteral -> Name()) )
-        put(pJob -> pFontNameLiteral -> Name(),szFamily);
-
-    if ( ! exists(pJob -> pFontMatrixLiteral -> Name()) )
-        put(pJob -> pFontMatrixLiteral -> Name(),new (pJob -> CurrentObjectHeap()) class matrix(pJob));
-
-    if ( ! exists(pJob -> pFontBoundingBoxLiteral -> Name()) ) {
-        class array *pArray = new (pJob -> CurrentObjectHeap()) class array(pJob,4);
-        pArray -> putElement(0,0);
-        pArray -> putElement(1,0);
-        pArray -> putElement(2,0);
-        pArray -> putElement(3,0);
-        put(pJob -> pFontBoundingBoxLiteral -> Name(),pArray);
-    }
+        scaleFUnitsToPoints = 1.0f / (float)(pOS2Table -> sTypoAscender - pOS2Table -> sTypoDescender);
 
     glyphIDMap.clear();
-
-    if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
-        pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
-        put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
-    }
 
     if ( ! ( NULL == tableDirectory.table("cmap") ) ) {
 
@@ -129,9 +99,8 @@
             otCmapSubtableFormat4 theCmapSubtable(&pLoad);
 
             if ( ! ( 4 == theCmapSubtable.format ) ) {
-                sprintf(szMessage,"operator: findfont. font %s is invalid. only Cmap Subtable format 4 is supported.",szFamily);
-                throw invalidfont(szMessage);
-                return;
+                sprintf(font::szFailureMessage,"operator: findfont. font %s is invalid. only Cmap Subtable format 4 is supported.",szFamily);
+                return E_FAIL;
             }
 
             theCmapSubtable.loadFormat4(&pLoad);
@@ -229,28 +198,12 @@
 
                 glyphIDMap[charCode] = glyphId;
 
+#if 0
                 pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,(long)glyphId));
+#endif
 
             }
 
-        }
-
-    }
-
-    if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
-
-        pEncoding = new (pJob -> CurrentObjectHeap()) class array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
-        put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
-
-        for ( long k = 0; k < 256; k++ )
-            pEncoding -> putElement(k,pJob -> pNotdefLiteral);
-
-        dictionary *pCharStrings = reinterpret_cast<dictionary *>(retrieve(pJob -> pCharStringsLiteral -> Name()));
-
-        for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
-            char szCharCode[8];
-            sprintf_s<8>(szCharCode,"%ld",charCode);
-            pEncoding -> putElement(charCode,pCharStrings -> retrieveKey(szCharCode));
         }
 
     }
@@ -260,7 +213,7 @@
 
     isLoaded = true;
 
-    return;
+    return S_OK;
     }
 
 

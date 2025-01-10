@@ -2,21 +2,23 @@
 
 #include <stack>
 
-struct gdiParameters;
+class gdiParameters;
 
-   class gdiParametersStack : public std::stack<gdiParameters *> {
-   public:
+    class gdiParametersStack : public std::stack<gdiParameters *> {
+    public:
 
-      gdiParametersStack();
-      ~gdiParametersStack();
+        gdiParametersStack();
+        ~gdiParametersStack();
 
-      void initialize();
+        void initialize();
 
-      void setupDC();
+        void setupDC();
 
-      void gSave();
-      void gRestore();
+        void gSave();
+        void gRestore();
 
-   private:
+        boolean isInitialized() { return 0 < size(); }
 
-   };
+    private:
+
+    };

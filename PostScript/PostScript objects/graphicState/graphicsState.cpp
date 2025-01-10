@@ -6,21 +6,16 @@
 
     long graphicsState::cyPageGutter = 32L;
     long graphicsState::pageCount = 0L;
-    long graphicsState::displayResolution = 0L;
-    long graphicsState::cxClient = 0L;
-    long graphicsState::cyClient = 0L;
-    long graphicsState::cyWindow = 0L;
 
     long graphicsState::pageHeightPoints = 792;
     long graphicsState::pageWidthPoints = 612;
-    POINT_TYPE graphicsState::scalePointsToPixels = 0.0f;
 
-    POINT_TYPE graphicsState::piOver2 = 2.0 * atan(1.0);
-    POINT_TYPE graphicsState::degToRad = piOver2 / 90.0;
+    POINT_TYPE graphicsState::piOver2 = 2.0f * atan(1.0f);
+    POINT_TYPE graphicsState::degToRad = piOver2 / 90.0f;
 
     gdiParametersStack graphicsState::gdiParametersStack;
     pathParametersStack graphicsState::pathParametersStack;
-    fontStack graphicsState::fontStack;
+    psTransformsStack graphicsState::psXformsStack;
 
     GS_POINT::GS_POINT(GS_POINT *pPointd) {
         x = pPointd -> x;
@@ -29,9 +24,17 @@
 
 
     graphicsState::graphicsState(job *pj) : pJob(pj) {
-    setFont(findFont("Courier New"));
-    pathParametersStack.top() -> pToUserSpace = new (pJob -> CurrentObjectHeap()) matrix(pJob);
-    pathParametersStack.top() -> pUserSpaceToDeviceSpace = new (pJob -> CurrentObjectHeap()) matrix(pJob);
+
+    setFont(findFont("Courier"));
+
+    if ( ! psXformsStack.isInitialized() )
+        psXformsStack.initialize(pJob);
+
+    if ( ! gdiParametersStack.isInitialized() )
+        gdiParametersStack.initialize();
+
+    SetSurface(pJob -> hwndSurface,0);
+
     return;
     }
 
@@ -43,19 +46,12 @@
 
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
 
-    pathParametersStack.top() -> currentUserSpacePoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
-    pathParametersStack.top() -> pathBeginPoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
-    pathParametersStack.top() -> currentPointsPoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
-    pathParametersStack.top() -> userSpaceDomain = {POINT_TYPE_NAN,POINT_TYPE_NAN};
+    BOOL isPrepared;
+    job::pIGlyphRenderer -> get_IsPrepared(&isPrepared);
+    if ( ! isPrepared )
+        job::pIGlyphRenderer -> Prepare(pPStoPDF -> GetDC());
 
-    memset(&pathParametersStack.top() -> currentGDIPoint,0,sizeof(POINT));
-
-    SetGraphicsMode(pPStoPDF -> GetDC(),GM_ADVANCED);
-    SetMapMode(pPStoPDF -> GetDC(),MM_ANISOTROPIC);
-    SetPolyFillMode(pPStoPDF -> GetDC(),ALTERNATE);
-    SetArcDirection(pPStoPDF -> GetDC(),AD_COUNTERCLOCKWISE);
-
-    displayResolution = GetDeviceCaps(pPStoPDF -> GetDC(),LOGPIXELSX);
+    pathParametersStack.top() -> initialize();
 
     initMatrix(hwndSurface,pageNumber);
 
@@ -66,7 +62,6 @@
 
 
     void graphicsState::restored() {
-    SetWorldTransform(pPStoPDF -> GetDC(),pathParameters::pTransform());
     return;
     }
 
@@ -97,15 +92,33 @@
 
     pPageSizeArray = reinterpret_cast<array *>(pJob -> pop());
 
-Beep(2000,200);
-return;
-
     pageWidthPoints = pPageSizeArray -> getElement(0) -> IntValue();
     pageHeightPoints = pPageSizeArray -> getElement(1) -> IntValue();
 
     // Get page number !!!
     initMatrix(pPStoPDF -> HwndClient(),1);
 
+    return;
+    }
+
+
+    void graphicsState::setCacheDevice() {
+
+    object *pUpperRightY = pJob -> pop();
+    object *pUpperRightX = pJob -> pop();
+    object *pLowerLeftY = pJob -> pop();
+    object *pLowerLeftX = pJob -> pop();
+    object *pWidthY = pJob -> pop();
+    object *pWidthX = pJob -> pop();
+
+#if 0
+    fontStack.top() -> type3GlyphBoundingBox.lowerLeft.x = pLowerLeftX -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.lowerLeft.y = pLowerLeftY -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.upperRight.x = pUpperRightX -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.upperRight.y = pUpperRightY -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.advance.x = pWidthX -> OBJECT_POINT_TYPE_VALUE;
+    fontStack.top() -> type3GlyphBoundingBox.advance.y = pWidthY -> OBJECT_POINT_TYPE_VALUE;
+#endif
     return;
     }
 
@@ -163,6 +176,27 @@ Beep(2000,200);
 
 
     void graphicsState::setLineDash(class array *pArray,POINT_TYPE offset) {
-    gdiParametersStack.top() -> setLineDash(pArray,offset);
+
+    if ( NULL == pArray ) {
+        gdiParametersStack.top() -> setLineDash(NULL,0,offset);
+        return;
+    }
+
+    long countItems = pArray -> size();
+
+    if ( 0 == countItems ) {
+        gdiParametersStack.top() -> setLineDash(NULL,0,offset);
+        return;
+    }
+
+    FLOAT *pValues = new FLOAT[countItems];
+
+    for ( long k = 0; k < countItems; k++ )
+        pValues[k] = pArray -> getElement(k) -> FloatValue();
+
+    gdiParametersStack.top() -> setLineDash(pValues,countItems,offset);
+
+    delete [] pValues;
+
     return;
     }

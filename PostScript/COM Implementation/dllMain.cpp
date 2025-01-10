@@ -16,6 +16,7 @@
 
 #include "PostScript.h"
 #include "PostScriptGen2_i.c"
+#include "GlyphRenderer_i.c"
 
 #include "PostScript objects/object.h"
 

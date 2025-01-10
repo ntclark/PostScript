@@ -27,7 +27,7 @@ RECT rcFrame{512,512,1024,768};
         WideCharToMultiByte(CP_ACP,0,pArgs[k],-1,argv[k],(DWORD)wcslen(pArgs[k]),0,0);
     }
 
-    HRESULT rc = CoInitialize(NULL);
+    HRESULT rc = CoInitializeEx(NULL,0);
 
     char szTemp[MAX_PATH];
 

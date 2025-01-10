@@ -2,20 +2,46 @@
 
 #include "pathParameters.h"
 
-    void pathParameters::newpath(POINT_TYPE x,POINT_TYPE y) {
-    currentUserSpacePoint = POINT_TYPE_NAN_POINT;
-    currentPointsPoint = POINT_TYPE_NAN_POINT;
+    void pathParameters::openGeometry() {
     isPathActive = false;
+    forwardToRenderer();
+    return;
+    }
+
+#if 0
+    void pathParameters::getGeometry(long *pCountVertices,BYTE **ppVertexTypes,POINT **ppVertexPoints) {
+
+    EndPath(pPStoPDF -> GetDC());
+
+    *pCountVertices = ::GetPath(pPStoPDF -> GetDC(),NULL,NULL,0);
+
+    if ( 1 > *pCountVertices )
+        return;
+
+    *ppVertexPoints = new POINT[*pCountVertices];
+    *ppVertexTypes = new BYTE[*pCountVertices];
+
+    GetPath(pPStoPDF -> GetDC(),*ppVertexPoints,*ppVertexTypes,*pCountVertices);
+
+    return;
+    }
+#endif
+
+    void pathParameters::closeGeometry() {
+    revertToGDI();
     return;
     }
 
 
-    void pathParameters::stroke() {
-    if ( isPathActive ) {
-        EndPath(pPStoPDF -> GetDC());
-        StrokePath(pPStoPDF -> GetDC());
+    void pathParameters::renderGeometry() {
+    job::pIGlyphRenderer -> Render();
+    revertToGDI();
+    return;
     }
-    isPathActive = false;
+
+
+    void pathParameters::RenderGeometry() {
+    job::pIGlyphRenderer -> Render();
     return;
     }
 
@@ -28,34 +54,11 @@
     }
 
 
-    void pathParameters::fillpath(boolean doRasterization) {
-    if ( isPathActive )
-        closepath();
-    if ( doRasterization || defaultDoRasterization )
-        rasterizePath();
-    else
-        StrokeAndFillPath(pPStoPDF -> GetDC());
-    return;
-    }
-
-
-    void pathParameters::eofillpath(boolean doRasterization) {
+    void pathParameters::eofillpath() {
     if ( isPathActive )
         closepath();
     int oldMode = SetPolyFillMode(pPStoPDF -> GetDC(),ALTERNATE);
-    fillpath(doRasterization || defaultDoRasterization);//StrokeAndFillPath(pPStoPDF -> GetDC());
+    fillpath();
     SetPolyFillMode(pPStoPDF -> GetDC(),oldMode);
     return;
-    }
-
-
-    boolean pathParameters::savePath(boolean doSave) {
-    boolean didSave = saveThePath;
-    saveThePath = doSave;
-    if ( ! ( NULL == pSavedPath ) )
-        delete pSavedPath;
-    pSavedPath = NULL;
-    if ( saveThePath ) 
-        pSavedPath = new savedPath();
-    return didSave;
     }

@@ -41,6 +41,7 @@
 #define LOG_PANE_HEIGHT     72
 #define SPLITTER_WIDTH      12
 
+//#define USE_DWRITE_TEXT_RENDERER
 
 class job;
 

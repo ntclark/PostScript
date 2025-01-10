@@ -5,7 +5,7 @@
 
    class matrix : public array {
    public:
-      
+
       matrix(job *pJob);
       ~matrix();
 
@@ -25,6 +25,11 @@
       void copyFrom(matrix *);
 
       void scale(POINT_TYPE scaleFactor);
+      void scale(POINT_TYPE scaleX,POINT_TYPE scaleY);
+      void translate(POINT_TYPE x,POINT_TYPE y);
+      void rotate(POINT_TYPE angle);
+
+      POINT_TYPE *Values() { return values; }
 
       POINT_TYPE a();
       POINT_TYPE b();
@@ -47,7 +52,11 @@
       void tx(POINT_TYPE v);
       void ty(POINT_TYPE v);
 
+      static void scale(XFORM *,FLOAT scaleFactor);
+
    private:
+
+      POINT_TYPE values[6]{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
 
       POINT_TYPE revertValues[6]{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
       POINT_TYPE inverse[6]{6 * 0.0f};

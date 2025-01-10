@@ -332,10 +332,10 @@
    if ( object::integer == p1 -> ValueType() && object::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() * p2 -> IntValue()));
    else {
-      double v1 = p1 -> DoubleValue();
+      double v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
       if ( object::integer == p1 -> ValueType() )
          v1 = (double)p1 -> IntValue();
-      double v2 = p2 -> DoubleValue();
+      double v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
       if ( object::integer == p2 -> ValueType() )
          v2 = (double)p2 -> IntValue();
       push(new (CurrentObjectHeap()) object(this,v1 * v2));
@@ -378,7 +378,7 @@
    if ( object::integer == p -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,-1 * p -> IntValue()));
    else
-      push(new (CurrentObjectHeap()) object(this,-1.0 * p -> DoubleValue()));
+      push(new (CurrentObjectHeap()) object(this,-1.0 * p -> OBJECT_POINT_TYPE_VALUE));
    return;
    }
 
@@ -994,11 +994,11 @@
 
     switch ( pTop -> ObjectType() ) {
     case object::objectType::matrix: 
-        angle = pop() -> DoubleValue();
+        angle = pop() -> OBJECT_POINT_TYPE_VALUE;
         break;
 
     default:
-        angle = pTop -> DoubleValue();
+        angle = pTop -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> rotate(angle);
         return;
     }
@@ -1106,13 +1106,13 @@
 
     switch ( pTop -> ObjectType() ) {
     case object::objectType::matrix: 
-        sy = pop() -> DoubleValue();
-        sx = pop() -> DoubleValue();
+        sy = pop() -> OBJECT_POINT_TYPE_VALUE;
+        sx = pop() -> OBJECT_POINT_TYPE_VALUE;
         break;
 
     default:
-        sy = pTop -> DoubleValue();
-        sx = pop() -> DoubleValue();
+        sy = pTop -> OBJECT_POINT_TYPE_VALUE;
+        sx = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> scale(sx,sy);
         return;
     }
@@ -1428,7 +1428,7 @@
 
 */
 
-   POINT_TYPE offset = pop() -> DoubleValue();
+   POINT_TYPE offset = pop() -> OBJECT_POINT_TYPE_VALUE;
    class array *pArray = reinterpret_cast<array *>(pop());
 
    currentGS() -> setLineDash(pArray,offset);
@@ -1757,7 +1757,7 @@
     object *pBlue = pop();
     object *pGreen = pop();
     object *pRed = pop();
-    currentGS() -> setRGBColor(pRed -> DoubleValue(),pGreen -> DoubleValue(),pBlue -> DoubleValue());
+    currentGS() -> setRGBColor(pRed -> OBJECT_POINT_TYPE_VALUE,pGreen -> OBJECT_POINT_TYPE_VALUE,pBlue -> OBJECT_POINT_TYPE_VALUE);
     return;
     }
 
@@ -1824,31 +1824,8 @@
     See Chapter 5 for complete information about the definition, manipulation, and
     rendition of fonts.
 */
-    object *pObject = reinterpret_cast<string *>(top());
 
-    operatorLength();
-
-    long strSize = pop() -> IntValue();
-
-    binaryString *pBinary = NULL;
-    string *pString = NULL;
-
-    if ( object::valueType::binaryString == pObject -> ValueType() )
-        pBinary = reinterpret_cast<binaryString *>(pObject);
-    else
-        pString = reinterpret_cast<string *>(pObject);
-
-    for ( long k = 0; k < strSize; k++ ) {
-
-        BYTE glyphIndex;
-        if ( ! ( NULL == pBinary ) )
-            glyphIndex = pBinary -> get(k);
-        else
-            glyphIndex = pString -> get(k);
-
-        currentGS() -> drawGlyph(glyphIndex);
-
-    }
+    currentGS() -> drawTextString();
 
     return;
     }
@@ -1932,7 +1909,7 @@
     See Also: cos, atan
 
 */
-    object *pSin = new (CurrentObjectHeap()) object(this,sin(graphicsState::degToRad * pop() -> DoubleValue()));
+    object *pSin = new (CurrentObjectHeap()) object(this,sin(graphicsState::degToRad * pop() -> OBJECT_POINT_TYPE_VALUE));
     push(pSin);
     return;
     }
@@ -2087,7 +2064,7 @@
    if ( object::integer == p1 -> ValueType() && object::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,(long)(p1 -> IntValue() - p2 -> IntValue())));
    else
-      push(new (CurrentObjectHeap()) object(this,(double)(p1 -> DoubleValue() - p2 -> DoubleValue())));
+      push(new (CurrentObjectHeap()) object(this,(double)(p1 -> OBJECT_POINT_TYPE_VALUE - p2 -> OBJECT_POINT_TYPE_VALUE)));
    return;
    }
 
@@ -2110,15 +2087,15 @@
     switch ( pTopObject -> ObjectType() ) {
     case object::matrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
-        y = pop() -> DoubleValue();
-        x = pop() -> DoubleValue();
+        y = pop() -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> transformPoint(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
-        y = pTopObject -> DoubleValue();
-        x = pop() -> DoubleValue();
+        y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> transformPoint(x,y,&x,&y);
         }
     }
@@ -2157,17 +2134,17 @@
 
     switch ( pTop -> ObjectType() ) {
     case object::objectType::matrix: 
-        ty = pop() -> DoubleValue();
+        ty = pop() -> OBJECT_POINT_TYPE_VALUE;
         break;
 
     default:
-        ty = pTop -> DoubleValue();
-        currentGS() -> translate(pop() -> DoubleValue(),ty);
+        ty = pTop -> OBJECT_POINT_TYPE_VALUE;
+        currentGS() -> translate(pop() -> OBJECT_POINT_TYPE_VALUE,ty);
         return;
     }
 
     matrix *pMatrix = new (CurrentObjectHeap()) matrix(this);
-    pMatrix -> tx(pop() -> DoubleValue());
+    pMatrix -> tx(pop() -> OBJECT_POINT_TYPE_VALUE);
     pMatrix -> ty(ty);
 
     push(pMatrix);
@@ -2457,15 +2434,13 @@
 
     for ( long k = 0; k < strSize; k++ ) {
 
-        object *pChar = NULL;
-
         BYTE glyphIndex;
         if ( ! ( NULL == pBinary ) )
             glyphIndex = pBinary -> get(k);
         else
             glyphIndex = pString -> get(k);
 
-        currentGS() -> drawGlyph(glyphIndex);
+        currentGS() -> drawTextChar(glyphIndex);
 
         object *pX = pNumberArray -> getElement(k);
         push(pX);

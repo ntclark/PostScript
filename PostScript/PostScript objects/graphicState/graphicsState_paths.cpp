@@ -2,8 +2,9 @@
 
 #include "pathParameters.h"
 
-    void graphicsState::newpath(POINT_TYPE x,POINT_TYPE y) {
-    pathParametersStack.top() -> newpath(x,y);
+    void graphicsState::newpath() {
+    pathParametersStack.top() -> newpath();
+    currentUserSpacePoint = POINT_TYPE_NAN_POINT;
     return;
     }
 
@@ -20,20 +21,15 @@
     }
 
 
-    void graphicsState::fillpath(boolean doRasterization) {
-    pathParametersStack.top() -> fillpath(doRasterization);
+    void graphicsState::fillpath() {
+    pathParametersStack.top() -> fillpath();
     return;
     }
 
 
-    void graphicsState::eofillpath(boolean doRasterization) {
-    pathParametersStack.top() -> eofillpath(doRasterization);
+    void graphicsState::eofillpath() {
+    pathParametersStack.top() -> eofillpath();
     return;
-    }
-
-
-    boolean graphicsState::savePath(boolean doSave) {
-    return pathParametersStack.top() -> savePath(doSave);
     }
 
 

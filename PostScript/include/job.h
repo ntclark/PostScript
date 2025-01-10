@@ -6,6 +6,7 @@
 #include "PdfEnabler_i.h"
 #include "pdfEnabler/Page.h"
 #include "PostScriptGen2_i.h"
+#include "GlyphRenderer_i.h"
 
 #include "parsing.h"
 #include "comment.h"
@@ -15,17 +16,7 @@
 
 #include "Stacks/objectStack.h"
 #include "Stacks/dictionaryStack.h"
-//
-//#include "Stacks/gdiParametersStack.h"
-//#include "PostScript objects/string.h"
-//#include "PostScript objects/structureSpec.h"
-//#include "PostScript objects/resource.h"
-//#include "PostScript objects/booleanObject.h"
-//#include "PostScript objects/name.h"
-//#include "PostScript objects/array.h"
-//#include "PostScript objects/colorSpace.h"
-//#include "PostScript objects/matrix.h"
-
+#include "Stacks/psTransformsStack.h"
 
     class job {
     public:
@@ -75,6 +66,10 @@
         static void *pCurrentHeap;
         static void *pNextHeap;
         static size_t currentlyAllocatedHeap;
+
+        static IGlyphRenderer *pIGlyphRenderer;
+        static IGraphicElements *pIGraphicElements_External;
+        static IGraphicParameters *pIGraphicParameters_External;
 
    private:
 

@@ -2,14 +2,11 @@
 
 #include "job.h"
 
-#define GLYPH_POINT_TIC_SIZE ( 16.0f / scalePointsToPixels )
-#define GLYPH_POINT_TIC_SIZE_SMALL ( 8.0f / scalePointsToPixels)
-
-#define BEZIER_CURVE_GRANULARITY  0.1
 #define GLYPH_BMP_PIXELS    128
 
 #include "Stacks/gdiParametersStack.h"
 #include "Stacks/pathParametersStack.h"
+#include "Stacks/psTransformsStack.h"
 #include "Stacks/fontStack.h"
 #include "pathParameters.h"
 
@@ -27,6 +24,7 @@
       void concat(array *);
       void concat(POINT_TYPE *);
       void concat(XFORM &);
+      void concat(XFORM *);
 
       void restored();
 
@@ -49,25 +47,23 @@
       void rlineto(GS_POINT);
 
       void curveto();
-      void curveto(GS_POINT *pPoints);
 
       void arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2);
 
       void dot(GS_POINT at,POINT_TYPE radius);
 
-      void newpath(POINT_TYPE x = POINT_TYPE_NAN,POINT_TYPE y = POINT_TYPE_NAN);
+      void newpath();
       void stroke();
       void closepath();
-      void fillpath(boolean doRasterization = false);
-      void eofillpath(boolean doRasterization = false);
-
-      boolean savePath(boolean doSave);
+      void fillpath();
+      void eofillpath();
 
       boolean setDefaultToRasterize(boolean doRasterization);
 
       void translate(POINT_TYPE x,POINT_TYPE y);
       void rotate(POINT_TYPE angle);
       void scale(POINT_TYPE scaleX,POINT_TYPE scaleY);
+      void setTranslation(POINT_TYPE x,POINT_TYPE y);
 
       void transformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
       void transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
@@ -81,12 +77,6 @@
 
       void scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *px2,POINT_TYPE *py2);
 
-      void transform(GS_POINT *pPoints,uint16_t pointCount);
-      void transformInPlace(GS_POINT *pPoints,uint16_t pointCount);
-
-      void translate(GS_POINT *pPoints,uint16_t pointCount,GS_POINT *pToPoint);
-      void scale(GS_POINT *pPoints,uint16_t pountCount,POINT_TYPE scale);
-
       void setPageDevice(class dictionary *pDictionary);
 
       void setGraphicsStateDict(char *pszDictName);
@@ -95,12 +85,16 @@
       font *makeFont(class matrix *pArray,font *pCopyFrom);
       font *scaleFont(POINT_TYPE scaleFactor,font *pCopyFrom);
 
-      void drawGlyph(BYTE bGlyph);
+      void drawTextChar(BYTE bGlyph);
+      void drawTextString();
+      void drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
       void drawType3Glyph(BYTE bGlyph);
 
-      void setCacheDevice();
+      void openGeometry();
+      void closeGeometry();
+      void renderGeometry();
 
-      long DisplayResolution() { return displayResolution; }
+      void setCacheDevice();
 
       void initialize();
 
@@ -132,6 +126,8 @@
       void setRGBColor(COLORREF rgb);
       void setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b);
 
+      static void RenderGeometry();
+
       static void SetSurface(HWND hwndSurface,long pageNumber);
       static void initMatrix(HWND hwndClient,long pageNumber);
 
@@ -144,22 +140,20 @@
 
       job *pJob{NULL};
 
+      font *CurrentFont() { return font::CurrentFont(); }
+
+      GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
+      GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;
+
       static gdiParametersStack gdiParametersStack;
       static pathParametersStack pathParametersStack;
-      static fontStack fontStack;
-
-      void gdiMoveTo(POINT *pGDIPoint);
+      static psTransformsStack psXformsStack;
 
       static long pageHeightPoints;
       static long pageWidthPoints;
-      static POINT_TYPE scalePointsToPixels;
 
       static long cyPageGutter;
       static long pageCount;
-      static long cxClient;
-      static long cyClient;
-      static long cyWindow;
-      static long displayResolution;
 
       friend class graphicsStateStack;
       friend struct pathParameters;

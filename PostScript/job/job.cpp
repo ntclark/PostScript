@@ -2,6 +2,9 @@
 #include "job.h"
 
     PdfUtility *job::pPdfUtility = NULL;
+    IGlyphRenderer *job::pIGlyphRenderer = NULL;;
+    IGraphicElements *job::pIGraphicElements_External = NULL;
+    IGraphicParameters *job::pIGraphicParameters_External = NULL;
 
     job::job(char *pszFileName,HWND hwndSurf,IPostScriptTakeText *pIPSTT) :
 
@@ -21,8 +24,16 @@
 
     {
 
-    if ( ! pPdfUtility )
+    if ( NULL == pPdfUtility )
         pPdfUtility = new PdfUtility();
+
+    if ( NULL == pIGlyphRenderer ) {
+        CoCreateInstance(CLSID_GlyphRenderer,NULL,CLSCTX_ALL,IID_IGlyphRenderer,reinterpret_cast<void **>(&pIGlyphRenderer));
+        pIGlyphRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_External));
+        pIGlyphRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters_External));
+    }
+
+    font::initialize();
 
     pLanguageLevel = new (CurrentObjectHeap()) object(this,2L);
 

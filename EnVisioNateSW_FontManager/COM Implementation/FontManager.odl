@@ -1,0 +1,72 @@
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[ 
+   uuid(1FC20340-4355-4347-8A32-A82E2FB89890),
+   helpstring("EnVisioNateSW Font Manager "), 
+   lcid(0x0), 
+   version(1.0)
+] 
+
+library FontManager { 
+
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89893),
+      helpstring("EnVisioNateSW Font Interface: FUCK MIDL DOCUMENTATION FOR NOT DESCRIBING HOW TO OVERRIDE A SYSTEM INTERFACE"),
+      nonextensible,pointer_default(unique)] 
+
+    interface IFont_EVNSW : IUnknown {
+
+        [propget] HRESULT Matrix([out,retval]/*XFORM*/ LPVOID pResult);
+        [propput] HRESULT Matrix(/*XFORM*/ UINT_PTR pXForm);
+
+        HRESULT Scale(FLOAT scaleX,FLOAT scaleY);
+        HRESULT Translate(FLOAT translateX,FLOAT translateY);
+
+        HRESULT ConcatMatrix(/*XFORM*/ UINT_PTR pXForm);
+
+        HRESULT FontName(long cbName,char *szName);
+        [propget] HRESULT FontCookie([out,retval] UINT_PTR *pCookie);
+        [propget] HRESULT FontType([out,retval] int *pFontType);
+
+        HRESULT SaveState();
+        HRESULT RestoreState();
+
+    };
+
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89892),
+      helpstring("EnVisioNateSW Font Manager Interface"),
+      nonextensible,pointer_default(unique)] 
+
+    interface IFontManager : IUnknown {
+
+import "..\EnVisioNateSW_GlyphRenderer\COM Implementation\GlyphRenderer.odl";
+
+        HRESULT SeekFont(char *pszFamilyName,long dupCount,IFont_EVNSW **ppIFont);
+
+        HRESULT LoadFont(char *pszFamilyName,UINT_PTR cookie,[out,retval] IFont_EVNSW **ppIFont);
+
+        HRESULT DuplicateFont(IFont_EVNSW *pIFont,UINT_PTR cookie,IFont_EVNSW **ppIFont);
+
+        HRESULT RenderGlyph(HDC hdc,BYTE bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+                                IGlyphRenderer *pIGlyphRenderer,
+                                POINTF *pStartPoint,POINTF *pNextPoint);
+
+        HRESULT ScaleFont(FLOAT scaleFactor);
+
+        [propput]
+        HRESULT PointSize([in] FLOAT pointSize);
+
+        [propget] HRESULT CurrentFont([out,retval] IFont_EVNSW **ppIFont_Current);
+        [propput] HRESULT CurrentFont(IFont_EVNSW *ppIFont_Current);
+
+    };
+
+
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89891),
+    helpstring("")]
+        coclass FontManager {
+        [default] interface IFontManager;
+    };
+
+};

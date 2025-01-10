@@ -1,14 +1,14 @@
 
-#include "job.h"
+#include "font.h"
 
-    otSimpleGlyph::otSimpleGlyph(BYTE bGlyph,font *pFont,graphicsState *pGraphicsState,otGlyphHeader *ph,BYTE *pbInput) : 
+    otSimpleGlyph::otSimpleGlyph(BYTE bGlyph,font *pFont,otGlyphHeader *ph,BYTE *pbInput) : 
         pGlyphHeader(ph),
         pbGlyphData(pbInput)
     {
 
     memset(phantomPoints,0,sizeof(phantomPoints));
 
-    contourCount = pGlyphHeader -> countourCount;
+    contourCount = pGlyphHeader -> contourCount;
 
     pEndPtsOfContours = new uint16_t[contourCount];
 
@@ -71,25 +71,25 @@
     uint8_t *pCoordinatesInputStart = pbInput;
 
     pFlagsFirst = new uint8_t *[contourCount];
-    pPointFirstX = new POINT_TYPE *[contourCount];
-    pPointFirstY = new POINT_TYPE *[contourCount];
+    pPointFirstX = new int32_t *[contourCount];
+    pPointFirstY = new int32_t *[contourCount];
 
-    pXCoordinates = new POINT_TYPE[pointCount];
-    pYCoordinates = new POINT_TYPE[pointCount];
+    int32_t *pXCoordinates = new int32_t[pointCount];
+    int32_t *pYCoordinates = new int32_t[pointCount];
 
     memset(pFlagsFirst,0,contourCount * sizeof(uint8_t *));
-    memset(pPointFirstX,0,contourCount * sizeof(POINT_TYPE *));
-    memset(pPointFirstY,0,contourCount * sizeof(POINT_TYPE *));
+    memset(pPointFirstX,0,contourCount * sizeof(int32_t *));
+    memset(pPointFirstY,0,contourCount * sizeof(int32_t *));
 
-    memset(pXCoordinates,0,pointCount * sizeof(POINT_TYPE));
-    memset(pYCoordinates,0,pointCount * sizeof(POINT_TYPE));
+    memset(pXCoordinates,0,pointCount * sizeof(int32_t));
+    memset(pYCoordinates,0,pointCount * sizeof(int32_t));
 
     uint8_t *pXInput = pCoordinatesInputStart;
 
     uint8_t *pFResult = pFlags;
-    POINT_TYPE *pXResult = pXCoordinates;
+    int32_t *pXResult = pXCoordinates;
 
-    POINT_TYPE x = 0;
+    int32_t x = 0;
 
     uint16_t contourIndex = 0;
 
@@ -109,13 +109,15 @@
 
             pXInput += 1;
 
+pFlags[pointIndex] = pFlags[pointIndex] & ~ X_SHORT_VECTOR;
+
         } else if ( 0 == ( pFlags[pointIndex] & X_SAME ) ) {
 
             BE_TO_LE_16(pXInput,deltaX);
 
         }
 
-        x += (POINT_TYPE)deltaX;
+        x += deltaX;
 
         pXResult[pointIndex] = x;
 
@@ -129,11 +131,11 @@
 
     }
 
-    POINT_TYPE *pYResult = pYCoordinates;
+    int32_t *pYResult = pYCoordinates;
 
     uint8_t *pYInput = pXInput;
 
-    POINT_TYPE y = 0;
+    int32_t y = 0;
 
     contourIndex = 0;
 
@@ -152,13 +154,15 @@
 
             pYInput += sizeof(uint8_t);
 
+//pFlags[pointIndex] = pFlags[pointIndex] & ~ Y_SHORT_VECTOR;
+
         } else if ( 0 == ( pFlags[pointIndex] & Y_SAME ) ) {
 
             BE_TO_LE_16(pYInput,deltaY);
 
         }
 
-        y += (POINT_TYPE)deltaY;
+        y += (int32_t)deltaY;
 
         // Only the on-curve flag is relevant after
         // parsing the points
@@ -175,8 +179,8 @@
 
     }
 
-    pPoints = new GS_POINT[pointCount];
-    pPointFirst = new GS_POINT *[contourCount];
+    pPoints = new POINT[pointCount];
+    pPointFirst = new POINT *[contourCount];
 
     contourIndex = 0;
 
@@ -238,10 +242,10 @@
     pXResult = pXCoordinates;
     pYResult = pYCoordinates;
 
-    boundingBox[0] = FLT_MAX;
-    boundingBox[1] = FLT_MAX;
-    boundingBox[2] = -FLT_MAX;
-    boundingBox[3] = -FLT_MAX;
+    boundingBox[0] = INT_MAX;
+    boundingBox[1] = INT_MAX;
+    boundingBox[2] = -INT_MAX;
+    boundingBox[3] = -INT_MAX;
 
     for ( long k = 0; k < pointCount; k++, pXResult++, pYResult++ ) {
         *pXResult += leftSideBearing;
@@ -250,6 +254,9 @@
         boundingBox[2] = max(boundingBox[2],*pXResult);
         boundingBox[3] = max(boundingBox[3],*pYResult);
     }
+
+    delete [] pXCoordinates;
+    delete [] pYCoordinates;
 
     return;
     }
@@ -264,8 +271,6 @@
 
     delete [] pFlags;
     delete [] contourPointCount;
-    delete [] pXCoordinates;
-    delete [] pYCoordinates;
     delete [] pPointFirstX;
     delete [] pPointFirstY;
     delete [] pFlagsFirst;

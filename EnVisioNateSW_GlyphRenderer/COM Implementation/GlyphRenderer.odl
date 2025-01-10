@@ -1,0 +1,71 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+#include <olectl.h>
+
+[ 
+   uuid(7731A10E-25F9-4234-BB4C-188512965190),
+   helpstring("EnVisioNateSW Glyph Renderer"), 
+   lcid(0x0), 
+   version(1.0)
+] 
+
+library GlyphRenderer { 
+
+    [uuid(7731A10E-25F9-4234-BB4C-188512965192),
+      helpstring("EnVisioNateSW Glyph Rendering Interface"),
+      nonextensible,pointer_default(unique)] 
+
+    interface IGlyphRenderer : IUnknown {
+
+        HRESULT Prepare(HDC);
+        [propput] HRESULT TransformMatrix(UINT_PTR /*XFORM*/ pXformToDeviceSpace);
+        [propget] HRESULT IsPrepared([out,retval] BOOL *pIsPrepared);
+        HRESULT Render();
+
+    };
+
+    [uuid(7731A10E-25F9-4234-BB4C-188512965193),
+      helpstring("EnVisioNateSW Graphics Primitives Interface"),
+      nonextensible,pointer_default(unique)] 
+
+    interface IGraphicElements : IUnknown {
+
+        HRESULT NewPath();
+        HRESULT StrokePath();
+        HRESULT FillPath();
+        
+        HRESULT MoveTo(FLOAT x,FLOAT y);
+        HRESULT MoveToRelative(FLOAT x,FLOAT y);
+
+        HRESULT LineTo(FLOAT x,FLOAT y);
+        HRESULT LineToRelative(FLOAT x,FLOAT y);
+
+        HRESULT ArcTo(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
+        HRESULT CubicBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
+        HRESULT QuadraticBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
+
+    };
+
+    [uuid(7731A10E-25F9-4234-BB4C-188512965194),
+        helpstring("EnVisioNateSW Graphics Parameters Interface"),
+      nonextensible,pointer_default(unique)] 
+
+    interface IGraphicParameters : IUnknown {
+
+        [propput] HRESULT LineWidth(FLOAT lw);
+        [propput] HRESULT LineJoin(long lj);
+        [propput] HRESULT LineCap(long lc);
+        [propput] HRESULT LineDash(FLOAT *pValues,long countValues,FLOAT offset);
+
+        [propput] HRESULT RGBColor(COLORREF rgb);
+
+    };
+
+    [uuid(7731A10E-25F9-4234-BB4C-188512965191),
+    helpstring("")]
+        coclass GlyphRenderer{
+        [default] interface IUnknown;
+    };
+
+};

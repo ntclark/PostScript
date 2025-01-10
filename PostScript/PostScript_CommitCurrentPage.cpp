@@ -13,6 +13,8 @@
 
         beginPathAction = [this]() { 
 
+            beginPathAction = NULL;
+
             RECT rcClient;
             GetWindowRect(hwndClient,&rcClient);
             SetWindowPos(hwndClient,HWND_TOP,0,0,rcClient.right - rcClient.left,activePageOrigin.y + initialCYClient,SWP_NOMOVE);
@@ -22,15 +24,9 @@
             FillRect(hdcSurface,&rcClient,(HBRUSH)(COLOR_WINDOW + 1));
 
             graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
-
-            beginPathAction = NULL;
         };
 
-    } else
-
-        graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
-
-//pJob -> currentGS() -> outlinePage();
+    }
 
     return hdcSurface;
     }
@@ -47,6 +43,8 @@
 
     if ( NULL == hdcSurface )
         return;
+
+    graphicsState::RenderGeometry();
 
     ReleaseDC(hwndClient,hdcSurface);
 
@@ -74,6 +72,7 @@
     activePageOrigin.y += initialCYClient;
 
     ReleaseDC(hwndClient,hdcSurface);
+
     hdcSurface = NULL;
 
     return;

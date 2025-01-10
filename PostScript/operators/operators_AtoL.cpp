@@ -166,11 +166,11 @@
     constructed path using pathforall will encounter curveto segments where arcs
     were specified originally.
 */
-    POINT_TYPE angle2 = pop() -> DoubleValue();
-    POINT_TYPE angle1 = pop() -> DoubleValue();
-    POINT_TYPE radius = pop() -> DoubleValue();
-    POINT_TYPE y = pop() -> DoubleValue();
-    POINT_TYPE x = pop() -> DoubleValue();
+    POINT_TYPE angle2 = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE angle1 = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE radius = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE y = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE x = pop() -> OBJECT_POINT_TYPE_VALUE;
 
     currentGS() -> arcto(x,y,radius,angle1,angle2);
 
@@ -201,13 +201,13 @@
     an outer radius of 2 units, centered at the coordinate origin (see Figure 8.3).
 
 */
-    POINT_TYPE angle2 = pop() -> DoubleValue();
-    POINT_TYPE angle1 = pop() -> DoubleValue();
-    POINT_TYPE radius = pop() -> DoubleValue();
-    POINT_TYPE y = pop() -> DoubleValue();
-    POINT_TYPE x = pop() -> DoubleValue();
+    POINT_TYPE angle2 = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE angle1 = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE radius = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE y = pop() -> OBJECT_POINT_TYPE_VALUE;
+    POINT_TYPE x = pop() -> OBJECT_POINT_TYPE_VALUE;
 
-    currentGS() -> arcto(x,y,radius,360.0 - angle1,360.0 - angle2);
+    currentGS() -> arcto(x,y,radius,360.0f - angle1,360.0f - angle2);
     return;
     }
 
@@ -695,7 +695,7 @@
     See Also: atan, sin
 
 */
-    object *pCos = new (CurrentObjectHeap()) object(this,cos(graphicsState::degToRad * pop() -> DoubleValue()));
+    object *pCos = new (CurrentObjectHeap()) object(this,cos(graphicsState::degToRad * pop() -> OBJECT_POINT_TYPE_VALUE));
     push(pCos);
     return;
     }
@@ -1006,7 +1006,7 @@
 
     object *pTop = pop();
     if ( object::number == pTop -> ObjectType() )
-        push(new (CurrentObjectHeap()) object(this,pTop -> DoubleValue()));
+        push(new (CurrentObjectHeap()) object(this,pTop -> OBJECT_POINT_TYPE_VALUE));
     else
         push(new (CurrentObjectHeap()) object(this,atof(pTop -> Contents())));
     return;
@@ -1095,6 +1095,7 @@
     return;
     }
 
+
     void job::operatorDefinefont() {
 /*
 
@@ -1151,11 +1152,13 @@
 
     switch ( po -> ObjectType() ) {
     case object::objectType::font:
+
         pFont = reinterpret_cast<font *>(po);
         pDictionary = static_cast<dictionary *>(pFont);
         break;
 
     case object::objectType::dictionary: {
+
         pDictionary = reinterpret_cast<dictionary *>(po);
         object *pName = pDictionary -> retrieve("FontName");
         if ( NULL == pName )
@@ -1165,7 +1168,6 @@
             pFont = new (CurrentObjectHeap()) font(this,pDictionary,pName -> Contents());
             isNew = true;
         } else {
-            pFont = currentGS() -> scaleFont(1.0,pFont);
             pFont -> copyFrom(pDictionary);
 isNew = true;
         }
@@ -2098,12 +2100,12 @@ printf("wtf");
    if ( object::number == p1 -> ObjectType() && object::number == p2 -> ObjectType() ) {
       double v1 = 0.0;
       if ( object::real == p1 -> ValueType() )
-         v1 = p1 -> DoubleValue();
+         v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
       else
          v1 = (double) p1 -> IntValue();
       double v2 = 0.0;
       if ( object::real == p2 -> ValueType() )
-         v2 = p2 -> DoubleValue();
+         v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
       else
          v2 = (double) p2 -> IntValue();
       if ( v1 >= v2 )
@@ -2231,12 +2233,12 @@ printf("wtf");
    if ( object::number == p1 -> ObjectType() && object::number == p2 -> ObjectType() ) {
       double v1 = 0.0;
       if ( object::real == p1 -> ValueType() )
-         v1 = p1 -> DoubleValue();
+         v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
       else
          v1 = (double) p1 -> IntValue();
       double v2 = 0.0;
       if ( object::real == p2 -> ValueType() )
-         v2 = p2 -> DoubleValue();
+         v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
       else
          v2 = (double) p2 -> IntValue();
       if ( v1 > v2 )
@@ -2497,15 +2499,15 @@ printf("wtf");
     switch ( pTopObject -> ObjectType() ) {
     case object::matrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
-        y = pop() -> DoubleValue();
-        x = pop() -> DoubleValue();
+        y = pop() -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> untransformPointInPlace(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
-        y = pTopObject -> DoubleValue();
-        x = pop() -> DoubleValue();
+        y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> untransformPointInPlace(x,y,&x,&y);
         }
     }
@@ -2585,15 +2587,15 @@ operatorDebug();
     switch ( pTopObject -> ObjectType() ) {
     case object::matrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
-        y = pop() -> DoubleValue();
-        x = pop() -> DoubleValue();
+        y = pop() -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> untransformPoint(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
-        y = pTopObject -> DoubleValue();
-        x = pop() -> DoubleValue();
+        y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
         currentGS() -> untransformPoint(x,y,&x,&y);
         }
     }

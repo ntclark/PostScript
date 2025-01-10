@@ -4,7 +4,6 @@
 #include "gdiParameters.h"
 
     gdiParametersStack::gdiParametersStack() {
-    push(new gdiParameters());
     return;
     }
 
@@ -19,7 +18,7 @@
 
 
     void gdiParametersStack::initialize() {
-    top() -> initialize();
+    push(new gdiParameters());
     return;
     }
 

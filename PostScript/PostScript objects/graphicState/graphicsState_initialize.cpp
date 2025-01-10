@@ -3,6 +3,7 @@
     void graphicsState::initialize() {
     gdiParametersStack.initialize();
     pathParametersStack.initialize();
-    fontStack.initialize();
+Beep(2000,200);
+    //fontStack.initialize();
     return;
     }
