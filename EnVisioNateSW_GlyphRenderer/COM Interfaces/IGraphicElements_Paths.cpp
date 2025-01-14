@@ -26,9 +26,6 @@
 
     void GlyphRenderer::GraphicElements::applyPath(BOOL doFill) {
 
-    //HPEN hPen = CreatePen(PS_SOLID,0,RGB(255,0,0));
-    //HGDIOBJ oldObj = SelectObject(hdc,hPen);
-
     for ( GraphicElements::primitive *pPrimitive : thePath ) {
 
         switch ( pPrimitive -> theType) {

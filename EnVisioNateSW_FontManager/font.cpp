@@ -98,12 +98,12 @@
 
     void font::transformGlyph(GS_POINT *pPoints,long countPoints) {
     matrix *pFontMatrix = matrixStack.top();
-    FLOAT aValue = pFontMatrix -> a();
-    FLOAT bValue = pFontMatrix -> b();
-    FLOAT cValue = pFontMatrix -> c();
-    FLOAT dValue = pFontMatrix -> d();
-    FLOAT txValue = pFontMatrix -> tx();
-    FLOAT tyValue = pFontMatrix -> ty();
+    FLOAT aValue = pFontMatrix -> XForm() -> eM11;
+    FLOAT bValue = pFontMatrix -> XForm() -> eM12;
+    FLOAT cValue = pFontMatrix -> XForm() -> eM21;
+    FLOAT dValue = pFontMatrix -> XForm() -> eM22;
+    FLOAT txValue = pFontMatrix -> XForm() -> eDx;
+    FLOAT tyValue = pFontMatrix -> XForm() -> eDy;
     for ( long k = 0; k < countPoints; k++ ) {
         FLOAT x = pPoints[k].x;
         FLOAT y = pPoints[k].y;
@@ -116,10 +116,10 @@
 
     void font::transformGlyphInPlace(GS_POINT *pPoints,long countPoints) {
     matrix *pFontMatrix = matrixStack.top();
-    FLOAT aValue = pFontMatrix -> a();
-    FLOAT bValue = pFontMatrix -> b();
-    FLOAT cValue = pFontMatrix -> c();
-    FLOAT dValue = pFontMatrix -> d();
+    FLOAT aValue = pFontMatrix -> XForm() -> eM11;
+    FLOAT bValue = pFontMatrix -> XForm() -> eM12;
+    FLOAT cValue = pFontMatrix -> XForm() -> eM21;
+    FLOAT dValue = pFontMatrix -> XForm() -> eM22;
     for ( long k = 0; k < countPoints; k++ ) {
         FLOAT x = pPoints[k].x;
         FLOAT y = pPoints[k].y;
@@ -130,28 +130,28 @@
     }
 
 
-    void font::transformGlyph(GS_POINT *pPoints,long countPoints,class matrix *pSource) {
-    FLOAT aValue = pSource -> a();
-    FLOAT bValue = pSource -> b();
-    FLOAT cValue = pSource -> c();
-    FLOAT dValue = pSource -> d();
-    FLOAT txValue = pSource -> tx();
-    FLOAT tyValue = pSource -> ty();
+    void font::transformGlyph(GS_POINT *pPoints,long countPoints,matrix *pSource) {
+    FLOAT aValue = pSource -> XForm() -> eM11;
+    FLOAT bValue = pSource -> XForm() -> eM12;
+    FLOAT cValue = pSource -> XForm() -> eM21;
+    FLOAT dValue = pSource -> XForm() -> eM22;
+    FLOAT txValue = pSource -> XForm() -> eDx;
+    FLOAT tyValue = pSource -> XForm() -> eDy;
     for ( long k = 0; k < countPoints; k++ ) {
         FLOAT x = pPoints[k].x;
         FLOAT y = pPoints[k].y;
-        pPoints[k].x = aValue * x + bValue * y + txValue;
+        pPoints[k].x = pSource -> XForm() -> eM11 * x + bValue * y + txValue;
         pPoints[k].y = cValue * x + dValue * y + tyValue;
     }
     return;
     }
 
 
-    void font::transformGlyphInPlace(GS_POINT *pPoints,long countPoints,class matrix *pSource) {
-    FLOAT aValue = pSource -> a();
-    FLOAT bValue = pSource -> b();
-    FLOAT cValue = pSource -> c();
-    FLOAT dValue = pSource -> d();
+    void font::transformGlyphInPlace(GS_POINT *pPoints,long countPoints,matrix *pSource) {
+    FLOAT aValue = pSource -> XForm() -> eM11;
+    FLOAT bValue = pSource -> XForm() -> eM12;
+    FLOAT cValue = pSource -> XForm() -> eM21;
+    FLOAT dValue = pSource -> XForm() -> eM22;
     for ( long k = 0; k < countPoints; k++ ) {
         FLOAT x = pPoints[k].x;
         FLOAT y = pPoints[k].y;

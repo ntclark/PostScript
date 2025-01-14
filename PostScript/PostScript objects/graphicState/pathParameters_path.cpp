@@ -28,14 +28,14 @@
 #endif
 
     void pathParameters::closeGeometry() {
-    revertToGDI();
+    revertToLocal();
     return;
     }
 
 
     void pathParameters::renderGeometry() {
     job::pIGlyphRenderer -> Render();
-    revertToGDI();
+    revertToLocal();
     return;
     }
 

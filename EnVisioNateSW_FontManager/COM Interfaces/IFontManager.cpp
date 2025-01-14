@@ -69,43 +69,43 @@
     pFont -> cookie = cookie;
 
     if ( NULL == hFont )
-        goto NonWindowsType42Font;
+        goto NonType42Font;
 
-    else {
+    {
 
-        HDC hdcTemp = CreateCompatibleDC(NULL);
+    HDC hdcTemp = CreateCompatibleDC(NULL);
 
-        HGDIOBJ oldFont = SelectFont(hdcTemp,hFont);
+    HGDIOBJ oldFont = SelectFont(hdcTemp,hFont);
 
-        DWORD cbData = GetFontData(hdcTemp,0L,0L,NULL,0L);
+    DWORD cbData = GetFontData(hdcTemp,0L,0L,NULL,0L);
 
-        if ( GDI_ERROR == cbData ) 
-            goto NonWindowsType42Font;
+    if ( GDI_ERROR == cbData ) 
+        goto NonType42Font;
 
-        pFont -> cbFontData = cbData;
+    pFont -> cbFontData = cbData;
 
-        pFont -> pbFontData = new BYTE[cbData];
+    pFont -> pbFontData = new BYTE[cbData];
 
-        GetFontData(hdcTemp,0L,0L,pFont -> pbFontData,cbData);
+    GetFontData(hdcTemp,0L,0L,pFont -> pbFontData,cbData);
 
-        SelectFont(hdcTemp,oldFont);
+    SelectFont(hdcTemp,oldFont);
 
-        DeleteDC(hdcTemp);
+    DeleteDC(hdcTemp);
 
-        pFont -> fontType = font::ftype42;
+    pFont -> fontType = font::ftype42;
 
-        if ( ! ( S_OK == pFont -> type42Load(pFont -> pbFontData) ) ) 
-            goto NonWindowsType42Font;
+    if ( ! ( S_OK == pFont -> type42Load(pFont -> pbFontData) ) ) 
+        goto NonType42Font;
 
     }
 
-    goto WindowsType42Font;
+    goto Type42Font;
 
-NonWindowsType42Font:
+NonType42Font:
 
     pFont -> fontType = font::ftypeUnspecified;
 
-WindowsType42Font:
+Type42Font:
 
     managedFonts.push_back(pFont);
 

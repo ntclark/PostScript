@@ -38,7 +38,7 @@
 
 
     HRESULT font::put_Matrix(UINT_PTR pMatrix) {
-    matrixStack.top() ->SetValues((FLOAT *)pMatrix);
+    matrixStack.top() -> SetMatrix((XFORM *)pMatrix);
     return S_OK;
     }
 
@@ -46,14 +46,14 @@
     HRESULT font::get_Matrix(LPVOID pResult) {
     if ( ! pResult )
         return E_POINTER;
-    memcpy((void *)pResult,matrixStack.top() -> Values(),sizeof(XFORM));
+    memcpy((void *)pResult,matrixStack.top() -> XForm(),sizeof(XFORM));
     return S_OK;
     }
 
 
     HRESULT font::Scale(FLOAT scaleX,FLOAT scaleY) {
-    XFORM xForm{scaleX,0.0f,0.0f,scaleY,0.0f,0.0f};
-    ConcatMatrix((UINT_PTR)&xForm);
+    XFORM scaleMatrix{scaleX,0.0f,0.0f,scaleY,0.0f,0.0f};
+    ConcatMatrix((UINT_PTR)&scaleMatrix);
     PointSize(scaleX * PointSize());
     currentScale *= scaleX;
     return S_OK;
@@ -69,8 +69,8 @@
 
     HRESULT font::ConcatMatrix(UINT_PTR pXForm) {
     XFORM result{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
-    CombineTransform(&result,(XFORM *)pXForm,(XFORM *)matrixStack.top() -> Values());
-    memcpy(matrixStack.top() -> Values(),&result,sizeof(XFORM));
+    CombineTransform(&result,(XFORM *)pXForm,(XFORM *)matrixStack.top() -> XForm());
+    memcpy(matrixStack.top() -> XForm(),&result,sizeof(XFORM));
     return S_OK;
     }
 
@@ -97,11 +97,32 @@
     }
 
 
+    HRESULT font::get_GlyphId(unsigned char charCode,int *pGlyphId) {
+    if ( ! pGlyphId )
+        return E_POINTER;
+    *pGlyphId = glyphIDMap[charCode];
+    return S_OK;
+    }
+
+
     HRESULT font::SaveState() {
+    matrixStack.push(new matrix(*matrixStack.top()));
     return S_OK;
     }
 
 
     HRESULT font::RestoreState() {
+    if ( 1 == matrixStack.size() ) {
+        matrixStack.top() -> identity();
+        currentScale = 1.0f;
+        PointSize(1.0f);
+        return S_OK;
+    }
+    FLOAT scale = matrixStack.top() -> XForm() -> eM11;
+    delete matrixStack.top();
+    matrixStack.pop();
+    FLOAT restoredScale = matrixStack.top() -> XForm() -> eM11;
+    PointSize(restoredScale * PointSize() / scale);
+    currentScale = restoredScale;
     return S_OK;
     }

@@ -8,8 +8,6 @@ class job;
 class font;
 class graphicsState;
 
-#define DEFAULT_POINT_SIZE  1
-
 #define FT_CURVE_TAG_CONIC         0x00
 #define FT_CURVE_TAG_CUBIC         0x02
 
@@ -718,6 +716,7 @@ pb += sizeof(int64_t);          \
         STDMETHOD(FontName)(long cbName,char *szFontName);
         STDMETHOD(get_FontCookie)(UINT_PTR *ppCookie);
         STDMETHOD(get_FontType)(int *pFontType);
+        STDMETHOD(get_GlyphId)(unsigned char charCode,int *pGlyphId);
         STDMETHOD(SaveState)();
         STDMETHOD(RestoreState)();
 
@@ -795,9 +794,7 @@ pb += sizeof(int64_t);          \
 
         enum fontType fontType{fontType::ftypeUnspecified};
 
-        FLOAT pointSize{DEFAULT_POINT_SIZE};
         FLOAT scaleFUnitsToPoints{0.0f};
-        FLOAT currentScale{1.0f};
 
         type3GlyphBoundingBox type3GlyphBoundingBox;
 
@@ -814,7 +811,10 @@ pb += sizeof(int64_t);          \
         UINT_PTR cookie{NULL};
 
         std::map<uint16_t,uint16_t> glyphIDMap;
+
         std::stack<matrix *> matrixStack;
+        FLOAT pointSize{1.0f};
+        FLOAT currentScale{1.0f};
 
         static char szFailureMessage[1024];
 

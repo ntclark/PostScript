@@ -28,7 +28,7 @@
     }
 
     array::array(job *pj,char *pszName,long initialSize,char *pszValues) :
-        object(pj,pszName,object::objectType::array,object::valueType::container,object::valueClassification::composite)
+        object(pj,pszName,object::objectType::objTypeArray,object::valueType::container,object::valueClassification::composite)
     {
 
     for ( long k = 0; k < initialSize; k++ )

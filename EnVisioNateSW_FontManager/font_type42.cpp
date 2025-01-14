@@ -115,9 +115,6 @@
 
             for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
 
-                char szCharCode[8];
-                sprintf_s<8>(szCharCode,"%ld",charCode);
-
                 /*
                 You search for the first endCode that is greater than or equal 
                 to the character code you want to map
@@ -197,10 +194,6 @@
                 }
 
                 glyphIDMap[charCode] = glyphId;
-
-#if 0
-                pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,(long)glyphId));
-#endif
 
             }
 

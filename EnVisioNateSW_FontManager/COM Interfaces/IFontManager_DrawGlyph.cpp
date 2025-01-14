@@ -194,7 +194,7 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
         };
 
         dotAction = [=](POINT *pt,uint8_t curveFlag,uint8_t index) {
-    //return;
+return;
             POINT ptCurrent;
             GetCurrentPositionEx(hdc,&ptCurrent);
             long width = 2;
@@ -238,20 +238,24 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
 
     pMatrix -> concat(pFont -> matrixStack.top());
 
+    pMatrix -> concat((XFORM *)pPSXform);
+
+    POINT initialPoint{(LONG)pStartPoint -> x,(LONG)pStartPoint -> y};
+
     if ( NULL == pIGlyphRenderer ) {
-        pMatrix -> concat((FLOAT *)pXformToDeviceSpace);
-        POINTF pt{pStartPoint -> x,pStartPoint -> y};
-        pMatrix -> transformPoints((FLOAT *)pXformToDeviceSpace,(GS_POINT *)&pt,1);
-        pMatrix -> tx((FLOAT)pt.x);
-        pMatrix -> ty((FLOAT)pt.y);
+        pMatrix -> concat((XFORM *)pXformToDeviceSpace);
+        GetCurrentPositionEx(hdc,&initialPoint);
+        //POINTF pt{pStartPoint -> x,pStartPoint -> y};
+        //pMatrix -> transformPoints((XFORM *)pXformToDeviceSpace,(GS_POINT *)&pt,1);
+        //pMatrix -> move((FLOAT)pt.x,(FLOAT)pt.y);
+        pMatrix -> move((FLOAT)initialPoint.x,(FLOAT)initialPoint.y);
     } else {
-        pMatrix -> tx(pStartPoint -> x);
-        pMatrix -> ty(pStartPoint -> y);
+        pMatrix -> move(pStartPoint -> x,pStartPoint -> y);
     }
 
     pMatrix -> transformPoints(pSimpleGlyph -> pPoints,pSimpleGlyph -> pointCount);
 
-    delete pMatrix;
+    pMatrix -> transformPoints(&initialPoint,1);
 
     if ( NULL == pIGlyphRenderer ) {
         uint8_t ptIndex = 0;
@@ -362,8 +366,10 @@ CaptureBezier:
     if ( ! ( NULL == pIGraphicElements_External ) )
         pIGraphicElements_External -> FillPath();
 
-    pEndPoint -> x = pStartPoint -> x + pSimpleGlyph -> advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize();
+    pEndPoint -> x = pStartPoint -> x + pSimpleGlyph -> advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize() / pMatrix -> XForm() -> eM11;
     pEndPoint -> y = pStartPoint -> y;
+
+    delete pMatrix;
 
     delete pSimpleGlyph;
 

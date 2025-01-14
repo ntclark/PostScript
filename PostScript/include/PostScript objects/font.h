@@ -2,8 +2,9 @@
 
 #include "FontManager_i.h"
 
+#include "PostScript objects/matrix.h"
+
 class job;
-class font;
 class graphicsState;
 
     class font : public dictionary {
@@ -19,9 +20,9 @@ class graphicsState;
 
         char *fontName();
 
-        void setFontMatrix(class matrix *pMatrix);
+        void setFontMatrix(XFORM *pMatrix);
 
-        XFORM *getMatrix();
+        XFORM *getFontMatrix();
 
         void SetCIDFont(boolean isCID) { isCIDFont = isCID; }
 
@@ -32,7 +33,11 @@ class graphicsState;
         static font *findFont(job *pJob,char *pszFamily);
         static void initialize();
         static font *CurrentFont();
-        static font *makeFont(class matrix *pMatrix,font *pCopyFrom);
+
+        static font *makeFont(array *pArray,font *pCopyFrom);
+        static font *makeFont(matrix *pMatrix,font *pCopyFrom);
+        static font *makeFont(XFORM *pXForm,font *pCopyFrom);
+
         static font *scaleFont(FLOAT scaleFactor,font *pCopyFrom);
 
         static IFontManager *pIFontManager;

@@ -4,14 +4,12 @@
 #include "pathParameters.h"
 #include "gdiParameters.h"
 
-static long xx = 0L;
 
     void graphicsState::gSave() {
     gdiParametersStack.gSave();
     pathParametersStack.gSave();
     psXformsStack.gSave();
     CurrentFont() -> gSave();
-xx++;
     return;
     }
 
@@ -21,7 +19,6 @@ xx++;
     pathParametersStack.gRestore();
     psXformsStack.gRestore();
     CurrentFont() -> gRestore();
---xx;
     return;
     }
 

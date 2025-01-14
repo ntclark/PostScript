@@ -54,9 +54,25 @@
 
     Errors: invalidfont, rangecheck, stackunderflow, typecheck, VMerror
 */
-    matrix *pMatrix = reinterpret_cast<matrix *>(pop());
+    object *pObj = pop();
+    font *pFont = NULL;
 
-    font *pFont = currentGS() -> makeFont(pMatrix,reinterpret_cast<font *>(pop()));
+    switch ( pObj -> theObjectType ) {
+    case object::objectType::objTypeArray: {
+        array *pArray = reinterpret_cast<array *>(pObj);
+        pFont = currentGS() -> makeFont(pArray,reinterpret_cast<font *>(pop()));
+        }
+        break;
+
+    case object::objectType::objTypeMatrix: {
+        matrix *pMatrix = reinterpret_cast<matrix *>(pObj);
+        pFont = currentGS() -> makeFont(pMatrix,reinterpret_cast<font *>(pop()));
+        }
+        break;
+
+    default:
+        break;
+    }
 
     pFontDirectory -> put(pFont -> fontName(),pFont);
 
@@ -522,7 +538,7 @@
 
     switch ( pTarget -> ObjectType() ) {
 
-    case object::array:
+    case object::objTypeArray:
         reinterpret_cast<array *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
         break;
 
@@ -538,7 +554,7 @@
         reinterpret_cast<procedure *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
         break;
 
-    case object::matrix:
+    case object::objTypeMatrix:
         reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> OBJECT_POINT_TYPE_VALUE);
         break;
 
@@ -607,12 +623,12 @@
 
     long index = pIndex -> IntValue();
 
-    if ( object::array == pObject1 -> ObjectType() || object::packedarray == pObject1 -> ObjectType() ) {
+    if ( object::objTypeArray == pObject1 -> ObjectType() || object::packedarray == pObject1 -> ObjectType() ) {
 
         array *pArray = reinterpret_cast<array *>(pObject1);
 
         switch ( pObject2 -> ObjectType() ) {
-        case object::array:
+        case object::objTypeArray:
         case object::packedarray: {
             array *pSource = reinterpret_cast<array *>(pObject2);
             for ( long k = 0; k < n; k++ ) 
@@ -731,7 +747,7 @@
 */
    object *pTop = pop();
    switch ( pTop -> ObjectType() ) {
-   case object::array:
+   case object::objTypeArray:
       return;
    default:
       switch ( pTop -> ValueType() ) {
@@ -775,7 +791,7 @@
    object *pTop = pop();
    switch ( pTop -> ObjectType() ) {
 
-   case object::matrix: {
+   case object::objTypeMatrix: {
       object *pNext = pop();
       switch ( pNext -> ObjectType() ) {
       case object::number:
@@ -993,7 +1009,7 @@
     POINT_TYPE angle;
 
     switch ( pTop -> ObjectType() ) {
-    case object::objectType::matrix: 
+    case object::objectType::objTypeMatrix: 
         angle = pop() -> OBJECT_POINT_TYPE_VALUE;
         break;
 
@@ -1105,7 +1121,7 @@
     POINT_TYPE sx,sy;
 
     switch ( pTop -> ObjectType() ) {
-    case object::objectType::matrix: 
+    case object::objectType::objTypeMatrix: 
         sy = pop() -> OBJECT_POINT_TYPE_VALUE;
         sx = pop() -> OBJECT_POINT_TYPE_VALUE;
         break;
@@ -1377,7 +1393,7 @@
 
     object *pTop = pop();
 
-    if ( object::array == pTop -> ObjectType() )
+    if ( object::objTypeArray == pTop -> ObjectType() )
         currentGS() -> setColorSpace(new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop)));
     else
         currentGS() -> setColorSpace(new (CurrentObjectHeap()) colorSpace(this,pTop -> Name()));
@@ -1640,8 +1656,7 @@
     the CTM with the translate, scale, rotate, and concat operators rather than replace
     it.
 */
-    object *pMatrix = pop();
-    currentGS() -> setMatrix(pMatrix);
+    currentGS() -> setMatrix(pop());
     return;
     }
 
@@ -2085,7 +2100,7 @@
     object *pTopObject = pop();
 
     switch ( pTopObject -> ObjectType() ) {
-    case object::matrix: {
+    case object::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
@@ -2133,7 +2148,7 @@
     POINT_TYPE ty;
 
     switch ( pTop -> ObjectType() ) {
-    case object::objectType::matrix: 
+    case object::objectType::objTypeMatrix: 
         ty = pop() -> OBJECT_POINT_TYPE_VALUE;
         break;
 
@@ -2144,6 +2159,7 @@
     }
 
     matrix *pMatrix = new (CurrentObjectHeap()) matrix(this);
+
     pMatrix -> tx(pop() -> OBJECT_POINT_TYPE_VALUE);
     pMatrix -> ty(ty);
 

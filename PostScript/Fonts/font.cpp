@@ -28,28 +28,34 @@
     char szName[256];
     pIFont -> FontName(256,szName);
 
-    if ( ! exists(pJob -> pFontNameLiteral -> Name()) )
+    //if ( ! exists(pJob -> pFontNameLiteral -> Name()) )
         put(pJob -> pFontNameLiteral -> Name(),szName);
 
-    if ( ! exists(pJob -> pFontMatrixLiteral -> Name()) )
-        put(pJob -> pFontMatrixLiteral -> Name(),new (pJob -> CurrentObjectHeap()) class matrix(pJob));
+    //if ( ! exists(pJob -> pFontMatrixLiteral -> Name()) )
+        put(pJob -> pFontMatrixLiteral -> Name(),new (pJob -> CurrentObjectHeap()) matrix(pJob));
 
-    if ( ! exists(pJob -> pFontBoundingBoxLiteral -> Name()) ) {
+    //if ( ! exists(pJob -> pFontBoundingBoxLiteral -> Name()) ) {
         class array *pArray = new (pJob -> CurrentObjectHeap()) class array(pJob,4);
         pArray -> putElement(0,0);
         pArray -> putElement(1,0);
         pArray -> putElement(2,0);
         pArray -> putElement(3,0);
         put(pJob -> pFontBoundingBoxLiteral -> Name(),pArray);
-    }
+    //}
 
-    if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
+    //if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
         pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
         put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
-        //NTC: 01-10-2025: Loading the charstrings logic is still in IFontManager
-    }
+        for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
+            char szCharCode[8];
+            sprintf_s<8>(szCharCode,"%ld",charCode);
+            int glyphId;
+            pIFont -> get_GlyphId(charCode,&glyphId);
+            pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,(long)glyphId));
+        }
+    //}
 
-    if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
+    //if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
 
         pEncoding = new (pJob -> CurrentObjectHeap()) class array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
         put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
@@ -65,7 +71,7 @@
             pEncoding -> putElement(charCode,pCharStrings -> retrieveKey(szCharCode));
         }
 
-    }
+    //}
 
     return;
     }
@@ -138,7 +144,21 @@
     }
 
 
-    font *font::makeFont(class matrix *pTransform,font *pCopyFrom) {
+    font *font::makeFont(array *pArray,font *pCopyFrom) {
+    XFORM xForm{pArray -> getElement(A) -> OBJECT_POINT_TYPE_VALUE,pArray -> getElement(B) -> OBJECT_POINT_TYPE_VALUE,
+                    pArray -> getElement(C) -> OBJECT_POINT_TYPE_VALUE,pArray -> getElement(D) -> OBJECT_POINT_TYPE_VALUE,
+                    pArray -> getElement(TX) -> OBJECT_POINT_TYPE_VALUE,pArray -> getElement(TY) -> OBJECT_POINT_TYPE_VALUE};
+    return makeFont(&xForm,pCopyFrom);
+    }
+
+
+    font *font::makeFont(matrix *pMatrix,font *pCopyFrom) {
+    XFORM xForm{pMatrix -> a(),pMatrix -> b(),pMatrix -> c(), pMatrix -> d(),pMatrix -> tx(),pMatrix -> ty()};
+    return makeFont(&xForm,pCopyFrom);
+    }
+
+
+    font *font::makeFont(XFORM *pXForm,font *pCopyFrom) {
 /*
     makefont 
 
@@ -191,10 +211,9 @@
     Errors: invalidfont, rangecheck, stackunderflow, typecheck, VMerror
 */
 
-    //font *pFont = NULL;//new (pJob -> CurrentObjectHeap()) font(pJob,pCopyFrom);
-    //pFont -> setFontMatrix(pTransform);
-    //return font::makeFont(pTransform,pCopyFrom);
-return NULL;
+    font *pFont = new (pCopyFrom -> Job() -> CurrentObjectHeap()) font(*pCopyFrom);
+    pFont -> setFontMatrix(pXForm);
+    return pFont;
     }
 
 

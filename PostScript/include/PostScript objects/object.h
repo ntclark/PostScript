@@ -11,8 +11,6 @@
 #define POINT_TYPE_NAN std::numeric_limits<POINT_TYPE>::quiet_NaN()
 #define POINT_TYPE_NAN_POINT {POINT_TYPE_NAN,POINT_TYPE_NAN}
 
-//#define OBJECT_POINT_TYPE_VALUE DoubleValue()
-//#define OBJECT_SET_POINT_TYPE_VALUE(v) DoubleValue(v)
 #define OBJECT_POINT_TYPE_VALUE FloatValue()
 #define OBJECT_SET_POINT_TYPE_VALUE(v) FloatValue(v)
 
@@ -27,14 +25,14 @@
             dictionary = 2,
             structureSpec = 3,
             directExecutable = 4,
-            matrix = 5,
-            array = 6,
+            objTypeMatrix = 5,
+            objTypeArray = 6,
             packedarray = 7,
             number = 8,
             logical = 9,
             mark = 10,
             null = 11,
-            save = 12,
+            objTypeSave = 12,
             pattern = 13,
             colorSpace = 14,
             font = 15,

@@ -4,7 +4,6 @@
     public:
 
         gdiParameters();
-
         gdiParameters(gdiParameters *pRHS);
 
         ~gdiParameters();
@@ -16,7 +15,7 @@
         void forwardToRenderer();
 
         void revertToGDI() {
-            pIGraphicParameters = pIGraphicParameters_GDI;
+            pIGraphicParameters = pIGraphicParameters_Local;
         }
 
         class GraphicParameters : IGraphicParameters {
@@ -42,7 +41,7 @@
 
             friend class gdiParameters;
 
-        } *pIGraphicParameters_GDI{NULL};
+        } *pIGraphicParameters_Local{NULL};
 
         IGraphicParameters *pIGraphicParameters{NULL};
 

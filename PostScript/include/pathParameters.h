@@ -3,14 +3,12 @@
 #include <d2d1.h>
 #include "GlyphRenderer_i.h"
 
-//int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
-
     struct pathParameters {
 
     public:
 
         pathParameters();
-        pathParameters(pathParameters &rhs);
+        pathParameters(pathParameters *pRHS);
         ~pathParameters();
 
         void initialize();
@@ -20,22 +18,22 @@
         // Graphics primitives
 
         void moveto(GS_POINT *pPt);
-        void moveto(POINT_TYPE x,POINT_TYPE y);
+        void moveto(FLOAT x,FLOAT y);
 
         void rmoveto(GS_POINT *pPt);
-        void rmoveto(POINT_TYPE x,POINT_TYPE y);
+        void rmoveto(FLOAT x,FLOAT y);
 
         void lineto(GS_POINT *pPt);
-        void lineto(POINT_TYPE x,POINT_TYPE y);
+        void lineto(FLOAT x,FLOAT y);
 
         void rlineto(GS_POINT *pPt);
-        void rlineto(POINT_TYPE x,POINT_TYPE );
+        void rlineto(FLOAT x,FLOAT );
 
-        void arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2);
+        void arcto(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
 
         void curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
 
-        void dot(GS_POINT at,POINT_TYPE radius);
+        void dot(GS_POINT at,FLOAT radius);
 
         void openGeometry();
         void closeGeometry();
@@ -49,21 +47,21 @@
 
         // Coordinate systems
 
-        static POINT_TYPE *ToDeviceSpace() { return toDeviceSpace; }
+        static XFORM *ToDeviceSpace() { return &toDeviceSpace; }
 
-        void transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
-        void transformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+        void transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
 
-        void untransformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
-        void untransformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+        void untransformPoint(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
 
-        void scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *px2,POINT_TYPE *py2);
+        void scalePoint(FLOAT x,FLOAT y,FLOAT *px2,FLOAT *py2);
 
         void transform(GS_POINT *pPoints,uint16_t pointCount);
         void transformInPlace(GS_POINT *pPoints,uint16_t pointCount);
 
         void translate(GS_POINT *pPoints,uint16_t pointCount,GS_POINT *pToPoint);
-        void scale(GS_POINT *pPoints,uint16_t pountCount,POINT_TYPE scale);
+        void scale(GS_POINT *pPoints,uint16_t pountCount,FLOAT scale);
 
         // Paths
 
@@ -80,14 +78,14 @@
         }
 
         void forwardToRenderer();
-        void revertToGDI();
+        void revertToLocal();
 
     private:
 
         class GraphicElements : IGraphicElements {
         public:
 
-            GraphicElements(pathParameters *pp) : pParent(pp) {}
+            GraphicElements(pathParameters *pp);
 
             //   IUnknown
 
@@ -115,7 +113,7 @@
 
         };
 
-        IGraphicElements *pIGraphicElements_GDI{NULL};
+        IGraphicElements *pIGraphicElements_Local{NULL};
         IGraphicElements *pIGraphicElements{NULL};
 
         void rasterizePath();
@@ -123,26 +121,26 @@
 
         void getGeometry(long *pCountVertices,BYTE **pVertexTypes,POINT **pVertexPoints);
 
-        static POINT_TYPE toDeviceSpace[6];
-        static POINT_TYPE toDeviceSpaceInverse[6];
+        FLOAT totalRotation{0.0};
 
-        POINT_TYPE totalRotation{0.0};
-
-        static boolean isPathActive;
         boolean defaultDoRasterization{false};
 
         GS_POINT currentUserPoint POINT_TYPE_NAN_POINT;
         GS_POINT currentDevicePoint POINT_TYPE_NAN_POINT;
         GS_POINT userSpaceDomain POINT_TYPE_NAN_POINT;
 
-        POINT_TYPE scalePointsToPixels{1.0};
-        POINT_TYPE renderingHeight{0.0};
-
         POINT currentGDIPoint{-1L,-1L};
 
+        static boolean isPathActive;
         static long cxClient;
         static long cyClient;
         static long cyWindow;
         static long displayResolution;
+
+        static FLOAT scalePointsToPixels;
+        static FLOAT renderingHeight;
+
+        static XFORM toDeviceSpace;
+        static XFORM toDeviceSpaceInverse;
 
     };

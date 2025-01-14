@@ -81,7 +81,7 @@
     POINT_TYPE ptx;
     POINT_TYPE pty;
     transformPoint(x,y,&ptx,&pty);
-    currentPageSpacePoint = {ptx,pty};
+    currentPageSpacePoint = {currentPageSpacePoint.x + ptx,currentPageSpacePoint.y + pty};
     pathParametersStack.top() -> rmoveto(ptx,pty);
     return;
     }
@@ -134,7 +134,7 @@
     currentUserSpacePoint.x += x;
     currentUserSpacePoint.y += y;
     transformPoint(x,y,&x,&y);
-    currentPageSpacePoint = {x,y};
+    currentPageSpacePoint = {currentPageSpacePoint.x + x,currentPageSpacePoint.y + y};
     pathParametersStack.top() -> rlineto(x,y);
     return;
     }
@@ -159,8 +159,6 @@
                          {pX2 -> OBJECT_POINT_TYPE_VALUE,pY2 -> OBJECT_POINT_TYPE_VALUE},
                          {pX3 -> OBJECT_POINT_TYPE_VALUE,pY3 -> OBJECT_POINT_TYPE_VALUE} };
 
-    //currentUserSpacePoint.x = points[2].x;
-    //currentUserSpacePoint.y = points[2].y;
     currentUserSpacePoint = points[2];
 
     transformPoint(points[0].x,points[0].y,&points[0].x,&points[0].y);

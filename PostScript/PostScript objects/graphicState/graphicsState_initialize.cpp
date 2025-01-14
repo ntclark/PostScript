@@ -3,7 +3,7 @@
     void graphicsState::initialize() {
     gdiParametersStack.initialize();
     pathParametersStack.initialize();
-Beep(2000,200);
+    psXformsStack.initialize(pJob);
     //fontStack.initialize();
     return;
     }

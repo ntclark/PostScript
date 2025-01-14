@@ -10,7 +10,7 @@
 
 
     gdiParameters::gdiParameters() {
-    pIGraphicParameters_GDI = new GraphicParameters(this);
+    pIGraphicParameters_Local = new GraphicParameters(this);
     revertToGDI();
     return;
     }
@@ -30,12 +30,12 @@
 
     pColorSpace = pRHS -> pColorSpace;
 
-    pIGraphicParameters_GDI = new GraphicParameters(this);
+    pIGraphicParameters_Local = new GraphicParameters(this);
 
     if ( pRHS -> pIGraphicParameters == job::pIGraphicParameters_External )
         pIGraphicParameters = job::pIGraphicParameters_External;
     else
-        pIGraphicParameters = pIGraphicParameters_GDI;
+        pIGraphicParameters = pIGraphicParameters_Local;
 
     return;
     }
@@ -44,7 +44,7 @@
     gdiParameters::~gdiParameters() {
     if ( ! ( NULL == pLineStyles ) )
         delete [] pLineStyles;
-    pIGraphicParameters_GDI -> Release();
+    delete pIGraphicParameters_Local;
     }
 
 

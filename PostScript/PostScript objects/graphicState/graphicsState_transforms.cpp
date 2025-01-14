@@ -23,12 +23,6 @@
     }
 
 
-    void graphicsState::concat(XFORM &winXForm) {
-    psXformsStack.top() -> concat(winXForm);
-    return;
-    }
-
-
     void graphicsState::concat(XFORM *pXForm) {
     psXformsStack.top() -> concat((FLOAT *)pXForm);
     return;
@@ -41,32 +35,42 @@
     }
 
 
-    void graphicsState::setMatrix(object *pMatrix) {
+    void graphicsState::setMatrix(object *pSource) {
 
-    array *pArray = NULL;
-    switch ( pMatrix -> ObjectType() ) {
-    case object::objectType::array: 
-        pArray = reinterpret_cast<class array *>(pMatrix);
+    switch ( pSource -> ObjectType() ) {
+    case object::objectType::objTypeArray: {
+        array *pArray = reinterpret_cast<class array *>(pSource);
+        psXformsStack.top() -> a(pArray -> getElement(A) -> OBJECT_POINT_TYPE_VALUE);
+        psXformsStack.top() -> b(pArray -> getElement(B) -> OBJECT_POINT_TYPE_VALUE);
+        psXformsStack.top() -> c(pArray -> getElement(C) -> OBJECT_POINT_TYPE_VALUE);
+        psXformsStack.top() -> d(pArray -> getElement(D) -> OBJECT_POINT_TYPE_VALUE);
+        psXformsStack.top() -> tx(pArray -> getElement(TX) -> OBJECT_POINT_TYPE_VALUE);
+        psXformsStack.top() -> ty(pArray -> getElement(TY) -> OBJECT_POINT_TYPE_VALUE);
+        }
         break;
 
-    case object::objectType::matrix:
-        pArray = static_cast<class array *>(reinterpret_cast<matrix *>(pMatrix));
+    case object::objectType::objTypeMatrix: {
+        matrix *pMatrix = reinterpret_cast<matrix *>(pSource);
+        psXformsStack.top() -> a(pMatrix -> a());
+        psXformsStack.top() -> b(pMatrix -> b());
+        psXformsStack.top() -> c(pMatrix -> c());
+        psXformsStack.top() -> d(pMatrix -> d());
+        psXformsStack.top() -> tx(pMatrix -> tx());
+        psXformsStack.top() -> ty(pMatrix -> ty());
+char szX[128];
+sprintf_s<128>(szX,"setMatrix: eM11 %f, eM12 %f, eM21 %f, eM22 %f\n",psXformsStack.top() -> XForm() -> eM11,psXformsStack.top() -> XForm() -> eM12,
+                                                                        psXformsStack.top() -> XForm() -> eM21,psXformsStack.top() -> XForm() -> eM22);
+OutputDebugStringA(szX);
+        }
         break;
 
     default: {
         char szMessage[256];
-        sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array or matrix",pMatrix -> Name(),pMatrix -> TypeName());
+        sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array or matrix",pSource -> Name(),pSource -> TypeName());
         throw typecheck(szMessage);
         }
 
     }
-
-    psXformsStack.top() -> a(pArray -> getElement(A) -> OBJECT_POINT_TYPE_VALUE);
-    psXformsStack.top() -> b(pArray -> getElement(B) -> OBJECT_POINT_TYPE_VALUE);
-    psXformsStack.top() -> c(pArray -> getElement(C) -> OBJECT_POINT_TYPE_VALUE);
-    psXformsStack.top() -> d(pArray -> getElement(D) -> OBJECT_POINT_TYPE_VALUE);
-    psXformsStack.top() -> tx(pArray -> getElement(TX) -> OBJECT_POINT_TYPE_VALUE);
-    psXformsStack.top() -> ty(pArray -> getElement(TY) -> OBJECT_POINT_TYPE_VALUE);
 
     return;
     }
@@ -81,6 +85,10 @@
     pMatrix -> tx(psXformsStack.top() -> tx());
     pMatrix -> ty(psXformsStack.top() -> ty());
     pPStoPDF -> currentJob() -> push(pMatrix);
+char szX[128];
+sprintf_s<128>(szX,"currentMatrix: eM11 %f, eM12 %f, eM21 %f, eM22 %f\n",psXformsStack.top() -> XForm() -> eM11,psXformsStack.top() -> XForm() -> eM12,
+                                                                        psXformsStack.top() -> XForm() -> eM21,psXformsStack.top() -> XForm() -> eM22);
+OutputDebugStringA(szX);
     return;
     }
 
@@ -115,7 +123,7 @@
     }
 
 
-    void graphicsState::transformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
+    void graphicsState::transformPoint(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
     POINT_TYPE xResult = pMatrix -> a() * x + pMatrix -> b() * y + pMatrix -> tx();
     POINT_TYPE yResult = pMatrix -> c() * x + pMatrix -> d() * y + pMatrix -> ty();
     *pX2 = xResult;

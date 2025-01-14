@@ -13,23 +13,19 @@
     public:
 
         matrix();
-        matrix(FLOAT a,FLOAT b,FLOAT c,FLOAT d,FLOAT tx,FLOAT ty) : values{a,b,c,d,tx,ty} {}
-        matrix(FLOAT *pv) : values{pv[0],pv[1],pv[2],pv[3],pv[4],pv[5]} {};
+        matrix(FLOAT a,FLOAT b,FLOAT c,FLOAT d,FLOAT tx,FLOAT ty);
+        matrix(FLOAT *pv);
+
+        matrix(matrix &rhs);
 
         ~matrix();
 
-        void SetValue(long index,FLOAT value);
-        void SetValues(FLOAT *pValues);
-
-        virtual char *ToString();
+        void SetMatrix(XFORM *pXForm);
 
         void identity();
 
         void concat(matrix *);
-        void concat(FLOAT *);
-        void concat(XFORM &);
-
-        void revertMatrix();
+        void concat(XFORM *);
 
         void copyFrom(matrix *);
 
@@ -37,41 +33,16 @@
         void scale(FLOAT scaleX,FLOAT scaleY);
         void translate(GS_POINT &translateTo);
         void move(GS_POINT &translateTo);
+        void move(FLOAT newX,FLOAT newY);
 
         void transformPoints(GS_POINT *pPoints,uint16_t pointCount);
         void transformPoints(POINT *pPoints,uint16_t pointCount);
-        void transformPoints(FLOAT *xForm,GS_POINT *pPoints,uint16_t pointCount);
+        void transformPoints(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);
 
-        FLOAT a();
-        FLOAT b();
-        FLOAT c();
-        FLOAT d();
-        FLOAT tx();
-        FLOAT ty();
-
-        FLOAT aInverse(boolean force = false);
-        FLOAT bInverse(boolean force = false);
-        FLOAT cInverse(boolean force = false);
-        FLOAT dInverse(boolean force = false);
-        FLOAT txInverse(boolean force = false);
-        FLOAT tyInverse(boolean force = false);
-
-        void a(FLOAT v);
-        void b(FLOAT v);
-        void c(FLOAT v);
-        void d(FLOAT v);
-        void tx(FLOAT v);
-        void ty(FLOAT v);
-
-        FLOAT *Values() { return values; }
+        XFORM *XForm() { return &xForm; }
 
     private:
 
-        FLOAT values[6]{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
-        FLOAT revertValues[6]{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
-        FLOAT inverse[6]{6 * 0.0f};
-        boolean invalidated{false};
-
-        void invert();
+        XFORM xForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
 
     };

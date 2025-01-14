@@ -25,7 +25,7 @@
 
 
     void pathParametersStack::gSave() {
-    push(new pathParameters(*top()));
+    push(new pathParameters(top()));
     return;
     }
 

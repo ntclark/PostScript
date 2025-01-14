@@ -363,9 +363,9 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "structureSpec";
     case directExecutable:
         return "operand";
-    case matrix:
+    case objTypeMatrix:
         return "matrix";
-    case array:
+    case objTypeArray:
         return "array";
     case packedarray:
         return "packedarray";
@@ -377,7 +377,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "mark";
     case null:
         return "null";
-    case save:
+    case objTypeSave:
         return "save";
     case pattern:
         return "pattern";

@@ -2,6 +2,11 @@
 
 #include "pathParameters.h"
 
+    pathParameters::GraphicElements::GraphicElements(pathParameters *pp) : pParent(pp) {
+    return;
+    }
+
+
     HRESULT pathParameters::GraphicElements::NewPath() {
     pParent -> currentUserPoint = POINT_TYPE_NAN_POINT;
     pParent -> currentDevicePoint = POINT_TYPE_NAN_POINT;

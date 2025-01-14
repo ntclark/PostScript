@@ -6,7 +6,7 @@
         parameterCount(0),
         array(pj,po -> Name())
     {
-    if ( object::matrix == po -> ObjectType() ) {
+    if ( object::objTypeMatrix == po -> ObjectType() ) {
         __debugbreak();
     }
     pFamilyName = po -> getElement(0);

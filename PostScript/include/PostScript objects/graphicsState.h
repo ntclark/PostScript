@@ -23,7 +23,7 @@
       void concat(matrix *);
       void concat(array *);
       void concat(POINT_TYPE *);
-      void concat(XFORM &);
+      //void concat(XFORM &);
       void concat(XFORM *);
 
       void restored();
@@ -65,24 +65,25 @@
       void scale(POINT_TYPE scaleX,POINT_TYPE scaleY);
       void setTranslation(POINT_TYPE x,POINT_TYPE y);
 
-      void transformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+      void transformPoint(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
       void transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
-      void transformPointInPlace(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+      void transformPointInPlace(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
       void transformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
 
-      void untransformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+      void untransformPoint(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
       void untransformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
-      void untransformPointInPlace(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+      void untransformPointInPlace(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
       void untransformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
 
       void scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *px2,POINT_TYPE *py2);
 
-      void setPageDevice(class dictionary *pDictionary);
+      void setPageDevice(dictionary *pDictionary);
 
       void setGraphicsStateDict(char *pszDictName);
 
       void setFont(font *pFont);
-      font *makeFont(class matrix *pArray,font *pCopyFrom);
+      font *makeFont(array *pArray,font *pCopyFrom);
+      font *makeFont(matrix *pMatix,font *pCopyFrom);
       font *scaleFont(POINT_TYPE scaleFactor,font *pCopyFrom);
 
       void drawTextChar(BYTE bGlyph);

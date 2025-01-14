@@ -9,8 +9,8 @@
     }
 
 
-    void pathParameters::revertToGDI() {
-    pIGraphicElements = pIGraphicElements_GDI;
+    void pathParameters::revertToLocal() {
+    pIGraphicElements = pIGraphicElements_Local;
     return;
     }
 

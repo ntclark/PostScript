@@ -28,6 +28,7 @@ library FontManager {
         HRESULT FontName(long cbName,char *szName);
         [propget] HRESULT FontCookie([out,retval] UINT_PTR *pCookie);
         [propget] HRESULT FontType([out,retval] int *pFontType);
+        [propget] HRESULT GlyphId(unsigned char charCode,[out,retval] int *pGlyphId);
 
         HRESULT SaveState();
         HRESULT RestoreState();

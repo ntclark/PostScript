@@ -56,7 +56,7 @@
 
     switch ( pTop -> ObjectType() ) {
 
-    case object::objectType::array: {
+    case object::objectType::objTypeArray: {
         class array *pArray = reinterpret_cast<class array *>(pTop);
         for ( long k = 0; k < pArray -> size(); k++ )
             push(pArray -> getElement(k));
@@ -541,10 +541,10 @@
 */
     object *pMatrixOrArray = pop();
     switch ( pMatrixOrArray -> ObjectType() ) {
-    case object::objectType::matrix:
+    case object::objectType::objTypeMatrix:
         currentGS() -> concat(reinterpret_cast<matrix *>(pMatrixOrArray));
         break;
-    case object::objectType::array:
+    case object::objectType::objTypeArray:
         currentGS() -> concat(reinterpret_cast<array *>(pMatrixOrArray));
         break;
     default:
@@ -1536,11 +1536,11 @@ isNew = true;
         }
         return;
 
-    case object::matrix:
+    case object::objTypeMatrix:
 printf("wtf");
-    case object::array: {
+    case object::objTypeArray: {
 
-        if ( ! ( object::array == pAny2 -> ObjectType() ) && ! ( object::matrix == pAny2 -> ObjectType() ) ) {
+        if ( ! ( object::objTypeArray == pAny2 -> ObjectType() ) && ! ( object::objTypeMatrix == pAny2 -> ObjectType() ) ) {
             push(pFalseConstant);
             return;
         }
@@ -2048,7 +2048,7 @@ printf("wtf");
    object *pSource = pop();
 
    switch ( pSource -> ObjectType() ) {
-   case object::array: {
+   case object::objTypeArray: {
       array *pArray = reinterpret_cast<array *>(pSource);
       long n = pArray -> size();
       for ( long k = 0; k < n; k++ ) {
@@ -2150,7 +2150,7 @@ printf("wtf");
 
     switch ( pTarget -> ObjectType() ) {
 
-    case object::array:
+    case object::objTypeArray:
         push(reinterpret_cast<array *>(pTarget) -> getElement(pIndex -> IntValue()));
         return;
 
@@ -2497,7 +2497,7 @@ printf("wtf");
     object *pTopObject = pop();
 
     switch ( pTopObject -> ObjectType() ) {
-    case object::matrix: {
+    case object::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
@@ -2585,7 +2585,7 @@ operatorDebug();
     object *pTopObject = pop();
 
     switch ( pTopObject -> ObjectType() ) {
-    case object::matrix: {
+    case object::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
@@ -2672,7 +2672,7 @@ operatorDebug();
 
     switch ( pItem -> ObjectType() ) {
    
-    case object::array:
+    case object::objTypeArray:
         length = reinterpret_cast<array *>(pItem) -> size();
         break;
 

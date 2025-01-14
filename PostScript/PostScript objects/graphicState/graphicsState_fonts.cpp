@@ -11,6 +11,11 @@
     }
 
 
+    font *graphicsState::makeFont(array *pTransform,font *pCopyFrom) {
+    return font::makeFont(pTransform,pCopyFrom);
+    }
+
+
     font *graphicsState::makeFont(matrix *pTransform,font *pCopyFrom) {
     return font::makeFont(pTransform,pCopyFrom);
     }

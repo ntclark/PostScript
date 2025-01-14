@@ -20,6 +20,8 @@
 
     drawType42Glyph(glyphIndex,&startPoint,&endPoint);
 
+    moveto(endPoint.x,endPoint.y);
+
     return;
     }
 
@@ -100,12 +102,12 @@
     }
 
     font::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
-                                        (UINT_PTR)psXformsStack.top() -> Values(),
+                                        (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
                                             job::pIGlyphRenderer,
                                             pStartPoint,pEndPoint);
 
-job::pIGlyphRenderer -> Render();
+//job::pIGlyphRenderer -> Render();
 
     return;
     }
@@ -175,7 +177,7 @@ job::pIGlyphRenderer -> Render();
 
     translate(currentUserSpacePoint.x,currentUserSpacePoint.y);
 
-    concat(CurrentFont() -> getMatrix());
+    concat(CurrentFont() -> getFontMatrix());
 
     pJob -> executeProcedure(pBuildGlyph);
 
