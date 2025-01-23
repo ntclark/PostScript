@@ -37,12 +37,20 @@
 
         void transformPoints(GS_POINT *pPoints,uint16_t pointCount);
         void transformPoints(POINT *pPoints,uint16_t pointCount);
-        void transformPoints(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);
+
+        void transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
+        void unTransformPoint(POINTF *ptIn,POINTF *ptOut);
+
+        static void transformPoints(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);
+        static void transformPointsInPlace(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);
 
         XFORM *XForm() { return &xForm; }
 
     private:
 
+        void invert();
+
         XFORM xForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+        XFORM xFormInverse{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
 
     };

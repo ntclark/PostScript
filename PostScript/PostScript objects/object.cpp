@@ -335,7 +335,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
 
     POINT_TYPE object::PointValue() {
-    return DoubleValue();
+    return (POINT_TYPE)DoubleValue();
     }
 
 

@@ -10,153 +10,167 @@
 #include "Stacks/fontStack.h"
 #include "pathParameters.h"
 
-   class graphicsState {
-   public:
+    class graphicsState {
+    public:
 
-      graphicsState(job *pJob);
-      ~graphicsState();
+        graphicsState(job *pJob);
+        ~graphicsState();
 
-      void setMatrix(object *pMatrix);
-      void currentMatrix();
-      void revertMatrix();
+        void setMatrix(object *pMatrix);
+        void currentMatrix();
+        void revertMatrix();
 
-      void concat(matrix *);
-      void concat(array *);
-      void concat(POINT_TYPE *);
-      //void concat(XFORM &);
-      void concat(XFORM *);
+        void concat(matrix *);
+        void concat(array *);
+        void concat(FLOAT *);
+        void concat(XFORM *);
 
-      void restored();
+        void restored();
 
-      void moveto();
-      void moveto(object *pX,object *pY);
-      void moveto(POINT_TYPE x,POINT_TYPE y);
-      void moveto(GS_POINT *pPt);
+        // ALL graphics primitives take values in USER space
+        // as input. That is, values verbatim as they exist
+        // in the postscript file.
 
-      void rmoveto();
-      void rmoveto(POINT_TYPE x,POINT_TYPE y);
-      void rmoveto(GS_POINT pt);
+        void moveto();
+        void moveto(object *pX,object *pY);
+        void moveto(FLOAT x,FLOAT y);
+        void moveto(GS_POINT *pPt);
+        void moveto(POINTF *pPt);
 
-      void lineto();
-      void lineto(object *pX,object *pY);
-      void lineto(POINT_TYPE x,POINT_TYPE y);
-      void lineto(GS_POINT *pPt);
+        void rmoveto();
+        void rmoveto(FLOAT x,FLOAT y);
+        void rmoveto(GS_POINT pt);
 
-      void rlineto();
-      void rlineto(POINT_TYPE x,POINT_TYPE );
-      void rlineto(GS_POINT);
+        void lineto();
+        void lineto(object *pX,object *pY);
+        void lineto(FLOAT x,FLOAT y);
+        void lineto(GS_POINT *pPt);
 
-      void curveto();
+        void rlineto();
+        void rlineto(FLOAT x,FLOAT );
+        void rlineto(GS_POINT);
 
-      void arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2);
+        void curveto();
+        void quadcurveto();
 
-      void dot(GS_POINT at,POINT_TYPE radius);
+        void arcto(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
 
-      void newpath();
-      void stroke();
-      void closepath();
-      void fillpath();
-      void eofillpath();
+        void dot(GS_POINT at,FLOAT radius);
 
-      boolean setDefaultToRasterize(boolean doRasterization);
+        void newpath();
+        void stroke();
+        void closepath();
+        void fillpath();
+        void eofillpath();
 
-      void translate(POINT_TYPE x,POINT_TYPE y);
-      void rotate(POINT_TYPE angle);
-      void scale(POINT_TYPE scaleX,POINT_TYPE scaleY);
-      void setTranslation(POINT_TYPE x,POINT_TYPE y);
+        // ALL transformations are from USER space to PAGE space
+        // USER space is that in which all numeric x,y values are in
+        // in the postscript file.
+        // PAGE space is the domain PDF Width x PDF Height
+        // Transformation from USER space to PAGE space
+        // uses the "current transformation matrix" (CTM)
+        // and in the case of text, the current font matrix
 
-      void transformPoint(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
-      void transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
-      void transformPointInPlace(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
-      void transformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2);
+        void translate(FLOAT x,FLOAT y);
+        void rotate(FLOAT angle);
+        void scale(FLOAT scaleX,FLOAT scaleY);
+        void setTranslation(FLOAT x,FLOAT y);
 
-      void untransformPoint(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
-      void untransformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
-      void untransformPointInPlace(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
-      void untransformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *x2,POINT_TYPE *y2);
+        void transformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPoint(GS_POINT *ptIn,GS_POINT *ptOut);
+        void transformPointInPlace(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
 
-      void scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *px2,POINT_TYPE *py2);
+        void untransformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPoint(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPoint(POINTF *ptIn,POINTF *ptOut);
+        void untransformPointInPlace(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
 
-      void setPageDevice(dictionary *pDictionary);
+        void scalePoint(FLOAT x,FLOAT y,FLOAT *px2,FLOAT *py2);
 
-      void setGraphicsStateDict(char *pszDictName);
+        void setPageDevice(dictionary *pDictionary);
 
-      void setFont(font *pFont);
-      font *makeFont(array *pArray,font *pCopyFrom);
-      font *makeFont(matrix *pMatix,font *pCopyFrom);
-      font *scaleFont(POINT_TYPE scaleFactor,font *pCopyFrom);
+        void setGraphicsStateDict(char *pszDictName);
 
-      void drawTextChar(BYTE bGlyph);
-      void drawTextString();
-      void drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
-      void drawType3Glyph(BYTE bGlyph);
+        void setFont(font *pFont);
+        font *makeFont(array *pArray,font *pCopyFrom);
+        font *makeFont(matrix *pMatix,font *pCopyFrom);
+        font *scaleFont(FLOAT scaleFactor,font *pCopyFrom);
 
-      void openGeometry();
-      void closeGeometry();
-      void renderGeometry();
+        void drawTextChar(BYTE bGlyph);
+        void drawTextString();
 
-      void setCacheDevice();
+        void drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
+        void drawType3Glyph(BYTE bGlyph);
 
-      void initialize();
+#ifdef USE_RENDERER
+#else
+        void openGeometry();
+        void closeGeometry();
+        void renderGeometry();
+#endif
+        void setCacheDevice();
 
-      void gSave();
-      void gRestore();
+        void initialize();
 
-      void save();
-      void restore(class save *pSave);
+        void gSave();
+        void gRestore();
 
-      void showPage();
+        void save();
+        void restore(class save *pSave);
 
-      void filter();
-      void image();
-      void colorImage();
-      void renderImage(HBITMAP hbmResult,object *pWidth,object *pHeight);
-      void renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height);
+        void showPage();
 
-      font *findFont(char *pszFontName);
+        void filter();
+        void image();
+        void colorImage();
+        void renderImage(HBITMAP hbmResult,object *pWidth,object *pHeight);
+        void renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height);
 
-      void setLineCap(long v);
-      void setLineJoin(long v);
-      void setLineWidth(POINT_TYPE v);
-      void setLineDash(array *pArray,POINT_TYPE offset);
+        font *findFont(char *pszFontName);
 
-      void setColorSpace(colorSpace *);
-      colorSpace *getColorSpace();
+        void setLineCap(long v);
+        void setLineJoin(long v);
+        void setLineWidth(FLOAT v);
+        void setLineDash(array *pArray,FLOAT offset);
 
-      void setColor(colorSpace *);
-      void setRGBColor(COLORREF rgb);
-      void setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b);
+        void setColorSpace(colorSpace *);
+        colorSpace *getColorSpace();
 
-      static void RenderGeometry();
+        void setColor(colorSpace *);
+        void setRGBColor(COLORREF rgb);
+        void setRGBColor(FLOAT r,FLOAT g,FLOAT b);
 
-      static void SetSurface(HWND hwndSurface,long pageNumber);
-      static void initMatrix(HWND hwndClient,long pageNumber);
+        static void RenderGeometry();
 
-      static void outlinePage();
+        static void SetSurface(HWND hwndSurface,long pageNumber);
+        static void initMatrix(HWND hwndClient,long pageNumber);
 
-      static POINT_TYPE degToRad;
-      static POINT_TYPE piOver2;
+        static FLOAT degToRad;
+        static FLOAT piOver2;
 
-   private:
+    private:
 
-      job *pJob{NULL};
+        job *pJob{NULL};
 
-      font *CurrentFont() { return font::CurrentFont(); }
+        font *CurrentFont() { return font::CurrentFont(); }
 
-      GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
-      GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;
+        GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
+        GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;
 
-      static gdiParametersStack gdiParametersStack;
-      static pathParametersStack pathParametersStack;
-      static psTransformsStack psXformsStack;
+        static gdiParametersStack gdiParametersStack;
+        static pathParametersStack pathParametersStack;
+        static psTransformsStack psXformsStack;
 
-      static long pageHeightPoints;
-      static long pageWidthPoints;
+        static long pageHeightPoints;
+        static long pageWidthPoints;
 
-      static long cyPageGutter;
-      static long pageCount;
+        static long cyPageGutter;
+        static long pageCount;
 
-      friend class graphicsStateStack;
-      friend struct pathParameters;
-   };
+        friend class graphicsStateStack;
+        friend struct pathParameters;
+    };
    

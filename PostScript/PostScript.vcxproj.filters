@@ -264,9 +264,6 @@
     <ClCompile Include="PostScript objects\graphicState\pathParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_freetype.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
     <ClCompile Include="Stacks\psTransformsStack.cpp">
       <Filter>Source Files\Stacks</Filter>
     </ClCompile>

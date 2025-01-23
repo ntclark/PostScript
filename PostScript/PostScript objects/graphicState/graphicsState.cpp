@@ -33,6 +33,9 @@
     if ( ! gdiParametersStack.isInitialized() )
         gdiParametersStack.initialize();
 
+    if ( ! pathParametersStack.isInitialized() )
+        pathParametersStack.initialize();
+
     SetSurface(pJob -> hwndSurface,0);
 
     return;

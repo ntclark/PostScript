@@ -8,6 +8,11 @@
     }
 
 
+    HRESULT GlyphRenderer::GraphicElements::ClosePath() {
+    return E_NOTIMPL;
+    }
+
+
     HRESULT GlyphRenderer::GraphicElements::StrokePath() {
     applyPath(false);
     clearPath();

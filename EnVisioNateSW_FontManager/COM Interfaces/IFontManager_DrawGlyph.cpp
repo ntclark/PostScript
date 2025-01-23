@@ -4,7 +4,11 @@
 
 #define FT_CURVE_TAG_ON 0x01
 
+#ifdef USE_RENDERER
+    HRESULT FontManager::RenderGlyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
+#else
     HRESULT FontManager::RenderGlyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IGlyphRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
+#endif
 
     font *pFont = static_cast<font *>(pIFont_Current);
 
@@ -14,31 +18,30 @@
     if ( ! ( font::fontType::ftype42 == pFont -> fontType ) )
         return E_UNEXPECTED;
 
-    //if ( NULL == pIGlyphRenderer )
-    //    BeginPath(hdc);
-
     HRESULT rc = drawType42Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pIGlyphRenderer,pStartPoint,pEndPoint);
-
-    //if ( NULL == pIGlyphRenderer ) {
-    //    EndPath(hdc);
-    //    StrokePath(hdc);
-    //}
 
     return rc;
     }
 
+#ifdef USE_RENDERER
+    HRESULT FontManager::drawType3Glyph(HDC,BYTE,UINT_PTR,UINT_PTR,IRenderer *,POINTF *pStartPoint,POINTF *pEndPoint) {
+    return E_NOTIMPL;
+    }
 
+
+    HRESULT FontManager::drawType42Glyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
+#else
     HRESULT FontManager::drawType3Glyph(HDC,BYTE,UINT_PTR,UINT_PTR,IGlyphRenderer *,POINTF *pStartPoint,POINTF *pEndPoint) {
     return E_NOTIMPL;
     }
 
 
     HRESULT FontManager::drawType42Glyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IGlyphRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
+#endif
 
     font *pFont = static_cast<font *>(pIFont_Current);
 
     BYTE *pbGlyphData = NULL;
-
 /*
     5.5 GlyphDirectory 
 
@@ -50,7 +53,7 @@
 */
 
     if ( ! ( NULL == pFont -> tableDirectory.table("gdir") ) ) {
-MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
+        MessageBox(NULL,__FILE__,"TODO: Implement gdir",MB_OK);
         return E_NOTIMPL;
 #if 0
         pJob -> push(pFont);
@@ -112,8 +115,10 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
             if ( (long)bGlyph <= pFont -> countGlyphs ) {
                 uint32_t glyphId = pFont -> glyphIDMap[bGlyph];
                 otLongHorizontalMetric pMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics[glyphId];
-                pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize();
-                pEndPoint -> y = pStartPoint -> y;
+                if ( ! ( NULL == pEndPoint ) ) {
+                    pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize();
+                    pEndPoint -> y = pStartPoint -> y;
+                }
                 return S_OK;
             }
             return E_FAIL;
@@ -130,12 +135,17 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
 
     glyphHeader.load(pbGlyphData);
 
-    if ( 0 > glyphHeader.contourCount ) 
+    if ( 0 > glyphHeader.contourCount ) {
+        MessageBox(NULL,__FILE__,"TODO: Implement compound glyphs",MB_OK);
         return E_NOTIMPL;
+    }
 
+    std::function<void()> newPathAction{NULL};
+    std::function<void()> closePathAction{NULL};
     std::function<void(POINT *pt)> moveToAction{NULL};
     std::function<void(POINT *pt)> lineToAction{NULL};
     std::function<void(POINT *pt1,POINT *pt2,POINT *pt3)> quadraticBezierAction{NULL};
+    std::function<void(POINT *ptStart,POINT *ptControl1,POINT *ptControl2,POINT *ptEnd)> cubicBezierAction{NULL};
     std::function<void(POINT *pt,uint8_t curveFlag,uint8_t ptIndex)> dotAction{NULL};
     std::function<void(POINT *ptStart)> endFigureAction{NULL};
 
@@ -151,8 +161,15 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
         if ( NULL == pIGraphicElements_External )
             pIGlyphRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_External));
 
-        moveToAction = [=](POINT *pt) { 
+        newPathAction = [=]() {
             pIGraphicElements_External -> NewPath();
+        };
+
+        closePathAction = [=]() {
+            pIGraphicElements_External -> ClosePath();
+        };
+
+        moveToAction = [=](POINT *pt) { 
             pIGraphicElements_External -> MoveTo((FLOAT)pt -> x,(FLOAT)pt -> y);
             currentPoint.x = pt -> x;
             currentPoint.y = pt -> y;
@@ -167,8 +184,16 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
         dotAction = [=](POINT *,uint8_t,uint8_t) {
         };
 
-        quadraticBezierAction = [=](POINT *,POINT *pt2,POINT *pt3) {
+        quadraticBezierAction = [=](POINT *pt0,POINT *pt2,POINT *pt3) {
             pIGraphicElements_External -> QuadraticBezierTo((FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
+            currentPoint.x = pt3 -> x;
+            currentPoint.y = pt3 -> y;
+        };
+
+        cubicBezierAction = [=](POINT *pt0,POINT *pt1,POINT *pt2,POINT *pt3) {
+            pIGraphicElements_External -> CubicBezierTo((FLOAT)pt1 -> x,(FLOAT)pt1 -> y,(FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
+            currentPoint.x = pt3 -> x;
+            currentPoint.y = pt3 -> y;
         };
 
         endFigureAction = [=](POINT *ptStart) {
@@ -176,6 +201,13 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
         };
 
     } else {
+
+        newPathAction = [=]() {
+            BeginPath(hdc);
+        };
+
+        closePathAction = [=]() {
+        };
 
         moveToAction = [=](POINT *pt) { 
             MoveToEx(hdc,pt -> x,pt -> y,NULL);
@@ -194,7 +226,6 @@ MessageBox(NULL,__FILE__,"Not Impl",MB_OK);
         };
 
         dotAction = [=](POINT *pt,uint8_t curveFlag,uint8_t index) {
-return;
             POINT ptCurrent;
             GetCurrentPositionEx(hdc,&ptCurrent);
             long width = 2;
@@ -208,63 +239,102 @@ return;
             LineTo(hdc,width + pt -> x,- width + pt -> y);
             LineTo(hdc,width + pt -> x,width + pt -> y);
             if ( ! ( curveFlag == 0xFF ) ) {
-                char szX[16];
-                sprintf_s<16>(szX,"%02x-%02d",curveFlag & 0x03,index);
-                RECT rc{pt -> x + width + 8,pt -> y,pt -> x + width + 60,pt -> y + 32};
+                char szX[64];
+                //sprintf_s<16>(szX,"%02x-%02d",curveFlag & 0x03,index);
+                sprintf_s<64>(szX,"%04d-%04d",pt -> x,pt -> y);
+                RECT rc{pt -> x + width + 8,pt -> y,pt -> x + width + 128,pt -> y + 32};
                 DrawTextEx(hdc,szX,-1,&rc,0L,NULL);
             }
             MoveToEx(hdc,ptCurrent.x,ptCurrent.y,NULL);
         };
 
         quadraticBezierAction = [=](POINT *pt1,POINT *pt2,POINT *pt3) {
-            for ( FLOAT t = 0.0; t <= 1.0; t += BEZIER_CURVE_GRANULARITY ) {
-                FLOAT x = (1.0f - t) * (1.0f - t) * pt1 -> x + 2.0f * t * (1.0f - t) * pt2 -> x + t * t * pt3 -> x;
-                FLOAT y = (1.0f - t) * (1.0f - t) * pt1-> y + 2.0f * t * (1.0f - t) * pt2 -> y + t * t * pt3 -> y;
-                POINT pt{(LONG)x,(LONG)y};
-                lineToAction(&pt);
-            }
+            POINT pThePts[3];
+            pThePts[0] = *pt1;
+            pThePts[1] = *pt2;
+            pThePts[2] = *pt3;
+            PolyBezierTo(hdc,pThePts,3);
+            currentPoint.x = pt3 -> x;
+            currentPoint.y = pt3 -> y;
         };
 
-        HPEN hPen = CreatePen(PS_SOLID,1,RGB(255,0,0));
-        HGDIOBJ oldObj = SelectObject(hdc,hPen);
+        cubicBezierAction = [=](POINT *pt0,POINT *pt1,POINT *pt2,POINT *pt3) {
+            POINT pThePts[3];
+            pThePts[0] = *pt1;
+            pThePts[1] = *pt2;
+            pThePts[2] = *pt3;
+            PolyBezierTo(hdc,pThePts,3);
+            currentPoint.x = pt3 -> x;
+            currentPoint.y = pt3 -> y;
+        };
 
     }
 
     pSimpleGlyph = new otSimpleGlyph(bGlyph,pFont,&glyphHeader,pbGlyphData);
 
+#if 0
     matrix *pMatrix = new matrix();
 
+    // Scale Glyph Coordinates to points
     pMatrix -> scale(pFont -> scaleFUnitsToPoints);
 
+    // Transform Glyph coordinates in points using current font matrix
     pMatrix -> concat(pFont -> matrixStack.top());
 
+    // If the coordinates are not scaled up by some amount,
+    // very poor performance in rasterization occurs. It is
+    // not clear why, though it probably has to do with
+    // roundoff, itself due to lack of precision in FLOAT
+    XFORM scaleUp{64.0f,0.0f,0.0f,64.0f,0.0f,0.0f};
+    pMatrix -> concat(&scaleUp);
+
+    // Transform those using the current postscript CTM
+    // which will put the coordinates in PAGE space
     pMatrix -> concat((XFORM *)pPSXform);
 
-    POINT initialPoint{(LONG)pStartPoint -> x,(LONG)pStartPoint -> y};
+    POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
 
     if ( NULL == pIGlyphRenderer ) {
         pMatrix -> concat((XFORM *)pXformToDeviceSpace);
-        GetCurrentPositionEx(hdc,&initialPoint);
-        //POINTF pt{pStartPoint -> x,pStartPoint -> y};
-        //pMatrix -> transformPoints((XFORM *)pXformToDeviceSpace,(GS_POINT *)&pt,1);
-        //pMatrix -> move((FLOAT)pt.x,(FLOAT)pt.y);
-        pMatrix -> move((FLOAT)initialPoint.x,(FLOAT)initialPoint.y);
+        matrix::transformPoints((XFORM *)pXformToDeviceSpace,(GS_POINT *)&initialPoint,1);
+        pMatrix -> move(initialPoint.x,initialPoint.y);
     } else {
-        pMatrix -> move(pStartPoint -> x,pStartPoint -> y);
+        // startPoint (initialPoint) should be in page space coordinates
+        // That is, the coordinates in the range PDF Height x PDF Width
+        // essentially after the current postscript transformation has been 
+        // applied.
+        // The GlyphRenderer will convert this to device (GDI) coordinates
+        matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
+        pIGlyphRenderer -> put_Origin(initialPoint);
+        pIGlyphRenderer -> put_DownScale(64.0f);
     }
 
     pMatrix -> transformPoints(pSimpleGlyph -> pPoints,pSimpleGlyph -> pointCount);
+#else
 
-    pMatrix -> transformPoints(&initialPoint,1);
+    // startPoint (initialPoint) should be in page space coordinates
+    // That is, the coordinates in the range PDF Height x PDF Width
+    // essentially after the current postscript transformation has been 
+    // applied.
+    // The GlyphRenderer will convert this to device (GDI) coordinates
 
-    if ( NULL == pIGlyphRenderer ) {
-        uint8_t ptIndex = 0;
-        for ( long k = 0; k < pSimpleGlyph -> pGlyphHeader -> contourCount; k++ ) {
-            uint8_t *pOnCurve = pSimpleGlyph -> pFlagsFirst[k];
-            for ( long j = 0; j < pSimpleGlyph -> contourPointCount[k]; j++ )
-                dotAction(pSimpleGlyph -> pPointFirst[k] + j,pOnCurve[j],ptIndex++);
-        }
-    }
+    POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
+
+    //matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
+    pIGlyphRenderer -> put_Origin(initialPoint);
+    pIGlyphRenderer -> put_DownScale(pFont -> PointSize() * pFont -> scaleFUnitsToPoints);
+#endif
+
+    //if ( NULL == pIGlyphRenderer ) {
+    //    uint8_t ptIndex = 0;
+    //    for ( long k = 0; k < pSimpleGlyph -> pGlyphHeader -> contourCount; k++ ) {
+    //        uint8_t *pOnCurve = pSimpleGlyph -> pFlagsFirst[k];
+    //        for ( long j = 0; j < pSimpleGlyph -> contourPointCount[k]; j++ )
+    //            dotAction(pSimpleGlyph -> pPointFirst[k] + j,pOnCurve[j],ptIndex++);
+    //    }
+    //}
+
+    newPathAction();
 
     for ( long k = 0; k < pSimpleGlyph -> pGlyphHeader -> contourCount; k++ ) {
 
@@ -273,11 +343,12 @@ return;
         uint8_t *pOnCurve = pSimpleGlyph -> pFlagsFirst[k];
         POINT *pPoints = pSimpleGlyph -> pPointFirst[k];
 
-        if ( pOnCurve[0] & FT_CURVE_TAG_ON ) {
+        if ( pOnCurve[0] & FT_CURVE_TAG_ON )
             moveToAction(pPoints);
-            //dotAction(pPoints,0x01);
-        } else {
-MessageBox(NULL,__FILE__,"Shouldn't happen",MB_OK);
+        else {
+            char szX[128];
+            sprintf_s<128>(szX,"Invalid font: A glyph (%x) has a contour whose first point is OFF the contour",bGlyph);
+            MessageBox(NULL,szX,__FILE__,MB_OK);
         }
 
         long pointIndex = 0;
@@ -291,6 +362,8 @@ MessageBox(NULL,__FILE__,"Shouldn't happen",MB_OK);
                 continue;
             }
 
+            // This is the first point OFF the curve
+            // It is a (first) control point
             int controlIndices[]{pointIndex,0,0,0,0};
             int bezierIndex = 0;
 
@@ -313,27 +386,19 @@ CaptureBezier:
             pointIndex++;
 
             if ( 0 == ( pOnCurve[pointIndex] & FT_CURVE_TAG_ON ) && pointIndex < pointCount ) {
+                // The next point is OFF the curve
                 bezierIndex++;
                 controlIndices[bezierIndex] = pointIndex;
                 goto CaptureBezier;
             }
 
-            long controlIndex = 0;
-
             POINT startPoint{currentPoint.x,currentPoint.y};
 
-            POINT lastPoint;
+            long controlIndex = 0;
 
-            if ( pointIndex == pointCount ) {
-                lastPoint.x = pPoints -> x;
-                lastPoint.y = pPoints -> y;
-            } else {
-                lastPoint.x = (pPoints + pointIndex) -> x;
-                lastPoint.y = (pPoints + pointIndex) -> y;
-            }
+            POINT lastPoint = (pointIndex == pointCount) ? pPoints[0] : pPoints[pointIndex];
 
             POINT endPoint = lastPoint;
-
             POINT *pStart = &startPoint;
             POINT *pEnd = &endPoint;
 
@@ -348,7 +413,7 @@ CaptureBezier:
                     endPoint.y = (LONG)((pControl -> y + (pPoints + controlIndices[controlIndex + 1]) -> y) / 2.0f);
                 }
 
-                quadraticBezierAction(pStart,pControl,pEnd);
+                quadraticBezierAction(pStart,pControl,&endPoint);
 
                 startPoint.x = pEnd -> x;
                 startPoint.y = pEnd -> y;
@@ -359,17 +424,27 @@ CaptureBezier:
 
         }
 
-        endFigureAction(pSimpleGlyph -> pPointFirst[k]);
+        lineToAction(pPoints);
+
+        closePathAction();
 
     }
 
-    if ( ! ( NULL == pIGraphicElements_External ) )
+    if ( ! ( NULL == pIGraphicElements_External ) ) {
         pIGraphicElements_External -> FillPath();
+        pIGlyphRenderer -> Reset();
+    }
 
-    pEndPoint -> x = pStartPoint -> x + pSimpleGlyph -> advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize() / pMatrix -> XForm() -> eM11;
-    pEndPoint -> y = pStartPoint -> y;
+#if 0
+    if ( ! ( NULL == pEndPoint ) ) {
+        POINTF ptAdvance{pSimpleGlyph -> advanceWidth,0.0f};
+        pMatrix -> unTransformPoint(&ptAdvance,&ptAdvance);
+        pEndPoint -> x = pStartPoint -> x + ptAdvance.x;
+        pEndPoint -> y = pStartPoint -> y + ptAdvance.y;
+    }
 
     delete pMatrix;
+#endif
 
     delete pSimpleGlyph;
 

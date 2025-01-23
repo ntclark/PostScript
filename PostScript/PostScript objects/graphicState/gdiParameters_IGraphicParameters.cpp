@@ -2,6 +2,8 @@
 
 #include "gdiParameters.h"
 
+#ifdef USE_RENDERER
+#else
 
     HRESULT gdiParameters::GraphicParameters::put_LineWidth(POINT_TYPE v) { 
     pParent -> lineWidth = v; 
@@ -104,3 +106,5 @@
     pParent -> setLineDash(NULL,0,0.0f);
     return S_OK;
     }
+
+#endif

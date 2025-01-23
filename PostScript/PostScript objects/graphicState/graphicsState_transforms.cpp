@@ -6,7 +6,6 @@
 
     void graphicsState::initMatrix(HWND hwndClient,long pageNumber) {
     pathParametersStack.top() -> initMatrix(hwndClient,pageNumber,pageHeightPoints);
-//outlinePage();
     return;
     }
 
@@ -29,7 +28,7 @@
     }
 
 
-    void graphicsState::concat(POINT_TYPE *pValues) {
+    void graphicsState::concat(FLOAT *pValues) {
     psXformsStack.top() -> concat(pValues);
     return;
     }
@@ -57,10 +56,6 @@
         psXformsStack.top() -> d(pMatrix -> d());
         psXformsStack.top() -> tx(pMatrix -> tx());
         psXformsStack.top() -> ty(pMatrix -> ty());
-char szX[128];
-sprintf_s<128>(szX,"setMatrix: eM11 %f, eM12 %f, eM21 %f, eM22 %f\n",psXformsStack.top() -> XForm() -> eM11,psXformsStack.top() -> XForm() -> eM12,
-                                                                        psXformsStack.top() -> XForm() -> eM21,psXformsStack.top() -> XForm() -> eM22);
-OutputDebugStringA(szX);
         }
         break;
 
@@ -85,10 +80,6 @@ OutputDebugStringA(szX);
     pMatrix -> tx(psXformsStack.top() -> tx());
     pMatrix -> ty(psXformsStack.top() -> ty());
     pPStoPDF -> currentJob() -> push(pMatrix);
-char szX[128];
-sprintf_s<128>(szX,"currentMatrix: eM11 %f, eM12 %f, eM21 %f, eM22 %f\n",psXformsStack.top() -> XForm() -> eM11,psXformsStack.top() -> XForm() -> eM12,
-                                                                        psXformsStack.top() -> XForm() -> eM21,psXformsStack.top() -> XForm() -> eM22);
-OutputDebugStringA(szX);
     return;
     }
 
@@ -98,92 +89,108 @@ OutputDebugStringA(szX);
     }
 
 
-    void graphicsState::setTranslation(POINT_TYPE x,POINT_TYPE y) {
+    void graphicsState::setTranslation(FLOAT x,FLOAT y) {
     psXformsStack.top() -> tx(x);
     psXformsStack.top() -> ty(y);
     return;
     }
 
 
-    void graphicsState::translate(POINT_TYPE x,POINT_TYPE y) {
+    void graphicsState::translate(FLOAT x,FLOAT y) {
     psXformsStack.top() -> translate(x,y);
     return;
     }
 
 
-    void graphicsState::scale(POINT_TYPE scaleX,POINT_TYPE scaleY) {
+    void graphicsState::scale(FLOAT scaleX,FLOAT scaleY) {
     psXformsStack.top() -> scale(scaleX,scaleY);
     return;
     }
 
 
-    void graphicsState::rotate(POINT_TYPE angle) {
+    void graphicsState::rotate(FLOAT angle) {
     psXformsStack.top() -> rotate(angle);
     return;
     }
 
 
-    void graphicsState::transformPoint(matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
-    POINT_TYPE xResult = pMatrix -> a() * x + pMatrix -> b() * y + pMatrix -> tx();
-    POINT_TYPE yResult = pMatrix -> c() * x + pMatrix -> d() * y + pMatrix -> ty();
+    void graphicsState::transformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
+    FLOAT xResult = pMatrix -> a() * x + pMatrix -> b() * y + pMatrix -> tx();
+    FLOAT yResult = pMatrix -> c() * x + pMatrix -> d() * y + pMatrix -> ty();
     *pX2 = xResult;
     *pY2 = yResult;
     return;
     }
 
 
-    void graphicsState::transformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
+    void graphicsState::transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
     transformPoint(psXformsStack.top(),x,y,pX2,pY2);
     return;
     }
 
 
-    void graphicsState::transformPointInPlace(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
-    POINT_TYPE xResult = pMatrix -> a() * x + pMatrix -> b() * y;
-    POINT_TYPE yResult = pMatrix -> c() * x + pMatrix -> d() * y;
+    void graphicsState::transformPoint(GS_POINT *ptIn,GS_POINT *ptOut) {
+    transformPoint(psXformsStack.top(),ptIn -> x,ptIn -> y,&ptOut -> x,&ptOut -> y);
+    return;
+    }
+
+
+    void graphicsState::transformPointInPlace(class matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
+    FLOAT xResult = pMatrix -> a() * x + pMatrix -> b() * y;
+    FLOAT yResult = pMatrix -> c() * x + pMatrix -> d() * y;
     *pX2 = xResult;
     *pY2 = yResult;
     return;
     }
 
 
-    void graphicsState::transformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
+    void graphicsState::transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
     transformPointInPlace(psXformsStack.top(),x,y,pX2,pY2);
     return;
     }
 
 
-    void graphicsState::untransformPoint(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
-    POINT_TYPE xResult = pMatrix -> aInverse() * x + pMatrix -> bInverse() * y + pMatrix -> txInverse();
-    POINT_TYPE yResult = pMatrix -> cInverse() * x + pMatrix -> dInverse() * y + pMatrix -> tyInverse();
+    void graphicsState::untransformPoint(class matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
+    FLOAT xResult = pMatrix -> aInverse() * x + pMatrix -> bInverse() * y + pMatrix -> txInverse();
+    FLOAT yResult = pMatrix -> cInverse() * x + pMatrix -> dInverse() * y + pMatrix -> tyInverse();
     *pX2 = xResult;
     *pY2 = yResult;
     return;
     }
 
 
-    void graphicsState::untransformPoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
+    void graphicsState::untransformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
     untransformPoint(psXformsStack.top(),x,y,pX2,pY2);
     return;
     }
 
 
-    void graphicsState::untransformPointInPlace(class matrix *pMatrix,POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
-    POINT_TYPE xResult = pMatrix -> aInverse() * x + pMatrix -> bInverse() * y;
-    POINT_TYPE yResult = pMatrix -> cInverse() * x + pMatrix -> dInverse() * y;
+    void graphicsState::untransformPoint(POINTF *ptIn,POINTF *ptOut) {
+    FLOAT xResult;
+    FLOAT yResult;
+    untransformPoint(ptIn -> x,ptIn -> y,&xResult,&yResult);
+    ptOut -> x = xResult;
+    ptOut -> y = yResult;
+    return;
+    }
+
+
+    void graphicsState::untransformPointInPlace(class matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
+    FLOAT xResult = pMatrix -> aInverse() * x + pMatrix -> bInverse() * y;
+    FLOAT yResult = pMatrix -> cInverse() * x + pMatrix -> dInverse() * y;
     *pX2 = xResult;
     *pY2 = yResult;
     return;
     }
 
 
-    void graphicsState::untransformPointInPlace(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
+    void graphicsState::untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
     untransformPointInPlace(psXformsStack.top(),x,y,pX2,pY2);
     return;
     }
 
 
-    void graphicsState::scalePoint(POINT_TYPE x,POINT_TYPE y,POINT_TYPE *pX2,POINT_TYPE *pY2) {
+    void graphicsState::scalePoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
     *pX2 = psXformsStack.top() -> a() * x;
     *pY2 = psXformsStack.top() -> d() * y;
     return;

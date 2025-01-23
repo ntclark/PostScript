@@ -151,6 +151,8 @@ Type42Font:
     HRESULT FontManager::put_PointSize(FLOAT pointSize) {
     font *pFont = static_cast<font *>(pIFont_Current);
     pFont -> PointSize(pointSize);
+    pFont -> matrixStack.top() -> XForm() -> eM11 = pointSize;
+    pFont -> matrixStack.top() -> XForm() -> eM22 = pointSize;
     return S_OK;
     }
 

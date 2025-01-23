@@ -4,7 +4,6 @@
 #include "pathParameters.h"
 
     pathParametersStack::pathParametersStack() {
-    push(new pathParameters());
     return;
     }
 
@@ -19,6 +18,7 @@
 
 
     void pathParametersStack::initialize() {
+    push(new pathParameters());
     top() -> initialize();
     return;
     }

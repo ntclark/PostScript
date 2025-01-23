@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef USE_RENDERER
+#include "Renderer_i.h"
+#else
+#include "GlyphRenderer_i.h"
+#endif
+
     class gdiParameters {
     public:
 
@@ -12,6 +18,8 @@
 
         void setupDC();
 
+#ifdef USE_RENDERER
+#else
         void forwardToRenderer();
 
         void revertToGDI() {
@@ -43,9 +51,11 @@
 
         } *pIGraphicParameters_Local{NULL};
 
+#endif
+
         IGraphicParameters *pIGraphicParameters{NULL};
 
-        POINT_TYPE lineWidth{gdiParameters::defaultLineWidth};
+        FLOAT lineWidth{gdiParameters::defaultLineWidth};
         long lineCap{gdiParameters::defaultLineCap};
         long lineJoin{gdiParameters::defaultLineJoin};
         COLORREF rgbColor{gdiParameters::defaultRGBColor};
@@ -55,17 +65,17 @@
 
         void setLineCap(long v);
         void setLineJoin(long v);
-        void setLineWidth(POINT_TYPE v);
-        void setLineDash(POINT_TYPE *pValues,long countValues,POINT_TYPE offset);
+        void setLineWidth(FLOAT v);
+        void setLineDash(FLOAT *pValues,long countValues,FLOAT offset);
 
         void setColorSpace(colorSpace *pColorSpace);
         colorSpace *getColorSpace();
 
         void setColor(colorSpace *pColorSpace);
         void setRGBColor(COLORREF rgb);
-        void setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b);
+        void setRGBColor(FLOAT r,FLOAT g,FLOAT b);
 
-        static POINT_TYPE defaultLineWidth;
+        static FLOAT defaultLineWidth;
         static long defaultLineCap;
         static long defaultLineJoin;
         static COLORREF defaultRGBColor;

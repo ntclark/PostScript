@@ -91,7 +91,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>STANDALONE_;DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_RENDERER;DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -99,7 +99,6 @@
       <PrecompiledHeaderFile />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\freetype-2.13.2\include;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -148,7 +147,7 @@ Exit 0</Command>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>STANDALONE_;DLLEXPORT=;NO_IMPLEMENT_PS_FONTS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_RENDERER;DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -157,7 +156,6 @@ Exit 0</Command>
       </PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\freetype-2.13.2\include;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -209,7 +207,6 @@ Exit 0</Command>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\freetype-2.13.2\include;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -265,7 +262,6 @@ Exit 0</Command>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\freetype-2.13.2\include;$(ProjectDir)\include;$(GSYSTEM_HOME)\Common\include</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -360,7 +356,6 @@ Exit 0</Command>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_showPage.cpp" />
     <ClCompile Include="PostScript objects\graphicState\graphicsState_transforms.cpp" />
     <ClCompile Include="PostScript objects\graphicState\pathParameters.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_freetype.cpp" />
     <ClCompile Include="PostScript objects\graphicState\pathParameters_GDI.cpp" />
     <ClCompile Include="PostScript objects\graphicState\pathParameters_GDIorRenderer.cpp" />
     <ClCompile Include="PostScript objects\graphicState\pathParameters_IGraphicElements.cpp" />

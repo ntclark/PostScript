@@ -2,6 +2,9 @@
 
 #include "pathParameters.h"
 
+#ifdef USE_RENDERER
+#else
+
     pathParameters::GraphicElements::GraphicElements(pathParameters *pp) : pParent(pp) {
     return;
     }
@@ -16,9 +19,17 @@
     }
 
 
+    HRESULT pathParameters::GraphicElements::ClosePath() {
+    if ( isPathActive ) 
+        ::EndPath(pPStoPDF -> GetDC());
+    isPathActive = false;
+    return S_OK;
+    }
+
+
     HRESULT pathParameters::GraphicElements::StrokePath() {
     if ( isPathActive ) {
-        EndPath(pPStoPDF -> GetDC());
+        ::EndPath(pPStoPDF -> GetDC());
         ::StrokePath(pPStoPDF -> GetDC());
     }
     isPathActive = false;
@@ -164,5 +175,8 @@
 
 
     HRESULT pathParameters::GraphicElements::QuadraticBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
+Beep(2000,200);
     return E_NOTIMPL;
     }
+
+#endif

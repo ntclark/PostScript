@@ -4,6 +4,7 @@
 #include "EnVisioNateSW_FontManager.h"
 
 #include "FontManager_i.c"
+
 #include "GlyphRenderer_i.c"
 
     IGraphicElements *FontManager::pIGraphicElements_External = NULL;

@@ -99,6 +99,7 @@
         void operatorPstack();
         void operatorPut();
         void operatorPutinterval();
+        void operatorQuadcurveto();
         void operatorReadonly();
         void operatorRectclip();
         void operatorRectfill();

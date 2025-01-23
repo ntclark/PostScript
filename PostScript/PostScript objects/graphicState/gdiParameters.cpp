@@ -3,15 +3,19 @@
 
 #include "gdiParameters.h"
 
-    POINT_TYPE gdiParameters::defaultLineWidth = 0.0;
+    POINT_TYPE gdiParameters::defaultLineWidth = 1.0f;
     long gdiParameters::defaultLineCap = 0;
     long gdiParameters::defaultLineJoin = 0;
     COLORREF gdiParameters::defaultRGBColor = RGB(0,0,0);
 
 
     gdiParameters::gdiParameters() {
+#ifdef USE_RENDERER
+    pIGraphicParameters = job::pIGraphicParameters_External;
+#else
     pIGraphicParameters_Local = new GraphicParameters(this);
     revertToGDI();
+#endif
     return;
     }
 
@@ -30,13 +34,16 @@
 
     pColorSpace = pRHS -> pColorSpace;
 
+#ifdef USE_RENDERER
+    pIGraphicParameters = job::pIGraphicParameters_External;
+#else
     pIGraphicParameters_Local = new GraphicParameters(this);
 
     if ( pRHS -> pIGraphicParameters == job::pIGraphicParameters_External )
         pIGraphicParameters = job::pIGraphicParameters_External;
     else
         pIGraphicParameters = pIGraphicParameters_Local;
-
+#endif
     return;
     }
 
@@ -44,7 +51,10 @@
     gdiParameters::~gdiParameters() {
     if ( ! ( NULL == pLineStyles ) )
         delete [] pLineStyles;
+#ifdef USE_RENDERER
+#else
     delete pIGraphicParameters_Local;
+#endif
     }
 
 
@@ -70,6 +80,8 @@
     }
 
 
+#ifdef USE_RENDERER
+#else
     void gdiParameters::forwardToRenderer() {
     pIGraphicParameters = job::pIGraphicParameters_External;
     setRGBColor(rgbColor);
@@ -79,7 +91,7 @@
     setLineDash(NULL,0,0.0f);
     return;
     }
-
+#endif
 
     void gdiParameters::setColorSpace(colorSpace *pcs) {
     pColorSpace = pcs;

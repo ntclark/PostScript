@@ -20,7 +20,10 @@
 
     drawType42Glyph(glyphIndex,&startPoint,&endPoint);
 
-    moveto(endPoint.x,endPoint.y);
+    // endPoint is in page space, transform it to user space
+    untransformPoint(&endPoint,&endPoint);
+
+    moveto(&endPoint);
 
     return;
     }
@@ -89,25 +92,15 @@
 
 
     void graphicsState::drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
-
-    pJob -> push(CurrentFont());
-    pJob -> push(pJob -> pFontTypeLiteral);
-    pJob -> operatorGet();
-
-    object *pFontType = pJob -> pop();
-
-    if ( 0 == strcmp(pFontType -> Contents(),"3") ) {
-        drawType3Glyph(bGlyph);
-        return;
-    }
-
     font::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
                                         (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
                                             job::pIGlyphRenderer,
                                             pStartPoint,pEndPoint);
-
-//job::pIGlyphRenderer -> Render();
+#ifdef USE_RENDERER
+#else
+    closeGeometry();
+#endif
 
     return;
     }
@@ -173,7 +166,10 @@
 
     psXformsStack.gSave();
 
+#ifdef USE_RENDERER
+#else
     openGeometry();
+#endif
 
     translate(currentUserSpacePoint.x,currentUserSpacePoint.y);
 
@@ -181,7 +177,10 @@
 
     pJob -> executeProcedure(pBuildGlyph);
 
+#ifdef USE_RENDERER
+#else
     closeGeometry();
+#endif
 
     psXformsStack.gRestore();
 

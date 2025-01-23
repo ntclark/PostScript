@@ -670,6 +670,27 @@
     }
 
 
+
+    void job::operatorQuadcurveto() {
+/*
+    curveto 
+        x1 y1 x2 y2 quadcurveto –
+
+    appends a section of a QUADRATIC Bézier curve to the current path between the current
+    point (x0, y0) and the endpoint (x2, y2), using (x1, y1) as the Bézier control
+    point. The endpoint (x2, y2) becomes the new current point. If the current
+    point is undefined because the current path is empty, a nocurrentpoint error
+    occurs.
+
+    see operatorCurveto for typical information
+
+*/
+
+    currentGS() -> quadcurveto();
+
+    return;
+    }
+
     void job::operatorReadonly() {
 /*
     readonly
@@ -2487,6 +2508,8 @@
 */
     object *pNumberArray = pop();
     object *pString = pop();
+
+
     return;
     }
 

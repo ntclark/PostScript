@@ -315,9 +315,13 @@ break;
     HDC hdcSource = CreateCompatibleDC(pPStoPDF -> GetDC());
     SelectObject(hdcSource,hbmResult);
 
+#ifdef USE_RENDERER
+Beep(2000,200);
+#else
     StretchBlt(pPStoPDF -> GetDC(),(long)((float)pathParametersStack.top() -> CurrentDevicePoint() -> x),
                                         (long)(((float)pathParametersStack.top() -> CurrentDevicePoint() -> y) + hUserSpace),(long)wUserSpace,-(long)hUserSpace,
                 hdcSource,0,0,width,height,SRCCOPY);
+#endif
 
 //POINT pts[] = { {0,0},{width,0},{width,height}};
 //PlgBlt(GetDC(HWND_DESKTOP),pts,hdcSource,0,0,width,height,NULL,0,0);

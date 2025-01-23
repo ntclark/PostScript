@@ -3,8 +3,6 @@
 
 #include "pathParameters.h"
 
-#include "GlyphRenderer_i.c"
-
 #include <d2d1.h>
 #include <d2d1helper.h>
 #include <wincodec.h>
@@ -22,43 +20,59 @@
     long pathParameters::cyClient = 0L;
     long pathParameters::cyWindow = 0L;
 
+#ifdef USE_RENDERER
+#else
     boolean pathParameters::isPathActive = false;
+#endif
 
     pathParameters::pathParameters() {
+#ifdef USE_RENDERER
+    pIGraphicElements = job::pIGraphicElements_External;
+#else
     pIGraphicElements_Local = static_cast<IGraphicElements *>(new GraphicElements(this));
     revertToLocal();
+#endif
     return;
     }
 
 
     pathParameters::pathParameters(pathParameters *pRHS) {
+#ifdef USE_RENDERER
+    pIGraphicElements = job::pIGraphicElements_External;
+#else
     pIGraphicElements_Local = static_cast<IGraphicElements *>(new GraphicElements(this));
     if ( pRHS -> pIGraphicElements == pRHS -> pIGraphicElements_Local )
         revertToLocal();
     else
        forwardToRenderer();
+#endif
     return;
     }
 
 
     pathParameters::~pathParameters() {
+#ifdef USE_RENDERER
+#else
     delete pIGraphicElements_Local;
+#endif
     return;
     }
 
 
     void pathParameters::initialize() {
-    closepath();
     memset(&toDeviceSpace,0,sizeof(XFORM));
     toDeviceSpace.eM11 = 1.0;
     toDeviceSpace.eM22 = 1.0;
     displayResolution = GetDeviceCaps(pPStoPDF -> GetDC(),LOGPIXELSX);
     scalePointsToPixels = 1.0;
+#if USE_RENDERER
+#else
     currentUserPoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
     currentDevicePoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
     userSpaceDomain = {POINT_TYPE_NAN,POINT_TYPE_NAN};
     currentGDIPoint.x = 0;
     currentGDIPoint.y = 0;
+#endif
     return;
     }
 

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{276e4a1e-8f88-4c6b-a892-acd50be56a42}</ProjectGuid>
-    <RootNamespace>EnVisioNateSWGlyphRenderer</RootNamespace>
+    <ProjectGuid>{B3529245-5B1F-4927-B6DD-95DE5F17D08D}</ProjectGuid>
+    <RootNamespace>EnVisioNateSWRenderer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -87,7 +87,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>GlyphRenderer.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Renderer.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;freetype.lib;commonUtilities.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -110,7 +110,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>GlyphRenderer.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Renderer.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;freetype.lib;commonUtilities.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -124,13 +124,14 @@
       <PreprocessorDefinitions>_DEBUG;ENVISIONATESWGLYPHRENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\freetype-2.13.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>GlyphRenderer.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Renderer.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;freetype-stock.lib;commonUtilities.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -146,6 +147,7 @@
       <PreprocessorDefinitions>NDEBUG;ENVISIONATESWGLYPHRENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Development\PostScript\freetype-2.13.2\freetype-2.13.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,7 +155,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>GlyphRenderer.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Renderer.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;freetype.lib;commonUtilities.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -161,23 +163,23 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="COM Interfaces\IGlyphRenderer.cpp" />
+    <ClCompile Include="COM Interfaces\IRenderer.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicElements.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicElements_Paths.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicParameters.cpp" />
     <ClCompile Include="COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="GlyphRenderer.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EnVisioNateSW_GlyphRenderer.h" />
-    <ClInclude Include="GlyphRenderer.h" />
+    <ClInclude Include="EnVisioNateSW_Renderer.h" />
+    <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="GlyphRenderer.def" />
+    <None Include="Renderer.def" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\GlyphRenderer.odl" />
+    <Midl Include="COM Implementation\Renderer.odl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

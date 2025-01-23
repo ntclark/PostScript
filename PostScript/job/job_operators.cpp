@@ -94,6 +94,7 @@
     pSystemDict -> put("pstack",&job::operatorPstack);
     pSystemDict -> put("put",&job::operatorPut);
     pSystemDict -> put("putinterval",&job::operatorPutinterval);
+    pSystemDict -> put("quadcurveto",&job::operatorQuadcurveto);
     pSystemDict -> put("readonly",&job::operatorReadonly);
     pSystemDict -> put("rectclip",&job::operatorRectclip);
     pSystemDict -> put("rectfill",&job::operatorRectfill);

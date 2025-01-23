@@ -1,6 +1,10 @@
 #include <Windows.h>
 
+#ifdef USE_RENDERER
+#include "Renderer_i.h"
+#else
 #include "GlyphRenderer_i.h"
+#endif
 #include "FontManager_i.h"
 
 #define ON_CURVE_POINT  0x01
@@ -16,7 +20,12 @@
     XFORM psXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
     XFORM gdiXForm{scalePDF,0.0f,0.0f,-scalePDF,0.0f,(FLOAT)cyWindow};
 
+#ifdef USE_RENDERER
+    extern IRenderer *pIGlyphRenderer;
+#else
     extern IGlyphRenderer *pIGlyphRenderer;
+#endif
+
     extern IGraphicElements *pIGraphicElements;
     extern IFontManager *pIFontManager;
 
@@ -43,32 +52,58 @@
 
         BeginPaint(hwnd,&ps);
 
+FillRect(ps.hdc,&ps.rcPaint,(HBRUSH) (COLOR_WINDOW + 1));
+
 cyWindow = ps.rcPaint.bottom - ps.rcPaint.top;
 scalePDF = (FLOAT)cyWindow / 792.0f;
-psXForm = {1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+psXForm = {0.5f,0.0f,0.0f,0.5f,0.0f,0.0f};
 gdiXForm = {scalePDF,0.0f,0.0f,-scalePDF,0.0f,(FLOAT)cyWindow};
 
         long countVertices;
 
-        char szText[]{"eThe quick brown fox jumped over the lazy dog"};
+        char szText[]{"The quick brown fox jumped over the lazy dog"};
 
         POINTF startPoint,endPoint;
 
-        startPoint.x = 36.0f;//612.0f / 2.0f;
-        startPoint.y = 792.0f / 2.0f;
+        FLOAT fontSize = 288.0f;
 
-        char *p = szText;
+        for ( long k = 0; k < 10; k++ ) {
 
-        while ( *p ) {
-            pIFontManager -> RenderGlyph(ps.hdc,(BYTE)*p,
-                                        (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
-                                            pIGlyphRenderer,
-                                            &startPoint,&endPoint);
-            startPoint = endPoint;
-            p++;
+            fontSize /= 1.5f;
+
+            pIFontManager -> put_PointSize(fontSize);
+
+            startPoint.x = 0.0f;
+            startPoint.y = 8 * 72.0 - (FLOAT) k * 72.0 / 2.0f;
+
+            char *p = szText;
+
+            while ( *p ) {
+                pIFontManager -> RenderGlyph(ps.hdc,(BYTE)*p,
+                                            (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
+                                                NULL,//pIGlyphRenderer,
+                                                &startPoint,&endPoint);
+                startPoint = endPoint;
+                p++;
+            }
+
+#if 0
+            p = szText;
+
+            startPoint.x = 2.0f;
+            startPoint.y = 5 * 72.0 - (FLOAT) k * 72.0;
+
+            while ( *p ) {
+                pIFontManager -> RenderGlyph(ps.hdc,(BYTE)*p,
+                                            (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
+                                                pIGlyphRenderer,
+                                                &startPoint,&endPoint);
+
+                startPoint = endPoint;
+                p++;
+            }
+#endif
         }
-
-        pIGlyphRenderer -> Render();
 
         EndPaint(hwnd,&ps);
         }

@@ -2,7 +2,8 @@
 
 #include "pathParameters.h"
 
-
+#ifdef USE_RENDERER
+#else
     void pathParameters::forwardToRenderer() {
     pIGraphicElements = job::pIGraphicElements_External;
     return;
@@ -13,7 +14,7 @@
     pIGraphicElements = pIGraphicElements_Local;
     return;
     }
-
+#endif
 
     void pathParameters::newpath() {
     pIGraphicElements -> NewPath();
@@ -30,6 +31,27 @@
     pIGraphicElements -> FillPath();
     return;
     }
+
+
+    void pathParameters::closepath() {
+    pIGraphicElements -> ClosePath();
+    return;
+    }
+
+
+    void pathParameters::eofillpath() {
+#ifdef USE_RENDERER
+Beep(2000,200);
+#else
+    if ( isPathActive )
+        closepath();
+    int oldMode = SetPolyFillMode(pPStoPDF -> GetDC(),ALTERNATE);
+    fillpath();
+    SetPolyFillMode(pPStoPDF -> GetDC(),oldMode);
+#endif
+    return;
+    }
+
 
     void pathParameters::moveto(GS_POINT *pPt) {
     pIGraphicElements -> MoveTo(pPt -> x,pPt -> y);
@@ -87,5 +109,11 @@
 
     void pathParameters::curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
     pIGraphicElements -> CubicBezierTo(x1,y1,x2,y2,x3,y3);
+    return;
+    }
+
+
+    void pathParameters::quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
+    pIGraphicElements -> QuadraticBezierTo(x1,y1,x2,y2);
     return;
     }

@@ -15,6 +15,8 @@ struct pathParameters;
       void gSave();
       void gRestore();
 
+      boolean isInitialized() { return 0 < size(); }
+
    private:
 
    };

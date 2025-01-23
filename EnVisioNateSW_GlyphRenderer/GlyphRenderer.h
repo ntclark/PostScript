@@ -40,6 +40,7 @@
         private:
 
             STDMETHOD(NewPath)();
+            STDMETHOD(ClosePath)();
             STDMETHOD(StrokePath)();
             STDMETHOD(FillPath)();
 

@@ -8,7 +8,7 @@
 
 #define OBJECT_HEAP_SIZE   2 * 104857600
 
-#define POINT_TYPE_NAN std::numeric_limits<POINT_TYPE>::quiet_NaN()
+#define POINT_TYPE_NAN std::numeric_limits<FLOAT>::quiet_NaN()
 #define POINT_TYPE_NAN_POINT {POINT_TYPE_NAN,POINT_TYPE_NAN}
 
 #define OBJECT_POINT_TYPE_VALUE FloatValue()

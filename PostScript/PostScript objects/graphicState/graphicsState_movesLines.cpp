@@ -4,12 +4,9 @@
 #include "pathParameters.h"
 #include "gdiParameters.h"
 
-    void graphicsState::outlinePage() {
-    pathParametersStack.top() -> outlinePage(pageWidthPoints,pageHeightPoints);
-    return;
-    }
 
-
+#ifdef USE_RENDERER
+#else
     void graphicsState::openGeometry() {
     pathParametersStack.top() -> openGeometry();
     gdiParametersStack.top() -> forwardToRenderer();
@@ -28,6 +25,7 @@
     pathParametersStack.top() -> renderGeometry();
     return;
     }
+#endif
 
 
     void graphicsState::RenderGeometry() {
@@ -50,18 +48,21 @@
     }
 
 
-    void graphicsState::moveto(POINT_TYPE x,POINT_TYPE y) {
+    void graphicsState::moveto(FLOAT x,FLOAT y) {
     currentUserSpacePoint = {x,y};
-    POINT_TYPE ptx;
-    POINT_TYPE pty;
-    transformPoint(x,y,&ptx,&pty);
-    currentPageSpacePoint = {ptx,pty};
-    pathParametersStack.top() -> moveto(ptx,pty);
+    transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
+    pathParametersStack.top() -> moveto(&currentPageSpacePoint);
     return;
     }
 
 
     void graphicsState::moveto(GS_POINT *pPt) {
+    moveto(pPt -> x,pPt -> y);
+    return;
+    }
+
+
+    void graphicsState::moveto(POINTF *pPt) {
     moveto(pPt -> x,pPt -> y);
     return;
     }
@@ -75,14 +76,11 @@
     }
 
 
-    void graphicsState::rmoveto(POINT_TYPE x,POINT_TYPE y) {
+    void graphicsState::rmoveto(FLOAT x,FLOAT y) {
     currentUserSpacePoint.x += x;
     currentUserSpacePoint.y += y;
-    POINT_TYPE ptx;
-    POINT_TYPE pty;
-    transformPoint(x,y,&ptx,&pty);
-    currentPageSpacePoint = {currentPageSpacePoint.x + ptx,currentPageSpacePoint.y + pty};
-    pathParametersStack.top() -> rmoveto(ptx,pty);
+    transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
+    pathParametersStack.top() -> moveto(&currentPageSpacePoint);
     return;
     }
 
@@ -107,11 +105,10 @@
     }
 
 
-    void graphicsState::lineto(POINT_TYPE x,POINT_TYPE y) {
+    void graphicsState::lineto(FLOAT x,FLOAT y) {
     currentUserSpacePoint = {x,y};
-    transformPoint(x,y,&x,&y);
-    currentPageSpacePoint = {x,y};
-    pathParametersStack.top() -> lineto(x,y);
+    transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
+    pathParametersStack.top() -> lineto(&currentPageSpacePoint);
     return;
     }
 
@@ -130,12 +127,11 @@
     }
 
 
-    void graphicsState::rlineto(POINT_TYPE x,POINT_TYPE y) {
+    void graphicsState::rlineto(FLOAT x,FLOAT y) {
     currentUserSpacePoint.x += x;
     currentUserSpacePoint.y += y;
-    transformPoint(x,y,&x,&y);
-    currentPageSpacePoint = {currentPageSpacePoint.x + x,currentPageSpacePoint.y + y};
-    pathParametersStack.top() -> rlineto(x,y);
+    transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
+    pathParametersStack.top() -> lineto(&currentPageSpacePoint);
     return;
     }
 
@@ -173,7 +169,30 @@
     }
 
 
-    void graphicsState::arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2) {
+    void graphicsState::quadcurveto() {
+
+    object *pY2 = pJob -> pop();
+    object *pX2 = pJob -> pop();
+    object *pY1 = pJob -> pop();
+    object *pX1 = pJob -> pop();
+
+    GS_POINT points[2] { {pX1 -> OBJECT_POINT_TYPE_VALUE,pY1 -> OBJECT_POINT_TYPE_VALUE},
+                         {pX2 -> OBJECT_POINT_TYPE_VALUE,pY2 -> OBJECT_POINT_TYPE_VALUE} };
+
+    currentUserSpacePoint = points[1];
+
+    transformPoint(points[0].x,points[0].y,&points[0].x,&points[0].y);
+    transformPoint(points[1].x,points[1].y,&points[1].x,&points[1].y);
+
+    currentPageSpacePoint = points[1];
+
+    pathParametersStack.top() -> quadcurveto(points[0].x,points[0].y,points[1].x,points[1].y);
+
+    return;
+    }
+
+
+    void graphicsState::arcto(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2) {
     transformPoint(xCenter,yCenter,&xCenter,&yCenter);
     GS_POINT r{0.0,radius};
     transformPoint(0.0f,radius,&r.x,&r.y);
@@ -183,6 +202,11 @@
     }
 
 
-    void graphicsState::dot(GS_POINT at,POINT_TYPE radius) {
+    void graphicsState::dot(GS_POINT at,FLOAT radius) {
+#ifdef USE_RENDERER
+Beep(2000,200);
+#else
     pathParametersStack.top() -> dot(at,radius);
+#endif
+    return;
     }

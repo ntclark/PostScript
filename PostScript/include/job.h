@@ -6,7 +6,12 @@
 #include "PdfEnabler_i.h"
 #include "pdfEnabler/Page.h"
 #include "PostScriptGen2_i.h"
+
+#ifdef USE_RENDERER
+#include "Renderer_i.h"
+#else
 #include "GlyphRenderer_i.h"
+#endif
 
 #include "parsing.h"
 #include "comment.h"
@@ -67,7 +72,12 @@
         static void *pNextHeap;
         static size_t currentlyAllocatedHeap;
 
+#ifdef USE_RENDERER
+        static IRenderer *pIGlyphRenderer;
+#else
         static IGlyphRenderer *pIGlyphRenderer;
+#endif
+
         static IGraphicElements *pIGraphicElements_External;
         static IGraphicParameters *pIGraphicParameters_External;
 

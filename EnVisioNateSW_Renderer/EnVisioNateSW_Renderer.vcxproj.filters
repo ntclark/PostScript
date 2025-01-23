@@ -14,70 +14,51 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Source Files\COM Implementation">
-      <UniqueIdentifier>{a0fbd8b7-063c-438b-9cca-e79a20c00aa0}</UniqueIdentifier>
+      <UniqueIdentifier>{a41e44c9-ebfc-48c4-8d48-4015e42c8911}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\COM Interfaces">
-      <UniqueIdentifier>{72cdfe5e-c485-4e24-8b80-6887d9fe8021}</UniqueIdentifier>
+      <UniqueIdentifier>{ca25b3e8-47a2-4b8d-a749-0e7f1a711156}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="COM Implementation\dllMain.cpp">
-      <Filter>Source Files\COM Implementation</Filter>
-    </ClCompile>
-    <ClCompile Include="FontManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="COM Interfaces\IUnknown.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="COM Interfaces\IFontManager.cpp">
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files\COM Implementation</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Interfaces\IGraphicElements.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="font.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="font_type42.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="COM Interfaces\IFontManager_DrawGlyph.cpp">
+    <ClCompile Include="COM Interfaces\IGraphicParameters.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="matrix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="simpleGlyph.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="COM Interfaces\IFont_EVNSW.cpp">
+    <ClCompile Include="COM Interfaces\IGraphicElements_Paths.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="COM Interfaces\IFontManager_GetGlyphGeometry.cpp">
-      <Filter>Source Files\COM Interfaces</Filter>
+    <ClCompile Include="COM Interfaces\IRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\FontManager.odl">
+    <ClInclude Include="EnVisioNateSW_Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="COM Implementation\Renderer.odl">
       <Filter>Source Files\COM Implementation</Filter>
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EnVisioNateSW_FontManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FontManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="font.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="matrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FontManager.def">
+    <None Include="Renderer.def">
       <Filter>Source Files\COM Implementation</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

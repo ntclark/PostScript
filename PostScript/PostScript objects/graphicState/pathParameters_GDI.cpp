@@ -2,6 +2,8 @@
 
 #include "pathParameters.h"
 
+#if USE_RENDERER
+#else
     void pathParameters::dot(GS_POINT at,POINT_TYPE radius) {
 
     POINT_TYPE ptx;
@@ -18,7 +20,6 @@
                             std::lround((POINT_TYPE)pty + radius / 2),
                             std::lround((POINT_TYPE)ptx + radius),
                             std::lround((POINT_TYPE)pty + radius / 2));
-
     return;
     }
 
@@ -43,3 +44,4 @@ return;
 
     return;
     }
+#endif

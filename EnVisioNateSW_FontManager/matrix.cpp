@@ -46,24 +46,6 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
-
-    //void matrix::SetValue(long index,FLOAT value) {
-    //values[index] = value;
-    //return;
-    //}
-
-
-    //void matrix::SetValues(FLOAT *pValues) {
-    //a(pValues[A]);
-    //b(pValues[B]);
-    //c(pValues[C]);
-    //d(pValues[D]);
-    //tx(pValues[TX]);
-    //ty(pValues[TY]);
-    //return;
-    //}
-
-
     void matrix::identity() {
     xForm.eM11 = 1.0f;
     xForm.eM12 = 0.0f;
@@ -71,6 +53,7 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     xForm.eM22 = 1.0f;
     xForm.eDx = 0.0f;
     xForm.eDy = 0.0f;
+    memset(&xFormInverse,0,sizeof(XFORM));
     return;
     }
 
@@ -82,6 +65,12 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     xForm.eM22 = pOther -> xForm.eM22;
     xForm.eDx = pOther -> xForm.eDx;
     xForm.eDy = pOther -> xForm.eDy;
+    xFormInverse.eM11 = pOther -> xFormInverse.eM11;
+    xFormInverse.eM12 = pOther -> xFormInverse.eM12;
+    xFormInverse.eM21 = pOther -> xFormInverse.eM21;
+    xFormInverse.eM22 = pOther -> xFormInverse.eM22;
+    xFormInverse.eDx = pOther -> xFormInverse.eDx;
+    xFormInverse.eDy = pOther -> xFormInverse.eDy;
     return;
     }
 
@@ -93,6 +82,7 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     xForm.eM22 = pSource -> eM22;
     xForm.eDx = pSource -> eDx;
     xForm.eDy = pSource -> eDy;
+    memset(&xFormInverse,0,sizeof(XFORM));
     return;
     }
 
@@ -102,11 +92,6 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     return;
     }
 
-
-    //void matrix::concat(XFORM &winXForm) {
-    //matrix::concat(reinterpret_cast<FLOAT *>(&winXForm));
-    //return;
-    //}
 
     void matrix::concat(XFORM *pPrime) {
 
@@ -120,6 +105,7 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     XFORM result;
     CombineTransform(&result,pPrime,&xForm);
     memcpy(&xForm,&result,sizeof(XFORM));
+    memset(&xFormInverse,0,sizeof(XFORM));
     return;
     }
 
@@ -148,6 +134,7 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     void matrix::move(GS_POINT& translateTo) {
     xForm.eDx = translateTo.x;
     xForm.eDy = translateTo.y;
+    memset(&xFormInverse,0,sizeof(XFORM));
     return;
     }
 
@@ -155,6 +142,7 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     void matrix::move(FLOAT x,FLOAT y) {
     xForm.eDx = x;
     xForm.eDy = y;
+    memset(&xFormInverse,0,sizeof(XFORM));
     return;
     }
 
@@ -163,8 +151,8 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     for ( long k = 0; k < pointCount; k++ ) {
         FLOAT x = pPoints[k].x;
         FLOAT y = pPoints[k].y;
-        pPoints[k].x = xForm.eM11 * x + xForm.eM12 * y + xForm.eDx;//values[A] * x + values[B] * y + values[TX];
-        pPoints[k].y = xForm.eM21 * x + xForm.eM22 * y + xForm.eDy;//values[C] * x + values[D] * y + values[TY];
+        pPoints[k].x = xForm.eM11 * x + xForm.eM12 * y + xForm.eDx;
+        pPoints[k].y = xForm.eM21 * x + xForm.eM22 * y + xForm.eDy;
     }
     return;
     }
@@ -174,8 +162,8 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     for ( long k = 0; k < pointCount; k++ ) {
         FLOAT x = (FLOAT)pPoints[k].x;
         FLOAT y = (FLOAT)pPoints[k].y;
-        FLOAT x2 = xForm.eM11 * x + xForm.eM12 * y + xForm.eDx;//values[A] * x + values[B] * y + values[TX];
-        FLOAT y2 = xForm.eM21 * x + xForm.eM22 * y + xForm.eDy;//values[C] * x + values[D] * y + values[TY];
+        FLOAT x2 = xForm.eM11 * x + xForm.eM12 * y + xForm.eDx;
+        FLOAT y2 = xForm.eM21 * x + xForm.eM22 * y + xForm.eDy;
         pPoints[k].x = (LONG)x2;
         pPoints[k].y = (LONG)y2;
     }
@@ -187,10 +175,68 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     for ( long k = 0; k < pointCount; k++ ) {
         FLOAT x = pPoints[k].x;
         FLOAT y = pPoints[k].y;
-        FLOAT x2 = pXForm -> eM11 * x + pXForm -> eM12 * y + pXForm -> eDx;//xForm[A] * x + xForm[B] * y + xForm[TX];
-        FLOAT y2 = pXForm -> eM21 * x + pXForm -> eM22 * y + pXForm -> eDy;//xForm[C] * x + xForm[D] * y + xForm[TY];
+        FLOAT x2 = pXForm -> eM11 * x + pXForm -> eM12 * y + pXForm -> eDx;
+        FLOAT y2 = pXForm -> eM21 * x + pXForm -> eM22 * y + pXForm -> eDy;
         pPoints[k].x = x2;
         pPoints[k].y = y2;
     }
+    return;
+    }
+
+
+    void matrix::transformPointsInPlace(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount) {
+    for ( long k = 0; k < pointCount; k++ ) {
+        FLOAT x = pPoints[k].x;
+        FLOAT y = pPoints[k].y;
+        FLOAT x2 = pXForm -> eM11 * x + pXForm -> eM12 * y;
+        FLOAT y2 = pXForm -> eM21 * x + pXForm -> eM22 * y;
+        pPoints[k].x = x2;
+        pPoints[k].y = y2;
+    }
+    return;
+    }
+
+
+    void matrix::transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut) {
+    FLOAT x = ptIn -> x;
+    FLOAT y = ptIn -> y;
+    ptOut -> x = pXForm -> eM11 * x + pXForm -> eM12 * y + pXForm -> eDx;
+    ptOut -> y = pXForm -> eM21 * x + pXForm -> eM22 * y + pXForm -> eDy;
+    return;
+    }
+
+
+    void matrix::unTransformPoint(POINTF *ptIn,POINTF *ptOut) {
+    XFORM xfZero{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+    if ( 0 == memcmp(&xFormInverse,&xfZero,sizeof(XFORM)) )
+        invert();
+    transformPoint(&xFormInverse,ptIn,ptOut);
+    return;
+    }
+
+    void matrix::invert() {
+
+    double theMatrix[3][3];
+    double theMatrixInverted[3][3];
+
+    theMatrix[0][0] = (double)xForm.eM11;
+    theMatrix[0][1] = (double)xForm.eM12;
+    theMatrix[0][2] = (double)xForm.eDx;
+    theMatrix[1][0] = (double)xForm.eM21;
+    theMatrix[1][1] = (double)xForm.eM22;
+    theMatrix[1][2] = (double)xForm.eDy;
+    theMatrix[2][0] = 0.0;
+    theMatrix[2][1] = 0.0;
+    theMatrix[2][2] = 1.0f;
+
+    Mx3Inverse(&theMatrix[0][0],&theMatrixInverted[0][0]);
+
+    xFormInverse.eM11 = (FLOAT)theMatrixInverted[0][0];
+    xFormInverse.eM12 = (FLOAT)theMatrixInverted[0][1];
+    xFormInverse.eM21 = (FLOAT)theMatrixInverted[1][0];
+    xFormInverse.eM22 = (FLOAT)theMatrixInverted[1][1];
+    xFormInverse.eDx = (FLOAT)theMatrixInverted[0][2];
+    xFormInverse.eDy = (FLOAT)theMatrixInverted[1][2];
+
     return;
     }

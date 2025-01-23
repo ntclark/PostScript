@@ -31,8 +31,3 @@
     pathParametersStack.top() -> eofillpath();
     return;
     }
-
-
-    boolean graphicsState::setDefaultToRasterize(boolean doRasterization) {
-    return pathParametersStack.top() -> setDefaultToRasterize(doRasterization);
-    }

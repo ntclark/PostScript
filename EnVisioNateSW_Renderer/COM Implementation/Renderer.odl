@@ -4,24 +4,27 @@ import "ocidl.idl";
 #include <olectl.h>
 
 [ 
-   uuid(7731A10E-25F9-4234-BB4C-188512965190),
-   helpstring("EnVisioNateSW Glyph Renderer"), 
+   uuid(CC9F95CD-24F1-450A-8883-02B5314B1C80),
+   helpstring("EnVisioNateSW Renderer"), 
    lcid(0x0), 
    version(1.0)
 ] 
 
-library GlyphRenderer { 
+library Renderer { 
 
-    [uuid(7731A10E-25F9-4234-BB4C-188512965192),
-      helpstring("EnVisioNateSW Glyph Rendering Interface"),
+    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C81),
+      helpstring("EnVisioNateSW Rendering Interface"),
       nonextensible,pointer_default(unique)] 
 
-    interface IGlyphRenderer : IUnknown {
+    interface IRenderer : IUnknown {
 
         HRESULT Prepare(HDC);
         [propput] HRESULT TransformMatrix(UINT_PTR /*XFORM*/ pXformToDeviceSpace);
         [propget] HRESULT IsPrepared([out,retval] BOOL *pIsPrepared);
+        [propput] HRESULT DownScale(FLOAT downScale);
+        [propput] HRESULT Origin(POINTF origin);
         HRESULT Render();
+        HRESULT Reset();
 
     };
 
@@ -63,9 +66,9 @@ library GlyphRenderer {
 
     };
 
-    [uuid(7731A10E-25F9-4234-BB4C-188512965191),
+    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C82),
     helpstring("")]
-        coclass GlyphRenderer{
+        coclass Renderer{
         [default] interface IUnknown;
     };
 

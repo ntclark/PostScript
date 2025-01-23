@@ -1,7 +1,10 @@
 #pragma once
 
-#include <d2d1.h>
+#ifdef USE_RENDERER
+#include "Renderer_i.h"
+#else
 #include "GlyphRenderer_i.h"
+#endif
 
     struct pathParameters {
 
@@ -32,7 +35,14 @@
         void arcto(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
 
         void curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
+        void quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
+#ifdef USE_RENDERER
+
+        static XFORM *ToDeviceSpace() { return &toDeviceSpace; }
+        static void RenderGeometry();
+
+#else
         void dot(GS_POINT at,FLOAT radius);
 
         void openGeometry();
@@ -62,6 +72,7 @@
 
         void translate(GS_POINT *pPoints,uint16_t pointCount,GS_POINT *pToPoint);
         void scale(GS_POINT *pPoints,uint16_t pountCount,FLOAT scale);
+#endif
 
         // Paths
 
@@ -71,17 +82,17 @@
         void fillpath();
         void eofillpath();
 
-        boolean setDefaultToRasterize(boolean doRasterization) { 
-            boolean oldVal = defaultDoRasterization ; 
-            defaultDoRasterization = doRasterization; 
-            return oldVal; 
-        }
-
+#ifdef USE_RENDERER
+#else
         void forwardToRenderer();
         void revertToLocal();
+#endif
 
     private:
 
+#ifdef USE_RENDERER
+        IGraphicElements *pIGraphicElements{NULL};
+#else
         class GraphicElements : IGraphicElements {
         public:
 
@@ -96,6 +107,7 @@
         private:
 
             STDMETHOD(NewPath)();
+            STDMETHOD(ClosePath)();
             STDMETHOD(StrokePath)();
             STDMETHOD(FillPath)();
 
@@ -116,14 +128,7 @@
         IGraphicElements *pIGraphicElements_Local{NULL};
         IGraphicElements *pIGraphicElements{NULL};
 
-        void rasterizePath();
-        void rasterizePathFreetype();
-
         void getGeometry(long *pCountVertices,BYTE **pVertexTypes,POINT **pVertexPoints);
-
-        FLOAT totalRotation{0.0};
-
-        boolean defaultDoRasterization{false};
 
         GS_POINT currentUserPoint POINT_TYPE_NAN_POINT;
         GS_POINT currentDevicePoint POINT_TYPE_NAN_POINT;
@@ -131,7 +136,12 @@
 
         POINT currentGDIPoint{-1L,-1L};
 
+        FLOAT totalRotation{0.0};
+
         static boolean isPathActive;
+
+#endif
+
         static long cxClient;
         static long cyClient;
         static long cyWindow;

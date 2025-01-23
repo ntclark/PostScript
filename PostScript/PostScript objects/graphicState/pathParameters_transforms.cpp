@@ -2,6 +2,8 @@
 
 #include "pathParameters.h"
 
+#ifdef USE_RENDERER
+#else
 
     void pathParameters::transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
     FLOAT xResult = toDeviceSpace.eM11 * x + toDeviceSpace.eM12 * y + toDeviceSpace.eDx;
@@ -84,3 +86,5 @@
     }
     return;
     }
+
+#endif
