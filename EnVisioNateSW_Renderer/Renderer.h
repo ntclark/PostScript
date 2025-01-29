@@ -2,6 +2,7 @@
 
 #include "Renderer_i.h"
 #include <vector>
+#include <stack>
 
     class Renderer : public IRenderer {
     public:
@@ -55,6 +56,8 @@
             STDMETHOD(CubicBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
             STDMETHOD(QuadraticBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
+            STDMETHOD(Image)(HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+
             struct primitive {
 
                 enum type {
@@ -82,8 +85,8 @@
                                 FLOAT offset,FLOAT *pValues,long countValues) : pParent(pp), theType(lineStyleSet) {
                 theLineCap = lineCap;
                 theLineJoin = lineJoin;
-                theDashStyle = dashStyle;
-                theDashOffset = offset;
+                theLineDashStyle = dashStyle;
+                theLineDashOffset = offset;
                 countFloats = 0;
                 if ( ! ( NULL == pValues ) ) {
                     countFloats = countValues;
@@ -93,49 +96,13 @@
                 return;
                 }
 
-                primitive(GraphicElements *pp,type t,POINTF *pPoint) : pParent(pp), theType(t) {
-                vertices[0].x = pParent -> pParent -> origin.x + pPoint -> x / pParent -> pParent -> downScale;
-                vertices[0].y = pParent -> pParent -> origin.y + pPoint -> y / pParent -> pParent -> downScale;
-                return;
-                }
-
-                primitive(GraphicElements *pp,type t,POINTF *pPoint1,POINTF *pPoint2,POINTF *pPoint3) : pParent(pp), theType(t) {
-                vertices[0].x = pParent -> pParent -> origin.x + pPoint1 -> x / pParent -> pParent -> downScale;
-                vertices[0].y = pParent -> pParent -> origin.y + pPoint1 -> y / pParent -> pParent -> downScale;
-                vertices[1].x = pParent -> pParent -> origin.x + pPoint2 -> x / pParent -> pParent -> downScale;
-                vertices[1].y = pParent -> pParent -> origin.y + pPoint2 -> y / pParent -> pParent -> downScale;
-                vertices[2].x = pParent -> pParent -> origin.x + pPoint3 -> x / pParent -> pParent -> downScale;
-                vertices[2].y = pParent -> pParent -> origin.y + pPoint3 -> y / pParent -> pParent -> downScale;
-                return;
-                }
-
-                primitive(GraphicElements *pp,D2D1_BEZIER_SEGMENT *pSegment) : pParent(pp) { 
-                theType = cubicBezier;
-                bezierSegment.point1.x = pParent -> pParent -> origin.x + pSegment -> point1.x / pParent -> pParent -> downScale;
-                bezierSegment.point1.y = pParent -> pParent -> origin.y + pSegment -> point1.y / pParent -> pParent -> downScale;
-                bezierSegment.point2.x = pParent -> pParent -> origin.x + pSegment -> point2.x / pParent -> pParent -> downScale;
-                bezierSegment.point2.y = pParent -> pParent -> origin.y + pSegment -> point2.y / pParent -> pParent -> downScale;
-                bezierSegment.point3.x = pParent -> pParent -> origin.x + pSegment -> point3.x / pParent -> pParent -> downScale;
-                bezierSegment.point3.y = pParent -> pParent -> origin.y + pSegment -> point3.y / pParent -> pParent -> downScale;
-                return;
-                }
-
-                primitive(GraphicElements *pp,POINTF *pCurrentPoint,D2D1_QUADRATIC_BEZIER_SEGMENT *pSegment) : pParent(pp) { 
-                vertices[0].x = pParent -> pParent -> origin.x + pCurrentPoint -> x / pParent -> pParent -> downScale;
-                vertices[0].y = pParent -> pParent -> origin.y + pCurrentPoint -> y / pParent -> pParent -> downScale;
-                theType = quadraticBezier;
-                quadraticBezierSegment.point1.x = pParent -> pParent -> origin.x + pSegment -> point1.x / pParent -> pParent -> downScale;
-                quadraticBezierSegment.point1.y = pParent -> pParent -> origin.y + pSegment -> point1.y / pParent -> pParent -> downScale;
-                quadraticBezierSegment.point2.x = pParent -> pParent -> origin.x + pSegment -> point2.x / pParent -> pParent -> downScale;
-                quadraticBezierSegment.point2.y = pParent -> pParent -> origin.y + pSegment -> point2.y / pParent -> pParent -> downScale;
-                return;
-                }
-
                 ~primitive() {
                 if ( ! ( NULL == pvData ) )
                     delete [] pvData;
                 return;
                 }
+
+                virtual void transform() {}
 
                 type theType;
 
@@ -151,13 +118,100 @@
                 FLOAT theLineWidth{GraphicParameters::defaultLineWidth};
                 D2D1_CAP_STYLE theLineCap{GraphicParameters::defaultLineCap};
                 D2D1_LINE_JOIN theLineJoin{GraphicParameters::defaultLineJoin};
-                D2D1_DASH_STYLE theDashStyle{GraphicParameters::defaultDashStyle};
-                FLOAT theDashOffset{0.0f};
+                D2D1_DASH_STYLE theLineDashStyle{GraphicParameters::defaultDashStyle};
+                FLOAT theLineDashOffset{0.0f};
 
                 POINTF vertices[3]{{0.0f,0.0f}, {0.0f,0.0f}, {0.0f,0.0f}};
                 D2D1_BEZIER_SEGMENT bezierSegment{{0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f}};
                 D2D1_QUADRATIC_BEZIER_SEGMENT quadraticBezierSegment{{0.0f,0.0f},{0.0f,0.0f}};
 
+            };
+
+            struct movePrimitive : primitive {
+                movePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::move) {
+                    vertices[0].x = pPoint -> x;
+                    vertices[0].y = pPoint -> y;
+                    return;
+                    }
+                void transform() { 
+                    vertices[0].x /= pParent -> pParent -> downScale;
+                    vertices[0].y /= pParent -> pParent -> downScale;
+                    vertices[0].x += pParent -> pParent -> origin.x;
+                    vertices[0].y += pParent -> pParent -> origin.y;
+                    pParent -> transformPoint(&vertices[0],&vertices[0]);
+                }
+            };
+
+            struct linePrimitive : primitive {
+                linePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::line) {
+                    vertices[0].x = pPoint -> x;
+                    vertices[0].y = pPoint -> y;
+                    return;
+                    }
+                void transform() { 
+                    vertices[0].x /= pParent -> pParent -> downScale;
+                    vertices[0].y /= pParent -> pParent -> downScale;
+                    vertices[0].x += pParent -> pParent -> origin.x;
+                    vertices[0].y += pParent -> pParent -> origin.y;
+                    pParent -> transformPoint(&vertices[0],&vertices[0]);
+                 }
+            };
+
+            struct bezierPrimitive : primitive {
+                bezierPrimitive(GraphicElements *pp,D2D1_BEZIER_SEGMENT *pSegment) : primitive(pp,type::cubicBezier) { 
+                    bezierSegment.point1.x = pSegment -> point1.x;
+                    bezierSegment.point1.y = pSegment -> point1.y;
+                    bezierSegment.point2.x = pSegment -> point2.x;
+                    bezierSegment.point2.y = pSegment -> point2.y;
+                    bezierSegment.point3.x = pSegment -> point3.x;
+                    bezierSegment.point3.y = pSegment -> point3.y;
+                    return;
+                }
+                void transform() { 
+                    bezierSegment.point1.x /= pParent -> pParent -> downScale;
+                    bezierSegment.point1.y /= pParent -> pParent -> downScale;
+                    bezierSegment.point2.x /= pParent -> pParent -> downScale;
+                    bezierSegment.point2.y /= pParent -> pParent -> downScale;
+                    bezierSegment.point3.x /= pParent -> pParent -> downScale;
+                    bezierSegment.point3.y /= pParent -> pParent -> downScale;
+                    bezierSegment.point1.x += pParent -> pParent -> origin.x;
+                    bezierSegment.point1.y += pParent -> pParent -> origin.y;
+                    bezierSegment.point2.x += pParent -> pParent -> origin.x;
+                    bezierSegment.point2.y += pParent -> pParent -> origin.y;
+                    bezierSegment.point3.x += pParent -> pParent -> origin.x;
+                    bezierSegment.point3.y += pParent -> pParent -> origin.y;
+                    pParent -> transformPoint(&bezierSegment.point1,&bezierSegment.point1);
+                    pParent -> transformPoint(&bezierSegment.point2,&bezierSegment.point2);
+                    pParent -> transformPoint(&bezierSegment.point3,&bezierSegment.point3);
+                    return;
+                }
+
+            };
+
+            struct quadraticBezierPrimitive : primitive {
+                quadraticBezierPrimitive(GraphicElements *pp,POINTF *pCurrentPoint,D2D1_QUADRATIC_BEZIER_SEGMENT *pSegment) : primitive(pp,type::quadraticBezier) {
+                    vertices[0].x = pCurrentPoint -> x;
+                    vertices[0].y = pCurrentPoint -> y;
+                    theType = quadraticBezier;
+                    quadraticBezierSegment.point1.x = pSegment -> point1.x;
+                    quadraticBezierSegment.point1.y = pSegment -> point1.y;
+                    quadraticBezierSegment.point2.x = pSegment -> point2.x;
+                    quadraticBezierSegment.point2.y = pSegment -> point2.y;
+                    return;
+                    }
+                void transform() { 
+                    quadraticBezierSegment.point1.x /= pParent -> pParent -> downScale;
+                    quadraticBezierSegment.point1.y /= pParent -> pParent -> downScale;
+                    quadraticBezierSegment.point2.x /= pParent -> pParent -> downScale;
+                    quadraticBezierSegment.point2.y /= pParent -> pParent -> downScale;
+                    quadraticBezierSegment.point1.x += pParent -> pParent -> origin.x;
+                    quadraticBezierSegment.point1.y += pParent -> pParent -> origin.y;
+                    quadraticBezierSegment.point2.x += pParent -> pParent -> origin.x;
+                    quadraticBezierSegment.point2.y += pParent -> pParent -> origin.y;
+                    pParent -> transformPoint(&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
+                    pParent -> transformPoint(&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
+                    return;
+                }
             };
 
             struct path {
@@ -221,12 +275,15 @@
             path *pFirstPath{NULL};
             path *pCurrentPath{NULL};
 
-            POINTF currentUserPoint{0,0};
-            POINTF currentGDIPoint{0,0};
+            POINTF currentPageSpacePoint{0,0};
             boolean isFigureStarted{false};
 
             XFORM toDeviceSpace{6 * 0.0f};
+
+            void scalePoint(FLOAT *px,FLOAT *py);
             void transformPoint(FLOAT *px,FLOAT *py);
+            void transformPoint(POINTF *ptIn,POINTF *ptOut);
+            void transformPoint(D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut);
 
             Renderer *pParent{NULL};
 
@@ -239,7 +296,9 @@
         class GraphicParameters : public IUnknown {
         public:
 
-            GraphicParameters(Renderer *pp) : pParent(pp) {}
+            GraphicParameters(Renderer *pp) : pParent(pp) {
+                valuesStack.push(new values());
+            }
 
             //   IUnknown
 
@@ -247,7 +306,12 @@
             ULONG AddRef() { return pParent -> AddRef(); }
             ULONG Release() { return pParent -> Release(); }
 
+            ~GraphicParameters() { }
+
         private:
+
+            STDMETHOD(SaveState)();
+            STDMETHOD(RestoreState)();
 
             STDMETHOD(put_LineWidth)(FLOAT lw);
             STDMETHOD(put_LineJoin)(long lj);
@@ -257,28 +321,58 @@
 
             Renderer *pParent{NULL};
 
-            FLOAT lineWidth{defaultLineWidth};
+            void addColorPrimitive() {
+            if ( NULL == pParent -> pIGraphicElements -> pCurrentPath )
+                return;
+            pParent -> pIGraphicElements -> pCurrentPath -> addPrimitive(new GraphicElements::primitive(pParent -> pIGraphicElements,valuesStack.top() -> rgbColor));
+            return;
+            }
 
-            D2D1_CAP_STYLE lineCap{defaultLineCap};
-            D2D1_LINE_JOIN lineJoin{defaultLineJoin};
-            D2D1_DASH_STYLE lineDashStyle{defaultDashStyle};
-            DWORD countDashSizes{0};
 
-            COLORREF rgbColor{defaultRGBColor};
+            void addLineStylePrimitive() {
+            if ( NULL == pParent -> pIGraphicElements -> pCurrentPath )
+                return;
+            pParent -> pIGraphicElements -> pCurrentPath -> addPrimitive(
+                new GraphicElements::primitive(pParent -> pIGraphicElements,
+                        valuesStack.top() -> lineCap,valuesStack.top() -> lineJoin,
+                            valuesStack.top() -> lineDashStyle,valuesStack.top() -> offset,
+                            valuesStack.top() -> lineStyles,valuesStack.top() -> countDashSizes));
+            }
 
-            boolean doFill{false};
+            struct values {
+                values() {}
+                values(values &rhs) {
+                    lineWidth = rhs.lineWidth;
+                    lineCap = rhs.lineCap;
+                    lineJoin = rhs.lineJoin;
+                    lineDashStyle = rhs.lineDashStyle;
+                    countDashSizes = rhs.countDashSizes;
+                    memcpy(lineStyles,rhs.lineStyles,sizeof(lineStyles));
+                    offset = rhs.offset;
+                    rgbColor = rhs.rgbColor;
+                    return;
+                }
+                FLOAT lineWidth{defaultLineWidth};
+                D2D1_CAP_STYLE lineCap{defaultLineCap};
+                D2D1_LINE_JOIN lineJoin{defaultLineJoin};
+                D2D1_DASH_STYLE lineDashStyle{defaultDashStyle};
+                DWORD countDashSizes{0};
+                FLOAT lineStyles[16]{16 * 0.0f};
+                FLOAT offset{0.0f};
+                COLORREF rgbColor{defaultRGBColor};
+            };
 
-            long hashCode(char *pszLineSettings);
+            long hashCode(char *pszLineSettings,boolean doFill);
 
             void resetParameters(char *pszLineSettings);
+
+            std::stack<values *> valuesStack;
 
             static FLOAT defaultLineWidth;
             static D2D1_CAP_STYLE defaultLineCap;
             static D2D1_LINE_JOIN defaultLineJoin;
             static D2D1_DASH_STYLE defaultDashStyle;
             static COLORREF defaultRGBColor;
-
-            static ID2D1StrokeStyle1 *pID2D1StrokeStyle1;
 
             friend class Renderer;
 
@@ -295,6 +389,7 @@
         ID2D1GeometrySink *pID2D1GeometrySink{NULL};
 
         ID2D1SolidColorBrush *pID2D1SolidColorBrush{NULL};
+        ID2D1StrokeStyle1 *pID2D1StrokeStyle1{NULL};
         ID2D1DCRenderTarget *pID2D1DCRenderTarget{NULL};
 
         ULONG refCount{0};

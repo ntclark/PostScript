@@ -12,7 +12,7 @@
 */
 
     if ( ! ( NULL == pCurrentPath ) && 0 == pCurrentPath -> hashCode ) 
-        pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings);
+        pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,pCurrentPath -> isFillPath);
 
     addPath(new path(pParent,this));
 
@@ -83,9 +83,9 @@
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::strokePathMarker));
 
     pCurrentPath -> isFillPath = false;
-    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings);
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,false);
 
-    pParent -> Render();
+    //pParent -> Render();
 
     return S_OK;
     }
@@ -114,9 +114,9 @@
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::fillPathMarker));
 
     pCurrentPath -> isFillPath = true;
-    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings);
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,true);
 
-    pParent -> Render();
+    //pParent -> Render();
 
     return S_OK;
     }
@@ -132,6 +132,8 @@
     primitive *p = pFirstPrimitive;
 
     while ( ! ( NULL == p ) ) {
+
+        p -> transform();
 
         switch ( p -> theType) {
 
@@ -204,6 +206,34 @@ MessageBox(NULL,"Not implemented","Error",MB_OK);
                 fprintf(fDebug,"%f  %f  %f %f quadcurveto %%quadratic\n",
                                                 p -> quadraticBezierSegment.point1.x,p -> quadraticBezierSegment.point1.y,
                                                 p -> quadraticBezierSegment.point2.x,p -> quadraticBezierSegment.point2.y);
+            break;
+
+        case primitive::type::colorSet: {
+            pRenderer -> pID2D1SolidColorBrush -> Release();
+            FLOAT r = (FLOAT)GetRValue(p -> theColor) / 255.0f;
+            FLOAT g = (FLOAT)GetGValue(p -> theColor) / 255.0f;
+            FLOAT b = (FLOAT)GetBValue(p -> theColor) / 255.0f;
+            pRenderer -> pID2D1DCRenderTarget -> CreateSolidColorBrush(D2D1::ColorF(r,g,b, 1.0f),&pRenderer -> pID2D1SolidColorBrush);
+            }
+            break;
+
+        case primitive::type::lineStyleSet:
+            if ( ! ( NULL == pRenderer -> pID2D1StrokeStyle1 ) )
+                pRenderer -> pID2D1StrokeStyle1 -> Release();
+
+            pRenderer -> pID2D1Factory1 -> CreateStrokeStyle(
+                    D2D1::StrokeStyleProperties1(
+                        p -> theLineCap,
+                        p -> theLineCap,
+                        p -> theLineCap,
+                        p -> theLineJoin,
+                        10.0f,
+                        p -> theLineDashStyle,
+                        p -> theLineDashOffset,
+                        D2D1_STROKE_TRANSFORM_TYPE_FIXED),
+                        (FLOAT *)p -> pvData,
+                        p -> countFloats,
+                            &pRenderer -> pID2D1StrokeStyle1);
             break;
 
         default:

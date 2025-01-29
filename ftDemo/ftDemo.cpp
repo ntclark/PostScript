@@ -58,7 +58,7 @@
     IFont_EVNSW *pIFont = NULL;
 
     pIFontManager -> LoadFont((char *)"Helvetica",0,&pIFont);
-    pIFontManager -> ScaleFont(144.0);
+    pIFontManager -> ScaleFont(36.0);
 
     MSG qMessage;
 

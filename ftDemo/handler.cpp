@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <stdio.h>
 
 #ifdef USE_RENDERER
 #include "Renderer_i.h"
@@ -54,10 +55,15 @@
 
 FillRect(ps.hdc,&ps.rcPaint,(HBRUSH) (COLOR_WINDOW + 1));
 
-cyWindow = ps.rcPaint.bottom - ps.rcPaint.top;
+RECT rc;
+GetClientRect(hwnd,&rc);
+
+cyWindow = rc.bottom - rc.top;//ps.rcPaint.bottom - ps.rcPaint.top;
 scalePDF = (FLOAT)cyWindow / 792.0f;
 psXForm = {0.5f,0.0f,0.0f,0.5f,0.0f,0.0f};
 gdiXForm = {scalePDF,0.0f,0.0f,-scalePDF,0.0f,(FLOAT)cyWindow};
+
+long fontSizes[]{288,144,72,36,18,9,4};
 
         long countVertices;
 
@@ -65,44 +71,27 @@ gdiXForm = {scalePDF,0.0f,0.0f,-scalePDF,0.0f,(FLOAT)cyWindow};
 
         POINTF startPoint,endPoint;
 
-        FLOAT fontSize = 288.0f;
+        startPoint.x = 0.0f;
+        startPoint.y = 792.0f - 36.0f;
 
-        for ( long k = 0; k < 10; k++ ) {
+        long k = 1;
 
-            fontSize /= 1.5f;
+        for ( BYTE c = 0xA0; c < 0x1ff; c++ ) {
 
-            pIFontManager -> put_PointSize(fontSize);
+            pIFontManager -> RenderGlyph(ps.hdc,(BYTE)c,
+                                        (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
+                                            pIGlyphRenderer,
+                                            &startPoint,&endPoint);
 
-            startPoint.x = 0.0f;
-            startPoint.y = 8 * 72.0 - (FLOAT) k * 72.0 / 2.0f;
+            //MoveToEx(ps.hdc,)
+            startPoint = endPoint;
 
-            char *p = szText;
-
-            while ( *p ) {
-                pIFontManager -> RenderGlyph(ps.hdc,(BYTE)*p,
-                                            (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
-                                                NULL,//pIGlyphRenderer,
-                                                &startPoint,&endPoint);
-                startPoint = endPoint;
-                p++;
+            k++;
+            if ( 0 == ( k % 32 ) ) {
+                startPoint.y -= 36.0f / 2.0f;
+                startPoint.x = 0.0f;
             }
 
-#if 0
-            p = szText;
-
-            startPoint.x = 2.0f;
-            startPoint.y = 5 * 72.0 - (FLOAT) k * 72.0;
-
-            while ( *p ) {
-                pIFontManager -> RenderGlyph(ps.hdc,(BYTE)*p,
-                                            (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
-                                                pIGlyphRenderer,
-                                                &startPoint,&endPoint);
-
-                startPoint = endPoint;
-                p++;
-            }
-#endif
         }
 
         EndPaint(hwnd,&ps);

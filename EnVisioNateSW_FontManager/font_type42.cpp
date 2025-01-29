@@ -156,7 +156,7 @@
                         glyphId = idDelta + charCode;
 
                         if ( 0 > glyphId )
-                            glyphId += (uint16_t)65536;
+                            glyphId += 65536;
 
                     } else {
 
@@ -174,8 +174,6 @@
                         uint16_t *pbGlyphId = &theCmapSubtable.pIdRangeOffsets[endCodeIndex];
                         pbGlyphId += idRangeOffset / 2;
                         pbGlyphId += (charCode - startCode);
-
-                        glyphId = *(uint16_t *)pbGlyphId;
 
                         /*
                         The value c is the character code in question, and i is the segment index in which c appears. 

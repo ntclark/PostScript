@@ -605,11 +605,14 @@ pb += sizeof(int64_t);          \
         uint16_t *pEndCode{NULL};       // [segCount]   End characterCode for each segment, last=0xFFFF.
         uint16_t reservedPad{0};        // Set to 0.
         uint16_t *pStartCode{NULL};     // [segCount]   Start character code for each segment.
-        int16_t *pIdDelta{NULL};        // [segCount]   Delta for all character codes in segment.
+        uint16_t *pIdDelta{NULL};       // [segCount]   Delta for all character codes in segment.
         uint16_t *pIdRangeOffsets{NULL};// [segCount]   Offsets into glyphIdArray or 0
         uint16_t *pGlyphIdArray{NULL};  // [ ]
 
+BYTE *pbStart{NULL};
+
         void load(BYTE **ppbData) {
+pbStart = *ppbData;
             BE_TO_LE_U16(*ppbData,format)
             BE_TO_LE_U16(*ppbData,length);
             BE_TO_LE_U16(*ppbData,language);
@@ -624,25 +627,34 @@ pb += sizeof(int64_t);          \
 
             uint16_t segCount = segCountX2 / 2;
 
-            pEndCode = new uint16_t[segCount];
+            BYTE *pEndOfParams = *ppbData + 2 * (4 * segCount + 1);
+
+            long cntIdValues = (length - (long)(pEndOfParams - pbStart)) / 2;
+
+            uint16_t *pData = new uint16_t[4 * segCount + 1 + cntIdValues];
+
+            pEndCode = pData;
             for ( long k = 0; k < segCount; k++ )
                 BE_TO_LE_U16(*ppbData,pEndCode[k])
 
             BE_TO_LE_U16(*ppbData,reservedPad)
 
-            pStartCode = new uint16_t[segCount];
+            pStartCode = pEndCode + segCount + 1;
             for ( long k = 0; k < segCount; k++ )
                 BE_TO_LE_U16(*ppbData,pStartCode[k])
 
-            pIdDelta = new int16_t[segCount];
+            pIdDelta = pStartCode + segCount;
             for ( long k = 0; k < segCount; k++ )
-                BE_TO_LE_16(*ppbData,pIdDelta[k])
+                BE_TO_LE_U16(*ppbData,pIdDelta[k])
 
-            pIdRangeOffsets = new uint16_t[segCount];
+            pIdRangeOffsets = pIdDelta + segCount;
             for ( long k = 0; k < segCount; k++ )
                 BE_TO_LE_U16(*ppbData,pIdRangeOffsets[k])
 
-            pGlyphIdArray = (uint16_t *)*ppbData;
+            pGlyphIdArray = pIdRangeOffsets + segCount;
+            for ( long k = 0; k < cntIdValues; k++ )
+                BE_TO_LE_U16(*ppbData,pGlyphIdArray[k])
+
         }
     };
 

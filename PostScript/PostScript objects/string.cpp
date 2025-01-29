@@ -122,7 +122,7 @@
     if ( NULL == pszUnescapedString ) 
         return (BYTE)Contents()[index];
 
-    if ( 0 == escapedValues.size() || escapedValues.end() == escapedValues.find((uint16_t)index) )
+    if ( 0 == escapedValues.size() || ( escapedValues.end() == escapedValues.find((uint16_t)index) ) )
         return (BYTE)pszUnescapedString[index];
 
     return escapedValues[(uint16_t)index];

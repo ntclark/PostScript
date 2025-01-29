@@ -53,7 +53,6 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
 
     HRESULT Renderer::put_Origin(POINTF ptOrigin) { 
     origin = ptOrigin;
-    pIGraphicElements -> transformPoint(&origin.x,&origin.y);
     return S_OK;
     }
 
@@ -73,22 +72,42 @@ FILE *fDebug = fopen("C:\\temp\\x.ps","a+");
 
     GraphicElements::path *p = pIGraphicElements -> pFirstPath;
 
-    doRasterize = pIGraphicElements -> pCurrentPath -> isFillPath;
+    doRasterize = p -> isFillPath;
 
     boolean firstPass = true;
+
+char szSettings[128]{128 * '\0'};
+strcpy(szSettings,p -> szLineSettings);
+
     while ( ! ( p == NULL ) ) {
-        p -> apply(true,firstPass,fDebug);
+
+        p -> apply(p -> isFillPath,firstPass,fDebug);
+
+char szX[1024];
+sprintf_s<1024>(szX,"%s-%s\n",szSettings,p -> szLineSettings);
+OutputDebugStringA(szX);
+
+        if ( strcmp(szSettings,p -> szLineSettings) ) {
+OutputDebugStringA("rendered\n");
+            internalRender();
+            strcpy(szSettings,p -> szLineSettings);
+            firstPass = true;
+            doRasterize = p -> isFillPath;
+        }
+
         p -> clear();
+
         if ( NULL == p -> pNext ) {
             delete p;
             break;
         }
+
         p = p -> pNext;
         delete p -> pPrior;
         firstPass = false;
     }
 
-    internalRender();
+    //internalRender();
 
     pIGraphicElements -> pFirstPath = NULL;
     pIGraphicElements -> pCurrentPath = NULL;

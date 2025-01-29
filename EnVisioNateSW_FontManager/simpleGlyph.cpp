@@ -109,7 +109,7 @@
 
             pXInput += 1;
 
-pFlags[pointIndex] = pFlags[pointIndex] & ~ X_SHORT_VECTOR;
+            pFlags[pointIndex] = pFlags[pointIndex] & ~ X_SHORT_VECTOR;
 
         } else if ( 0 == ( pFlags[pointIndex] & X_SAME ) ) {
 
@@ -154,7 +154,7 @@ pFlags[pointIndex] = pFlags[pointIndex] & ~ X_SHORT_VECTOR;
 
             pYInput += sizeof(uint8_t);
 
-//pFlags[pointIndex] = pFlags[pointIndex] & ~ Y_SHORT_VECTOR;
+            pFlags[pointIndex] = pFlags[pointIndex] & ~ Y_SHORT_VECTOR;
 
         } else if ( 0 == ( pFlags[pointIndex] & Y_SAME ) ) {
 
@@ -231,11 +231,13 @@ pFlags[pointIndex] = pFlags[pointIndex] & ~ X_SHORT_VECTOR;
     Point “n” will be placed at the glyph left sidebearing point; point “n+1” will be placed at the
     advance width point; point “n+2” will be placed at the top origin; and point “n+3” will
     be placed at the advance height point.
+
+    I have no fucking idea what all the above means, I'll just use them for my purposes
 */
-    phantomPoints[0] = { /*pGlyphHeader -> xMin - */leftSideBearing,0L };
-    phantomPoints[1] = { /*pGlyphHeader -> xMin - leftSideBearing + */advanceWidth, 0L };
-    phantomPoints[2] = { 0L, /*pGlyphHeader -> yMax +*/ bearing_y };
-    phantomPoints[3] = { 0L, /*pGlyphHeader -> yMax + bearing_y - */advanceHeight };
+    phantomPoints[0] = { leftSideBearing,0L };
+    phantomPoints[1] = { advanceWidth, 0L };
+    phantomPoints[2] = { advanceWidth, pFont -> UnitsPerEm()};
+    phantomPoints[3] = { leftSideBearing, pFont -> UnitsPerEm()};
 
     rightSideBearing = advanceWidth - (leftSideBearing + pGlyphHeader -> xMax - pGlyphHeader -> xMin);
 

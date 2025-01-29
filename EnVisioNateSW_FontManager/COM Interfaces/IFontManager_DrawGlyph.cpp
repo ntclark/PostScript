@@ -272,58 +272,43 @@
 
     pSimpleGlyph = new otSimpleGlyph(bGlyph,pFont,&glyphHeader,pbGlyphData);
 
-#if 0
     matrix *pMatrix = new matrix();
+
+    // Transform glyph units to PAGE space
 
     // Scale Glyph Coordinates to points
     pMatrix -> scale(pFont -> scaleFUnitsToPoints);
-
-    // Transform Glyph coordinates in points using current font matrix
-    pMatrix -> concat(pFont -> matrixStack.top());
 
     // If the coordinates are not scaled up by some amount,
     // very poor performance in rasterization occurs. It is
     // not clear why, though it probably has to do with
     // roundoff, itself due to lack of precision in FLOAT
-    XFORM scaleUp{64.0f,0.0f,0.0f,64.0f,0.0f,0.0f};
-    pMatrix -> concat(&scaleUp);
+    pMatrix -> scale(64.0f);
 
     // Transform those using the current postscript CTM
     // which will put the coordinates in PAGE space
     pMatrix -> concat((XFORM *)pPSXform);
 
-    POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
-
     if ( NULL == pIGlyphRenderer ) {
+        POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
         pMatrix -> concat((XFORM *)pXformToDeviceSpace);
         matrix::transformPoints((XFORM *)pXformToDeviceSpace,(GS_POINT *)&initialPoint,1);
         pMatrix -> move(initialPoint.x,initialPoint.y);
     } else {
         // startPoint (initialPoint) should be in page space coordinates
-        // That is, the coordinates in the range PDF Height x PDF Width
+        // That is, the coordinates in the range PDF Height x PDF Width (792x612)
         // essentially after the current postscript transformation has been 
         // applied.
         // The GlyphRenderer will convert this to device (GDI) coordinates
-        matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
-        pIGlyphRenderer -> put_Origin(initialPoint);
+        //matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
+        pIGlyphRenderer -> put_Origin(*pStartPoint);
         pIGlyphRenderer -> put_DownScale(64.0f);
     }
 
+    // Transform Glyph coordinates using current font matrix
+    pMatrix -> concat(pFont -> matrixStack.top());
+
     pMatrix -> transformPoints(pSimpleGlyph -> pPoints,pSimpleGlyph -> pointCount);
-#else
-
-    // startPoint (initialPoint) should be in page space coordinates
-    // That is, the coordinates in the range PDF Height x PDF Width
-    // essentially after the current postscript transformation has been 
-    // applied.
-    // The GlyphRenderer will convert this to device (GDI) coordinates
-
-    POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
-
-    //matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
-    pIGlyphRenderer -> put_Origin(initialPoint);
-    pIGlyphRenderer -> put_DownScale(pFont -> PointSize() * pFont -> scaleFUnitsToPoints);
-#endif
 
     //if ( NULL == pIGlyphRenderer ) {
     //    uint8_t ptIndex = 0;
@@ -333,6 +318,21 @@
     //            dotAction(pSimpleGlyph -> pPointFirst[k] + j,pOnCurve[j],ptIndex++);
     //    }
     //}
+
+/*
+    newPathAction();
+
+    pMatrix -> transformPoints(pSimpleGlyph -> phantomPoints,4);
+
+    moveToAction(pSimpleGlyph -> phantomPoints + 0);
+    lineToAction(pSimpleGlyph -> phantomPoints + 1);
+    lineToAction(pSimpleGlyph -> phantomPoints + 2);
+    lineToAction(pSimpleGlyph -> phantomPoints + 3);
+
+    closePathAction();
+
+    pIGraphicElements_External -> StrokePath();
+*/
 
     newPathAction();
 
@@ -435,16 +435,13 @@ CaptureBezier:
         pIGlyphRenderer -> Reset();
     }
 
-#if 0
     if ( ! ( NULL == pEndPoint ) ) {
-        POINTF ptAdvance{pSimpleGlyph -> advanceWidth,0.0f};
-        pMatrix -> unTransformPoint(&ptAdvance,&ptAdvance);
+        POINTF ptAdvance{pSimpleGlyph -> advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize(),0.0f};
         pEndPoint -> x = pStartPoint -> x + ptAdvance.x;
         pEndPoint -> y = pStartPoint -> y + ptAdvance.y;
     }
 
     delete pMatrix;
-#endif
 
     delete pSimpleGlyph;
 

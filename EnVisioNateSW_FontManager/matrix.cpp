@@ -171,6 +171,32 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
+    void matrix::transformPointsInPlace(POINT *pPoints,uint16_t pointCount) {
+    for ( long k = 0; k < pointCount; k++ ) {
+        FLOAT x = (FLOAT)pPoints[k].x;
+        FLOAT y = (FLOAT)pPoints[k].y;
+        FLOAT x2 = xForm.eM11 * x + xForm.eM12 * y;
+        FLOAT y2 = xForm.eM21 * x + xForm.eM22 * y;
+        pPoints[k].x = (LONG)x2;
+        pPoints[k].y = (LONG)y2;
+    }
+    return;
+    }
+
+
+    void matrix::transformPointsInPlace(POINTF *pPoints,uint16_t pointCount) {
+    for ( long k = 0; k < pointCount; k++ ) {
+        FLOAT x = pPoints[k].x;
+        FLOAT y = pPoints[k].y;
+        FLOAT x2 = xForm.eM11 * x + xForm.eM12 * y;
+        FLOAT y2 = xForm.eM21 * x + xForm.eM22 * y;
+        pPoints[k].x = x2;
+        pPoints[k].y = y2;
+    }
+    return;
+    }
+
+
     void matrix::transformPoints(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount) {
     for ( long k = 0; k < pointCount; k++ ) {
         FLOAT x = pPoints[k].x;
@@ -206,6 +232,15 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
+    void matrix::transformPointInPlace(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut) {
+    FLOAT x = ptIn -> x;
+    FLOAT y = ptIn -> y;
+    ptOut -> x = pXForm -> eM11 * x + pXForm -> eM12 * y;
+    ptOut -> y = pXForm -> eM21 * x + pXForm -> eM22 * y;
+    return;
+    }
+
+
     void matrix::unTransformPoint(POINTF *ptIn,POINTF *ptOut) {
     XFORM xfZero{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
     if ( 0 == memcmp(&xFormInverse,&xfZero,sizeof(XFORM)) )
@@ -213,6 +248,16 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     transformPoint(&xFormInverse,ptIn,ptOut);
     return;
     }
+
+
+    void matrix::unTransformPointInPlace(POINTF *ptIn,POINTF *ptOut) {
+    XFORM xfZero{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+    if ( 0 == memcmp(&xFormInverse,&xfZero,sizeof(XFORM)) )
+        invert();
+    transformPointInPlace(&xFormInverse,ptIn,ptOut);
+    return;
+    }
+
 
     void matrix::invert() {
 

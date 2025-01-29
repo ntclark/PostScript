@@ -143,6 +143,8 @@
         void setRGBColor(COLORREF rgb);
         void setRGBColor(FLOAT r,FLOAT g,FLOAT b);
 
+        POINTF *CurrentPoint();
+
         static void RenderGeometry();
 
         static void SetSurface(HWND hwndSurface,long pageNumber);

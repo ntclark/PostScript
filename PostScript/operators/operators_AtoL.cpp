@@ -781,7 +781,7 @@
     void job::operatorCurrentfile() {
 
 /*
-   currentfile
+    currentfile
        - curentfile file
 
     returns the file object from which the PostScript interpreter is currently or was

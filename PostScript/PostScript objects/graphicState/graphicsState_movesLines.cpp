@@ -28,6 +28,14 @@
 #endif
 
 
+    POINTF *graphicsState::CurrentPoint() {
+    static POINTF currentPoint;
+    currentPoint.x = currentUserSpacePoint.x;
+    currentPoint.y = currentUserSpacePoint.y;
+    return &currentPoint;
+    }
+
+
     void graphicsState::RenderGeometry() {
     pathParameters::RenderGeometry();
     return;

@@ -2469,6 +2469,8 @@
     else
         pString = reinterpret_cast<string *>(pObject);
 
+    POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
+
     for ( long k = 0; k < strSize; k++ ) {
 
         BYTE glyphIndex;
@@ -2480,13 +2482,15 @@
         currentGS() -> drawTextChar(glyphIndex);
 
         object *pX = pNumberArray -> getElement(k);
-        push(pX);
-        push(pZeroConstant);
-        currentGS() -> rmoveto();
+
+        currentPoint.x += pX -> FloatValue();
+
+        currentGS() -> moveto(currentPoint.x,currentPoint.y);
     }
 
     return;
     }
+
 
     void job::operatorXyshow() {
 /*
@@ -2506,9 +2510,43 @@
     shown, a rangecheck error occurs. See Section 5.1.4, “Glyph Positioning,” for further
     information about xyshow, and Section
 */
-    object *pNumberArray = pop();
-    object *pString = pop();
+    object *pObject = pop();
 
+    array *pNumberArray = reinterpret_cast<array *>(pObject);
+
+    pObject = reinterpret_cast<string *>(top());
+
+    operatorLength();
+
+    long strSize = pop() -> IntValue();
+
+    binaryString *pBinary = NULL;
+    string *pString = NULL;
+
+    if ( object::valueType::binaryString == pObject -> ValueType() )
+        pBinary = reinterpret_cast<binaryString *>(pObject);
+    else
+        pString = reinterpret_cast<string *>(pObject);
+
+    POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
+
+    for ( long k = 0; k < strSize; k += 2 ) {
+
+        BYTE glyphIndex;
+        if ( ! ( NULL == pBinary ) )
+            glyphIndex = pBinary -> get(k);
+        else
+            glyphIndex = pString -> get(k);
+
+        currentGS() -> drawTextChar(glyphIndex);
+
+        object *pX = pNumberArray -> getElement(k);
+        currentPoint.x += pX -> FloatValue();
+        object *pY = pNumberArray -> getElement(k + 1);
+        currentPoint.y += pY -> FloatValue();
+
+        currentGS() -> moveto(currentPoint.x,currentPoint.y);
+    }
 
     return;
     }
@@ -2524,7 +2562,42 @@
     and the value 0 as the x displacement. In all other respects, yshow behaves the
     same as xyshow.
 */
-    pop();
-    pop();
+    object *pObject = pop();
+
+    array *pNumberArray = reinterpret_cast<array *>(pObject);
+
+    pObject = reinterpret_cast<string *>(top());
+
+    operatorLength();
+
+    long strSize = pop() -> IntValue();
+
+    binaryString *pBinary = NULL;
+    string *pString = NULL;
+
+    if ( object::valueType::binaryString == pObject -> ValueType() )
+        pBinary = reinterpret_cast<binaryString *>(pObject);
+    else
+        pString = reinterpret_cast<string *>(pObject);
+
+    POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
+
+    for ( long k = 0; k < strSize; k++ ) {
+
+        BYTE glyphIndex;
+        if ( ! ( NULL == pBinary ) )
+            glyphIndex = pBinary -> get(k);
+        else
+            glyphIndex = pString -> get(k);
+
+        currentGS() -> drawTextChar(glyphIndex);
+
+        object *pY = pNumberArray -> getElement(k);
+        currentPoint.y += pY -> FloatValue();
+
+        currentGS() -> moveto(currentPoint.x,currentPoint.y);
+
+    }
+
     return;
     }

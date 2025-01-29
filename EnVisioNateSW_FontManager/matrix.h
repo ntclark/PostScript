@@ -37,9 +37,13 @@
 
         void transformPoints(GS_POINT *pPoints,uint16_t pointCount);
         void transformPoints(POINT *pPoints,uint16_t pointCount);
+        void transformPointsInPlace(POINT *pPoints,uint16_t pointCount);
+        void transformPointsInPlace(POINTF *pPoints,uint16_t pointCount);
 
         void transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
+        void transformPointInPlace(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
         void unTransformPoint(POINTF *ptIn,POINTF *ptOut);
+        void unTransformPointInPlace(POINTF *ptIn,POINTF *ptOut);
 
         static void transformPoints(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);
         static void transformPointsInPlace(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);

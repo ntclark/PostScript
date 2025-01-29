@@ -141,6 +141,7 @@
     return 0L;
     }
 
+
     bool job::seekDefinition() {
 
     // seekDefinition will replace the object at the top of the 
@@ -400,46 +401,10 @@ if ( *p == 0x0A || *p == 0x0D )           \
     parse(STRING_DELIMITER_BEGIN,STRING_DELIMITER_END,p,ppEnd);
 
     if ( *ppEnd ) {
-
-        // Escape sequences are handled in the string constructor
-#if 0
-        char *px = strchr(p,'\\');
-
-        if ( px && px < *ppEnd ) {
-
-            long n = (long)(*ppEnd - p + 1);
-            char *pTemp = new char[n];
-            char *pTarget = new char[n];
-            memset(pTemp,0,n * sizeof(char));
-            memset(pTarget,0,n * sizeof(char));
-
-            strncpy(pTemp,p,n - 1);
-            px = strchr(pTemp,'\\');
-            char *pBegin = pTemp;
-            while ( px ) {
-                *px = '\0';
-                strcpy(pTarget + strlen(pTarget),pBegin);
-                pBegin = px + 1;
-                if ( '\\' == *pBegin ) {
-                    pTarget[strlen(pTarget)] = '\\';
-                    pBegin++;
-                }
-                px = strchr(pBegin,'\\');
-            }
-
-            strcpy(pTarget + strlen(pTarget),pBegin);
-
-            push(new (CurrentObjectHeap()) constantString(this,pTarget,NULL));
-
-            delete [] pTemp;
-            delete [] pTarget;
-
-        } else
-#endif
-            push(new (CurrentObjectHeap()) constantString(this,p,*ppEnd));
-
+        push(new (CurrentObjectHeap()) constantString(this,p,*ppEnd));
         *ppEnd = *ppEnd + 1;
     }
+
     return;
     }
 
