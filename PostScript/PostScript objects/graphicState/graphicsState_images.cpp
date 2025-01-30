@@ -288,30 +288,8 @@ break;
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
-
-#ifdef USE_RENDERER
     job::pIGraphicElements_External -> Image(hbmResult,(UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
-#else
-    POINT_TYPE wUserSpace;
-    POINT_TYPE hUserSpace;
-
-    scalePoint((POINT_TYPE)1,(POINT_TYPE)1,&wUserSpace,&hUserSpace);
-
-    moveto(0.0,0.0);
-
-    HDC hdcSource = CreateCompatibleDC(pPStoPDF -> GetDC());
-    SelectObject(hdcSource,hbmResult);
-    StretchBlt(pPStoPDF -> GetDC(),(long)((float)pathParametersStack.top() -> CurrentDevicePoint() -> x),
-                                        (long)(((float)pathParametersStack.top() -> CurrentDevicePoint() -> y) + hUserSpace),(long)wUserSpace,-(long)hUserSpace,
-                hdcSource,0,0,width,height,SRCCOPY);
-
-//POINT pts[] = { {0,0},{width,0},{width,height}};
-//PlgBlt(GetDC(HWND_DESKTOP),pts,hdcSource,0,0,width,height,NULL,0,0);
-
-    DeleteObject(hbmResult);
-    DeleteDC(hdcSource);
-#endif
     return;
     }
 

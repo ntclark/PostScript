@@ -40,10 +40,10 @@
     if ( NULL == pCurrentPath )
         NewPath();
 
-    if ( ! ( NULL == pCurrentPath -> pCurrentPrimitive ) ) {
-        if ( primitive::type::move == pCurrentPath -> pCurrentPrimitive -> theType ) {
+    if ( ! ( NULL == pCurrentPath -> pLastPrimitive ) ) {
+        if ( primitive::type::move == pCurrentPath -> pLastPrimitive -> theType ) {
             // There are two consequetive moves, update the prior move with the new position
-            pCurrentPath -> pCurrentPrimitive -> vertices[0] = currentPageSpacePoint;
+            pCurrentPath -> pLastPrimitive -> vertices[0] = currentPageSpacePoint;
             return S_OK;
         }
     } 

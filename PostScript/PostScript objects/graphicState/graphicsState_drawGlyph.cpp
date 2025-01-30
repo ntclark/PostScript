@@ -95,13 +95,7 @@
     font::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
                                         (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
-                                            job::pIGlyphRenderer,
                                             pStartPoint,pEndPoint);
-#ifdef USE_RENDERER
-#else
-    closeGeometry();
-#endif
-
     return;
     }
 
@@ -166,21 +160,15 @@
 
     psXformsStack.gSave();
 
-#ifdef USE_RENDERER
-#else
-    openGeometry();
-#endif
-
     translate(currentUserSpacePoint.x,currentUserSpacePoint.y);
 
     concat(CurrentFont() -> getFontMatrix());
 
+    pathParametersStack.top() -> redirectType3();
+
     pJob -> executeProcedure(pBuildGlyph);
 
-#ifdef USE_RENDERER
-#else
-    closeGeometry();
-#endif
+    pathParametersStack.top() -> unRedirectType3();
 
     psXformsStack.gRestore();
 

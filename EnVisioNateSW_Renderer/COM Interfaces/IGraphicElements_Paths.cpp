@@ -18,6 +18,8 @@
 
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::newPathMarker));
 
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,pCurrentPath -> isFillPath);
+
     return S_OK;
     }
 
@@ -85,7 +87,7 @@
     pCurrentPath -> isFillPath = false;
     pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,false);
 
-    //pParent -> Render();
+    NewPath();
 
     return S_OK;
     }
@@ -116,18 +118,13 @@
     pCurrentPath -> isFillPath = true;
     pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,true);
 
-    //pParent -> Render();
+    NewPath();
 
     return S_OK;
     }
 
 
-    void Renderer::GraphicElements::path::apply(boolean doFill,boolean firstPass,FILE *fDebug) {
-
-    if ( firstPass )
-        pRenderer -> pIGraphicParameters -> resetParameters(szLineSettings);
-
-    pParent -> isFigureStarted = false;
+    Renderer::GraphicElements::path::pathAction Renderer::GraphicElements::path::apply(boolean doFill,FILE *fDebug) {
 
     primitive *p = pFirstPrimitive;
 
@@ -155,14 +152,13 @@
             }
             break;
 
-        case primitive::type::fillPathMarker: {
+        case primitive::type::fillPathMarker:
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
             pParent -> isFigureStarted = false;
             if ( ! ( NULL == fDebug ) )
                 fprintf(fDebug,"fillpath\n");
-            }
-            break;
+            return path::pathAction::fill;
 
         case primitive::type::strokePathMarker:
             if ( pParent -> isFigureStarted )
@@ -170,7 +166,7 @@
             pParent -> isFigureStarted = false;
             if ( ! ( NULL == fDebug ) )
                 fprintf(fDebug,"strokepath\n");
-            break;
+            return path::pathAction::stroke;
 
         case primitive::type::move:
             if ( pParent -> isFigureStarted )
@@ -208,35 +204,8 @@ MessageBox(NULL,"Not implemented","Error",MB_OK);
                                                 p -> quadraticBezierSegment.point2.x,p -> quadraticBezierSegment.point2.y);
             break;
 
-        case primitive::type::colorSet: {
-            pRenderer -> pID2D1SolidColorBrush -> Release();
-            FLOAT r = (FLOAT)GetRValue(p -> theColor) / 255.0f;
-            FLOAT g = (FLOAT)GetGValue(p -> theColor) / 255.0f;
-            FLOAT b = (FLOAT)GetBValue(p -> theColor) / 255.0f;
-            pRenderer -> pID2D1DCRenderTarget -> CreateSolidColorBrush(D2D1::ColorF(r,g,b, 1.0f),&pRenderer -> pID2D1SolidColorBrush);
-            }
-            break;
-
-        case primitive::type::lineStyleSet:
-            if ( ! ( NULL == pRenderer -> pID2D1StrokeStyle1 ) )
-                pRenderer -> pID2D1StrokeStyle1 -> Release();
-
-            pRenderer -> pID2D1Factory1 -> CreateStrokeStyle(
-                    D2D1::StrokeStyleProperties1(
-                        p -> theLineCap,
-                        p -> theLineCap,
-                        p -> theLineCap,
-                        p -> theLineJoin,
-                        10.0f,
-                        p -> theLineDashStyle,
-                        p -> theLineDashOffset,
-                        D2D1_STROKE_TRANSFORM_TYPE_FIXED),
-                        (FLOAT *)p -> pvData,
-                        p -> countFloats,
-                            &pRenderer -> pID2D1StrokeStyle1);
-            break;
-
         default:
+MessageBox(NULL,"Unknown primitive","Error",MB_OK);
             break;
         }
 
@@ -244,10 +213,5 @@ MessageBox(NULL,"Not implemented","Error",MB_OK);
 
     }
 
-    if ( pParent -> isFigureStarted )
-        pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
-
-    pParent -> isFigureStarted = false;
-
-    return;
+    return pathAction::none;
     }

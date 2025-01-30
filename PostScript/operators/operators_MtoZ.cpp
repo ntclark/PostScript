@@ -1469,6 +1469,7 @@
    class array *pArray = reinterpret_cast<array *>(pop());
 
    currentGS() -> setLineDash(pArray,offset);
+
    return;
    }
 

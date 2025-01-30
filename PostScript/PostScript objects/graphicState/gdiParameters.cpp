@@ -3,95 +3,17 @@
 
 #include "gdiParameters.h"
 
-    POINT_TYPE gdiParameters::defaultLineWidth = 1.0f;
-    long gdiParameters::defaultLineCap = 0;
-    long gdiParameters::defaultLineJoin = 0;
-    COLORREF gdiParameters::defaultRGBColor = RGB(0,0,0);
-
-
-    gdiParameters::gdiParameters() {
-#ifdef USE_RENDERER
-    pIGraphicParameters = job::pIGraphicParameters_External;
-#else
-    pIGraphicParameters_Local = new GraphicParameters(this);
-    revertToGDI();
-#endif
-    return;
-    }
-
-
-    gdiParameters::gdiParameters(gdiParameters *pRHS) {
-
-    lineWidth = pRHS -> lineWidth;
-    lineCap = pRHS -> lineCap;
-    lineJoin = pRHS -> lineJoin;
-    rgbColor = pRHS -> rgbColor;
-
-    if ( ! ( NULL == pRHS -> pLineStyles ) ) {
-        pLineStyles = new DWORD[pRHS -> countDashSizes];
-        memcpy(pLineStyles,pRHS -> pLineStyles,pRHS -> countDashSizes * sizeof(DWORD));
-    }
-
-    pColorSpace = pRHS -> pColorSpace;
-
-#ifdef USE_RENDERER
-    pIGraphicParameters = job::pIGraphicParameters_External;
-#else
-    pIGraphicParameters_Local = new GraphicParameters(this);
-
-    if ( pRHS -> pIGraphicParameters == job::pIGraphicParameters_External )
-        pIGraphicParameters = job::pIGraphicParameters_External;
-    else
-        pIGraphicParameters = pIGraphicParameters_Local;
-#endif
-    return;
-    }
-
-
-    gdiParameters::~gdiParameters() {
-    if ( ! ( NULL == pLineStyles ) )
-        delete [] pLineStyles;
-#ifdef USE_RENDERER
-#else
-    delete pIGraphicParameters_Local;
-#endif
-    }
-
-
     // gdiParameters
 
-    void gdiParameters::setupDC() {
-    setRGBColor(rgbColor);
-    setLineWidth(lineWidth);
-    setLineJoin(lineJoin);
-    setLineCap(lineCap);
-    setLineDash(NULL,0,0.0f);
-    return;
+    HRESULT gdiParameters::SaveState() {
+    return job::pIGraphicParameters_External -> SaveState();
     }
 
 
-    void gdiParameters::initialize() {
-    setRGBColor(defaultRGBColor);
-    setLineWidth(defaultLineWidth);
-    setLineJoin(defaultLineJoin);
-    setLineCap(defaultLineCap);
-    setLineDash(NULL,0,0.0f);
-    return;
+    HRESULT gdiParameters::RestoreState() {
+    return job::pIGraphicParameters_External -> RestoreState();
     }
 
-
-#ifdef USE_RENDERER
-#else
-    void gdiParameters::forwardToRenderer() {
-    pIGraphicParameters = job::pIGraphicParameters_External;
-    setRGBColor(rgbColor);
-    setLineWidth(lineWidth);
-    setLineJoin(lineJoin);
-    setLineCap(lineCap);
-    setLineDash(NULL,0,0.0f);
-    return;
-    }
-#endif
 
     void gdiParameters::setColorSpace(colorSpace *pcs) {
     pColorSpace = pcs;
@@ -130,29 +52,29 @@
 
 
     void gdiParameters::setRGBColor(COLORREF rgb) {
-    pIGraphicParameters -> put_RGBColor(rgb);
+    job::pIGraphicParameters_External -> put_RGBColor(rgb);
     }
 
 
     void gdiParameters::setLineWidth(POINT_TYPE v) { 
-    pIGraphicParameters -> put_LineWidth(v);
+    job::pIGraphicParameters_External -> put_LineWidth(v);
     return;
     }
 
 
     void gdiParameters::setLineJoin(long lj) {
-    pIGraphicParameters -> put_LineJoin(lj);
+    job::pIGraphicParameters_External -> put_LineJoin(lj);
     return;
     }
 
 
     void gdiParameters::setLineCap(long lc) {
-    pIGraphicParameters -> put_LineCap(lc);
+    job::pIGraphicParameters_External -> put_LineCap(lc);
     return;
     }
 
 
     void gdiParameters::setLineDash(FLOAT *pValues,long countValues,POINT_TYPE offset) {
-    pIGraphicParameters -> put_LineDash(pValues,countValues,offset);
+    job::pIGraphicParameters_External -> put_LineDash(pValues,countValues,offset);
     return;
     }

@@ -2,7 +2,7 @@
 #include "job.h"
 
 #include "pathParameters.h"
-#include "gdiParameters.h"
+//#include "gdiParameters.h"
 
     long graphicsState::cyPageGutter = 32L;
     long graphicsState::pageCount = 0L;
@@ -13,7 +13,7 @@
     POINT_TYPE graphicsState::piOver2 = 2.0f * atan(1.0f);
     POINT_TYPE graphicsState::degToRad = piOver2 / 90.0f;
 
-    gdiParametersStack graphicsState::gdiParametersStack;
+    gdiParameters graphicsState::theGDIParameters;
     pathParametersStack graphicsState::pathParametersStack;
     psTransformsStack graphicsState::psXformsStack;
 
@@ -29,9 +29,6 @@
 
     if ( ! psXformsStack.isInitialized() )
         psXformsStack.initialize(pJob);
-
-    if ( ! gdiParametersStack.isInitialized() )
-        gdiParametersStack.initialize();
 
     if ( ! pathParametersStack.isInitialized() )
         pathParametersStack.initialize();
@@ -50,15 +47,18 @@
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
 
     BOOL isPrepared;
-    job::pIGlyphRenderer -> get_IsPrepared(&isPrepared);
+
+    job::pIRenderer -> get_IsPrepared(&isPrepared);
     if ( ! isPrepared )
-        job::pIGlyphRenderer -> Prepare(pPStoPDF -> GetDC());
+        job::pIRenderer -> Prepare(pPStoPDF -> GetDC());
+
+    pathParameters::pIRenderer_text -> get_IsPrepared(&isPrepared);
+    if ( ! isPrepared )
+        pathParameters::pIRenderer_text -> Prepare(pPStoPDF -> GetDC());
 
     pathParametersStack.top() -> initialize();
 
     initMatrix(hwndSurface,pageNumber);
-
-    gdiParametersStack.setupDC();
 
     return;
     }
@@ -133,47 +133,47 @@ Beep(2000,200);
 
 
     void graphicsState::setColorSpace(colorSpace *pcs) {
-    gdiParametersStack.top() -> setColorSpace(pcs);
+    theGDIParameters.setColorSpace(pcs);
     return;
     }
 
 
     colorSpace *graphicsState::getColorSpace() {
-    return gdiParametersStack.top() -> getColorSpace();
+    return theGDIParameters.getColorSpace();
     }
 
 
     void graphicsState::setColor(colorSpace *pColorSpace) {
-    return gdiParametersStack.top() -> setColor(pColorSpace);
+    return theGDIParameters.setColor(pColorSpace);
     }
 
 
     void graphicsState::setRGBColor(COLORREF rgb) {
-    gdiParametersStack.top() -> setRGBColor(rgb);
+    theGDIParameters.setRGBColor(rgb);
     return;
     }
     
 
     void graphicsState::setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b) {
-    gdiParametersStack.top() -> setRGBColor(r,g,b);
+    theGDIParameters.setRGBColor(r,g,b);
     return;
     }
 
 
     void graphicsState::setLineWidth(POINT_TYPE lw) { 
-    gdiParametersStack.top() -> setLineWidth(lw);
+    theGDIParameters.setLineWidth(lw);
     return;
     }
 
 
     void graphicsState::setLineJoin(long lj) {
-    gdiParametersStack.top() -> setLineJoin(lj);
+    theGDIParameters.setLineJoin(lj);
     return;
     }
 
 
     void graphicsState::setLineCap(long lc) {
-    gdiParametersStack.top() -> setLineCap(lc);
+    theGDIParameters.setLineCap(lc);
     return;
     }
 
@@ -181,23 +181,26 @@ Beep(2000,200);
     void graphicsState::setLineDash(class array *pArray,POINT_TYPE offset) {
 
     if ( NULL == pArray ) {
-        gdiParametersStack.top() -> setLineDash(NULL,0,offset);
+        theGDIParameters.setLineDash(NULL,0,offset);
         return;
     }
 
     long countItems = pArray -> size();
 
     if ( 0 == countItems ) {
-        gdiParametersStack.top() -> setLineDash(NULL,0,offset);
+        theGDIParameters.setLineDash(NULL,0,offset);
         return;
     }
 
     FLOAT *pValues = new FLOAT[countItems];
 
-    for ( long k = 0; k < countItems; k++ )
-        pValues[k] = pArray -> getElement(k) -> FloatValue();
+    for ( long k = 0; k < countItems; k++ ) {
+        GS_POINT ptDash{pArray -> getElement(k) -> FloatValue(),0.0f};
+        transformPoint(&ptDash,&ptDash);
+        pValues[k] = ptDash.x;
+    }
 
-    gdiParametersStack.top() -> setLineDash(pValues,countItems,offset);
+    theGDIParameters.setLineDash(pValues,countItems,offset);
 
     delete [] pValues;
 

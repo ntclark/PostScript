@@ -2,21 +2,28 @@
 
 #include "pathParameters.h"
 
-#ifdef USE_RENDERER
-#else
-    void pathParameters::forwardToRenderer() {
+
+    void pathParameters::redirectType3() {
+
+    UINT_PTR *ptrBundle;
+    job::pIRenderer -> GetParametersBundle(&ptrBundle);
+    pIRenderer_text -> SetParametersBundle(ptrBundle);
+
+    CoTaskMemFree((VOID *)ptrBundle);
+
+    pIGraphicElements = pIGraphicElements_text;
+    return;
+    }
+
+
+    void pathParameters::unRedirectType3() {
     pIGraphicElements = job::pIGraphicElements_External;
     return;
     }
 
 
-    void pathParameters::revertToLocal() {
-    pIGraphicElements = pIGraphicElements_Local;
-    return;
-    }
-#endif
-
     void pathParameters::newpath() {
+    pPStoPDF -> BeginPath();
     pIGraphicElements -> NewPath();
     }
 
@@ -40,15 +47,7 @@
 
 
     void pathParameters::eofillpath() {
-#ifdef USE_RENDERER
 Beep(2000,200);
-#else
-    if ( isPathActive )
-        closepath();
-    int oldMode = SetPolyFillMode(pPStoPDF -> GetDC(),ALTERNATE);
-    fillpath();
-    SetPolyFillMode(pPStoPDF -> GetDC(),oldMode);
-#endif
     return;
     }
 

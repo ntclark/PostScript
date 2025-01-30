@@ -26,6 +26,9 @@ library Renderer {
         HRESULT Render();
         HRESULT Reset();
 
+        HRESULT GetParametersBundle(UINT_PTR **pptrBundleStorage);
+        HRESULT SetParametersBundle(UINT_PTR *ptrBundleStorage);
+
     };
 
     [uuid(7731A10E-25F9-4234-BB4C-188512965193),

@@ -4,40 +4,26 @@
 
 #define FT_CURVE_TAG_ON 0x01
 
-#ifdef USE_RENDERER
-    HRESULT FontManager::RenderGlyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
-#else
-    HRESULT FontManager::RenderGlyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IGlyphRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
-#endif
+    HRESULT FontManager::RenderGlyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     font *pFont = static_cast<font *>(pIFont_Current);
 
     if ( font::fontType::ftype3 == pFont -> fontType ) 
-        return drawType3Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pIGlyphRenderer,pStartPoint,pEndPoint);
+        return drawType3Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
 
     if ( ! ( font::fontType::ftype42 == pFont -> fontType ) )
         return E_UNEXPECTED;
 
-    HRESULT rc = drawType42Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pIGlyphRenderer,pStartPoint,pEndPoint);
-
-    return rc;
+    return drawType42Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
     }
 
-#ifdef USE_RENDERER
-    HRESULT FontManager::drawType3Glyph(HDC,BYTE,UINT_PTR,UINT_PTR,IRenderer *,POINTF *pStartPoint,POINTF *pEndPoint) {
+
+    HRESULT FontManager::drawType3Glyph(HDC,BYTE,UINT_PTR,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
     return E_NOTIMPL;
     }
 
 
-    HRESULT FontManager::drawType42Glyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
-#else
-    HRESULT FontManager::drawType3Glyph(HDC,BYTE,UINT_PTR,UINT_PTR,IGlyphRenderer *,POINTF *pStartPoint,POINTF *pEndPoint) {
-    return E_NOTIMPL;
-    }
-
-
-    HRESULT FontManager::drawType42Glyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,IGlyphRenderer *pIGlyphRenderer,POINTF *pStartPoint,POINTF *pEndPoint) {
-#endif
+    HRESULT FontManager::drawType42Glyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     font *pFont = static_cast<font *>(pIFont_Current);
 
@@ -149,34 +135,34 @@
     std::function<void(POINT *pt,uint8_t curveFlag,uint8_t ptIndex)> dotAction{NULL};
     std::function<void(POINT *ptStart)> endFigureAction{NULL};
 
-    if ( ! ( NULL == pIGlyphRenderer ) ) {
+    if ( ! ( NULL == pIRenderer ) ) {
 
         BOOL isPrepared = FALSE;
-        pIGlyphRenderer -> get_IsPrepared(&isPrepared);
+        pIRenderer -> get_IsPrepared(&isPrepared);
         if ( ! isPrepared ) 
-            pIGlyphRenderer -> Prepare(hdc);
+            pIRenderer -> Prepare(hdc);
 
-        pIGlyphRenderer -> put_TransformMatrix((UINT_PTR)pXformToDeviceSpace);
+        pIRenderer -> put_TransformMatrix((UINT_PTR)pXformToDeviceSpace);
 
-        if ( NULL == pIGraphicElements_External )
-            pIGlyphRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_External));
+        if ( NULL == pIGraphicElements_Type42 )
+            pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_Type42));
 
         newPathAction = [=]() {
-            pIGraphicElements_External -> NewPath();
+            pIGraphicElements_Type42 -> NewPath();
         };
 
         closePathAction = [=]() {
-            pIGraphicElements_External -> ClosePath();
+            pIGraphicElements_Type42 -> ClosePath();
         };
 
         moveToAction = [=](POINT *pt) { 
-            pIGraphicElements_External -> MoveTo((FLOAT)pt -> x,(FLOAT)pt -> y);
+            pIGraphicElements_Type42 -> MoveTo((FLOAT)pt -> x,(FLOAT)pt -> y);
             currentPoint.x = pt -> x;
             currentPoint.y = pt -> y;
         };
 
         lineToAction = [=](POINT *pt) { 
-            pIGraphicElements_External -> LineTo((FLOAT)pt -> x,(FLOAT)pt -> y);
+            pIGraphicElements_Type42 -> LineTo((FLOAT)pt -> x,(FLOAT)pt -> y);
             currentPoint.x = pt -> x;
             currentPoint.y = pt -> y;
         };
@@ -185,13 +171,13 @@
         };
 
         quadraticBezierAction = [=](POINT *pt0,POINT *pt2,POINT *pt3) {
-            pIGraphicElements_External -> QuadraticBezierTo((FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
+            pIGraphicElements_Type42 -> QuadraticBezierTo((FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
             currentPoint.x = pt3 -> x;
             currentPoint.y = pt3 -> y;
         };
 
         cubicBezierAction = [=](POINT *pt0,POINT *pt1,POINT *pt2,POINT *pt3) {
-            pIGraphicElements_External -> CubicBezierTo((FLOAT)pt1 -> x,(FLOAT)pt1 -> y,(FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
+            pIGraphicElements_Type42 -> CubicBezierTo((FLOAT)pt1 -> x,(FLOAT)pt1 -> y,(FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
             currentPoint.x = pt3 -> x;
             currentPoint.y = pt3 -> y;
         };
@@ -289,7 +275,7 @@
     // which will put the coordinates in PAGE space
     pMatrix -> concat((XFORM *)pPSXform);
 
-    if ( NULL == pIGlyphRenderer ) {
+    if ( NULL == pIRenderer ) {
         POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
         pMatrix -> concat((XFORM *)pXformToDeviceSpace);
         matrix::transformPoints((XFORM *)pXformToDeviceSpace,(GS_POINT *)&initialPoint,1);
@@ -301,38 +287,14 @@
         // applied.
         // The GlyphRenderer will convert this to device (GDI) coordinates
         //matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
-        pIGlyphRenderer -> put_Origin(*pStartPoint);
-        pIGlyphRenderer -> put_DownScale(64.0f);
+        pIRenderer -> put_Origin(*pStartPoint);
+        pIRenderer -> put_DownScale(64.0f);
     }
 
     // Transform Glyph coordinates using current font matrix
     pMatrix -> concat(pFont -> matrixStack.top());
 
     pMatrix -> transformPoints(pSimpleGlyph -> pPoints,pSimpleGlyph -> pointCount);
-
-    //if ( NULL == pIGlyphRenderer ) {
-    //    uint8_t ptIndex = 0;
-    //    for ( long k = 0; k < pSimpleGlyph -> pGlyphHeader -> contourCount; k++ ) {
-    //        uint8_t *pOnCurve = pSimpleGlyph -> pFlagsFirst[k];
-    //        for ( long j = 0; j < pSimpleGlyph -> contourPointCount[k]; j++ )
-    //            dotAction(pSimpleGlyph -> pPointFirst[k] + j,pOnCurve[j],ptIndex++);
-    //    }
-    //}
-
-/*
-    newPathAction();
-
-    pMatrix -> transformPoints(pSimpleGlyph -> phantomPoints,4);
-
-    moveToAction(pSimpleGlyph -> phantomPoints + 0);
-    lineToAction(pSimpleGlyph -> phantomPoints + 1);
-    lineToAction(pSimpleGlyph -> phantomPoints + 2);
-    lineToAction(pSimpleGlyph -> phantomPoints + 3);
-
-    closePathAction();
-
-    pIGraphicElements_External -> StrokePath();
-*/
 
     newPathAction();
 
@@ -430,9 +392,9 @@ CaptureBezier:
 
     }
 
-    if ( ! ( NULL == pIGraphicElements_External ) ) {
-        pIGraphicElements_External -> FillPath();
-        pIGlyphRenderer -> Reset();
+    if ( ! ( NULL == pIGraphicElements_Type42 ) ) {
+        pIGraphicElements_Type42 -> FillPath();
+        pIRenderer -> Reset();
     }
 
     if ( ! ( NULL == pEndPoint ) ) {

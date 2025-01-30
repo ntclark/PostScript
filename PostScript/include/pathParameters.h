@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef USE_RENDERER
 #include "Renderer_i.h"
-#else
-#include "GlyphRenderer_i.h"
-#endif
 
     struct pathParameters {
 
@@ -15,6 +11,9 @@
         ~pathParameters();
 
         void initialize();
+
+        void redirectType3();
+        void unRedirectType3();
 
         void initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints);
 
@@ -37,42 +36,8 @@
         void curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
         void quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-#ifdef USE_RENDERER
-
         static XFORM *ToDeviceSpace() { return &toDeviceSpace; }
         static void RenderGeometry();
-
-#else
-        void dot(GS_POINT at,FLOAT radius);
-
-        void openGeometry();
-        void closeGeometry();
-        void renderGeometry();
-
-        static void RenderGeometry();
-
-        void outlinePage(long pageWidth,long pageHeight);
-
-        GS_POINT *CurrentDevicePoint() { return &currentDevicePoint; }
-
-        // Coordinate systems
-
-        static XFORM *ToDeviceSpace() { return &toDeviceSpace; }
-
-        void transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
-        void transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
-
-        void untransformPoint(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
-        void untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
-
-        void scalePoint(FLOAT x,FLOAT y,FLOAT *px2,FLOAT *py2);
-
-        void transform(GS_POINT *pPoints,uint16_t pointCount);
-        void transformInPlace(GS_POINT *pPoints,uint16_t pointCount);
-
-        void translate(GS_POINT *pPoints,uint16_t pointCount,GS_POINT *pToPoint);
-        void scale(GS_POINT *pPoints,uint16_t pountCount,FLOAT scale);
-#endif
 
         // Paths
 
@@ -82,65 +47,12 @@
         void fillpath();
         void eofillpath();
 
-#ifdef USE_RENDERER
-#else
-        void forwardToRenderer();
-        void revertToLocal();
-#endif
-
     private:
 
-#ifdef USE_RENDERER
-        IGraphicElements *pIGraphicElements{NULL};
-#else
-        class GraphicElements : IGraphicElements {
-        public:
-
-            GraphicElements(pathParameters *pp);
-
-            //   IUnknown
-
-            STDMETHOD (QueryInterface)(REFIID riid,void **ppv) { return E_NOTIMPL; }
-            STDMETHOD_ (ULONG, AddRef)() { return 0; }
-            STDMETHOD_ (ULONG, Release)() { return 0; }
-
-        private:
-
-            STDMETHOD(NewPath)();
-            STDMETHOD(ClosePath)();
-            STDMETHOD(StrokePath)();
-            STDMETHOD(FillPath)();
-
-            STDMETHOD(MoveTo)(FLOAT x,FLOAT y);
-            STDMETHOD(MoveToRelative)(FLOAT x,FLOAT y);
-            STDMETHOD(LineTo)(FLOAT x,FLOAT y);
-            STDMETHOD(LineToRelative)(FLOAT x,FLOAT y);
-            STDMETHOD(ArcTo)(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
-            STDMETHOD(CubicBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
-            STDMETHOD(QuadraticBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
-
-            pathParameters *pParent{NULL};
-
-            friend struct pathParameters;
-
-        };
-
-        IGraphicElements *pIGraphicElements_Local{NULL};
         IGraphicElements *pIGraphicElements{NULL};
 
-        void getGeometry(long *pCountVertices,BYTE **pVertexTypes,POINT **pVertexPoints);
-
-        GS_POINT currentUserPoint POINT_TYPE_NAN_POINT;
-        GS_POINT currentDevicePoint POINT_TYPE_NAN_POINT;
-        GS_POINT userSpaceDomain POINT_TYPE_NAN_POINT;
-
-        POINT currentGDIPoint{-1L,-1L};
-
-        FLOAT totalRotation{0.0};
-
-        static boolean isPathActive;
-
-#endif
+        static IRenderer *pIRenderer_text;
+        static IGraphicElements *pIGraphicElements_text;
 
         static long cxClient;
         static long cyClient;
@@ -152,5 +64,7 @@
 
         static XFORM toDeviceSpace;
         static XFORM toDeviceSpaceInverse;
+
+        friend class graphicsState;
 
     };

@@ -16,11 +16,7 @@
 
 #include "PostScript.h"
 #include "PostScriptGen2_i.c"
-#if USE_RENDERER
 #include "Renderer_i.c"
-#else
-#include "GlyphRenderer_i.c"
-#endif
 
 #include "PostScript objects/object.h"
 

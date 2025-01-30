@@ -28,6 +28,9 @@
         STDMETHOD(Render)();
         STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
+        STDMETHOD(GetParametersBundle)(UINT_PTR **pptrBundleStorage);
+        STDMETHOD(SetParametersBundle)(UINT_PTR *ptrBundlestorage);
+
         // IGraphicElements
 
         class GraphicElements : public IUnknown {
@@ -77,30 +80,7 @@
 
                 primitive(GraphicElements *pp,type t) : pParent(pp), theType(t) {}
 
-                primitive(GraphicElements *pp,COLORREF color) : pParent(pp), theType(colorSet), theColor(color) {}
-
-                primitive(GraphicElements *pp,FLOAT lw) : pParent(pp), theType(lineWidthSet), theLineWidth(lw) {};
-
-                primitive(GraphicElements *pp,D2D1_CAP_STYLE lineCap,D2D1_LINE_JOIN lineJoin,D2D1_DASH_STYLE dashStyle,
-                                FLOAT offset,FLOAT *pValues,long countValues) : pParent(pp), theType(lineStyleSet) {
-                theLineCap = lineCap;
-                theLineJoin = lineJoin;
-                theLineDashStyle = dashStyle;
-                theLineDashOffset = offset;
-                countFloats = 0;
-                if ( ! ( NULL == pValues ) ) {
-                    countFloats = countValues;
-                    pvData = new BYTE[countValues * sizeof(FLOAT)];
-                    memcpy(pvData,pValues,countValues * sizeof(FLOAT));
-                }
-                return;
-                }
-
-                ~primitive() {
-                if ( ! ( NULL == pvData ) )
-                    delete [] pvData;
-                return;
-                }
+                ~primitive() {}
 
                 virtual void transform() {}
 
@@ -110,16 +90,6 @@
                 primitive *pPrior{NULL};
 
                 GraphicElements *pParent{NULL};
-
-                long countFloats{0};
-                void *pvData{NULL};
-
-                COLORREF theColor{GraphicParameters::defaultRGBColor};
-                FLOAT theLineWidth{GraphicParameters::defaultLineWidth};
-                D2D1_CAP_STYLE theLineCap{GraphicParameters::defaultLineCap};
-                D2D1_LINE_JOIN theLineJoin{GraphicParameters::defaultLineJoin};
-                D2D1_DASH_STYLE theLineDashStyle{GraphicParameters::defaultDashStyle};
-                FLOAT theLineDashOffset{0.0f};
 
                 POINTF vertices[3]{{0.0f,0.0f}, {0.0f,0.0f}, {0.0f,0.0f}};
                 D2D1_BEZIER_SEGMENT bezierSegment{{0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f}};
@@ -223,7 +193,7 @@
                 Renderer *pRenderer{NULL};
 
                 primitive *pFirstPrimitive{NULL};
-                primitive *pCurrentPrimitive{NULL};
+                primitive *pLastPrimitive{NULL};
 
                 boolean isFillPath{false};
 
@@ -233,15 +203,17 @@
                 path *pNext{NULL};
                 path *pPrior{NULL};
 
+                long occuranceInFile{-1L};
+
                 void addPrimitive(primitive *p) {
                     if ( NULL == pFirstPrimitive ) {
                         pFirstPrimitive = p;
-                        pCurrentPrimitive = p;
+                        pLastPrimitive = p;
                         return;
                     }
-                    p -> pPrior = pCurrentPrimitive;
-                    pCurrentPrimitive -> pNext = p;
-                    pCurrentPrimitive = p;
+                    p -> pPrior = pLastPrimitive;
+                    pLastPrimitive -> pNext = p;
+                    pLastPrimitive = p;
                     return;
                 }
 
@@ -253,10 +225,16 @@
                         p = pNext;
                     }
                     pFirstPrimitive = NULL;
-                    pCurrentPrimitive = NULL;
+                    pLastPrimitive = NULL;
                 }
 
-                void apply(boolean doFill,boolean firstPass,FILE *fDebug = NULL);
+                enum pathAction {
+                    none = 0,
+                    stroke = 1,
+                    fill = 2
+                };
+
+                enum pathAction apply(boolean doFill,FILE *fDebug = NULL);
 
             };
 
@@ -321,24 +299,6 @@
 
             Renderer *pParent{NULL};
 
-            void addColorPrimitive() {
-            if ( NULL == pParent -> pIGraphicElements -> pCurrentPath )
-                return;
-            pParent -> pIGraphicElements -> pCurrentPath -> addPrimitive(new GraphicElements::primitive(pParent -> pIGraphicElements,valuesStack.top() -> rgbColor));
-            return;
-            }
-
-
-            void addLineStylePrimitive() {
-            if ( NULL == pParent -> pIGraphicElements -> pCurrentPath )
-                return;
-            pParent -> pIGraphicElements -> pCurrentPath -> addPrimitive(
-                new GraphicElements::primitive(pParent -> pIGraphicElements,
-                        valuesStack.top() -> lineCap,valuesStack.top() -> lineJoin,
-                            valuesStack.top() -> lineDashStyle,valuesStack.top() -> offset,
-                            valuesStack.top() -> lineStyles,valuesStack.top() -> countDashSizes));
-            }
-
             struct values {
                 values() {}
                 values(values &rhs) {
@@ -347,8 +307,8 @@
                     lineJoin = rhs.lineJoin;
                     lineDashStyle = rhs.lineDashStyle;
                     countDashSizes = rhs.countDashSizes;
-                    memcpy(lineStyles,rhs.lineStyles,sizeof(lineStyles));
-                    offset = rhs.offset;
+                    memcpy(lineDashSizes,rhs.lineDashSizes,sizeof(lineDashSizes));
+                    lineDashOffset = rhs.lineDashOffset;
                     rgbColor = rhs.rgbColor;
                     return;
                 }
@@ -356,14 +316,15 @@
                 D2D1_CAP_STYLE lineCap{defaultLineCap};
                 D2D1_LINE_JOIN lineJoin{defaultLineJoin};
                 D2D1_DASH_STYLE lineDashStyle{defaultDashStyle};
-                DWORD countDashSizes{0};
-                FLOAT lineStyles[16]{16 * 0.0f};
-                FLOAT offset{0.0f};
+                int countDashSizes{0};
+                FLOAT lineDashSizes[16]{16 * 0.0f};
+                FLOAT lineDashOffset{0.0f};
                 COLORREF rgbColor{defaultRGBColor};
             };
 
             long hashCode(char *pszLineSettings,boolean doFill);
 
+            void setParameters(char *pszLineSettings,boolean doFill);
             void resetParameters(char *pszLineSettings);
 
             std::stack<values *> valuesStack;
@@ -379,6 +340,9 @@
         } *pIGraphicParameters{NULL};
 
         void setupRenderer();
+        HRESULT fillRender();
+        HRESULT strokeRender();
+
         HRESULT internalRender();
 
         HDC hdc{NULL};

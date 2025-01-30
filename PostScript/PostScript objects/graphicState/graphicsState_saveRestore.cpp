@@ -6,7 +6,7 @@
 
 
     void graphicsState::gSave() {
-    gdiParametersStack.gSave();
+    theGDIParameters.SaveState();
     pathParametersStack.gSave();
     psXformsStack.gSave();
     CurrentFont() -> gSave();
@@ -15,7 +15,7 @@
 
 
     void graphicsState::gRestore() {
-    gdiParametersStack.gRestore();
+    theGDIParameters.RestoreState();
     pathParametersStack.gRestore();
     psXformsStack.gRestore();
     CurrentFont() -> gRestore();

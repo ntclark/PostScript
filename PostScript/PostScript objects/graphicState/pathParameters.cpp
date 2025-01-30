@@ -9,6 +9,9 @@
 
     int Mx3Inverse(double *,double *);
 
+    IRenderer *pathParameters::pIRenderer_text = NULL;
+    IGraphicElements *pathParameters::pIGraphicElements_text = NULL;
+
     FLOAT pathParameters::scalePointsToPixels = 1.0f;
     FLOAT pathParameters::renderingHeight = 0.0f;
 
@@ -20,41 +23,24 @@
     long pathParameters::cyClient = 0L;
     long pathParameters::cyWindow = 0L;
 
-#ifdef USE_RENDERER
-#else
-    boolean pathParameters::isPathActive = false;
-#endif
 
     pathParameters::pathParameters() {
-#ifdef USE_RENDERER
     pIGraphicElements = job::pIGraphicElements_External;
-#else
-    pIGraphicElements_Local = static_cast<IGraphicElements *>(new GraphicElements(this));
-    revertToLocal();
-#endif
+    if ( NULL == pIRenderer_text ) {
+        font::pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer_text));
+        font::pIFontManager -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_text));
+    }
     return;
     }
 
 
     pathParameters::pathParameters(pathParameters *pRHS) {
-#ifdef USE_RENDERER
     pIGraphicElements = job::pIGraphicElements_External;
-#else
-    pIGraphicElements_Local = static_cast<IGraphicElements *>(new GraphicElements(this));
-    if ( pRHS -> pIGraphicElements == pRHS -> pIGraphicElements_Local )
-        revertToLocal();
-    else
-       forwardToRenderer();
-#endif
     return;
     }
 
 
     pathParameters::~pathParameters() {
-#ifdef USE_RENDERER
-#else
-    delete pIGraphicElements_Local;
-#endif
     return;
     }
 
@@ -65,14 +51,6 @@
     toDeviceSpace.eM22 = 1.0;
     displayResolution = GetDeviceCaps(pPStoPDF -> GetDC(),LOGPIXELSX);
     scalePointsToPixels = 1.0;
-#if USE_RENDERER
-#else
-    currentUserPoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
-    currentDevicePoint = {POINT_TYPE_NAN,POINT_TYPE_NAN};
-    userSpaceDomain = {POINT_TYPE_NAN,POINT_TYPE_NAN};
-    currentGDIPoint.x = 0;
-    currentGDIPoint.y = 0;
-#endif
     return;
     }
 
@@ -134,18 +112,15 @@
     toDeviceSpaceInverse.eDx = (FLOAT)inverse[2][1];
     toDeviceSpaceInverse.eDy = (FLOAT)inverse[2][2];
 
-/*
-double v[]{0.5,0.75,1.0};
-double vAnswer[]{0.0,0.0,0.0};
-double prod[][3]{ {0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}};
+    job::pIRenderer -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
+    pIRenderer_text -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
 
-MxV(&theMatrix[0][0],v,vAnswer);
-MxV(&untransformGDIMatrix[0][0],vAnswer,v);
+    return;
+    }
 
-MxM(&theMatrix[0][0],&untransformGDIMatrix[0][0],&prod[0][0]);
-*/
 
-    job::pIGlyphRenderer -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
-
+    void pathParameters::RenderGeometry() {
+    job::pIRenderer -> Render();
+    pIRenderer_text -> Render();
     return;
     }

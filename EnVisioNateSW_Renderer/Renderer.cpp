@@ -37,6 +37,7 @@
 
     hr = pID2D1DCRenderTarget -> BindDC(hdc,&rcImage);
 
+#if 0
     FLOAT r = (FLOAT)GetRValue(Renderer::GraphicParameters::defaultRGBColor) / 255.0f;
     FLOAT g = (FLOAT)GetGValue(Renderer::GraphicParameters::defaultRGBColor) / 255.0f;
     FLOAT b = (FLOAT)GetBValue(Renderer::GraphicParameters::defaultRGBColor) / 255.0f;
@@ -46,6 +47,7 @@
     pIGraphicParameters -> put_LineWidth(Renderer::GraphicParameters::defaultLineWidth);
     pIGraphicParameters -> put_LineJoin(Renderer::GraphicParameters::defaultLineJoin);
     pIGraphicParameters -> put_LineCap(Renderer::GraphicParameters::defaultLineCap);
+#endif
 
     pID2D1DCRenderTarget -> SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
@@ -53,7 +55,96 @@
     }
 
 
+    HRESULT Renderer::fillRender() {
+
+    if ( ! ( NULL == pID2D1GeometrySink ) ) {
+        pID2D1GeometrySink -> Close();
+        pID2D1GeometrySink -> Release();
+        pID2D1GeometrySink = NULL;
+    }
+
+    pID2D1DCRenderTarget -> BeginDraw();
+
+    pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
+
+    D2D1_TAG tag1;
+    D2D1_TAG tag2;
+
+    HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
+{
+if ( ! ( S_OK == hr ) )
+MessageBox(NULL,"BAD","BAD",MB_OK);
+}
+
+    pID2D1PathGeometry -> Release();
+
+    pID2D1PathGeometry = NULL;
+
+    hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
+    if ( ! ( S_OK == hr ) )
+{
+MessageBox(NULL,"BAD","BAD",MB_OK);
+        return hr;
+}
+
+    hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
+    if ( ! ( S_OK == hr ) )
+{
+MessageBox(NULL,"BAD","BAD",MB_OK);
+        return hr;
+}
+
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::strokeRender() {
+
+    if ( ! ( NULL == pID2D1GeometrySink ) ) {
+        pID2D1GeometrySink -> Close();
+        pID2D1GeometrySink -> Release();
+        pID2D1GeometrySink = NULL;
+    }
+
+    pID2D1DCRenderTarget -> BeginDraw();
+
+    pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,pIGraphicParameters -> valuesStack.top() -> lineWidth,pID2D1StrokeStyle1);
+
+    D2D1_TAG tag1;
+    D2D1_TAG tag2;
+
+    HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
+{
+if ( ! ( S_OK == hr ) )
+MessageBox(NULL,"BAD","BAD",MB_OK);
+}
+
+    pID2D1PathGeometry -> Release();
+
+    pID2D1PathGeometry = NULL;
+
+    hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
+    if ( ! ( S_OK == hr ) )
+{
+MessageBox(NULL,"BAD","BAD",MB_OK);
+        return hr;
+}
+
+    hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
+    if ( ! ( S_OK == hr ) )
+{
+MessageBox(NULL,"BAD","BAD",MB_OK);
+        return hr;
+}
+
+    return S_OK;
+    }
+
+
     HRESULT Renderer::internalRender() {
+
+    if ( pIGraphicElements -> isFigureStarted )
+        pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
 
     if ( ! ( NULL == pID2D1GeometrySink ) ) {
         pID2D1GeometrySink -> Close();

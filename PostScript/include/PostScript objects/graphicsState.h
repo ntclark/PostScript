@@ -4,7 +4,7 @@
 
 #define GLYPH_BMP_PIXELS    128
 
-#include "Stacks/gdiParametersStack.h"
+#include "gdiParameters.h"
 #include "Stacks/pathParametersStack.h"
 #include "Stacks/psTransformsStack.h"
 #include "Stacks/fontStack.h"
@@ -105,12 +105,6 @@
         void drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
         void drawType3Glyph(BYTE bGlyph);
 
-#ifdef USE_RENDERER
-#else
-        void openGeometry();
-        void closeGeometry();
-        void renderGeometry();
-#endif
         void setCacheDevice();
 
         void initialize();
@@ -162,7 +156,7 @@
         GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
         GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;
 
-        static gdiParametersStack gdiParametersStack;
+        static gdiParameters theGDIParameters;
         static pathParametersStack pathParametersStack;
         static psTransformsStack psXformsStack;
 

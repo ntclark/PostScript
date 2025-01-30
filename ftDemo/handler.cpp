@@ -1,11 +1,7 @@
 #include <Windows.h>
 #include <stdio.h>
 
-#ifdef USE_RENDERER
 #include "Renderer_i.h"
-#else
-#include "GlyphRenderer_i.h"
-#endif
 #include "FontManager_i.h"
 
 #define ON_CURVE_POINT  0x01
@@ -21,11 +17,7 @@
     XFORM psXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
     XFORM gdiXForm{scalePDF,0.0f,0.0f,-scalePDF,0.0f,(FLOAT)cyWindow};
 
-#ifdef USE_RENDERER
     extern IRenderer *pIGlyphRenderer;
-#else
-    extern IGlyphRenderer *pIGlyphRenderer;
-#endif
 
     extern IGraphicElements *pIGraphicElements;
     extern IFontManager *pIFontManager;
@@ -80,7 +72,6 @@ long fontSizes[]{288,144,72,36,18,9,4};
 
             pIFontManager -> RenderGlyph(ps.hdc,(BYTE)c,
                                         (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
-                                            pIGlyphRenderer,
                                             &startPoint,&endPoint);
 
             //MoveToEx(ps.hdc,)

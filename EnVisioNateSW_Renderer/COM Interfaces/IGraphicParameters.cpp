@@ -46,17 +46,12 @@
 
 
     HRESULT Renderer::GraphicParameters::put_LineWidth(FLOAT lw) {
-    if ( valuesStack.top() -> lineWidth == lw )
-        return S_OK;
     valuesStack.top() -> lineWidth = lw; 
     return S_OK;
     }
 
 
     HRESULT Renderer::GraphicParameters::put_LineJoin(long lj) {
-
-    if ( valuesStack.top() -> lineJoin == (D2D1_LINE_JOIN)lj )
-        return S_OK;
 
     switch ( lj ) {
     default:
@@ -78,16 +73,11 @@
 
     }
 
-    put_LineDash(NULL,-1L,0.0f);
-
     return S_OK;
     }
 
 
     HRESULT Renderer::GraphicParameters::put_LineCap(long lc) {
-
-    if ( valuesStack.top() -> lineCap == (D2D1_CAP_STYLE) lc )
-        return S_OK;
 
     switch ( lc ) {
     default:
@@ -102,86 +92,104 @@
         break;
     }
 
-    put_LineDash(NULL,-1L,0.0f);
-
     return S_OK;
     }
 
 
-    HRESULT Renderer::GraphicParameters::put_LineDash(FLOAT *pValues,long countValues,FLOAT passedOffset) {
+    HRESULT Renderer::GraphicParameters::put_LineDash(FLOAT *pDashValues,long countValues,FLOAT passedOffset) {
 
-    if ( ! ( -1L == countValues ) ) {
+    values *pValues = valuesStack.top();
 
-        valuesStack.top() -> countDashSizes = 0;
+    if ( ! ( NULL == pDashValues ) ) {
 
-        valuesStack.top() -> offset = passedOffset;
-
-        if ( ! ( -1 == countValues ) ) {
-
-            valuesStack.top() -> countDashSizes = countValues;
-
-            if ( ! ( NULL == pValues ) ) {
-
-                if ( 0 < valuesStack.top() -> countDashSizes ) {
-                    valuesStack.top() -> countDashSizes = min(16,valuesStack.top() -> countDashSizes);
-                    memcpy(valuesStack.top() -> lineStyles,pValues,valuesStack.top() -> countDashSizes * sizeof(FLOAT));
-                }
-
-            }  else
-
-                valuesStack.top() -> countDashSizes = 0;
-
+        pValues -> countDashSizes = (int)min(16,countValues);
+        pValues -> lineDashOffset = passedOffset;
+        for ( long k = 0; k < pValues -> countDashSizes; k++ ) {
+            POINTF ptValue{30.0f * 5.0f * pDashValues[k] / 9.0f,0.0f};
+            pParent -> pIGraphicElements -> transformPoint(&ptValue,&ptValue);
+            pValues -> lineDashSizes[k] = ptValue.x;
         }
+        pValues -> lineDashStyle = D2D1_DASH_STYLE_CUSTOM;
 
-        valuesStack.top() -> lineDashStyle = D2D1_DASH_STYLE_SOLID;
-        if ( 0 < valuesStack.top() -> countDashSizes )
-            valuesStack.top() -> lineDashStyle = D2D1_DASH_STYLE_CUSTOM;
+    }  else {
+
+        pValues -> countDashSizes = 0;
+        pValues -> lineDashOffset = 0.0f;
+        pValues -> lineDashStyle = D2D1_DASH_STYLE_SOLID;
 
     }
-
-    addLineStylePrimitive();
 
     return S_OK;
     }
 
 
     HRESULT Renderer::GraphicParameters::put_RGBColor(COLORREF color) {
-
-    //if ( rgbColor == color )
-    //    return S_OK;
-
     valuesStack.top() -> rgbColor = color;
-
-    addColorPrimitive();
-
     return S_OK;
+    }
+
+
+    void Renderer::GraphicParameters::setParameters(char *pszLineSettings,boolean doFill) {
+    values *pValues = valuesStack.top();
+    char szLDashes[128]{128 * '\0'};
+    long cntPrint = 0;
+    for ( int k = 0; k < 16; k++ )
+        cntPrint += sprintf(szLDashes + cntPrint,"%05.2f,",pValues -> lineDashSizes[k]);
+    szLDashes[cntPrint - 1] = '\0';
+    sprintf_s(pszLineSettings,128,"%05.2f:%01d:%01d:%01d:%01d:%08ld:%c:%s",
+            (FLOAT)valuesStack.top() -> lineWidth,pValues -> lineCap,pValues -> lineJoin,
+                        pValues -> lineDashStyle,pValues -> countDashSizes,pValues -> rgbColor,doFill ? '1' : '0',szLDashes);
+    return;
     }
 
 
     void Renderer::GraphicParameters::resetParameters(char *pszLineSettings) {
 
-    FLOAT f[5];
-    boolean doFill;
-    sscanf_s(pszLineSettings,"%f-%f-%f-%f-%f-%ld-%d",f,f + 1,f + 2,f + 3,f + 4,&valuesStack.top() -> rgbColor,&doFill);
+    values *pValues = valuesStack.top();
 
-    valuesStack.top() -> lineWidth = f[0];
-    valuesStack.top() -> lineCap = (D2D1_CAP_STYLE)f[1];
-    valuesStack.top() -> lineJoin = (D2D1_LINE_JOIN)f[2];
-    valuesStack.top() -> lineDashStyle = (D2D1_DASH_STYLE)f[3];
-    valuesStack.top() -> countDashSizes = (long)f[4];
+    char doFillChar;
+    char szLDashes[128]{128 * '\0'};
+    sscanf(pszLineSettings,"%05f:%01d:%01d:%01d:%01d:%08ld:%c:%s",&pValues -> lineWidth ,&pValues -> lineCap,&pValues -> lineJoin,
+                        &pValues -> lineDashStyle,&pValues -> countDashSizes,&pValues -> rgbColor,&doFillChar,szLDashes);
 
-    put_LineDash(NULL,-1L,0.0f);
+    char *pszDash = strtok(szLDashes,",");
+    for ( int k = 0; k < 16; k++ ) {
+        pValues -> lineDashSizes[k] = (FLOAT)atof(pszDash);
+        pszDash = strtok(NULL,",");
+    }
 
-    put_RGBColor(valuesStack.top() -> rgbColor);
+    if ( ! ( NULL == pParent -> pID2D1StrokeStyle1 ) )
+        pParent -> pID2D1StrokeStyle1 -> Release();
+
+    pParent -> pID2D1Factory1 -> CreateStrokeStyle(
+            D2D1::StrokeStyleProperties1(
+                pValues -> lineCap,
+                pValues -> lineCap,
+                D2D1_CAP_STYLE_FLAT,
+                pValues -> lineJoin,
+                10.0f,
+                pValues -> lineDashStyle,
+                pValues -> lineDashOffset,
+                D2D1_STROKE_TRANSFORM_TYPE_NORMAL ),//D2D1_STROKE_TRANSFORM_TYPE_FIXED),
+                pValues -> lineDashSizes,
+                pValues -> countDashSizes,
+                    &pParent -> pID2D1StrokeStyle1);
+
+    if ( ! ( NULL == pParent-> pID2D1SolidColorBrush ) )
+        pParent-> pID2D1SolidColorBrush -> Release();
+
+    FLOAT r = (FLOAT)GetRValue(pValues -> rgbColor) / 255.0f;
+    FLOAT g = (FLOAT)GetGValue(pValues -> rgbColor) / 255.0f;
+    FLOAT b = (FLOAT)GetBValue(pValues -> rgbColor) / 255.0f;
+
+    pParent -> pID2D1DCRenderTarget -> CreateSolidColorBrush(D2D1::ColorF(r,g,b, 1.0f),&pParent -> pID2D1SolidColorBrush);
 
     return;
     }
 
 
     long Renderer::GraphicParameters::hashCode(char *szLineSettings,boolean doFill) {
-    sprintf_s(szLineSettings,128,"%f-%f-%f-%f-%f-%ld-%d",
-            (FLOAT)valuesStack.top() -> lineWidth,(FLOAT)valuesStack.top() -> lineCap,(FLOAT)valuesStack.top() -> lineJoin,
-                        (FLOAT)valuesStack.top() -> lineDashStyle,(FLOAT)valuesStack.top() -> countDashSizes,valuesStack.top() -> rgbColor,doFill);
+    setParameters(szLineSettings,doFill);
     long hashCode = 0L;
     long part = 0L;
     long n = (DWORD)strlen(szLineSettings);

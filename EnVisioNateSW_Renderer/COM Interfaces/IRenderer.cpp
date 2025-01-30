@@ -3,7 +3,7 @@
 
 #include <list>
 #include <map>
-
+#include <algorithm>
 
     HRESULT Renderer::Prepare(HDC theHDC) {
 
@@ -65,103 +65,109 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
     if ( NULL == pIGraphicElements -> pFirstPath )
         return E_UNEXPECTED;
 
-#if 1
-SetLastError(0);
-
-FILE *fDebug = fopen("C:\\temp\\x.ps","a+");
+    std::map<long,std::list<GraphicElements::path *> *> strokePathsMap;
+    std::map<long,std::list<GraphicElements::path *> *> fillPathsMap;
 
     GraphicElements::path *p = pIGraphicElements -> pFirstPath;
 
-    doRasterize = p -> isFillPath;
+    long fileOccurance = 0L;
 
-    boolean firstPass = true;
-
-char szSettings[128]{128 * '\0'};
-strcpy(szSettings,p -> szLineSettings);
+    std::vector<std::pair<long,long>> fillPathSorter;
+    std::vector<std::pair<long,long>> strokePathSorter;
 
     while ( ! ( p == NULL ) ) {
 
-        p -> apply(p -> isFillPath,firstPass,fDebug);
-
-char szX[1024];
-sprintf_s<1024>(szX,"%s-%s\n",szSettings,p -> szLineSettings);
-OutputDebugStringA(szX);
-
-        if ( strcmp(szSettings,p -> szLineSettings) ) {
-OutputDebugStringA("rendered\n");
-            internalRender();
-            strcpy(szSettings,p -> szLineSettings);
-            firstPass = true;
-            doRasterize = p -> isFillPath;
-        }
-
-        p -> clear();
-
-        if ( NULL == p -> pNext ) {
-            delete p;
-            break;
+        if ( p -> isFillPath ) {
+            if ( fillPathsMap.find(p -> hashCode) == fillPathsMap.end() ) {
+                fillPathsMap[p -> hashCode] = new std::list<GraphicElements::path *>();
+                fileOccurance++;
+                fillPathSorter.push_back(std::pair<long,long>(p -> hashCode,fileOccurance));
+            }
+            fillPathsMap[p -> hashCode] -> push_back(p);
+        } else {
+            if ( strokePathsMap.find(p -> hashCode) == strokePathsMap.end() ) {
+                strokePathsMap[p -> hashCode] = new std::list<GraphicElements::path *>();
+                fileOccurance++;
+                strokePathSorter.push_back(std::pair<long,long>(p -> hashCode,fileOccurance));
+            }
+            strokePathsMap[p -> hashCode] -> push_back(p);
         }
 
         p = p -> pNext;
-        delete p -> pPrior;
-        firstPass = false;
     }
 
-    //internalRender();
+    std::sort(fillPathSorter.begin(), fillPathSorter.end(), [=](std::pair<long,long> &a, std::pair<long,long > &b) { return a.second < b.second; });
+
+    for ( std::pair<long,long> sortedPair : fillPathSorter ) {
+
+        std::list<GraphicElements::path *> *pList = fillPathsMap[sortedPair.first];
+
+        pIGraphicParameters -> resetParameters(pList -> front() -> szLineSettings);
+
+        for ( GraphicElements::path *p : *pList ) {
+
+if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ) {
+MessageBox(NULL,"stroke path in fill collection","Error",MB_OK);
+continue;
+}
+            if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType  )
+                GraphicElements::path::pathAction pa = p -> apply(true,NULL);
+        }
+
+        fillRender();
+
+    }
+
+    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : fillPathsMap )
+        delete pPair.second;
+
+    fillPathsMap.clear();
+
+    std::sort(strokePathSorter.begin(), strokePathSorter.end(), [=](std::pair<long,long> &a, std::pair<long, long > &b) { return a.second < b.second; });
+
+    for ( std::pair<long,long> sortedPair : strokePathSorter ) {
+
+        std::list<GraphicElements::path *> *pList = strokePathsMap[sortedPair.first];
+
+        pIGraphicParameters -> resetParameters(pList -> front() -> szLineSettings);
+
+        for ( GraphicElements::path *p : *pList ) {
+
+if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) {
+MessageBox(NULL,"fill path in stroke collection","Error",MB_OK);
+continue;
+}
+            if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType  )
+                GraphicElements::path::pathAction pa = p -> apply(false,NULL);
+        }
+
+        strokeRender();
+
+    }
+
+    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : strokePathsMap )
+        delete pPair.second;
+
+    strokePathsMap.clear();
 
     pIGraphicElements -> pFirstPath = NULL;
     pIGraphicElements -> pCurrentPath = NULL;
 
-fclose(fDebug);
-
-#else
-    std::map<long,std::list<GraphicElements::path *>> paths;
-
-    GraphicElements::path *p = pIGraphicElements -> pFirstPath;
-
-    while ( ! ( p == NULL ) ) {
-        if ( p -> isFillPath )
-            paths[p -> hashCode].push_back(p);
-        p = p -> pNext;
-    }
-
-    doRasterize = true;
-
-    for ( std::pair<long,std::list<GraphicElements::path *>> pPair : paths ) {
-        boolean firstPass = true;
-        for ( GraphicElements::path *p : pPair.second ) {
-            p -> apply(true,firstPass);
-            p -> clear();
-            firstPass = false;
-        }
-        internalRender();
-    }
-
-    paths.clear();
-
-    p = pIGraphicElements -> pFirstPath;
-
-    while ( ! ( p == NULL ) ) {
-        if ( ! p -> isFillPath )
-            paths[p -> hashCode].push_back(p);
-        p = p -> pNext;
-    }
-
-    doRasterize = false;
-
-    for ( std::pair<long,std::list<GraphicElements::path *>> pPair : paths ) {
-        boolean firstPass = true;
-        for ( GraphicElements::path *p : pPair.second ) {
-            p -> apply(false,firstPass);
-            p -> clear();
-            firstPass = false;
-        }
-        internalRender();
-    }
-#endif
     return S_OK;
     }
 
+
+    HRESULT Renderer::GetParametersBundle(UINT_PTR **pptrBundleSpace) {
+    *pptrBundleSpace = (UINT_PTR *)CoTaskMemAlloc(sizeof(GraphicParameters::values));
+    memcpy((void *)*pptrBundleSpace,pIGraphicParameters -> valuesStack.top(),sizeof(GraphicParameters::values));
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::SetParametersBundle(UINT_PTR *ptrBundleSpace) {
+    memcpy(pIGraphicParameters -> valuesStack.top(),(void *)ptrBundleSpace,sizeof(GraphicParameters::values));
+    return S_OK;
+    }
 
 
     HBITMAP createTemporaryBitmap(long cx,long cy,long pitch,long bitsPerComponent,BYTE *pBits) {

@@ -41,9 +41,6 @@ library FontManager {
 
     interface IFontManager : IUnknown {
 
-import "..\EnVisioNateSW_Renderer\COM Implementation\Renderer.odl";
-//import "..\EnVisioNateSW_GlyphRenderer\COM Implementation\GlyphRenderer.odl";
-
         HRESULT SeekFont(char *pszFamilyName,long dupCount,IFont_EVNSW **ppIFont);
 
         HRESULT LoadFont(char *pszFamilyName,UINT_PTR cookie,[out,retval] IFont_EVNSW **ppIFont);
@@ -51,15 +48,7 @@ import "..\EnVisioNateSW_Renderer\COM Implementation\Renderer.odl";
         HRESULT DuplicateFont(IFont_EVNSW *pIFont,UINT_PTR cookie,IFont_EVNSW **ppIFont);
 
         HRESULT RenderGlyph(HDC hdc,BYTE bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
-                                IRenderer *pIRenderer,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
-
-        //HRESULT RenderGlyph(HDC hdc,BYTE bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
-        //                        IGlyphRenderer *pIGlyphRenderer,
-        //                         POINTF *pStartPoint,POINTF *pNextPoint);
-
-        HRESULT GetGlyphGeometry(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,
-                                    POINTF *pStartPoint,POINTF *pEndPoint,LONG *pContours,BYTE *pbVertexTypes,POINT *pVertices);
 
         HRESULT ScaleFont(FLOAT scaleFactor);
 

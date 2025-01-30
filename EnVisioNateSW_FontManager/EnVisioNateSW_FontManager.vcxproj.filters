@@ -51,9 +51,6 @@
     <ClCompile Include="COM Interfaces\IFont_EVNSW.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="COM Interfaces\IFontManager_GetGlyphGeometry.cpp">
-      <Filter>Source Files\COM Interfaces</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="COM Implementation\FontManager.odl">
@@ -78,6 +75,5 @@
     <None Include="FontManager.def">
       <Filter>Source Files\COM Implementation</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

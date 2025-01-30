@@ -5,29 +5,6 @@
 #include "gdiParameters.h"
 
 
-#ifdef USE_RENDERER
-#else
-    void graphicsState::openGeometry() {
-    pathParametersStack.top() -> openGeometry();
-    gdiParametersStack.top() -> forwardToRenderer();
-    return;
-    }
-
-
-    void graphicsState::closeGeometry() {
-    pathParametersStack.top() -> closeGeometry();
-    gdiParametersStack.top() -> revertToGDI();
-    return;
-    }
-
-
-    void graphicsState::renderGeometry() {
-    pathParametersStack.top() -> renderGeometry();
-    return;
-    }
-#endif
-
-
     POINTF *graphicsState::CurrentPoint() {
     static POINTF currentPoint;
     currentPoint.x = currentUserSpacePoint.x;
@@ -211,10 +188,6 @@
 
 
     void graphicsState::dot(GS_POINT at,FLOAT radius) {
-#ifdef USE_RENDERER
 Beep(2000,200);
-#else
-    pathParametersStack.top() -> dot(at,radius);
-#endif
     return;
     }

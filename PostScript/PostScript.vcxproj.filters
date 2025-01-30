@@ -237,26 +237,14 @@
     <ClCompile Include="PostScript objects\graphicState\graphicsState_paths.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="Stacks\gdiParametersStack.cpp">
-      <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
     <ClCompile Include="runLengthEncodeDecode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\gdiParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_GDI.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
     <ClCompile Include="Stacks\pathParametersStack.cpp">
       <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_transforms.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_path.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="PostScript objects\graphicState\graphicsState_initialize.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
@@ -267,13 +255,7 @@
     <ClCompile Include="Stacks\psTransformsStack.cpp">
       <Filter>Source Files\Stacks</Filter>
     </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_GDIorRenderer.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_IGraphicElements.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
-    <ClCompile Include="PostScript objects\graphicState\gdiParameters_IGraphicParameters.cpp">
+    <ClCompile Include="PostScript objects\graphicState\pathParameters_Forwarder.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
   </ItemGroup>
@@ -389,9 +371,6 @@
     </ClInclude>
     <ClInclude Include="include\ascii85.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Stacks\gdiParametersStack.h">
-      <Filter>Header Files\Stacks</Filter>
     </ClInclude>
     <ClInclude Include="include\gdiParameters.h">
       <Filter>Header Files</Filter>

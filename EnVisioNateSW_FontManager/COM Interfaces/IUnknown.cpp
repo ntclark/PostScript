@@ -14,10 +14,18 @@
     else if ( IID_IFontManager == refIID )
         *pvResult = static_cast<IFontManager *>(this);
 
-    if ( * pvResult ) {
+    else if ( IID_IRenderer == refIID )
+        return pIRenderer -> QueryInterface(refIID,pvResult);
+
+    if ( ! ( NULL == *pvResult ) ) {
         AddRef();
         return S_OK;
     }
+
+    HRESULT rc = pIRenderer -> QueryInterface(refIID,pvResult);
+
+    if ( S_OK == rc )
+        return S_OK;
 
     return E_NOINTERFACE;
     }
@@ -30,6 +38,10 @@
 
     ULONG FontManager::Release() {
     if ( 1 == refCount ) {
+        //if ( ! ( NULL == pIGraphicElements_Type3 ) )
+        //    delete pIGraphicElements_Type3;
+        //if ( ! ( NULL == pTextRenderer ) )
+        //    delete pTextRenderer;
         delete this;
         return 0;
     }

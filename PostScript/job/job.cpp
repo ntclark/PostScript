@@ -1,13 +1,9 @@
 
 #include "job.h"
 
-#ifdef USE_RENDERER
-    IRenderer *job::pIGlyphRenderer = NULL;;
-#else
-    IGlyphRenderer *job::pIGlyphRenderer = NULL;;
-#endif
-
     PdfUtility *job::pPdfUtility = NULL;
+
+    IRenderer *job::pIRenderer = NULL;;
     IGraphicElements *job::pIGraphicElements_External = NULL;
     IGraphicParameters *job::pIGraphicParameters_External = NULL;
 
@@ -32,14 +28,10 @@
     if ( NULL == pPdfUtility )
         pPdfUtility = new PdfUtility();
 
-    if ( NULL == pIGlyphRenderer ) {
-#ifdef USE_RENDERER
-        CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIGlyphRenderer));
-#else
-        CoCreateInstance(CLSID_GlyphRenderer,NULL,CLSCTX_ALL,IID_IGlyphRenderer,reinterpret_cast<void **>(&pIGlyphRenderer));
-#endif
-        pIGlyphRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_External));
-        pIGlyphRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters_External));
+    if ( NULL == pIRenderer ) {
+        CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
+        pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_External));
+        pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters_External));
     }
 
     font::initialize();
