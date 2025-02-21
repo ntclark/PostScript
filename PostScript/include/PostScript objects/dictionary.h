@@ -35,6 +35,9 @@ class job;
         void put(char *pszKey,object *);
         void put(char *pszKey,void (job::*theProcedure)());
 
+        object *retrieve(long index);
+        char *retrieveKey(long index);
+
         object *retrieve(char *);
         object *retrieveKey(char *);
 

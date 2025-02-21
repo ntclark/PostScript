@@ -2,7 +2,6 @@
 #include "job.h"
 
 #include "pathParameters.h"
-//#include "gdiParameters.h"
 
     long graphicsState::cyPageGutter = 32L;
     long graphicsState::pageCount = 0L;
@@ -161,7 +160,23 @@ Beep(2000,200);
 
 
     void graphicsState::setLineWidth(POINT_TYPE lw) { 
-    theGDIParameters.setLineWidth(lw);
+
+    /*
+    When stroking a path, stroke paints all points whose perpendicular 
+    distance from the path in user space is less than or equal to half 
+    the absolute value of num.
+    (therefore, lineWidth is given in user space coordinates and it is ALSO 
+    in the Y direction !)
+
+    The effect produced in device space depends on the current transformation 
+    matrix (CTM) in effect at the time the path is stroked.
+    (therefore, the value must be converted to page space here because the renderer deals only
+    with conversion between page space (pageWidth x pageHeight in points) TO device space)
+    */
+
+    POINTF ptLW{0.0f,lw};
+    transformPointInPlace(0.0f,lw,&ptLW.x,&ptLW.y);
+    theGDIParameters.setLineWidth(abs(ptLW.y));
     return;
     }
 
@@ -178,7 +193,7 @@ Beep(2000,200);
     }
 
 
-    void graphicsState::setLineDash(class array *pArray,POINT_TYPE offset) {
+    void graphicsState::setLineDash(array *pArray,POINT_TYPE offset) {
 
     if ( NULL == pArray ) {
         theGDIParameters.setLineDash(NULL,0,offset);
@@ -204,5 +219,11 @@ Beep(2000,200);
 
     delete [] pValues;
 
+    return;
+    }
+
+
+    void graphicsState::setStrokeAdjustmentParameter(object *pBool) {
+    strokeAdjustmentParameter = pBool == pBool -> Job() -> pTrueConstant;
     return;
     }

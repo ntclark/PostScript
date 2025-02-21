@@ -63,24 +63,48 @@ long fontSizes[]{288,144,72,36,18,9,4};
 
         POINTF startPoint,endPoint;
 
-        startPoint.x = 0.0f;
+        startPoint.x = 36.0f;
         startPoint.y = 792.0f - 36.0f;
 
-        long k = 1;
-
-        for ( BYTE c = 0xA0; c < 0x1ff; c++ ) {
-
-            pIFontManager -> RenderGlyph(ps.hdc,(BYTE)c,
+            pIFontManager -> RenderGlyph(ps.hdc,8211,
                                         (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
                                             &startPoint,&endPoint);
 
-            //MoveToEx(ps.hdc,)
+            pIGlyphRenderer -> Render();
+
+        long k = 1;
+
+        for ( unsigned short c = 0x96; c < 0xfff; c++ ) {
+
+            pIFontManager -> RenderGlyph(ps.hdc,c,
+                                        (UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,
+                                            &startPoint,&endPoint);
+
+            pIGlyphRenderer -> Render();
+
+            POINTL pt{startPoint.x,startPoint.y};
+            FLOAT xx = pt.x;
+            FLOAT yy = pt.y - 8;
+            FLOAT xxx = gdiXForm.eM11 * xx + gdiXForm.eM12 * yy + gdiXForm.eDx;
+            FLOAT yyy = gdiXForm.eM21 * xx + gdiXForm.eM22 * yy + gdiXForm.eDy;
+
+            MoveToEx(ps.hdc,xxx,yyy,NULL);
+            RECT rc{xxx - 8,yyy - 8,xxx + 12,yyy + 8};
+
+            char szX[16];
+            sprintf_s<16>(szX,"%03x",c);
+            DrawTextEx(ps.hdc,szX,-1,&rc,DT_CENTER,NULL);
+
             startPoint = endPoint;
 
             k++;
             if ( 0 == ( k % 32 ) ) {
-                startPoint.y -= 36.0f / 2.0f;
-                startPoint.x = 0.0f;
+                startPoint.y -= 54.0f / 2.0f;
+                startPoint.x = 36.0f;
+                if ( 0 > startPoint.y ) {
+                    FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_WINDOW + 1));
+                    startPoint.y = 792.0f - 36.0f;
+                }
             }
 
         }

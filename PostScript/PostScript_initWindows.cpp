@@ -39,9 +39,12 @@
     DLGTEMPLATE *dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_CMD_PANE),RT_DIALOG));
     hwndCmdPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndClient,(DLGPROC)PStoPDF::cmdPaneHandler,(ULONG_PTR)(void *)this);
 
+    LoadLibrary("Riched20.dll");
 
-    hwndLog = CreateWindowEx(WS_EX_CLIENTEDGE,"RICHEDIT50W","",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
+    hwndLog = CreateWindowEx(WS_EX_CLIENTEDGE,RICHEDIT_CLASS,"",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
                                        0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
+
+    nativeRichEditHandler = (WNDPROC)GetWindowLongPtr(hwndLog,GWLP_WNDPROC);
 
     dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_LOG_PANE),RT_DIALOG));
     hwndLogPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndClient,(DLGPROC)PStoPDF::logPaneHandler,(ULONG_PTR)(void *)this);
@@ -58,10 +61,6 @@
 
     activePageOrigin.x = 0L;
     activePageOrigin.y = 0L;
-
-    nativeRichEditHandler = (WNDPROC)SetWindowLongPtr(hwndLog,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
-
-    //SetWindowLongPtr(hwndStack,GWLP_WNDPROC,(LONG_PTR)PStoPDF::richEditHandler);
 
     SetWindowLongPtr(hwndLog,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(this));
 
@@ -83,11 +82,11 @@
     st.flags = ST_DEFAULT;
     st.codepage = CP_ACP;
 
-#ifdef DO_RTF
-    SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
-#else
+//#ifdef DO_RTF
+//    SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
+//#else
     SendMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,(LPARAM)0L);
-#endif
+//#endif
 
     SendMessage(hwndLog,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
     SendMessage(hwndLog,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));

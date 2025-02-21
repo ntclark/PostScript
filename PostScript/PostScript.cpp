@@ -1,16 +1,15 @@
 
 #include "PostScript.h"
+#include "error.h"
 
 #include "Properties_i.c"
 #include "PostScript_i.c"
 #include "CVPostscriptConverter_i.c"
 
     CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
-    bool PStoPDF::logPaintPending = false;
-    WNDPROC PStoPDF::nativeRichEditHandler = NULL;
-    HANDLE PStoPDF::hRichEditSemaphore;
 
     LRESULT (__stdcall *PStoPDF::nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
+    LRESULT (__stdcall *PStoPDF::nativeRichEditHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
 
     HWND PStoPDF::hwndHost = NULL;
     HWND PStoPDF::hwndClient = NULL;
@@ -24,9 +23,15 @@
 
     HDC PStoPDF::hdcSurface = NULL;
 
+    job *PStoPDF::pJob = NULL;
+    enum logLevel PStoPDF::theLogLevel = none;
+
     long PStoPDF::initialCYClient = -1L;
 
     char PStoPDF::szErrorMessage[1024];
+
+    char PStoPDFException::szMessage[2048];
+
 
     PStoPDF::PStoPDF(IUnknown *pUnknownOuter) {
 

@@ -1,6 +1,6 @@
 #include "job.h"
 
-    void graphicsState::setFont(class font *pFont) {
+    void graphicsState::setFont(font *pFont) {
     font::setFont(pFont);
     return;
     }

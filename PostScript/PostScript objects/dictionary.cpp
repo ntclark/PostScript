@@ -49,7 +49,7 @@
 
     void dictionary::put(char *pszKey,object *pValue) {
 
-   if ( exists(pszKey) )
+    if ( exists(pszKey) )
         remove(pszKey);
 
     entry *pEntry = new entry(pJob,pszKey,pValue);
@@ -73,7 +73,22 @@
     }
 
 
+    object *dictionary::retrieve(long index) {
+    if ( entries.size() < index )
+        return NULL;
+    return entries[index] -> pValue;
+    }
+
+
+    char *dictionary::retrieveKey(long index) {
+    if ( entries.size() < index )
+        return NULL;
+    return entries[index] -> szName;
+    }
+
+
     object *dictionary::retrieve(char *pszName) {
+
     long nName = (long)strlen(pszName);
     for ( entry *pEntry : entries ) {
         if ( ! ( nName == pEntry -> nName ) )

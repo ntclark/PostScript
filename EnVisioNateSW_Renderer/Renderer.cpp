@@ -37,18 +37,6 @@
 
     hr = pID2D1DCRenderTarget -> BindDC(hdc,&rcImage);
 
-#if 0
-    FLOAT r = (FLOAT)GetRValue(Renderer::GraphicParameters::defaultRGBColor) / 255.0f;
-    FLOAT g = (FLOAT)GetGValue(Renderer::GraphicParameters::defaultRGBColor) / 255.0f;
-    FLOAT b = (FLOAT)GetBValue(Renderer::GraphicParameters::defaultRGBColor) / 255.0f;
-
-    pID2D1DCRenderTarget -> CreateSolidColorBrush(D2D1::ColorF(r,g,b,0.0f),&pID2D1SolidColorBrush);
-
-    pIGraphicParameters -> put_LineWidth(Renderer::GraphicParameters::defaultLineWidth);
-    pIGraphicParameters -> put_LineJoin(Renderer::GraphicParameters::defaultLineJoin);
-    pIGraphicParameters -> put_LineCap(Renderer::GraphicParameters::defaultLineCap);
-#endif
-
     pID2D1DCRenderTarget -> SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
     return;

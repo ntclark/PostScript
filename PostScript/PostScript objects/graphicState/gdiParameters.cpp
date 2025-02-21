@@ -16,6 +16,7 @@
 
 
     void gdiParameters::setColorSpace(colorSpace *pcs) {
+    pPStoPDF -> PotentialNewPage();
     pColorSpace = pcs;
     return;
     }
@@ -27,6 +28,8 @@
 
 
     void gdiParameters::setColor(colorSpace *pColorSpace) {
+
+    pPStoPDF -> PotentialNewPage();
 
     if ( 0 == strcmp(pColorSpace -> Name(),"DeviceGray") ) {
         setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
@@ -52,29 +55,34 @@
 
 
     void gdiParameters::setRGBColor(COLORREF rgb) {
+    pPStoPDF -> PotentialNewPage();
     job::pIGraphicParameters_External -> put_RGBColor(rgb);
     }
 
 
     void gdiParameters::setLineWidth(POINT_TYPE v) { 
+    pPStoPDF -> PotentialNewPage();
     job::pIGraphicParameters_External -> put_LineWidth(v);
     return;
     }
 
 
     void gdiParameters::setLineJoin(long lj) {
+    pPStoPDF -> PotentialNewPage();
     job::pIGraphicParameters_External -> put_LineJoin(lj);
     return;
     }
 
 
     void gdiParameters::setLineCap(long lc) {
+    pPStoPDF -> PotentialNewPage();
     job::pIGraphicParameters_External -> put_LineCap(lc);
     return;
     }
 
 
     void gdiParameters::setLineDash(FLOAT *pValues,long countValues,POINT_TYPE offset) {
+    pPStoPDF -> PotentialNewPage();
     job::pIGraphicParameters_External -> put_LineDash(pValues,countValues,offset);
     return;
     }

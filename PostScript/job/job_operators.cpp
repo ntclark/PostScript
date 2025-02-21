@@ -95,6 +95,7 @@
     pSystemDict -> put("put",&job::operatorPut);
     pSystemDict -> put("putinterval",&job::operatorPutinterval);
     pSystemDict -> put("quadcurveto",&job::operatorQuadcurveto);
+    pSystemDict -> put("quit",&job::operatorQuit);
     pSystemDict -> put("readonly",&job::operatorReadonly);
     pSystemDict -> put("rectclip",&job::operatorRectclip);
     pSystemDict -> put("rectfill",&job::operatorRectfill);
@@ -125,6 +126,7 @@
     pSystemDict -> put("setmiterlimit",&job::operatorSetmiterlimit);
     pSystemDict -> put("setpagedevice",&job::operatorSetpagedevice);
     pSystemDict -> put("setrgbcolor",&job::operatorSetrgbcolor);
+    pSystemDict -> put("setstrokeadjust",&job::operatorSetstrokeadjust);
     pSystemDict -> put("setuserparams",&job::operatorSetuserparams);
     pSystemDict -> put("show",&job::operatorShow);
     pSystemDict -> put("showpage",&job::operatorShowpage);
@@ -139,6 +141,7 @@
     pSystemDict -> put("type",&job::operatorType);
     pSystemDict -> put("undef",&job::operatorUndef);
     pSystemDict -> put("undefinefont",&job::operatorUndefinefont);
+    pSystemDict -> put("undefineresource",&job::operatorUndefineresource);
     pSystemDict -> put("version",&job::operatorVersion);
     pSystemDict -> put("vmstatus",&job::operatorVmstatus);
     pSystemDict -> put("where",&job::operatorWhere);

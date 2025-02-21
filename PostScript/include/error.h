@@ -3,8 +3,7 @@
 
 #include <exception>
 
-    class PStoPDFException : std::exception {
-
+    class PStoPDFException : public std::exception {
     public:
 
         PStoPDFException(char *pszErrorMessage) { strcpy(szMessage,pszErrorMessage); };
@@ -13,7 +12,7 @@
         virtual char *ExceptionName() { return "PStoPDFException";} ;
 
     private:
-        char szMessage[2048];
+        static char szMessage[2048];
 
     };
 
@@ -23,6 +22,9 @@ public:                                                                    \
       name(char *pszErrorMessage) : PStoPDFException(pszErrorMessage) {};  \
       char *ExceptionName() { return #name; };                             \
 };
+
+errorclass(nonPostscriptException)
+errorclass(accessViolationException)
 
 errorclass(dictstackunderflow)
 errorclass(invalidfont)

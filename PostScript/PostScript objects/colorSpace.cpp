@@ -12,7 +12,11 @@
     pFamilyName = po -> getElement(0);
     putElement(0,pFamilyName);
     if ( 0 == strcmp(pFamilyName -> Contents(),"Indexed") ) {
-        pBaseName = po -> getElement(1);
+        array *pArray = reinterpret_cast<array *>(po -> getElement(1));
+        if ( strcmp(pArray -> getElement(0) -> Name(),"Indexed") )
+            pBaseName = pArray -> getElement(0);
+        else
+            pBaseName = pArray -> getElement(1);
         hiVal = (uint16_t)po -> getElement(2) -> IntValue();
         pLookup = po -> getElement(3);
         putElement(1,pBaseName);
@@ -68,7 +72,7 @@
 
     char szMessage[1024];
     sprintf_s<1024>(szMessage,"Error: ColorSpace family %s is not implemented",pFamilyName -> Contents());
-    throw notimplemented(szMessage);
+    //throw notimplemented(szMessage);
     return -1;
     }
 

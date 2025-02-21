@@ -1,6 +1,8 @@
 
 #include "PostScript.h"
 
+#include "job.h"
+
 #define SCROLL_DELTA 16
 
     long windowTop = 0L;

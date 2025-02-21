@@ -74,14 +74,10 @@
 
         uint16_t hiVal = pColorSpace -> HiVal();
 
-        uint8_t componentsPerByte = 8 / bitsPerComponent;
-
         uint16_t widthBytes = 3 * width;
         uint16_t stride = ((((width * 24) + 31) & ~31) >> 3);
-        uint16_t padding = stride - widthBytes;
 
-//POINT_TYPE xPadding = (POINT_TYPE)stride / (POINT_TYPE)sizeof(DWORD);
-//padding = 0;
+        uint16_t padding = stride - widthBytes;
 
         DWORD cbRGBImage = height * stride;
 
@@ -89,11 +85,9 @@
 
         memset(pbRGBImage,0xFF,cbRGBImage);
 
-uint16_t rowCount = 1;
-
         if ( object::valueType::binaryString == pLookup -> ValueType() ) {
 
-            uint8_t *pbSourceData = reinterpret_cast<binaryString *>(pLookup) -> getData();
+            uint8_t *pbColorData = reinterpret_cast<binaryString *>(pLookup) -> getData();
 
             /*
             If lookup is a string object, it must be of length m × (hival + 1), where m is the
@@ -108,40 +102,63 @@ uint16_t rowCount = 1;
             uint8_t m = (uint8_t)pColorSpace -> ParameterCount();
 
             uint32_t compIndex = 1;
-
             uint16_t byteCount = 0;
 
             uint8_t *pbRGBTarget = pbRGBImage - 3;
 
             do {
 
-                uint8_t index = *pbNext;
+                uint16_t index;
 
                 switch ( bitsPerComponent ) {
-                case 8:
+                case 12: {
+                    if ( 0 == compIndex % 2 ) {
+                        uint16_t x = *(uint16_t *)pbNext;
+                        x &= 0xFFF0;
+                        x = x >> 4;
+                        index = x;
+                    } else {
+                        uint16_t x = *(uint16_t *)pbNext;
+                        x &= 0x000F;
+                        x = x << 12;
+                        pbNext += 2;
+                        uint16_t y = *(uint16_t *)pbNext;
+                        y &= 0xFFF0;
+                        y = y >> 4;
+                        index = x & y;
+                    }
+                    }
                     break;
 
-                case 4:
-                    if ( 0 == compIndex % 2 ) 
-                        index = index & 0x01;
-                    else {
-                        index = index & 0x10;
-                        index = index >> 4;
+                case 8: {
+                    uint8_t x = *pbNext;
+                    index = (uint16_t)x;
+                    pbNext++;
+                    }
+                    break;
+
+                case 4: {
+                    uint8_t x = *pbNext;
+                    if ( 0 == compIndex % 2 ) {
+                        x = x & 0x0F;
+                        pbNext++;
+                    } else {
+                        x = x & 0xF0;
+                        x = x >> 4;
+                    }
+                    index = (uint16_t)x;
                     }
                     break;
 
                 }
 
-                uint16_t offset = m * index;
-
-                uint8_t *pbComponent = pbSourceData + offset;
+                uint8_t *pbComponent = pbColorData + m * index;
 
                 pbRGBTarget += 3;
 
                 if ( byteCount > stride ) {
                     pbRGBTarget += padding;
                     byteCount = 0;
-rowCount++;
                 }
 
                 if ( 3 == m ) {
@@ -152,16 +169,6 @@ rowCount++;
                     memset(pbRGBTarget,*pbComponent,3);
 
                 byteCount += 3;
-
-                switch ( bitsPerComponent ) {
-                case 8:
-                    pbNext++;
-                    break;
-
-                case 4:
-                    if ( 0 == compIndex % 2 )
-                        pbNext++;
-                }
 
                 compIndex++;
 
@@ -288,7 +295,8 @@ break;
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
-    job::pIGraphicElements_External -> Image(hbmResult,(UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
+    job::pIGraphicElements_External -> Image(hbmResult,
+                                                (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
     return;
     }
@@ -333,7 +341,7 @@ break;
 
     bitMapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bitMapInfo.bmiHeader.biWidth = cx;
-    bitMapInfo.bmiHeader.biHeight = cy;
+    bitMapInfo.bmiHeader.biHeight = -cy;
     bitMapInfo.bmiHeader.biPlanes = 1;
     bitMapInfo.bmiHeader.biBitCount = 3 * (unsigned short)bitsPerComponent;
     bitMapInfo.bmiHeader.biCompression = BI_RGB;

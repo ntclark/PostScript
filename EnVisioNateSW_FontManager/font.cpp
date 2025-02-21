@@ -3,15 +3,12 @@
 
     char font::szFailureMessage[]{'\0'};
 
+    font::font(char *pszClientName) {
 
-    font::font(char *pszName) {
-
-    if ( pszName )
-        strcpy(szFamily,pszName);
+    if ( pszClientName )
+        strcpy(szClientFamily,pszClientName);
     else
-        memset(szFamily,0,sizeof(szFamily));
-
-    MultiByteToWideChar(CP_ACP,0,szFamily,-1,szwFamily,64);
+        memset(szClientFamily,0,sizeof(szClientFamily));
 
     matrix *pFontMatrix = new matrix();
 
@@ -23,8 +20,9 @@
 
     font::font(font &rhs) {
 
-    strcpy(szFamily,rhs.szFamily);
-    wcscpy(szwFamily,rhs.szwFamily);
+    strcpy(szClientFamily,rhs.szClientFamily);
+    strcpy(szInstalledFamily,rhs.szInstalledFamily);
+    strcpy(szInstalledQualifier,rhs.szInstalledQualifier);
 
     matrix *pFontMatrix = new matrix();
     pFontMatrix -> copyFrom(rhs.matrixStack.top());
@@ -54,6 +52,33 @@
         matrixStack.pop();
     }
     return;
+    }
+
+
+    char *font::InstalledFontName() {
+    static char szFullName[256];
+    sprintf_s<256>(szFullName,"%s",szInstalledFamily);
+    if ( ! ( '\0' == szInstalledQualifier[0] ) ) {
+        strcat(szFullName," ");
+        strcat(szFullName,szInstalledQualifier);
+    }
+    return szFullName;
+    }
+
+
+    BYTE *font::getGlyphData(unsigned short glyphID) {
+
+    uint32_t *pGlyphOffset = (uint32_t *)pLocaTable + glyphID;
+    uint32_t *pNextOffset = (uint32_t *)pLocaTable + glyphID + 1;
+
+    if ( *pGlyphOffset == *pNextOffset ) 
+        return NULL;
+
+    uint32_t offsetInGlyphTable = 0;
+
+    BE_TO_LE_U32(pGlyphOffset,offsetInGlyphTable)
+
+    return pGlyfTable + offsetInGlyphTable;
     }
 
 

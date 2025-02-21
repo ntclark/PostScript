@@ -473,39 +473,50 @@
     return;
     }
 
-   void job::operatorPstack() {
+    void job::operatorPstack() {
 /*
-   pstack any1 … anyn pstack any1 … anyn
+    pstack any1 … anyn pstack any1 … anyn
 
-   writes text representations of every object on the stack to the standard output file,
-   but leaves the stack unchanged. pstack applies the == operator to each element of
-   the stack, starting with the topmost element. See the == operator for a description
-   of its effects.
+    writes text representations of every object on the stack to the standard output file,
+    but leaves the stack unchanged. pstack applies the == operator to each element of
+    the stack, starting with the topmost element. See the == operator for a description
+    of its effects.
 */
 
-   std::list<object *> entries;
+    std::list<object *> entries;
 
-   while ( operandStack.size() ) 
-      entries.insert(entries.end(),pop());
+    while ( operandStack.size() ) 
+        entries.insert(entries.end(),pop());
 
-   pPStoPDF -> queueLog("\n");
-   for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) {
-      push(*it);
-      pPStoPDF -> queueLog("Name:");
-      pPStoPDF -> queueLog((*it) -> Name());
-      pPStoPDF -> queueLog(", Type:");
-      pPStoPDF -> queueLog((*it) -> TypeName());
-      pPStoPDF -> queueLog(", ValueType:");
-      pPStoPDF -> queueLog((*it) -> ValueTypeName());
-      pPStoPDF -> queueLog(", Contents:");
-      pPStoPDF -> queueLog((*it) -> Contents());
-      pPStoPDF -> queueLog("\n");
-   }
+    pPStoPDF -> queueLog("\n");
 
-   entries.clear();
+    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) {
+        push(*it);
+        pPStoPDF -> queueLog("Name:");
+        pPStoPDF -> queueLog(NULL == (*it) -> Name() ? "<unnamed>" : (*it) -> Name());
+        pPStoPDF -> queueLog(", Type:");
+        pPStoPDF -> queueLog((*it) -> TypeName());
+        pPStoPDF -> queueLog(", ValueType:");
+        pPStoPDF -> queueLog((*it) -> ValueTypeName());
+        pPStoPDF -> queueLog(", Contents:");
+        pPStoPDF -> queueLog(NULL == (*it) -> Contents() ? "<empty>" : (*it) -> Contents());
+        pPStoPDF -> queueLog("\n");
+
+        OutputDebugStringA("Name:");
+        OutputDebugStringA(NULL == (*it) -> Name() ? "<unnamed>" : (*it) -> Name());
+        OutputDebugStringA(", Type:");
+        OutputDebugStringA((*it) -> TypeName());
+        OutputDebugStringA(", ValueType:");
+        OutputDebugStringA((*it) -> ValueTypeName());
+        OutputDebugStringA(", Contents:");
+        OutputDebugStringA(NULL == (*it) -> Contents() ? "<empty>" : (*it) -> Contents());
+        OutputDebugStringA("\n");
+    }
+
+    entries.clear();
    
-   return;
-   }
+    return;
+    }
 
 
     void job::operatorPut() {
@@ -536,6 +547,12 @@
     object *pIndex = pop();
     object *pTarget = pop();
 
+    if ( NULL == pIndex -> Contents() ) {
+        char szMessage[256];
+        sprintf_s<256>(szMessage,"%s: Line: %ld. The index value may not have been initialized",__FUNCTION__,__LINE__);
+        throw new syntaxerror(szMessage);
+    }
+
     switch ( pTarget -> ObjectType() ) {
 
     case object::objTypeArray:
@@ -546,6 +563,7 @@
         reinterpret_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
         break;
 
+#if 0
     case object::font:
         static_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
         break;
@@ -557,18 +575,23 @@
     case object::objTypeMatrix:
         reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> OBJECT_POINT_TYPE_VALUE);
         break;
+#endif
 
-    case object::atom:
-        switch ( pTarget -> ValueType() ) {
-        case object::valueType::string: {
-            string *pString = static_cast<string *>(pTarget);
-            pString -> put(pIndex -> IntValue(),(BYTE)pValue -> IntValue());
-            }
-            break;
+    case object::string: {
+        string *pString = static_cast<string *>(pTarget);
+        if ( NULL == pValue -> Contents() ) {
+            char szMessage[256];
+            sprintf_s<256>(szMessage,"%s: Line: %ld. The value may not have been initialized",__FUNCTION__,__LINE__);
+            throw new syntaxerror(szMessage);
+        }
+        pString -> put(pIndex -> IntValue(),(BYTE)pValue -> Contents()[0]);
         }
 
-    default:
-        __debugbreak();
+    default: {
+        char szMessage[256];
+        sprintf_s<256>(szMessage,"%s: Line: %ld. The target object type (%d) does not appear to be array, dict, or string",__FUNCTION__,__LINE__,pTarget -> ObjectType());
+        throw new typecheck(szMessage);
+        }
         break;
     }
     return;
@@ -687,6 +710,37 @@
 */
 
     currentGS() -> quadcurveto();
+
+    return;
+    }
+
+    void job::operatorQuit() {
+    /*
+    quit 
+        – quit –
+
+    terminates operation of the PostScript interpreter. The precise action of quit depends 
+    on the environment in which the interpreter is running. It may, for example, 
+    give control to an operating system command interpreter, or halt or restart
+    the machine.
+
+    In an interpreter that supports multiple execution contexts, the quit operator
+    causes termination of the current context only.
+
+    In a context that is under the control of a job server (see Section 3.7.7, 
+    “Job Execution Environment”), the definition of the quit operator in systemdict 
+    is masked by another definition of quit in userdict, which usually is searched before
+    systemdict. 
+
+    The default definition of quit in userdict is the same as stop, which
+    terminates the current job but not the interpreter as a whole. The quit operator in
+    systemdict can be executed only by an unencapsulated job; in an encapsulated
+    job, it causes an invalidaccess error.
+
+    Errors: invalidaccess
+    */
+
+    RequestQuit();
 
     return;
     }
@@ -1798,6 +1852,29 @@
     return;
     }
 
+    void job::operatorSetstrokeadjust() {
+
+/*
+    setstrokeadjust 
+        bool setstrokeadjust –
+
+    sets the stroke adjustment parameter in the graphics state to bool. This parameter controls 
+    whether automatic stroke adjustment will be performed during subsequent invocations of 
+    stroke and related operators, including strokepath (see Section 7.5.2, “Automatic Stroke Adjustment”).
+
+    The initial value of the stroke adjustment parameter is device-dependent; 
+    typically it is true for displays and false for printers. It is set to false when a font’s
+    BuildChar, BuildGlyph, or CharStrings procedure is called, but the procedure can change it. 
+    It is not altered by initgraphics.
+
+    Errors: stackunderflow, typecheck
+    See Also: currentstrokeadjust, stroke, setlinewidth
+
+*/
+    currentGS() -> setStrokeAdjustmentParameter(pop());
+    return;
+    }
+
    void job::operatorSetuserparams() {
 /*
    setuserparams 
@@ -1931,8 +2008,8 @@
 
     currentGS() -> showPage();
 
-   return;
-   }
+    return;
+    }
 
     void job::operatorSin() {
 /*
@@ -2292,6 +2369,54 @@
     return;
     }
 
+    void job::operatorUndefineresource() {
+/*
+
+    undefineresource 
+        key category undefineresource –
+
+    removes the named resource instance identified by key from the specified resource
+    category. This undoes the effect of a previous defineresource. If no such resource
+    instance exists in virtual memory, undefineresource does nothing; no error
+    occurs. However, the resource category must exist, or else an undefined error
+    occurs.
+
+    Local and global resource definitions are maintained separately; the precise effect
+    of undefineresource depends on the current VM allocation mode:
+
+        • In local VM allocation mode, undefineresource removes a local definition if
+          there is one. If there is a global definition with the same key, undefineresource
+          does not disturb it; the global definition, formerly obscured by the local one,
+          now reappears.
+
+        • In global VM allocation mode, undefineresource removes a local definition, a
+          global definition, or both.
+
+    Depending on the resource category, undefineresource may have other side effects 
+    (see Section 3.9.2, “Resource Categories”); these side effects are determined
+    by the UndefineResource procedure in the category implementation dictionary.
+
+    However, undefineresource does not alter the resource instance in any way. If the
+    instance is still accessible (say, stored directly in some dictionary or defined as a
+    resource under another name), it can still be used in whatever ways are appropriate. 
+    The object becomes a candidate for garbage collection only if it is no longer
+    accessible. 
+
+    The effect of undefineresource is subject to normal VM semantics. In particular,
+    removal of a local resource instance can be undone by a subsequent nonnested
+    restore. In this case, the resource instance is not a candidate for garbage collection.
+    undefineresource removes the resource instance definition from VM only. If the
+    resource instance also exists in external storage, it can still be found by
+    findresource, resourcestatus, and resourceforall.
+
+    Errors: stackunderflow, typecheck, undefined
+
+    See Also: defineresource, findresource, resourcestatus, resourceforall
+
+*/
+
+    return;
+    }
 
    void job::operatorVersion() {
 /*

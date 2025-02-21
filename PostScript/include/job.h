@@ -37,6 +37,8 @@
         void bindProcedure(procedure *pProcedure);
         void parseProcedureString(char *pStart,char **ppEnd);
 
+        void RequestQuit() { quitRequested = true; }
+
         long currentInputFileOffset() { return (long)(currentInput() - pStart); }
         char *currentInput() { ADVANCE_THRU_WHITE_SPACE(pNext); return pNext; }
         void setCurrentInput(char *pInput) { pNext = pInput; }
@@ -89,6 +91,8 @@
         void parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd);
         char *parseObject(char *pStart,char **pEnd);
 
+        void parseFile(char *pszFileName);
+
         void parseStructureSpec(char *pStart,char **ppEnd);
         void parseComment(char *pStart,char **ppEnd);
         void parseString(char *pStart,char **ppEnd);
@@ -127,6 +131,8 @@
         dictionary *pPdfDict{NULL};
 
         dictionary *pFontDirectory{NULL};
+
+        dictionary *pGenericResourceImplementation{NULL};
 
         booleanObject *pTrueConstant{NULL};
         booleanObject *pFalseConstant{NULL};
@@ -186,10 +192,12 @@
 
         bool isGlobalVM{false};
         bool hasExited{false};
+        bool quitRequested{false};
 
         char *pStorage{NULL},*pEnd{NULL};
 
         HWND hwndSurface{NULL};
+        HANDLE hsemIsInitialized{INVALID_HANDLE_VALUE};
 
         HBITMAP hbmSink{NULL};
 
@@ -197,7 +205,8 @@
 
         static PdfUtility *pPdfUtility;
 
-        static unsigned int __stdcall _execute(void *);
+        static unsigned int __stdcall executeInitialization(void *);
+        static unsigned int __stdcall executeThread(void *);
 
         friend class graphicsState;
         friend class graphicsStateStack;

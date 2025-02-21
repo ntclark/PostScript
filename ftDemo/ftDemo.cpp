@@ -21,9 +21,10 @@
 
     HRESULT rc = CoInitializeEx(NULL,0);
 
-    rc = CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIGlyphRenderer));
+    //rc = CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIGlyphRenderer));
 
     rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
+    pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIGlyphRenderer));
 
     WNDCLASS gClass;
 
@@ -45,7 +46,7 @@
 
     IFont_EVNSW *pIFont = NULL;
 
-    pIFontManager -> LoadFont((char *)"Helvetica",0,&pIFont);
+    pIFontManager -> LoadFont((char *)"Gabriola",0,&pIFont);
     pIFontManager -> ScaleFont(36.0);
 
     MSG qMessage;

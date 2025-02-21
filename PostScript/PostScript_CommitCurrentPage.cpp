@@ -39,6 +39,13 @@
     }
 
 
+    void PStoPDF::PotentialNewPage() {
+    if ( ! ( NULL == beginPathAction ) )
+        beginPathAction();
+    return;
+    }
+
+
     void PStoPDF::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
     if ( NULL == hdcSurface )

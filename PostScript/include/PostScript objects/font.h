@@ -53,6 +53,7 @@ class graphicsState;
         long dupCount{0};
 
         dictionary *pCharStrings{NULL};
-        class array *pEncoding{NULL};
+        array *pEncoding{NULL};
+        array *pSfntsArray{NULL};
 
     };

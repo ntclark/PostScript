@@ -33,6 +33,7 @@
 #include "resourceIdentifiers.h"
 
 //#define DO_RTF
+
 #define PS_VERSION   3000L
 #define PRODUCT_NAME "InnoVisioNate PostScript interpreter"
 
@@ -40,8 +41,6 @@
 #define CMD_PANE_HEIGHT     96
 #define LOG_PANE_HEIGHT     72
 #define SPLITTER_WIDTH      12
-
-//#define USE_DWRITE_TEXT_RENDERER
 
 class job;
 
@@ -56,8 +55,9 @@ class job;
         PStoPDF(IUnknown *pUnknownOuter);
         ~PStoPDF();
 
-        long queueLog(char *pszOutput,char *pEnd = NULL,bool isError = false);
-        long clearLog();
+        static long queueLog(char *pszOutput,char *pEnd = NULL,bool isError = false);
+        static long clearLog();
+        static long settleLog();
 
         long displayStack();
 
@@ -78,8 +78,6 @@ class job;
         STDMETHOD(GetLastError)(char **ppszError);
 
         STDMETHOD(LogLevel)(logLevel theLogLevel);
-
-        STDMETHOD(ShowFontRenderingPoints)(boolean doDraw) {drawGlyphPoints = doDraw; return S_OK; }
 
         // IOleObject 
 
@@ -268,9 +266,9 @@ class job;
 
         void BeginPath();
 
-        long InitialCYClient() { return initialCYClient; }
+        void PotentialNewPage();
 
-        boolean drawGlyphRenderingPoints() { return drawGlyphPoints; }
+        long InitialCYClient() { return initialCYClient; }
 
         job *currentJob() { return pJob; }
 
@@ -288,13 +286,12 @@ class job;
 
         ICVPostscriptConverter *pICVPostscriptConverter{NULL};
 
-        job *pJob{NULL};
+        static job *pJob;
 
         long refCount{0L};
         long logPaneWidth{256L};
-        enum logLevel theLogLevel{none};
+        static enum logLevel theLogLevel;
         boolean logIsVisible{false};
-        boolean drawGlyphPoints{false};
 
         char szCurrentPostScriptFile[MAX_PATH];
 
@@ -323,10 +320,7 @@ class job;
 
         static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
 
-        static bool logPaintPending;
-        static HANDLE hRichEditSemaphore;
-        static WNDPROC nativeRichEditHandler;
-        static LRESULT CALLBACK richEditHandler(HWND,UINT msg,WPARAM wParam,LPARAM lParam);
+        static LRESULT (__stdcall *nativeRichEditHandler)(HWND,UINT,WPARAM,LPARAM);
 
         static LRESULT CALLBACK handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);

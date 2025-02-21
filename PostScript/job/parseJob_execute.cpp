@@ -1,5 +1,12 @@
 #include "job.h"
 
+    void trans_func( unsigned int u, EXCEPTION_POINTERS* ) {
+    static char szException[1024];
+    sprintf_s<1024>(szException,"A non postscript exception has occurred. Code: %04x",u);
+    throw new nonPostscriptException(szException);
+    return;
+    }
+
     long job::execute(char *pBegin) {
 
     pStart = pBegin;
@@ -7,21 +14,39 @@
     pNext = p;
     char *pLogStart = NULL;
 
-    try {
+    _se_translator_function defaultExtranslator = _set_se_translator(trans_func);
+
+    quitRequested = false;
 
     do {
 
-        ADVANCE_THRU_WHITE_SPACE(p)
+        //ADVANCE_THRU_WHITE_SPACE(p)
 
         if ( '\0' == *p )
             break;
+
+        if ( 0x0A == p[0] || 0x0D == p[0] ) {
+            pNext = p;
+            while ( 0x0A == *pNext || 0x0D == *pNext ) 
+                pNext++;
+            pPStoPDF -> queueLog(p,pNext,false);
+            p = pNext;
+            continue;
+        }
 
         char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
 
         char *pDelimiter = NULL;
 
-        if ( NULL == pCollectionDelimiter )
+        if ( NULL == pCollectionDelimiter ) {
             pDelimiter = (char *)delimiterPeek(p,&pNext);
+            if ( ! ( NULL == pDelimiter ) && COMMENT_DELIMITER[0] == pDelimiter[0] ) {
+                parseComment(pNext,&pNext);
+                pPStoPDF -> queueLog(p,pNext);
+                p = pNext;
+                continue;
+            }
+        }
 
         pPStoPDF -> queueLog(p,pNext);
 
@@ -35,11 +60,19 @@
             continue;
         }
 
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == *pCollectionDelimiter ) {
+        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == pCollectionDelimiter[0] ) {
             char *pProcedureEnd = NULL;
             parseProcedureString(pNext,&pProcedureEnd);
             pPStoPDF -> queueLog(pLogStart,pProcedureEnd);
+
+            try {
             push(new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd));
+            } catch ( PStoPDFException *pe ) {
+                char szMessage[1024];
+                sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
+                pPStoPDF -> queueLog(szMessage,NULL,true);
+            }
+
             ADVANCE_THRU_WHITE_SPACE(pProcedureEnd)
             pNext = pProcedureEnd;
             p = pProcedureEnd;
@@ -47,6 +80,8 @@
         }
 
         object *po = NULL;
+
+        try {
 
         if ( ! ( NULL == pCollectionDelimiter ) ) {
             po = new (CurrentObjectHeap()) object(this,pCollectionDelimiter);
@@ -70,19 +105,30 @@
         } else
             executeObject();
 
+        } catch ( nonPostscriptException *ex ) {
+            pPStoPDF -> queueLog(ex -> Message(),NULL,true);
+        } catch ( PStoPDFException *pe ) {
+            char szMessage[1024];
+            sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
+            //pPStoPDF -> queueLog(szMessage,NULL,true);
+            //pPStoPDF -> queueLog("\nStack Trace:\n");
+            //operatorPstack();
+        }
+
         ADVANCE_THRU_WHITE_SPACE(pNext)
 
         p = pNext;
 
+        if ( 0 == strncmp(pNext,"terminate",9) )
+            break;
+
         pPStoPDF -> queueLog(pLogStart,pNext);
 
-    } while ( p );
+    } while ( p && ! quitRequested );
 
-    pPStoPDF -> queueLog(pLogStart,pNext);
+    pPStoPDF -> settleLog();
 
-    } catch ( syntaxerror se ) {
-        throw;
-    }
+    _set_se_translator(defaultExtranslator);
 
     return 0;
     }
@@ -95,7 +141,7 @@
 
     do {
 
-        ADVANCE_THRU_WHITE_SPACE(p)
+        ADVANCE_THRU_WHITE_SPACE_AND_EOL(p)
 
         if ( '\0' == *p )
             break;

@@ -158,6 +158,7 @@
     <ClCompile Include="COM Interfaces\IFontManager_DrawGlyph.cpp" />
     <ClCompile Include="COM Interfaces\IFont_EVNSW.cpp" />
     <ClCompile Include="COM Interfaces\IUnknown.cpp" />
+    <ClCompile Include="compositeGlyph.cpp" />
     <ClCompile Include="font.cpp" />
     <ClCompile Include="FontManager.cpp" />
     <ClCompile Include="font_type42.cpp" />

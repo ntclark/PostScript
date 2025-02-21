@@ -89,6 +89,9 @@
                 primitive *pNext{NULL};
                 primitive *pPrior{NULL};
 
+                FLOAT downScale{1.0f};
+                POINTF origin{0.0f,0.0f};
+
                 GraphicElements *pParent{NULL};
 
                 POINTF vertices[3]{{0.0f,0.0f}, {0.0f,0.0f}, {0.0f,0.0f}};
@@ -101,13 +104,15 @@
                 movePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::move) {
                     vertices[0].x = pPoint -> x;
                     vertices[0].y = pPoint -> y;
+                    origin = pParent -> pParent -> origin;
+                    downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
-                    vertices[0].x /= pParent -> pParent -> downScale;
-                    vertices[0].y /= pParent -> pParent -> downScale;
-                    vertices[0].x += pParent -> pParent -> origin.x;
-                    vertices[0].y += pParent -> pParent -> origin.y;
+                    vertices[0].x /= downScale;
+                    vertices[0].y /= downScale;
+                    vertices[0].x += origin.x;
+                    vertices[0].y += origin.y;
                     pParent -> transformPoint(&vertices[0],&vertices[0]);
                 }
             };
@@ -116,13 +121,15 @@
                 linePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::line) {
                     vertices[0].x = pPoint -> x;
                     vertices[0].y = pPoint -> y;
+                    origin = pParent -> pParent -> origin;
+                    downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
-                    vertices[0].x /= pParent -> pParent -> downScale;
-                    vertices[0].y /= pParent -> pParent -> downScale;
-                    vertices[0].x += pParent -> pParent -> origin.x;
-                    vertices[0].y += pParent -> pParent -> origin.y;
+                    vertices[0].x /= downScale;
+                    vertices[0].y /= downScale;
+                    vertices[0].x += origin.x;
+                    vertices[0].y += origin.y;
                     pParent -> transformPoint(&vertices[0],&vertices[0]);
                  }
             };
@@ -135,21 +142,23 @@
                     bezierSegment.point2.y = pSegment -> point2.y;
                     bezierSegment.point3.x = pSegment -> point3.x;
                     bezierSegment.point3.y = pSegment -> point3.y;
+                    origin = pParent -> pParent -> origin;
+                    downScale = pParent -> pParent -> downScale;
                     return;
                 }
                 void transform() { 
-                    bezierSegment.point1.x /= pParent -> pParent -> downScale;
-                    bezierSegment.point1.y /= pParent -> pParent -> downScale;
-                    bezierSegment.point2.x /= pParent -> pParent -> downScale;
-                    bezierSegment.point2.y /= pParent -> pParent -> downScale;
-                    bezierSegment.point3.x /= pParent -> pParent -> downScale;
-                    bezierSegment.point3.y /= pParent -> pParent -> downScale;
-                    bezierSegment.point1.x += pParent -> pParent -> origin.x;
-                    bezierSegment.point1.y += pParent -> pParent -> origin.y;
-                    bezierSegment.point2.x += pParent -> pParent -> origin.x;
-                    bezierSegment.point2.y += pParent -> pParent -> origin.y;
-                    bezierSegment.point3.x += pParent -> pParent -> origin.x;
-                    bezierSegment.point3.y += pParent -> pParent -> origin.y;
+                    bezierSegment.point1.x /= downScale;
+                    bezierSegment.point1.y /= downScale;
+                    bezierSegment.point2.x /= downScale;
+                    bezierSegment.point2.y /= downScale;
+                    bezierSegment.point3.x /= downScale;
+                    bezierSegment.point3.y /= downScale;
+                    bezierSegment.point1.x += origin.x;
+                    bezierSegment.point1.y += origin.y;
+                    bezierSegment.point2.x += origin.x;
+                    bezierSegment.point2.y += origin.y;
+                    bezierSegment.point3.x += origin.x;
+                    bezierSegment.point3.y += origin.y;
                     pParent -> transformPoint(&bezierSegment.point1,&bezierSegment.point1);
                     pParent -> transformPoint(&bezierSegment.point2,&bezierSegment.point2);
                     pParent -> transformPoint(&bezierSegment.point3,&bezierSegment.point3);
@@ -167,17 +176,19 @@
                     quadraticBezierSegment.point1.y = pSegment -> point1.y;
                     quadraticBezierSegment.point2.x = pSegment -> point2.x;
                     quadraticBezierSegment.point2.y = pSegment -> point2.y;
+                    origin = pParent -> pParent -> origin;
+                    downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
-                    quadraticBezierSegment.point1.x /= pParent -> pParent -> downScale;
-                    quadraticBezierSegment.point1.y /= pParent -> pParent -> downScale;
-                    quadraticBezierSegment.point2.x /= pParent -> pParent -> downScale;
-                    quadraticBezierSegment.point2.y /= pParent -> pParent -> downScale;
-                    quadraticBezierSegment.point1.x += pParent -> pParent -> origin.x;
-                    quadraticBezierSegment.point1.y += pParent -> pParent -> origin.y;
-                    quadraticBezierSegment.point2.x += pParent -> pParent -> origin.x;
-                    quadraticBezierSegment.point2.y += pParent -> pParent -> origin.y;
+                    quadraticBezierSegment.point1.x /= downScale;
+                    quadraticBezierSegment.point1.y /= downScale;
+                    quadraticBezierSegment.point2.x /= downScale;
+                    quadraticBezierSegment.point2.y /= downScale;
+                    quadraticBezierSegment.point1.x += origin.x;
+                    quadraticBezierSegment.point1.y += origin.y;
+                    quadraticBezierSegment.point2.x += origin.x;
+                    quadraticBezierSegment.point2.y += origin.y;
                     pParent -> transformPoint(&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
                     pParent -> transformPoint(&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     return;

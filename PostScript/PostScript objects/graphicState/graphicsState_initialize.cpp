@@ -3,6 +3,5 @@
     void graphicsState::initialize() {
     pathParametersStack.initialize();
     psXformsStack.initialize(pJob);
-    //fontStack.initialize();
     return;
     }

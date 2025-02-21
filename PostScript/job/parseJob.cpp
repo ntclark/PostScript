@@ -1,43 +1,64 @@
 
 #include "job.h"
 
-
     long job::parseJob(bool useThread) {
 
     pPStoPDF -> clearLog();
 
     if ( useThread ) {
         unsigned int threadAddr;
-        HANDLE hJobThread = (HANDLE)_beginthreadex(NULL,65536,job::_execute,(void *)this,CREATE_SUSPENDED,&threadAddr);
+        HANDLE hJobThread = (HANDLE)_beginthreadex(NULL,65536,job::executeThread,(void *)this,CREATE_SUSPENDED,&threadAddr);
         ResumeThread(hJobThread);
     } else
-        _execute((void *)this);
+        executeThread((void *)this);
 
     return 0L;
     }
 
 
-    unsigned int __stdcall job::_execute(void *pvThis) {
+    unsigned int __stdcall job::executeInitialization(void *pvThis) {
 
     job *pThis = reinterpret_cast<job *>(pvThis);
 
-    try {
+    long gsResources[] = {ID_GS_PREP,ID_GS_INIT,ID_GS_RESOURCES,0};
 
-    pThis -> execute((char *)(pThis -> pStorage));
+    for ( long k = 0; 1; k++ ) {
 
-    } catch ( PStoPDFException *pe ) {
-        char szMessage[1024];
-        sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
-        pPStoPDF -> queueLog(szMessage);
-        pPStoPDF -> queueLog("\nStack Trace:\n");
-        pThis -> operatorPstack();
+        if ( 0 == gsResources[k] )
+            break;
+
+        HRSRC hrsrc = FindResourceA(hModule,MAKEINTRESOURCE(gsResources[k]),"#256");
+
+        HGLOBAL hResource = LoadResource(hModule,hrsrc);
+
+        SIZE_T sizeData = SizeofResource(hModule,hrsrc);
+
+        pThis -> pStorage = new char[sizeData + 1];
+        memcpy(pThis -> pStorage,(char *)LockResource(hResource),sizeData);
+        pThis -> pEnd = pThis -> pStorage + sizeData;
+        *pThis -> pEnd = '\0';
+
+        pThis -> execute((char *)(pThis -> pStorage));
+
+        delete [] pThis -> pStorage;
+
+        pThis -> pStorage = NULL;
+
     }
+
 #if 0
-    catch ( std::exception ex ) {
-        pPStoPDF -> queueLog("\n\nThe job is cancelled due to errors");
-        _endthread();
-    }
+    ReleaseSemaphore(p -> pJob -> hsemIsInitialized,1,NULL);
+    CloseHandle(p -> pJob -> hsemIsInitialized);
+    p -> pJob -> hsemIsInitialized = INVALID_HANDLE_VALUE;
 #endif
+    return 0L;
+    }
+
+
+    unsigned int __stdcall job::executeThread(void *pvThis) {
+    job *pThis = reinterpret_cast<job *>(pvThis);
+    WaitForSingleObject(pThis -> hsemIsInitialized,INFINITE);
+    pThis -> execute((char *)(pThis -> pStorage));
     return 0L;
     }
 
@@ -136,6 +157,8 @@
 
         executeObject();
 
+        if ( quitRequested )
+            break;
     }
 
     return 0L;
@@ -242,6 +265,7 @@
     ADVANCE_THRU_WHITE_SPACE(pStart)
     if ( ! pStart )
         return NULL;
+    *ppEnd = pStart;
     for ( long k = 0; 1; k++ ) {
         if ( ! psCollectionDelimiters[k][0] )
             return NULL;
@@ -364,20 +388,10 @@
     return;
     }
 
-// WHY IN THE FUCK DID I HAVE TO DO THIS (!?!?!?!)
-#define ADVANCE_THRU_EOL(p)               \
-{                                         \
-while ( *p != 0x0A && *p != 0x0D )        \
-   p++;                                   \
-if ( *p == 0x0A || *p == 0x0D )           \
-   p++;                                   \
-if ( *p == 0x0A || *p == 0x0D )           \
-   p++;                                   \
-}
 
     void job::parseStructureSpec(char *pStart,char **ppEnd) {
     char *p = pStart;
-    ADVANCE_THRU_EOL(p)
+    ADVANCE_THRU_END_OF_LINE(p)
     *ppEnd = p;
     structureSpecs.insert(structureSpecs.end(),new (CurrentObjectHeap()) structureSpec(this,pStart,*ppEnd));
     return;
@@ -386,7 +400,7 @@ if ( *p == 0x0A || *p == 0x0D )           \
 
     void job::parseComment(char *pStart,char **ppEnd) {
     char *p = pStart;
-    ADVANCE_THRU_EOL(p)
+    ADVANCE_THRU_END_OF_LINE(p)
     *ppEnd = p;
     commentStack.insert(commentStack.end(),new comment(pStart,*ppEnd));
     return;

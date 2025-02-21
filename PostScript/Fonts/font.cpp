@@ -8,8 +8,11 @@
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
     {
+
     theObjectType = object::objectType::font;
+
     pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
+
     loadDictionary();
     return;
     }
@@ -25,37 +28,62 @@
         put(pJob -> pFontTypeLiteral -> Name(),szType);
     }
 
-    char szName[256];
-    pIFont -> FontName(256,szName);
+    if ( ! exists(pJob -> pFontNameLiteral -> Name()) )
+        put(pJob -> pFontNameLiteral -> Name(),fontName());
 
-    //if ( ! exists(pJob -> pFontNameLiteral -> Name()) )
-        put(pJob -> pFontNameLiteral -> Name(),szName);
+    if ( ! exists(pJob -> pFontMatrixLiteral -> Name()) )
+           put(pJob -> pFontMatrixLiteral -> Name(),new (pJob -> CurrentObjectHeap()) matrix(pJob));
 
-    //if ( ! exists(pJob -> pFontMatrixLiteral -> Name()) )
-        put(pJob -> pFontMatrixLiteral -> Name(),new (pJob -> CurrentObjectHeap()) matrix(pJob));
-
-    //if ( ! exists(pJob -> pFontBoundingBoxLiteral -> Name()) ) {
-        class array *pArray = new (pJob -> CurrentObjectHeap()) class array(pJob,4);
+    if ( ! exists(pJob -> pFontBoundingBoxLiteral -> Name()) ) {
+        array *pArray = new (pJob -> CurrentObjectHeap()) class array(pJob,4);
         pArray -> putElement(0,0);
         pArray -> putElement(1,0);
         pArray -> putElement(2,0);
         pArray -> putElement(3,0);
         put(pJob -> pFontBoundingBoxLiteral -> Name(),pArray);
-    //}
+    }
 
-    //if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
+    pCharStrings = NULL;
+
+    if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
+
         pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
         put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
         for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
             char szCharCode[8];
             sprintf_s<8>(szCharCode,"%ld",charCode);
-            int glyphId;
-            pIFont -> get_GlyphId(charCode,&glyphId);
+            uint16_t glyphId;
+            pIFont -> get_GlyphIndex(charCode,&glyphId);
             pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,(long)glyphId));
         }
-    //}
 
-    //if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
+    } else
+
+        pCharStrings = (dictionary *)retrieve(pJob -> pCharStringsLiteral -> Name());
+
+    DWORD cb = 0;
+    for ( long k = 0; k < pCharStrings -> size(); k++ ) {
+        if ( object::objectType::number == pCharStrings -> retrieve(k) -> ObjectType() )
+            cb += 8 + 2 + (DWORD)strlen(pCharStrings -> retrieveKey(k));
+    }
+    char *pszCharStrings = (char *)CoTaskMemAlloc(cb + 1);
+    memset(pszCharStrings,0,(cb + 1) * sizeof(char));
+    char *pszEnd = pszCharStrings + cb;
+    cb = 0L;
+    for ( long k = 0; k < pCharStrings -> size(); k++ ) {
+        if ( object::objectType::number == pCharStrings -> retrieve(k) -> ObjectType() ) {
+            cb += sprintf(pszCharStrings + cb,"%s;%08d",pCharStrings -> retrieveKey(k),pCharStrings -> retrieve(k) -> IntValue());
+            cb++;
+        }
+    }
+
+    pIFont -> SetCharStrings((UINT_PTR)pszCharStrings);
+
+    CoTaskMemFree(pszCharStrings);
+
+    pEncoding = NULL;
+
+    if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
 
         pEncoding = new (pJob -> CurrentObjectHeap()) class array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
         put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
@@ -71,7 +99,25 @@
             pEncoding -> putElement(charCode,pCharStrings -> retrieveKey(szCharCode));
         }
 
-    //}
+    } else
+
+        pEncoding = (array *)retrieve(pJob -> pEncodingArrayLiteral -> Name());
+
+    cb = 0;
+    for ( long k = 0; k < pEncoding -> size(); k++ )
+        cb += 4 + 2 + (DWORD)strlen(pEncoding -> getElement(k) -> Contents());
+    char *pszEncoding = (char *)CoTaskMemAlloc(cb + 1);
+    memset(pszEncoding,0,(cb + 1) * sizeof(char));
+    pszEnd = pszEncoding + cb;
+    cb = 0L;
+    for ( long k = 0; k < pEncoding -> size(); k++ ) {
+        cb += sprintf(pszEncoding + cb,"%04ld;%s",k,pEncoding -> getElement(k) -> Contents());
+        cb++;
+    }
+
+    pIFont -> SetEncoding((UINT_PTR)pszEncoding);
+
+    CoTaskMemFree(pszEncoding);
 
     return;
     }
@@ -116,7 +162,7 @@
         return (font *)fontCookie;
     }
 
-    return new (pJob -> CurrentObjectHeap()) class font(pJob,pszFamilyName);
+    return new (pJob -> CurrentObjectHeap()) font(pJob,pszFamilyName);
     }
 
 
@@ -217,7 +263,7 @@
     }
 
 
-    font *font::scaleFont(FLOAT scaleFactor,font *pCopyFrom) {
+    font *font::scaleFont(FLOAT scaleFactor,font *pFont) {
 /*
     scalefont 
             font scale scalefont font
@@ -239,7 +285,6 @@
 
 */
 
-    font *pFont = new (pCopyFrom -> Job() -> CurrentObjectHeap()) font(*pCopyFrom);
     pFont -> pIFont -> Scale(scaleFactor,scaleFactor);
     return pFont;
     }

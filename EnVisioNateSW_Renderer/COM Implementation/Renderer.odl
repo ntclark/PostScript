@@ -52,7 +52,7 @@ library Renderer {
         HRESULT CubicBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
         HRESULT QuadraticBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-        HRESULT Image(HBITMAP hBitmap,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT Height);
+        HRESULT Image(HBITMAP hBitmap,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
 
     };
 

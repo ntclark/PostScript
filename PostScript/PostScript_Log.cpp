@@ -33,6 +33,9 @@
    if ( none == theLogLevel )
       return 0L;
 
+    if ( NULL == pszOutput )
+        return 0L;
+
    EnterCriticalSection(&theQueueCriticalSection);
 
    static char szOperandStackSize[64];
@@ -83,71 +86,74 @@
 
    theLog.push(p);
 
-   hRichEditSemaphore = CreateSemaphore(NULL,0,1,NULL);
-
 #ifdef DO_RTF
    PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_RTF | SFF_SELECTION),(LPARAM)&logStream);
+   //PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_TEXT | SFF_SELECTION),(LPARAM)&logStream);
 #else
    PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_TEXT | SFF_SELECTION),(LPARAM)&logStream);
 #endif
 
    LeaveCriticalSection(&theQueueCriticalSection);
 
-   while ( WaitForSingleObject(hRichEditSemaphore,500) ) {
-//      if ( ! logPaintPending )
-         break;
-   }//;INFINITE);
-
-   CloseHandle(hRichEditSemaphore);
-
    return 0;
    }
 
 
-   DWORD __stdcall PStoPDF::processLog(DWORD_PTR dwCookie,BYTE *pBuffer,LONG bufferSize,LONG *pBytesReturned) {
+    long PStoPDF::settleLog() {
+    PostMessage(hwndLog,WM_VSCROLL,SB_BOTTOM,0L);
+    return 0;
+    }
 
-   EnterCriticalSection(&theQueueCriticalSection);
 
-   if ( theLog.empty() ) {
-      *pBytesReturned = 0;
-      LeaveCriticalSection(&theQueueCriticalSection);
-      return 1;
-   }
+    DWORD __stdcall PStoPDF::processLog(DWORD_PTR dwCookie,BYTE *pBuffer,LONG bufferSize,LONG *pBytesReturned) {
 
-   char *p = theLog.front();
+    EnterCriticalSection(&theQueueCriticalSection);
 
-   theLog.pop();
+    if ( theLog.empty() ) {
+        *pBytesReturned = 0;
+        LeaveCriticalSection(&theQueueCriticalSection);
+        return 1;
+    }
 
-   long n = (long)strlen((char *)p);
+    char *p = theLog.front();
 
-   if ( n > bufferSize ) {
-      p[bufferSize - 1] = '\0';
-      n = bufferSize;
-   }
+    theLog.pop();
+
+    long n = (long)strlen(p);
+
+    if ( n > bufferSize ) {
+        p[bufferSize - 1] = '\0';
+        n = bufferSize;
+    }
 
 #ifdef DO_RTF
-   CHARRANGE chr;
-   SendMessage(((PStoPDF *)dwCookie) -> hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
+    CHARRANGE chr;
+    nativeRichEditHandler(hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
 
-   long charFirst = SendMessage(((PStoPDF *)dwCookie) -> hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
+    long charFirst = nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
 
-   if ( chr.cpMax > charFirst )
-      *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF" \\par%s",p);
-   else
-      *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s",p);
+    if ( chr.cpMax > charFirst )
+        *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF" \\par%s",p);
+    else
+        *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s",p);
+    
+    //*pBytesReturned = sprintf((char *)pBuffer,"%s",p);
+    //*pBytesReturned = n;
+    //memcpy(pBuffer,p,n);
 
 #else
 
-   *pBytesReturned = n;
-   memcpy(pBuffer,p,n);
+    *pBytesReturned = n;
+
+    memcpy(pBuffer,p,n);
 
 #endif
 
-   delete [] p;
+    delete [] p;
 
-   logPaintPending = true;
+    settleLog();
 
-   LeaveCriticalSection(&theQueueCriticalSection);
+    LeaveCriticalSection(&theQueueCriticalSection);
 
-   return 0;
-   }
+    return 0;
+    }

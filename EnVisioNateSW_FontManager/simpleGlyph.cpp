@@ -1,7 +1,7 @@
 
 #include "font.h"
 
-    otSimpleGlyph::otSimpleGlyph(BYTE bGlyph,font *pFont,otGlyphHeader *ph,BYTE *pbInput) : 
+    otSimpleGlyph::otSimpleGlyph(uint16_t glyphIndex,font *pFont,otGlyphHeader *ph,BYTE *pbInput) : 
         pGlyphHeader(ph),
         pbGlyphData(pbInput)
     {
@@ -196,9 +196,7 @@
         }
     }
 
-    uint16_t glyphId = pFont -> glyphIDMap[(uint16_t)bGlyph];
-
-    long hmTableIndex = min((uint16_t)glyphId,pFont -> pHorizHeadTable -> numberOfHMetrics - 1);
+    long hmTableIndex = min(glyphIndex,pFont -> pHorizHeadTable -> numberOfHMetrics - 1);
 
     otLongHorizontalMetric *pHorizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics + hmTableIndex;
 
@@ -212,7 +210,7 @@
 
     if ( ! ( NULL == pFont -> pVerticalMetricsTable ) ) {
 
-        otLongVerticalMetric verticalMetric = pFont -> pVerticalMetricsTable -> pVerticalMetrics[bGlyph];
+        otLongVerticalMetric verticalMetric = pFont -> pVerticalMetricsTable -> pVerticalMetrics[glyphIndex];
 
         bearing_y = verticalMetric.topSideBearing;
         advanceHeight = verticalMetric.advanceHeight;

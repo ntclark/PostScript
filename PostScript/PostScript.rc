@@ -16,10 +16,10 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "InnoVisioNate\0"
-            VALUE "FileDescription", "A PostScript interpreter. Used to scrape data from a PostScript file. Has an excellent implementation pattern that would make it very easy to complete as a full blown PostScript interpreter.\0"
+            VALUE "FileDescription", "A PostScript interpreter. Destined to replace ghostscript once and for all, and for many other things.\0"
             VALUE "FileVersion", CV_PRODUCT_VERSION
             VALUE "InternalName", "PostScript.dll\0"
-            VALUE "LegalCopyright", "Copyright © 2009-2023 InnoVisioNate Inc.\0"
+            VALUE "LegalCopyright", "Copyright © 2009-2025 EnVisioNate Inc.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "PostScript.dll\0"
             VALUE "PrivateBuild", "\0"
@@ -33,8 +33,6 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
-
-ID_GLYPH_LIST 256 ".\\resources\glyphList.txt"
 
 IDD_CMD_PANE DIALOGEX 0, 0, 256, 128
 STYLE DS_SETFONT | WS_POPUP
@@ -70,3 +68,14 @@ BEGIN
     LTEXT "", IDDI_LOG_PANE_CURRENT_DICTIONARY,  70, 24, 128, 12
 
 END
+
+ID_GLYPH_LIST   256 ".\\resources\glyphList.txt"
+
+ID_GS_PREP      256 ".\\resources\gsPrep.ps"
+
+ID_GS_INIT      256 ".\\resources\from gs\gs_init.ps"
+//ID_GS_RESOURCES 256 ".\\resources\from gs\gs_res.ps"
+
+//ID_GS_INIT      256 ".\\resources\gs_init_NTC.ps"
+//ID_GS_RESOURCES 256 ".\\resources\gs_res_NTC.ps"
+

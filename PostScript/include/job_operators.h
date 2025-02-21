@@ -100,6 +100,7 @@
         void operatorPut();
         void operatorPutinterval();
         void operatorQuadcurveto();
+        void operatorQuit();
         void operatorReadonly();
         void operatorRectclip();
         void operatorRectfill();
@@ -130,6 +131,7 @@
         void operatorSetmiterlimit();
         void operatorSetpagedevice();
         void operatorSetrgbcolor();
+        void operatorSetstrokeadjust();
         void operatorSetuserparams();
         void operatorShow();
         void operatorShowpage();
@@ -144,6 +146,7 @@
         void operatorType();
         void operatorUndef();
         void operatorUndefinefont();
+        void operatorUndefineresource();
         void operatorVersion();
         void operatorVmstatus();
         void operatorWhere();

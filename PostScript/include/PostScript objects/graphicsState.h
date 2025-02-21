@@ -102,8 +102,8 @@
         void drawTextChar(BYTE bGlyph);
         void drawTextString();
 
-        void drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
-        void drawType3Glyph(BYTE bGlyph);
+        void drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
+        void drawType3Glyph(uint16_t bGlyph);
 
         void setCacheDevice();
 
@@ -130,6 +130,8 @@
         void setLineWidth(FLOAT v);
         void setLineDash(array *pArray,FLOAT offset);
 
+        void setStrokeAdjustmentParameter(object *pBool);
+
         void setColorSpace(colorSpace *);
         colorSpace *getColorSpace();
 
@@ -152,6 +154,8 @@
         job *pJob{NULL};
 
         font *CurrentFont() { return font::CurrentFont(); }
+
+        boolean strokeAdjustmentParameter{true};
 
         GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
         GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;

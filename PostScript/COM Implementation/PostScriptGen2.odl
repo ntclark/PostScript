@@ -26,8 +26,6 @@ library PostScriptGen2 {
 
       HRESULT LogLevel(logLevel theLogLevel);
 
-      HRESULT ShowFontRenderingPoints(boolean doDraw);
-
    };
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6C)] 

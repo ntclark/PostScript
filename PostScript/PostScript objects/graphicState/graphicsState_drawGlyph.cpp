@@ -20,7 +20,6 @@
 
     drawType42Glyph(glyphIndex,&startPoint,&endPoint);
 
-    // endPoint is in page space, transform it to user space
     untransformPoint(&endPoint,&endPoint);
 
     moveto(&endPoint);
@@ -91,7 +90,8 @@
     }
 
 
-    void graphicsState::drawType42Glyph(BYTE bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
+    void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
+
     font::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
                                         (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
@@ -100,7 +100,7 @@
     }
 
 
-    void graphicsState::drawType3Glyph(BYTE bGlyph) {
+    void graphicsState::drawType3Glyph(uint16_t bGlyph) {
 
     pJob -> push(CurrentFont());
     pJob -> operatorBegin();
@@ -150,7 +150,7 @@
 
     // The BYTE bGlyph is the "index" into the Encoding array
 
-    pJob -> push(new (pJob -> CurrentObjectHeap()) object(pJob,bGlyph));
+    pJob -> push(new (pJob -> CurrentObjectHeap()) object(pJob,(uint16_t)bGlyph));
     pJob -> operatorGet();
 
     object *pCharacterName = pJob -> pop();

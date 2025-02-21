@@ -51,6 +51,9 @@
     <ClCompile Include="COM Interfaces\IFont_EVNSW.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
+    <ClCompile Include="compositeGlyph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="COM Implementation\FontManager.odl">

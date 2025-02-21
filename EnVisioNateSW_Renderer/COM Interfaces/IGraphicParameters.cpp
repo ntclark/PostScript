@@ -149,10 +149,12 @@
 
     char doFillChar;
     char szLDashes[128]{128 * '\0'};
+
     sscanf(pszLineSettings,"%05f:%01d:%01d:%01d:%01d:%08ld:%c:%s",&pValues -> lineWidth ,&pValues -> lineCap,&pValues -> lineJoin,
                         &pValues -> lineDashStyle,&pValues -> countDashSizes,&pValues -> rgbColor,&doFillChar,szLDashes);
 
     char *pszDash = strtok(szLDashes,",");
+
     for ( int k = 0; k < 16; k++ ) {
         pValues -> lineDashSizes[k] = (FLOAT)atof(pszDash);
         pszDash = strtok(NULL,",");

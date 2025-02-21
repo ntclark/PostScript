@@ -159,6 +159,9 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     object::object(job *pj,BYTE bValue) :
         object(pj,'\0',(long)bValue,DBL_MAX,NULL,NULL,number,integer,simple,nonExecutable,unlimited) {}
 
+    object::object(job *pj,unsigned short bValue) :
+        object(pj,'\0',(long)bValue,DBL_MAX,NULL,NULL,number,integer,simple,nonExecutable,unlimited) {}
+
     object::object(job *pj,long value) :
         object(pj,'\0',value,DBL_MAX,NULL,NULL,number,integer,simple,nonExecutable,unlimited) {}
 
@@ -413,45 +416,39 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
 
     void object::put(long,BYTE) {
-    MessageBox(NULL,"put is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
-    pJob -> operatorDebug();
+    throw new notimplemented("put is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
     _endthread();
     return;
     }
 
 
     BYTE object::get(long index) {
-    MessageBox(NULL,"get is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
-    pJob -> operatorDebug();
+    throw new notimplemented("get is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
     _endthread();
     return NULL;
     }
 
     void object::putElement(long index,object *) {
-    MessageBox(NULL,"putElement is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
-    pJob -> operatorDebug();
+    throw new notimplemented("putElement is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
     _endthread();
     return;
     }
 
 
     object *object::getElement(long index) {
-    MessageBox(NULL,"getElement is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
-    pJob -> operatorDebug();
+    throw new notimplemented("getElement is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
     _endthread();
     return NULL;
     }
 
 
     void object::execute() {
-    MessageBox(NULL,"execute is not implemented on a subclass of object. This is an error condition, job parsing is stopped","",MB_ICONEXCLAMATION);
-    pJob -> operatorDebug();
+    throw new notimplemented("execute is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
     _endthread();
     return;
     }
 
 
     char *object::ToString() {
-    pJob -> operatorDebug();
     return Contents();
     }

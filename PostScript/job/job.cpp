@@ -47,6 +47,8 @@
 
     pFontDirectory = new (CurrentObjectHeap()) dictionary(this,"font directory");
 
+    pGenericResourceImplementation = new (CurrentObjectHeap()) dictionary(this,"generic resource implementation");
+
     pStandardEncoding = new (CurrentObjectHeap()) array(this,"StandardEncoding");
 
     for ( long k = 0; k < 256; k++ )
@@ -63,22 +65,6 @@
     memset(szPostScriptSourceFile,0,MAX_PATH * sizeof(char));
 
     pPostScriptSourceFile = NULL;;
-
-    if ( pszFileName ) {
-        FILE *f = fopen(pszFileName,"rb");
-        if ( f ) {
-            strcpy(szPostScriptSourceFile,pszFileName);
-            fseek(f,0,SEEK_END);
-            long fileSize = ftell(f);
-            fseek(f,0,SEEK_SET);
-            pStorage = new char[fileSize + 1];
-            pEnd = pStorage + fileSize;
-            *pEnd = '\0';
-            fread(pStorage,fileSize,1,f);
-            fclose(f);
-            countPages = getPageCount(pszFileName);
-        }
-    }
 
     pStringType = new (CurrentObjectHeap()) name(this,"stringtype");
     pArrayType = new (CurrentObjectHeap()) name(this,"arraytype");
@@ -198,6 +184,28 @@
     dictionaryStack.setCurrent(pSystemDict);
 
     pGraphicsState = new (CurrentObjectHeap()) graphicsState(this);
+
+    if ( pszFileName ) {
+        FILE *f = fopen(pszFileName,"rb");
+        if ( f ) {
+            strcpy(szPostScriptSourceFile,pszFileName);
+            fseek(f,0,SEEK_END);
+            long fileSize = ftell(f);
+            fseek(f,0,SEEK_SET);
+            pStorage = new char[fileSize + 1];
+            pEnd = pStorage + fileSize;
+            *pEnd = '\0';
+            fread(pStorage,fileSize,1,f);
+            fclose(f);
+            countPages = getPageCount(pszFileName);
+        }
+    }
+
+    hsemIsInitialized = CreateSemaphore(NULL,0,1,NULL);
+
+    unsigned int threadAddr;
+
+    _beginthreadex(NULL,65536,job::executeInitialization,(void *)this,0L,&threadAddr);
 
     return;
     }

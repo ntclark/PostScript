@@ -4,7 +4,7 @@
 
 #define FT_CURVE_TAG_ON 0x01
 
-    HRESULT FontManager::RenderGlyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT FontManager::RenderGlyph(HDC hdc,unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     font *pFont = static_cast<font *>(pIFont_Current);
 
@@ -18,245 +18,72 @@
     }
 
 
-    HRESULT FontManager::drawType3Glyph(HDC,BYTE,UINT_PTR,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT FontManager::drawType3Glyph(HDC,unsigned short,UINT_PTR,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
     return E_NOTIMPL;
     }
 
 
-    HRESULT FontManager::drawType42Glyph(HDC hdc,BYTE bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT FontManager::drawType42Glyph(HDC hdc,unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     font *pFont = static_cast<font *>(pIFont_Current);
 
     BYTE *pbGlyphData = NULL;
-/*
-    5.5 GlyphDirectory 
 
-        ...
+    /*
+    By definition, glyph index zero points to the “missing character” glyph, 
+    which is the glyph that is displayed if a character is not found in the 
+    font’s 'cmap' table. A missing character is commonly represented by a 
+    blank box or a space. If the font does not contain an outline for this
+    glyph, then the first and second offsets should have the same value. 
+    This also applies to any other glyphs without an outline, such as the 
+    glyph for the space character: if a glyph has no outline or instructions, 
+    then loca[n] = loca[n+1].
+    */
 
-        Starting with PostScript version 2015, the interpreter checks for the existence
-        of a gdir table in the sfnts array, and if found, uses GlyphDirectory in place of
-        the loca and glyf tables.
-*/
+    uint16_t glyphIndex;
 
-    if ( ! ( NULL == pFont -> tableDirectory.table("gdir") ) ) {
-        MessageBox(NULL,__FILE__,"TODO: Implement gdir",MB_OK);
-        return E_NOTIMPL;
-#if 0
-        pJob -> push(pFont);
-        pJob -> operatorDup();
-        pJob -> operatorDup();
-        pJob -> push(pJob -> pEncodingArrayLiteral);
-        pJob -> operatorGet();
+    pFont -> get_GlyphIndex(bGlyph,&glyphIndex);
 
-        // The BYTE bGlyph is the "index" into the Encoding array
+    pbGlyphData = pFont -> getGlyphData(glyphIndex);
 
-        pJob -> push(new (pJob -> CurrentObjectHeap()) object(pJob,bGlyph));
-
-        pJob -> operatorGet();
-
-        // The string object pGlyphName is the index into the CharStrings array
-
-        object *pGlyphName = pJob -> pop();
-
-        pJob -> push(pJob -> pCharStringsLiteral);
-        pJob -> operatorGet();
-        pJob -> push(pGlyphName);
-        pJob -> operatorGet();
-
-        object *pLocaAndHtmxOffset = pJob -> pop();
-
-        pJob -> push(pJob -> pGlyphDirectoryLiteral);
-        pJob -> operatorGet();
-
-        pJob -> push(pLocaAndHtmxOffset);
-
-        pJob -> operatorGet();
-
-        class binaryString *pBinaryString = reinterpret_cast<class binaryString *>(pJob -> pop());
-
-        pbGlyphData =  pBinaryString -> getData();
-#endif
-    } else {
-
-        /*
-        By definition, glyph index zero points to the “missing character” glyph, 
-        which is the glyph that is displayed if a character is not found in the 
-        font’s 'cmap' table. A missing character is commonly represented by a 
-        blank box or a space. If the font does not contain an outline for this
-        glyph, then the first and second offsets should have the same value. 
-        This also applies to any other glyphs without an outline, such as the 
-        glyph for the space character: if a glyph has no outline or instructions, 
-        then loca[n] = loca[n+1].
-        */
-
-        uint32_t offsetInGlyphTable = 0;
-
-        uint32_t *pGlyphOffset = (uint32_t *)pFont -> pLocaTable + pFont -> glyphIDMap[bGlyph];
-        uint32_t *pNextOffset = (uint32_t *)pFont -> pLocaTable + pFont -> glyphIDMap[bGlyph] + 1;
-
-        if ( ! ( *pGlyphOffset == *pNextOffset ) ) {
-            BE_TO_LE_U32(pGlyphOffset,offsetInGlyphTable)
-            pbGlyphData = pFont -> pGlyfTable + offsetInGlyphTable;
-        } else {
-            if ( (long)bGlyph <= pFont -> countGlyphs ) {
-                uint32_t glyphId = pFont -> glyphIDMap[bGlyph];
-                otLongHorizontalMetric pMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics[glyphId];
-                if ( ! ( NULL == pEndPoint ) ) {
-                    pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize();
-                    pEndPoint -> y = pStartPoint -> y;
-                }
-                return S_OK;
+    if ( NULL == pbGlyphData ) {
+        if ( (long)bGlyph <= pFont -> countGlyphs ) {
+            otLongHorizontalMetric pMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics[glyphIndex];
+            if ( ! ( NULL == pEndPoint ) ) {
+                pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize();
+                pEndPoint -> y = pStartPoint -> y;
             }
-            return E_FAIL;
+            return S_OK;
         }
-
-    }
-
-    if ( NULL == pbGlyphData ) 
         return E_FAIL;
+    }
 
     otGlyphHeader glyphHeader{0};
 
-    otSimpleGlyph *pSimpleGlyph = NULL;
-
     glyphHeader.load(pbGlyphData);
 
+    otSimpleGlyph *pSimpleGlyph = NULL;
+    otCompositeGlyph *pCompositeGlyph = NULL;
+
+    otGlyphGeometry *pGlyphGeometry = NULL;
+
     if ( 0 > glyphHeader.contourCount ) {
-        MessageBox(NULL,__FILE__,"TODO: Implement compound glyphs",MB_OK);
-        return E_NOTIMPL;
-    }
-
-    std::function<void()> newPathAction{NULL};
-    std::function<void()> closePathAction{NULL};
-    std::function<void(POINT *pt)> moveToAction{NULL};
-    std::function<void(POINT *pt)> lineToAction{NULL};
-    std::function<void(POINT *pt1,POINT *pt2,POINT *pt3)> quadraticBezierAction{NULL};
-    std::function<void(POINT *ptStart,POINT *ptControl1,POINT *ptControl2,POINT *ptEnd)> cubicBezierAction{NULL};
-    std::function<void(POINT *pt,uint8_t curveFlag,uint8_t ptIndex)> dotAction{NULL};
-    std::function<void(POINT *ptStart)> endFigureAction{NULL};
-
-    if ( ! ( NULL == pIRenderer ) ) {
-
-        BOOL isPrepared = FALSE;
-        pIRenderer -> get_IsPrepared(&isPrepared);
-        if ( ! isPrepared ) 
-            pIRenderer -> Prepare(hdc);
-
-        pIRenderer -> put_TransformMatrix((UINT_PTR)pXformToDeviceSpace);
-
-        if ( NULL == pIGraphicElements_Type42 )
-            pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_Type42));
-
-        newPathAction = [=]() {
-            pIGraphicElements_Type42 -> NewPath();
-        };
-
-        closePathAction = [=]() {
-            pIGraphicElements_Type42 -> ClosePath();
-        };
-
-        moveToAction = [=](POINT *pt) { 
-            pIGraphicElements_Type42 -> MoveTo((FLOAT)pt -> x,(FLOAT)pt -> y);
-            currentPoint.x = pt -> x;
-            currentPoint.y = pt -> y;
-        };
-
-        lineToAction = [=](POINT *pt) { 
-            pIGraphicElements_Type42 -> LineTo((FLOAT)pt -> x,(FLOAT)pt -> y);
-            currentPoint.x = pt -> x;
-            currentPoint.y = pt -> y;
-        };
-
-        dotAction = [=](POINT *,uint8_t,uint8_t) {
-        };
-
-        quadraticBezierAction = [=](POINT *pt0,POINT *pt2,POINT *pt3) {
-            pIGraphicElements_Type42 -> QuadraticBezierTo((FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
-            currentPoint.x = pt3 -> x;
-            currentPoint.y = pt3 -> y;
-        };
-
-        cubicBezierAction = [=](POINT *pt0,POINT *pt1,POINT *pt2,POINT *pt3) {
-            pIGraphicElements_Type42 -> CubicBezierTo((FLOAT)pt1 -> x,(FLOAT)pt1 -> y,(FLOAT)pt2 -> x,(FLOAT)pt2 -> y,(FLOAT)pt3 -> x,(FLOAT)pt3 -> y);
-            currentPoint.x = pt3 -> x;
-            currentPoint.y = pt3 -> y;
-        };
-
-        endFigureAction = [=](POINT *ptStart) {
-            lineToAction(ptStart);
-        };
-
+        pCompositeGlyph = new otCompositeGlyph(pFont,&glyphHeader,pbGlyphData);
+        pGlyphGeometry = static_cast<otGlyphGeometry *>(pCompositeGlyph);
     } else {
-
-        newPathAction = [=]() {
-            BeginPath(hdc);
-        };
-
-        closePathAction = [=]() {
-        };
-
-        moveToAction = [=](POINT *pt) { 
-            MoveToEx(hdc,pt -> x,pt -> y,NULL);
-            currentPoint.x = pt -> x;
-            currentPoint.y = pt -> y;
-        };
-
-        lineToAction = [=](POINT *pt) { 
-            LineTo(hdc,pt -> x,pt -> y);
-            currentPoint.x = pt -> x;
-            currentPoint.y = pt -> y;
-        };
-
-        endFigureAction = [=](POINT *ptStart) {
-            lineToAction(ptStart);
-        };
-
-        dotAction = [=](POINT *pt,uint8_t curveFlag,uint8_t index) {
-            POINT ptCurrent;
-            GetCurrentPositionEx(hdc,&ptCurrent);
-            long width = 2;
-            if ( curveFlag & ON_CURVE_POINT )
-                width = 4;
-            else if ( curveFlag == 0xFF )
-                width = 1;
-            MoveToEx(hdc,width + pt -> x,width + pt -> y,NULL);
-            LineTo(hdc,-width + pt -> x,width + pt -> y);
-            LineTo(hdc,-width + pt -> x,-width + pt -> y);
-            LineTo(hdc,width + pt -> x,- width + pt -> y);
-            LineTo(hdc,width + pt -> x,width + pt -> y);
-            if ( ! ( curveFlag == 0xFF ) ) {
-                char szX[64];
-                //sprintf_s<16>(szX,"%02x-%02d",curveFlag & 0x03,index);
-                sprintf_s<64>(szX,"%04d-%04d",pt -> x,pt -> y);
-                RECT rc{pt -> x + width + 8,pt -> y,pt -> x + width + 128,pt -> y + 32};
-                DrawTextEx(hdc,szX,-1,&rc,0L,NULL);
-            }
-            MoveToEx(hdc,ptCurrent.x,ptCurrent.y,NULL);
-        };
-
-        quadraticBezierAction = [=](POINT *pt1,POINT *pt2,POINT *pt3) {
-            POINT pThePts[3];
-            pThePts[0] = *pt1;
-            pThePts[1] = *pt2;
-            pThePts[2] = *pt3;
-            PolyBezierTo(hdc,pThePts,3);
-            currentPoint.x = pt3 -> x;
-            currentPoint.y = pt3 -> y;
-        };
-
-        cubicBezierAction = [=](POINT *pt0,POINT *pt1,POINT *pt2,POINT *pt3) {
-            POINT pThePts[3];
-            pThePts[0] = *pt1;
-            pThePts[1] = *pt2;
-            pThePts[2] = *pt3;
-            PolyBezierTo(hdc,pThePts,3);
-            currentPoint.x = pt3 -> x;
-            currentPoint.y = pt3 -> y;
-        };
-
+        pSimpleGlyph = new otSimpleGlyph(glyphIndex,pFont,&glyphHeader,pbGlyphData);
+        pGlyphGeometry = static_cast<otGlyphGeometry *>(pSimpleGlyph);
     }
 
-    pSimpleGlyph = new otSimpleGlyph(bGlyph,pFont,&glyphHeader,pbGlyphData);
+    BOOL isPrepared = FALSE;
+    pIRenderer -> get_IsPrepared(&isPrepared);
+    if ( ! isPrepared ) 
+        pIRenderer -> Prepare(hdc);
+
+    pIRenderer -> put_TransformMatrix((UINT_PTR)pXformToDeviceSpace);
+
+    if ( NULL == pIGraphicElements )
+        pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
 
     matrix *pMatrix = new matrix();
 
@@ -266,7 +93,7 @@
     pMatrix -> scale(pFont -> scaleFUnitsToPoints);
 
     // If the coordinates are not scaled up by some amount,
-    // very poor performance in rasterization occurs. It is
+    // very poor visual performance in rasterization occurs. It is
     // not clear why, though it probably has to do with
     // roundoff, itself due to lack of precision in FLOAT
     pMatrix -> scale(64.0f);
@@ -294,23 +121,28 @@
     // Transform Glyph coordinates using current font matrix
     pMatrix -> concat(pFont -> matrixStack.top());
 
-    pMatrix -> transformPoints(pSimpleGlyph -> pPoints,pSimpleGlyph -> pointCount);
+    pMatrix -> transformPoints(pGlyphGeometry -> Points(),pGlyphGeometry -> PointCount());
 
-    newPathAction();
+    pIGraphicElements -> NewPath();
 
-    for ( long k = 0; k < pSimpleGlyph -> pGlyphHeader -> contourCount; k++ ) {
+    for ( long k = 0; k < pGlyphGeometry -> ContourCount(); k++ ) {
 
-        uint16_t pointCount = pSimpleGlyph -> contourPointCount[k];
+        uint16_t pointCount = pGlyphGeometry -> ContourPointCount(k);
 
-        uint8_t *pOnCurve = pSimpleGlyph -> pFlagsFirst[k];
-        POINT *pPoints = pSimpleGlyph -> pPointFirst[k];
+        uint8_t *pOnCurve = pGlyphGeometry -> FlagsFirst(k);
+        POINT *pPoints = pGlyphGeometry -> PointFirst(k);
 
-        if ( pOnCurve[0] & FT_CURVE_TAG_ON )
-            moveToAction(pPoints);
-        else {
+        if ( pOnCurve[0] & FT_CURVE_TAG_ON ) {
+            pIGraphicElements -> MoveTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);
+            currentPoint.x = pPoints -> x;
+            currentPoint.y = pPoints -> y;
+        } else {
             char szX[128];
             sprintf_s<128>(szX,"Invalid font: A glyph (%x) has a contour whose first point is OFF the contour",bGlyph);
-            MessageBox(NULL,szX,__FILE__,MB_OK);
+            //MessageBox(NULL,szX,__FILE__,MB_OK);
+            pIGraphicElements -> MoveTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);
+            currentPoint.x = pPoints -> x;
+            currentPoint.y = pPoints -> y;
         }
 
         long pointIndex = 0;
@@ -320,13 +152,16 @@
             pointIndex++;
 
             if ( pOnCurve[pointIndex] & FT_CURVE_TAG_ON ) {
-                lineToAction(pPoints + pointIndex);
+                POINT *ppt = pPoints + pointIndex;
+                pIGraphicElements -> LineTo((FLOAT)ppt -> x,(FLOAT)ppt ->y);
+                currentPoint.x = ppt -> x;
+                currentPoint.y = ppt -> y;
                 continue;
             }
 
             // This is the first point OFF the curve
             // It is a (first) control point
-            int controlIndices[]{pointIndex,0,0,0,0};
+            int controlIndices[32]{pointIndex,0,0,0,0};
             int bezierIndex = 0;
 
             /*
@@ -375,7 +210,9 @@ CaptureBezier:
                     endPoint.y = (LONG)((pControl -> y + (pPoints + controlIndices[controlIndex + 1]) -> y) / 2.0f);
                 }
 
-                quadraticBezierAction(pStart,pControl,&endPoint);
+                pIGraphicElements -> QuadraticBezierTo((FLOAT)pControl -> x,(FLOAT)pControl -> y,(FLOAT)endPoint.x,(FLOAT)endPoint.y);
+                currentPoint.x = endPoint.x;
+                currentPoint.y = endPoint.y;
 
                 startPoint.x = pEnd -> x;
                 startPoint.y = pEnd -> y;
@@ -386,26 +223,32 @@ CaptureBezier:
 
         }
 
-        lineToAction(pPoints);
+        pIGraphicElements -> LineTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);
+        currentPoint.x = pPoints -> x;
+        currentPoint.y = pPoints -> y;
 
-        closePathAction();
+        pIGraphicElements -> ClosePath();
 
     }
 
-    if ( ! ( NULL == pIGraphicElements_Type42 ) ) {
-        pIGraphicElements_Type42 -> FillPath();
+    if ( ! ( NULL == pIGraphicElements ) ) {
+        pIGraphicElements -> FillPath();
         pIRenderer -> Reset();
     }
 
     if ( ! ( NULL == pEndPoint ) ) {
-        POINTF ptAdvance{pSimpleGlyph -> advanceWidth * pFont -> scaleFUnitsToPoints * pFont -> PointSize(),0.0f};
+        POINTF ptAdvance{pGlyphGeometry -> AdvanceWidth() * pFont -> scaleFUnitsToPoints * pFont -> PointSize(),0.0f};
         pEndPoint -> x = pStartPoint -> x + ptAdvance.x;
         pEndPoint -> y = pStartPoint -> y + ptAdvance.y;
     }
 
     delete pMatrix;
 
-    delete pSimpleGlyph;
+    if ( ! ( NULL == pSimpleGlyph ) )
+        delete pSimpleGlyph;
+
+    if ( ! ( NULL == pCompositeGlyph ) )
+        delete pCompositeGlyph;
 
     return S_OK;
     }

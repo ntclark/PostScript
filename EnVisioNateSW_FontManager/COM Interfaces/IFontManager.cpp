@@ -1,41 +1,13 @@
 
 #include "FontManager.h"
 
-    char *sanitizeFamily(char *pszFamilyName) {
-
-    static char szSanitizedName[256];
-
-    strcpy(szSanitizedName,pszFamilyName);
-
-    if ( strchr(szSanitizedName,'-') ) {
-        char *p = strchr(szSanitizedName,'-') + 1;
-        char c = p[4];
-        *(p + 4) = '\0';
-        if ( 0 == _stricmp("bold",p) )
-            *(p - 1) = '\0';
-        else
-            *(p + 4) = c;
-    }
-
-    if ( 0 == _stricmp(szSanitizedName,"Courier") ) 
-        strcpy(szSanitizedName,"Courier New");
-
-    if ( 0 == _stricmp(szSanitizedName,"Times-Roman") )
-        strcpy(szSanitizedName,"Times New Roman");
-
-    return szSanitizedName;
-    }
-
-
     HRESULT FontManager::SeekFont(char *pszFamilyName,long dupCount,IFont_EVNSW **ppFont) {
 
     if ( ! ppFont )
         return E_POINTER;
 
-    char *pszSanitized = sanitizeFamily(pszFamilyName);
-
     for ( font *pFont : managedFonts ) {
-        if ( 0 == strcmp(pFont -> szFamily,pszSanitized) && strlen(pFont -> szFamily) == strlen(pszSanitized) ) {
+        if ( 0 == strcmp(pFont -> szClientFamily,pszFamilyName) && strlen(pFont -> szClientFamily) == strlen(pszFamilyName) ) {
             if ( -1 == dupCount || ( pFont -> dupCount == dupCount ) ) {
                 pFont -> QueryInterface(IID_IFont_EVNSW,reinterpret_cast<void **>(ppFont));
                 return S_OK;
@@ -52,19 +24,19 @@
     if ( ! ppFont )
         return E_POINTER;
 
-    char *pszSanitized = sanitizeFamily(pszFamilyName);
-
-    if ( S_OK == SeekFont(pszSanitized,-1L,ppFont) )
+    if ( S_OK == SeekFont(pszFamilyName,-1L,ppFont) )
         return S_OK;
+
+    font *pFont = new font(pszFamilyName);
+
+    strcpy(pFont -> szInstalledFamily,translateFamily(pszFamilyName,pFont -> szInstalledQualifier));
 
     *ppFont = NULL;
 
     LOGFONT logFont{0};
-    strcpy(logFont.lfFaceName,pszSanitized);
+    strcpy(logFont.lfFaceName,pFont -> InstalledFontName());
 
     HFONT hFont = CreateFontIndirect(&logFont);
-
-    font *pFont = new font(pszFamilyName);
 
     pFont -> cookie = cookie;
 

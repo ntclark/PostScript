@@ -28,6 +28,27 @@ class graphicsState;
 #define Y_POSITIVE      0x20  /* two meanings depending on Y_SHORT_VECTOR */
 #define Y_SAME          0x20
 
+#define ARG_1_AND_2_ARE_WORDS       0x0001 // Bit 0: If this is set, the arguments are 16-bit (value or int16); otherwise, they are bytes (uint8 or int8).
+#define ARGS_ARE_XY_VALUES          0x0002 // Bit 1: If this is set, the arguments are signed xy values; otherwise, they are unsigned point numbers.
+#define ROUND_XY_TO_GRID            0x0004 // Bit 2: If set and ARGS_ARE_XY_VALUES is also set, the xy values are rounded to the nearest grid line. Ignored if ARGS_ARE_XY_VALUES is not set.
+#define WE_HAVE_A_SCALE             0x0008 // Bit 3: This indicates that there is a simple scale for the component. Otherwise, scale = 1.0.
+#define MORE_COMPONENTS             0x0020 // Bit 5: Indicates at least one more glyph after this one.
+#define WE_HAVE_AN_X_AND_Y_SCALE    0x0040 // Bit 6: The x direction will use a different scale from the y direction.
+#define WE_HAVE_A_TWO_BY_TWO        0x0080 // Bit 7: There is a 2 by 2 transformation that will be used to scale the component.
+#define WE_HAVE_INSTRUCTIONS        0x0100 // Bit 8: Following the last component are instructions for the composite glyph.
+#define USE_MY_METRICS              0x0200 // Bit 9: If set, this forces the aw and lsb (and rsb) for the composite to be equal to those from this component glyph. This works for hinted and unhinted glyphs.
+#define OVERLAP_COMPOUND            0x0400 // Bit 10: If set, the components of the compound glyph overlap. Use of this flag is not required — that is, component glyphs may overlap without having this flag set. When used, it must be set on the flag word for the first component. Some rasterizer implementations may require fonts to use this flag to obtain correct behavior — see additional remarks, above, for the similar OVERLAP_SIMPLE flag used in simple-glyph descriptions.
+#define SCALED_COMPONENT_OFFSET     0x0800 // Bit 11: The composite is designed to have the component offset scaled. Ignored if ARGS_ARE_XY_VALUES is not set.
+#define UNSCALED_COMPONENT_OFFSET   0x1000 // Bit 12: The composite is designed not to have the component offset scaled. Ignored if ARGS_ARE_XY_VALUES is not set.
+#define COMPOSITE_GLYPH_REWERVED    0xE010
+
+#define INT_TO_F2DOT14(x,y ) {              \
+uint16_t v = x;                             \
+uint16_t v2 = (v & (uint16_t)49152) >> 14;  \
+uint16_t frac = v & ~(uint16_t)49152;       \
+y = (FLOAT)v2 + (FLOAT)frac / 16384.0f;     \
+}
+
 #define _WS2_32_WINSOCK_SWAP_LONGLONG(l)        \
 (   ( ((l) >> 56) & 0x00000000000000FFLL ) |    \
     ( ((l) >> 40) & 0x000000000000FF00LL ) |    \
@@ -85,10 +106,20 @@ v = htonll(x);                  \
 pb += sizeof(int64_t);          \
 }
 
-    struct Range1 {
-      long first;
-      long countLeft;
-   };
+#define LEU16_TO_F2DOT14(x,y) {         \
+uint16_t v = x >> 14;                   \
+uint16_t frac = x & ~(uint16_t)49152;   \
+y = (FLOAT)v + (FLOAT)frac / 16384.0f;  \
+}
+
+// I have no clue why this does not work, returns 0 for y
+#define BEU16_TO_F2DOT14(pb,y) {        \
+uint16_t x = 0;                         \
+BE_TO_LE_U16(pb,x)                      \
+uint16_t v = (x & (uint16_t)49152) >> 14;  \
+uint16_t frac = x & ~(uint16_t)49152;   \
+y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
+}
 
 
     struct otTableRecord {
@@ -383,12 +414,40 @@ pb += sizeof(int64_t);          \
     };
 
 
-    class otSimpleGlyph {
+    class otGlyphGeometry {
+    public:
+        virtual POINT *Points() = 0;
+        virtual uint8_t *Flags() = 0;
+        virtual uint16_t PointCount() = 0;
+        virtual uint16_t ContourCount() = 0;
+        virtual uint16_t ContourPointCount(uint16_t contourIndex) = 0;
+        virtual uint16_t ContourLastIndex(uint16_t contourIndex) = 0;
+        virtual uint8_t *FlagsFirst(uint16_t contourIndex) = 0;
+        virtual POINT *PointFirst(uint16_t contourIndex) = 0;
+        virtual uint32_t AdvanceWidth() = 0;
+    };
+
+
+    class otSimpleGlyph : public otGlyphGeometry {
+
     public:
 
-        otSimpleGlyph(BYTE bGlyph,font *pFont,otGlyphHeader *ph,BYTE *pb);
-
+        otSimpleGlyph(uint16_t glyphIndex,font *pFont,otGlyphHeader *ph,BYTE *pb);
         ~otSimpleGlyph();
+
+        // otGlyphGeometry
+
+        POINT *Points() { return pPoints; }
+        uint8_t *Flags() { return pFlags; }
+        uint16_t PointCount() { return pointCount; }
+        uint16_t ContourCount() { return contourCount; }
+        uint16_t ContourPointCount(uint16_t contourIndex) { return contourPointCount[contourIndex]; }
+        uint16_t ContourLastIndex(uint16_t contourIndex) { return pEndPtsOfContours[contourIndex]; }
+        uint8_t *FlagsFirst(uint16_t contourIndex) { return pFlagsFirst[contourIndex]; }
+        POINT *PointFirst(uint16_t contourIndex) { return pPointFirst[contourIndex]; }
+        uint32_t AdvanceWidth() { return advanceWidth; }
+
+    private:
 
         otGlyphHeader *pGlyphHeader{NULL};
         BYTE *pbGlyphData{NULL};
@@ -418,6 +477,75 @@ pb += sizeof(int64_t);          \
         int32_t boundingBox[4]{0,0,0,0};
         POINT phantomPoints[4];
 
+    };
+
+
+    class otCompositeGlyph : public otGlyphGeometry {
+    public:
+
+        otCompositeGlyph(font *pFont,otGlyphHeader *ph,BYTE *pb);
+        ~otCompositeGlyph();
+
+        // otGlyphGeometry
+
+        POINT *Points() { return pPoints; }
+        uint8_t *Flags() { return pFlags; }
+        uint16_t PointCount() { return pointCount; }
+        uint16_t ContourCount() { return contourCount; }
+        uint16_t ContourPointCount(uint16_t contourIndex) { return contourPointCount[contourIndex]; }
+        uint16_t ContourLastIndex(uint16_t contourIndex) { return pEndPtsOfContours[contourIndex]; }
+        uint8_t *FlagsFirst(uint16_t contourIndex) { return pFlagsFirst[contourIndex]; }
+        POINT *PointFirst(uint16_t contourIndex) { return pPointFirst[contourIndex]; }
+        uint32_t AdvanceWidth() { return advanceWidth; }
+
+    private:
+
+        otGlyphHeader *pGlyphHeader{NULL};
+        BYTE *pbGlyphData{NULL};
+
+        struct componentGlyphRecord {
+            uint16_t flags{0};      // component flag
+            uint16_t glyphIndex{0}; // glyph index of component
+            union {
+                uint8_t vuint8;
+                int8_t vint8;
+                uint16_t parentPointNumber;
+                int16_t X;
+            } argument1;        // int8, value or int16 argument1 x-offset for component or point number; type depends on bits 0 and 1 in component flags
+            union {
+                uint8_t vuint8;
+                int8_t vint8;
+                uint16_t childPointNumber;
+                int16_t Y;
+            } argument2;        // y-offset for component or point number; type depends on bits 0 and 1 in component flags
+            boolean arePointNumbers{false};
+            boolean has1Scale{false};
+            boolean has2Scale{false};
+            boolean hasTransform{false};
+            FLOAT scale[4]{1.0f,1.0f,1.0f,1.0f};
+        } **ppGlyphRecord{NULL};
+
+        uint8_t countComponents{0};
+        uint8_t countSimpleGlyphs{0};
+        uint8_t countCompositeGlyphs{0};
+
+        otSimpleGlyph **ppSimpleGlyphs{NULL};
+        otCompositeGlyph **ppCompositeGlyphs{NULL};
+        otGlyphGeometry **ppGlyphGeometrys{NULL};
+
+        uint16_t *pEndPtsOfContours{NULL};  // Array of point indices for the last point of each contour, in increasing numeric order.
+
+        int16_t pointCount{0};
+        int16_t contourCount{0};
+        uint16_t *contourPointCount{NULL};
+
+        POINT *pPoints{NULL};
+        uint8_t *pFlags{NULL};
+
+        POINT **pPointFirst{NULL};
+        uint8_t **pFlagsFirst{NULL};
+
+        int32_t advanceWidth{0L};
     };
 
 
@@ -475,6 +603,23 @@ pb += sizeof(int64_t);          \
             }
         }
         otLongVerticalMetric *pVerticalMetrics;
+    };
+
+
+    // Not implemented
+    struct otNameTable {
+        struct nameRecord {
+            uint16_t platformID;    // Platform ID.
+            uint16_t encodingID;    // Platform-specific encoding ID.
+            uint16_t languageID;    // Language ID.
+            uint16_t nameID;        // Name ID.
+            uint16_t length;        // String length (in bytes).
+            uint16_t stringOffset;  // String offset from start of storage area (in bytes).};
+        };
+        uint16_t version;       // Table version number (=0).
+        uint16_t count;         // Number of name records.
+        uint16_t storageOffset; // Offset to start of string storage (from start of table).
+        nameRecord *nameRecords;// The name records where count is the number of records.
     };
 
 
@@ -608,11 +753,12 @@ pb += sizeof(int64_t);          \
         uint16_t *pIdDelta{NULL};       // [segCount]   Delta for all character codes in segment.
         uint16_t *pIdRangeOffsets{NULL};// [segCount]   Offsets into glyphIdArray or 0
         uint16_t *pGlyphIdArray{NULL};  // [ ]
+        uint16_t segCount{0};
 
-BYTE *pbStart{NULL};
+        BYTE *pbStart{NULL};
 
         void load(BYTE **ppbData) {
-pbStart = *ppbData;
+            pbStart = *ppbData;
             BE_TO_LE_U16(*ppbData,format)
             BE_TO_LE_U16(*ppbData,length);
             BE_TO_LE_U16(*ppbData,language);
@@ -625,13 +771,14 @@ pbStart = *ppbData;
             BE_TO_LE_U16(*ppbData,entrySelector)
             BE_TO_LE_U16(*ppbData,rangeShift)
 
-            uint16_t segCount = segCountX2 / 2;
+            segCount = segCountX2 / 2;
 
             BYTE *pEndOfParams = *ppbData + 2 * (4 * segCount + 1);
 
             long cntIdValues = (length - (long)(pEndOfParams - pbStart)) / 2;
 
             uint16_t *pData = new uint16_t[4 * segCount + 1 + cntIdValues];
+            memset(pData,0,(4 * segCount + 1 + cntIdValues) * sizeof(uint16_t));
 
             pEndCode = pData;
             for ( long k = 0; k < segCount; k++ )
@@ -700,6 +847,90 @@ pbStart = *ppbData;
     };
 #endif
 
+    // At this point, this structure has no use to me. I drank the koolaid and assumed it was obvious
+    // that the font variations table description included how to render in bold because "wght" is front and center
+    // in the description at https://learn.microsoft.com/en-us/typography/opentype/spec/fvar
+    // Instead, implementing this table was a complete waste of time for now. Apparently
+    // font bold/italic/oblique are all implemented as separate font files
+    struct otFontVariationsTable {
+
+        static uint32_t calculateSize(BYTE *pbInput) {
+            uint8_t *pbStart = pbInput;
+            uint16_t x = 0;
+            uint16_t axisCount;
+            uint16_t axisSize;
+            uint16_t instanceCount;
+            uint16_t instanceSize;
+            for ( int k = 0; k < 4; k++ )
+                BE_TO_LE_U16(pbInput,x)
+            BE_TO_LE_U16(pbInput,axisCount)
+            BE_TO_LE_U16(pbInput,axisSize)
+            BE_TO_LE_U16(pbInput,instanceCount)
+            BE_TO_LE_U16(pbInput,instanceSize)
+            return (uint32_t)(pbInput - pbStart + axisCount * axisSize + instanceCount * instanceSize);
+        };
+
+        otFontVariationsTable(BYTE *pbData) {
+            load(pbData);
+        }
+
+        ~otFontVariationsTable() {
+            delete [] pbData;
+        }
+
+        struct VariationAxisRecord {
+            uint8_t axisTag[4];     // Tag identifying the design variation for the axis.
+            int32_t minValue;       // The minimum coordinate value for the axis.
+            int32_t defaultValue;   // The default coordinate value for the axis.
+            int32_t maxValue;       // The maximum coordinate value for the axis.
+            uint16_t flags;         // Axis qualifiers — see details below.
+            uint16_t axisNameID;    // The name ID for entries in the 'name' table that provide a display name for this axis.
+            void load(BYTE *pbInput) {
+            }
+        };
+
+        struct UserTupleRecord {
+            int32_t *coordinates;   // [axisCount]  Coordinate array specifying a position within the font’s variation space.
+        };
+
+        struct InstanceRecord {
+            uint16_t subfamilyNameID;   // The name ID for entries in the 'name' table that provide subfamily names for this instance.
+            uint16_t flags;             // Reserved for future use — set to 0.
+            UserTupleRecord coordinates;// The coordinate array for this instance.
+            uint16_t postScriptNameID;  // Optional. The name ID for entries in the 'name' table that provide PostScript names for this instance.
+        };
+
+        uint16_t majorVersion;      // Major version number of the font variations table — set to 1.
+        uint16_t minorVersion;      // Minor version number of the font variations table — set to 0.
+        uint16_t axesArrayOffset;   // ( Offset16 ) Offset in bytes from the beginning of the table to the start of the VariationAxisRecord array.
+        uint16_t reserved;          // This field is permanently reserved. Set to 2.
+        uint16_t axisCount;         // The number of variation axes in the font (the number of records in the axes array).
+        uint16_t axisSize;          // The size in bytes of each VariationAxisRecord — set to 20 (0x0014) for this version.
+        uint16_t instanceCount;     // The number of named instances defined in the font (the number of records in the instances array).
+        uint16_t instanceSize;      // The size in bytes of each InstanceRecord — set to either axisCount * sizeof(Fixed) + 4, or axisCount * sizeof(Fixed) + 6.
+        VariationAxisRecord *pAxes; // The variation axis array.
+        InstanceRecord *pInstances; // The named instance array.
+
+        uint8_t *pbData{NULL};
+
+        void load(BYTE *pbInput) {
+
+            BE_TO_LE_U16(pbData,majorVersion)
+            BE_TO_LE_U16(pbData,minorVersion)
+            BE_TO_LE_U16(pbData,axesArrayOffset)
+            BE_TO_LE_U16(pbData,reserved)
+            BE_TO_LE_U16(pbData,axisCount)
+            BE_TO_LE_U16(pbData,axisSize)
+            BE_TO_LE_U16(pbData,instanceCount)
+            BE_TO_LE_U16(pbData,instanceSize)
+
+            pAxes = (VariationAxisRecord *)this + offsetof(otFontVariationsTable,pAxes);
+
+            for ( int k = 0; k < axisCount;k++ ) 
+                pAxes[k].load(pbData);
+        };
+    };
+
     struct type3GlyphBoundingBox {
         type3GlyphBoundingBox() {
             memset(this,0,sizeof(type3GlyphBoundingBox));
@@ -728,14 +959,21 @@ pbStart = *ppbData;
         STDMETHOD(FontName)(long cbName,char *szFontName);
         STDMETHOD(get_FontCookie)(UINT_PTR *ppCookie);
         STDMETHOD(get_FontType)(int *pFontType);
-        STDMETHOD(get_GlyphId)(unsigned char charCode,int *pGlyphId);
+        STDMETHOD(get_GlyphIndex)(unsigned short charCode,unsigned short *pGlyphId);
+        STDMETHOD(SetEncoding)(UINT_PTR encodingVector);
+        STDMETHOD(SetCharStrings)(UINT_PTR charStringsVector);
         STDMETHOD(SaveState)();
         STDMETHOD(RestoreState)();
 
-        font(char *fontName);
+        font(char *fontClientName);
+
         font(font &);
 
         ~font();
+
+        BYTE *getGlyphData(unsigned short glyphId);
+
+        char *InstalledFontName();
 
     private:
 
@@ -747,7 +985,6 @@ pbStart = *ppbData;
         char *fontName();
 
         void scaleFont(FLOAT sv);
-        void setFontMatrix(matrix *pMatrix);
         void transformGlyph(GS_POINT *pPointD,long countPoints);
         void transformGlyphInPlace(GS_POINT *pPointD,long countPoints);
         void transformGlyph(GS_POINT *pPointD,long countPoints,class matrix *pMatrix);
@@ -796,13 +1033,14 @@ pbStart = *ppbData;
         otVerticalMetricsTable *pVerticalMetricsTable{NULL};
         otOS2Table *pOS2Table{NULL};
         otPostTable *pPostTable{NULL};
-
-        BYTE *pSfntsTable{NULL};
+        otFontVariationsTable *pFontVariationsTable{NULL};
 
         long countGlyphs{0};
 
-        char szFamily[64]{'\0'};
-        wchar_t szwFamily[64]{L'0'};
+        char szClientFamily[64]{64 * '\0'};
+
+        char szInstalledFamily[64]{64 * '\0'};
+        char szInstalledQualifier[64]{64 * '\0'};
 
         enum fontType fontType{fontType::ftypeUnspecified};
 
@@ -819,10 +1057,13 @@ pbStart = *ppbData;
 
         DWORD cbFontData{0L};
 
+        std::map<uint32_t,uint32_t> encodingTable;
+        std::map<uint32_t,uint32_t> charStringsTable;
+
         long dupCount{0L};
         UINT_PTR cookie{NULL};
 
-        std::map<uint16_t,uint16_t> glyphIDMap;
+        otCmapSubtableFormat4 *pCmapSubtableFormat4{NULL};
 
         std::stack<matrix *> matrixStack;
         FLOAT pointSize{1.0f};

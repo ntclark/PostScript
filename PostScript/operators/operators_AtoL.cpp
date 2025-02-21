@@ -1,26 +1,30 @@
 
 #include "job.h"
 
-   void job::operatorStdout() {
+    void job::operatorStdout() {
 /*
-   = 
-      any = –
+    = 
+        any = –
 
-   pops an object from the operand stack, produces a text representation of that object’s
-   value, and writes the result to the standard output file, followed by a newline
-   character. The text is that produced by the cvs operator; thus, = prints the value of
-   a number, boolean, string, name, or operator object and prints --nostringval-- for
-   an object of any other type.
+    pops an object from the operand stack, produces a text representation of that object’s
+    value, and writes the result to the standard output file, followed by a newline
+    character. The text is that produced by the cvs operator; thus, = prints the value of
+    a number, boolean, string, name, or operator object and prints --nostringval-- for
+    an object of any other type.
 
-   The name = is not special. In PostScript programs it must be delimited by whitespace
-   or special characters the same as names composed of alphabetical
+    The name = is not special. In PostScript programs it must be delimited by whitespace
+    or special characters the same as names composed of alphabetical
 */
-   object *top = pop();
-   pPStoPDF -> queueLog("\n");
-   pPStoPDF -> queueLog(top -> Contents());
-   pPStoPDF -> queueLog("\n");
-   return;
-   }
+    object *top = pop();
+    pPStoPDF -> queueLog("\n");
+    pPStoPDF -> queueLog(top -> Contents());
+    pPStoPDF -> queueLog("\n");
+
+    OutputDebugStringA("\n");
+    OutputDebugStringA(top -> Contents());
+    OutputDebugStringA("\n");
+    return;
+    }
 
     void job::operatorAdd() {
 /*
@@ -350,8 +354,8 @@
 
     if ( ! ( object::dictionary == pObj -> ObjectType() ) && ! ( object::font == pObj -> ObjectType() ) ) {
         char szMessage[1024];
-        sprintf(szMessage,"operator begin: object %s is not a dictionary",pObj -> Name());
-        throw typecheck(szMessage);
+        sprintf(szMessage,"%s Line: %d: object %s is not a dictionary",__FUNCTION__,__LINE__,pObj -> Name());
+        throw new typecheck(szMessage);
         return;
     }
 
@@ -550,7 +554,7 @@
     default:
         char szMessage[1024];
         sprintf(szMessage,"operator begin: object %s is not a matrix or array",pMatrixOrArray -> Name());
-        throw typecheck(szMessage);
+        throw new typecheck(szMessage);
         return;
     }
     return;
@@ -714,34 +718,36 @@
     }
 
 
-   void job::operatorCounttomark() {
+    void job::operatorCounttomark() {
 /*
-   counttomark 
-      mark obj1 … objn counttomark mark obj1 … objn n
+    counttomark 
+        mark obj1 … objn counttomark mark obj1 … objn n
 
-   counts the number of objects on the operand stack, starting with the top element
-   and continuing down to but not including the first mark encountered. obj1
-   through objn are any objects other than marks.
+    counts the number of objects on the operand stack, starting with the top element
+    and continuing down to but not including the first mark encountered. obj1
+    through objn are any objects other than marks.
 */
 
-   std::list<object *> entries;
+    std::list<object *> entries;
 
-   long count = 0;
+    long count = 0;
 
-   while ( ! ( top() -> ObjectType() == object::mark ) ) {
-      count++;
-      entries.insert(entries.end(),pop());
-   }
+    // for gs compatibility until gs is history
+    //while ( ! ( top() -> ObjectType() == object::mark ) ) {
+    while ( ! ( top() -> ObjectType() == object::mark ) && ! ( 0 == strcmp(top() -> Contents(),"mark") ) ) {
+        count++;
+        entries.insert(entries.end(),pop());
+    }
 
-   for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
-      push(*it);
+    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ )
+        push(*it);
 
-   push(new (CurrentObjectHeap()) object(this,count));
+    push(new (CurrentObjectHeap()) object(this,count));
 
-   entries.clear();
+    entries.clear();
 
-   return;
-   }
+    return;
+    }
 
 
     void job::operatorCurrentcolorspace() {
@@ -831,19 +837,19 @@
     return;
     }
 
-   void job::operatorCurrentglobal() {
+    void job::operatorCurrentglobal() {
 /*
-   currentglobal 
-      – currentglobal bool
+    currentglobal 
+        – currentglobal bool
 
-   returns the VM allocation mode currently in effect.
+    returns the VM allocation mode currently in effect.
 */
-   if ( isGlobalVM )
-      push(pTrueConstant);
-   else
-      push(pFalseConstant);
-   return;
-   }
+    if ( isGlobalVM )
+        push(pTrueConstant);
+    else
+        push(pFalseConstant);
+    return;
+    }
 
     void job::operatorCurrentmatrix() {
 /*
@@ -1158,7 +1164,6 @@
         break;
 
     case object::objectType::dictionary: {
-
         pDictionary = reinterpret_cast<dictionary *>(po);
         object *pName = pDictionary -> retrieve("FontName");
         if ( NULL == pName )
@@ -1178,7 +1183,7 @@ isNew = true;
     default: {
         char szMessage[1024];
         sprintf(szMessage,"operator aload: object %s is not an dictionary or font",po -> Name());
-        throw typecheck(szMessage);
+        throw new typecheck(szMessage);
         return;
         }
     }
@@ -1375,7 +1380,7 @@ isNew = true;
     if ( 0 == dictionaryStack.size() ) {
         char szMessage[1024];
         sprintf(szMessage,"operator: end. An attempt was made to pop a dictionary off an empty dictionary stack");
-        throw dictstackunderflow(szMessage);
+        throw new dictstackunderflow(szMessage);
     }
 
     dictionary *pDictionary = dictionaryStack.pop();
@@ -1704,34 +1709,35 @@ printf("wtf");
    return;
    }
 
-   void job::operatorExit() {
+    void job::operatorExit() {
 /*
-   exit 
-      – exit –
+    exit 
+        – exit –
 
-   terminates execution of the innermost, dynamically enclosing instance of a looping
-   context without regard to lexical relationship. A looping context is a procedure
-   invoked repeatedly by one of the following control operators:
+    terminates execution of the innermost, dynamically enclosing instance of a looping
+    context without regard to lexical relationship. A looping context is a procedure
+    invoked repeatedly by one of the following control operators:
 
-      cshow             forall      pathforall
-      filenameforall    kshow       repeat
-      for               loop        resourceforall
+        cshow             forall      pathforall
+        filenameforall    kshow       repeat
+        for               loop        resourceforall
 
-   exit pops the execution stack down to the level of that operator. The interpreter
-   then resumes execution at the next object in normal sequence after that operator.
-   exit does not affect the operand stack or dictionary stack. Any objects pushed on
-   these stacks during execution of the looping context remain after the context is
-   exited.
+    exit pops the execution stack down to the level of that operator. The interpreter
+    then resumes execution at the next object in normal sequence after that operator.
+    exit does not affect the operand stack or dictionary stack. Any objects pushed on
+    these stacks during execution of the looping context remain after the context is
+    exited.
 
-   If exit would escape from the context of a run or stopped operator, an invalidexit
-   error occurs (still in the context of the run or stopped). If there is no enclosing
-   looping context, the interpreter prints an error message and executes the built-in
-   operator quit. This never occurs during execution of ordinary user programs, because
-   they are enclosed by a stopped context.
+    If exit would escape from the context of a run or stopped operator, an invalidexit
+    error occurs (still in the context of the run or stopped). If there is no enclosing
+    looping context, the interpreter prints an error message and executes the built-in
+    operator quit. This never occurs during execution of ordinary user programs, because
+    they are enclosed by a stopped context.
 */
-   hasExited = true;
-   return;
-   }
+    hasExited = true;
+
+    return;
+    }
 
     void job::operatorFill() {
 /*
@@ -1861,10 +1867,10 @@ printf("wtf");
         if ( NULL == pFont ) {
             char szMessage[1024];
             sprintf(szMessage,"operator: findfont. font %s is undefined",pKey -> Name());
-            throw invalidfont(szMessage);
+            throw new invalidfont(szMessage);
             return;
         }
-        pFontDirectory -> put(pKey -> Name(),pFont);
+        pFontDirectory -> put(pFont -> fontName(),pFont);
     }
 
     push(pFont);
@@ -1931,8 +1937,8 @@ printf("wtf");
 
         if ( NULL == pFont ) {
             char szMessage[1024];
-            sprintf(szMessage,"operator: findResource. The font resource %s was not found",pKey -> Name());
-            throw undefinedresource(szMessage);
+            sprintf(szMessage,"%s Line: %d, operator: findResource. The font resource %s was not found",__FUNCTION__,__LINE__,pKey -> Name());
+            throw new undefinedresource(szMessage);
         }
 
         push(pFont);
@@ -1940,20 +1946,24 @@ printf("wtf");
 
     }
 
-    for ( std::list<resource *>::iterator it = resourceList.begin(); it != resourceList.end(); it++ ) {
-
-        resource *pResource = (*it);
-
-        if ( 0 == strcmp(pResource -> Name(),pKey -> Contents()) ) {
-            push(pResource);
-            return;
+    boolean categoryExists = false;
+    for ( resource *pResource : resourceList ) {
+        if ( 0 == strcmp(pCategory -> Name(),pResource -> Category() ) ) {
+            categoryExists = true;
+            if ( 0 == strcmp(pKey -> Name(),pResource -> Name()) ) {
+                push(pResource -> Instance());
+                return;
+            }
         }
-
     }
 
     char szMessage[1024];
-    sprintf_s<1024>(szMessage,"Not implemented: findresource is not implemented for key: %s and category: %s",pKey -> Contents(),pCategory -> Contents());
-    throw notimplemented(szMessage);
+    sprintf_s<1024>(szMessage,"%s: Line: %d: findresource error for key: %s and category: %s",__FUNCTION__,__LINE__,pKey -> Contents(),pCategory -> Contents());
+
+    if ( ! categoryExists ) 
+        throw new undefined(szMessage);
+    else
+        throw new undefinedresource(szMessage);
 
     return;
     }
@@ -2004,81 +2014,84 @@ printf("wtf");
     return;
     }
 
-   void job::operatorForall() {
+    void job::operatorForall() {
 /*
-   forall 
-         array proc forall –
-         packedarray proc forall –
-         dict proc forall –
-         string proc forall –
+    forall 
+            array proc forall –
+            packedarray proc forall –
+            dict proc forall –
+            string proc forall –
 
-   enumerates the elements of the first operand, executing the procedure proc for
-   each element. If the first operand is an array, packed array, or string object, forall
-   pushes an element on the operand stack and executes proc for each element in the
-   object, beginning with the element whose index is 0 and continuing sequentially.
-   In the case of a string, the elements pushed on the operand stack are integers in
-   the range 0 to 255, not 1-character strings.
+    enumerates the elements of the first operand, executing the procedure proc for
+    each element. If the first operand is an array, packed array, or string object, forall
+    pushes an element on the operand stack and executes proc for each element in the
+    object, beginning with the element whose index is 0 and continuing sequentially.
+    In the case of a string, the elements pushed on the operand stack are integers in
+    the range 0 to 255, not 1-character strings.
 
-   If the first operand is a dictionary, forall pushes a key and a value on the operand
-   stack and executes proc for each key-value pair in the dictionary. The order in
-   which forall enumerates the entries in the dictionary is arbitrary. New entries put
-   in the dictionary during the execution of proc may or may not be included in the
-   enumeration. Existing entries removed from the dictionary by proc will not be encountered
-   later in the enumeration.
+    If the first operand is a dictionary, forall pushes a key and a value on the operand
+    stack and executes proc for each key-value pair in the dictionary. The order in
+    which forall enumerates the entries in the dictionary is arbitrary. New entries put
+    in the dictionary during the execution of proc may or may not be included in the
+    enumeration. Existing entries removed from the dictionary by proc will not be encountered
+    later in the enumeration.
 
-   If the first operand is empty (that is, has length 0), forall does not execute proc at
-   all. If proc executes the exit operator, forall terminates prematurely.
-   Although forall does not leave any results on the operand stack when it is finished,
-   the execution of proc may leave arbitrary results there. If proc does not remove
-   each enumerated element from the operand stack, the elements will accumulate
-   there.
+    If the first operand is empty (that is, has length 0), forall does not execute proc at
+    all. If proc executes the exit operator, forall terminates prematurely.
+    Although forall does not leave any results on the operand stack when it is finished,
+    the execution of proc may leave arbitrary results there. If proc does not remove
+    each enumerated element from the operand stack, the elements will accumulate
+    there.
 
-   Examples
-      0 [ 13 29 3 -8 21 ] { add } forall => 58
-      /d 2 dict def
-      d /abc 123 put
-      d /xyz (test) put
-      d { } forall => /xyz (test) /abc 123
+    Examples
+        0 [ 13 29 3 -8 21 ] { add } forall => 58
+        /d 2 dict def
+        d /abc 123 put
+        d /xyz (test) put
+        d { } forall => /xyz (test) /abc 123
    
-   Errors: invalidaccess, stackoverflow, stackunderflow, typecheck
-   See Also: for, repeat, loop, exit
+    Errors: invalidaccess, stackoverflow, stackunderflow, typecheck
+    See Also: for, repeat, loop, exit
 */
 
-   procedure *pProc = reinterpret_cast<procedure *>(pop());
-   object *pSource = pop();
+    procedure *pProc = reinterpret_cast<procedure *>(pop());
+    object *pSource = pop();
 
-   switch ( pSource -> ObjectType() ) {
-   case object::objTypeArray: {
-      array *pArray = reinterpret_cast<array *>(pSource);
-      long n = pArray -> size();
-      for ( long k = 0; k < n; k++ ) {
-         push(pArray -> getElement(k));
-         push(pProc);
-         executeObject();
-      }
-      }
-      break;
+    switch ( pSource -> ObjectType() ) {
+    case object::objTypeArray: {
+        array *pArray = reinterpret_cast<array *>(pSource);
+        long n = pArray -> size();
+        for ( long k = 0; k < n; k++ ) {
+            push(pArray -> getElement(k));
+            push(pProc);
+            executeObject();
+        }
+        }
+        break;
 
-   case object::font:
-      static_cast<dictionary *>(reinterpret_cast<font *>(pSource)) -> forAll(pProc);
-      break;
+    case object::font:
+        static_cast<dictionary *>(reinterpret_cast<font *>(pSource)) -> forAll(pProc);
+        break;
 
-   case object::dictionary: 
-      reinterpret_cast<dictionary *>(pSource) -> forAll(pProc);
-      break;
+    case object::dictionary: 
+        reinterpret_cast<dictionary *>(pSource) -> forAll(pProc);
+        break;
 
-   case object::string: {
-      __debugbreak();
-      }
-      break;
+    case object::string: {
+        __debugbreak();
+        }
+        break;
 
-   default:
-      __debugbreak();
-      break;
-   }
+   default: {
+        char szMessage[1024];
+        sprintf_s<1024>(szMessage,"%s: Line: %ld. The source object type (%d) for forall does not appear to be a array, packedarray, dict, or string",__FUNCTION__,__LINE__,pSource -> ObjectType());
+        throw new typecheck(szMessage);
+        }
+        break;
+    }
 
-   return;
-   }
+    return;
+    }
 
    void job::operatorGe() {
 /*
@@ -2171,7 +2184,7 @@ printf("wtf");
         if ( NULL == pObject ) {
             char szError[1024];
             sprintf(szError,"operator get: cannot find %s in font or dictionary %s (type: %s)",pIndex -> Name(),pFontDictionary -> Name(),pFontDictionary -> TypeName());
-            throw undefined(szError);
+            throw new undefined(szError);
         }
 
         push(pObject);
@@ -2190,6 +2203,48 @@ printf("wtf");
 
     return;
     }
+
+#if 0
+
+    glyphshow name glyphshow –
+    cid glyphshow –
+
+    shows the glyph for a single character from the current font or CIDFont; the character 
+    is identified by name if a base font or by CID if a CIDFont. If the current
+    font is a composite (Type 0) font, an invalidfont error occurs.
+
+    Unlike all other show variants, glyphshow bypasses the current font’s Encoding 
+    array; it can access any character in the font, whether or not that character’s 
+    name is present in the font’s encoding vector. glyphshow is the only show 
+    variant that works directly with a CIDFont.
+
+    For a base font, the behavior of glyphshow depends on the current font’s
+    FontType value. For fonts that contain a CharStrings dictionary, such as Type 1
+    fonts, glyphshow looks up name there to obtain a glyph description to execute. If
+    name is not present in the CharStrings dictionary, glyphshow substitutes the
+    .notdef entry, which must be present.
+
+    For Type 3 fonts, if the font dictionary contains a BuildGlyph procedure,
+    glyphshow pushes the current font dictionary and name on the operand stack and
+    then invokes BuildGlyph in the usual way (see Section 5.7, “Type 3 Fonts”). If
+    there is no BuildGlyph procedure, but only a BuildChar procedure, glyphshow
+    searches the font’s Encoding array for an occurrence of name. If it finds one, it
+    pushes the font dictionary and the array index on the operand stack, then invokes
+    BuildChar in the usual way. If name is not present in the encoding, glyphshow
+    substitutes the name .notdef and repeats the search. If .notdef is not present either,
+    an invalidfont error occurs.
+
+    For a CIDFont, glyphshow proceeds as show would for a CID-keyed font whose
+    mapping algorithm yields this CIDFont with cid as the character selector. A
+    rangecheck error occurs if cid is outside the valid range of CIDs (see Appendix B).
+    Except for the means of selecting the character to be shown, glyphshow behaves
+    the same as show. Like show, glyphshow can access glyphs that are already in the
+    font cache; glyphshow does not always need to execute the character’s glyph description.
+
+    Errors: invalidaccess, invalidfont, nocurrentpoint, stackunderflow, typecheck
+    See Also: show
+
+#endif
 
     void job::operatorGrestore() {
 /*
@@ -2623,7 +2678,7 @@ operatorDebug();
     else {
        char szMessage[1024];
         sprintf(szMessage,"operator begin: object %s is not a dictionary",pDictObject -> Name());
-        throw typecheck(szMessage);
+        throw new typecheck(szMessage);
         return;
     }
 
@@ -2702,16 +2757,16 @@ operatorDebug();
 
         default: 
             char szError[1024];
-            sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
-            throw typecheck(szError);
+            sprintf(szError,"File: %s, Line: %d, in operator length: object = %s, the type is (%s,%s) invalid",__FILE__,__LINE__,pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
+            throw new typecheck(szError);
         }
         }
         break;
 
     default: {
         char szError[1024];
-        sprintf(szError,"in operator length: object = %s, the type is (%s,%s) invalid",pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
-        throw typecheck(szError);
+        sprintf(szError,"File: %s, Line: %d in operator length: object = %s, the type is (%s,%s) invalid",__FILE__,__LINE__,pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
+        throw new typecheck(szError);
         }
 
     }
@@ -2721,20 +2776,20 @@ operatorDebug();
     return;
     }
 
-   void job::operatorLineto() {
+    void job::operatorLineto() {
 /*
-   lineto 
-      x y lineto –
+    lineto 
+        x y lineto –
 
-   appends a straight line segment to the current path (see Section 4.4, “Path Construction”),
-   starting from the current point and extending to the coordinates
-   (x, y) in user space. The endpoint (x, y) becomes the new current point.
-   If the current point is undefined because the current path is empty, a nocurrentpoint
-   error occurs.
+    appends a straight line segment to the current path (see Section 4.4, “Path Construction”),
+    starting from the current point and extending to the coordinates
+    (x, y) in user space. The endpoint (x, y) becomes the new current point.
+    If the current point is undefined because the current path is empty, a nocurrentpoint
+    error occurs.
 */
-   pGraphicsState -> lineto();
-   return;
-   }
+    pGraphicsState -> lineto();
+    return;
+    }
 
 
     void job::operatorLoad() {
@@ -2773,9 +2828,11 @@ operatorDebug();
         }
 
         push(pKey);
+        {
         char szMessage[1024];
-        sprintf(szMessage,"operator: load. Value %s is undefined",pKey -> Name());
-        throw undefined(szMessage);
+        sprintf_s<1024>(szMessage,"%s,Line: %d. key %s is undefined",__FUNCTION__,__LINE__,pKey -> Name());
+        throw new undefined(szMessage);
+        }
     }
 
     pop();

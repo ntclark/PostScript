@@ -28,7 +28,10 @@ library FontManager {
         HRESULT FontName(long cbName,char *szName);
         [propget] HRESULT FontCookie([out,retval] UINT_PTR *pCookie);
         [propget] HRESULT FontType([out,retval] int *pFontType);
-        [propget] HRESULT GlyphId(unsigned char charCode,[out,retval] int *pGlyphId);
+        [propget] HRESULT GlyphIndex(unsigned short charCode,[out,retval] unsigned short *pGlyphId);
+
+        HRESULT SetEncoding(UINT_PTR encoding);
+        HRESULT SetCharStrings(UINT_PTR charStrings);
 
         HRESULT SaveState();
         HRESULT RestoreState();
@@ -47,7 +50,7 @@ library FontManager {
 
         HRESULT DuplicateFont(IFont_EVNSW *pIFont,UINT_PTR cookie,IFont_EVNSW **ppIFont);
 
-        HRESULT RenderGlyph(HDC hdc,BYTE bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+        HRESULT RenderGlyph(HDC hdc,unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
 
         HRESULT ScaleFont(FLOAT scaleFactor);

@@ -72,24 +72,8 @@
 
 
     HRESULT Renderer::GraphicElements::ArcTo(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2) {
-
 Beep(2000,200);
 return E_NOTIMPL;
-#if 0
-    D2D1_ARC_SEGMENT arcSegment{0};
-
-    POINTF endPoint;
-
-    arcSegment.point.x = xCenter + radius * cos(degToRad * angle1);
-    arcSegment.point.y = yCenter + radius * sin(degToRad * angle1);
-    arcSegment.size = radius;
-    arcSegment.rotationAngle = angle2 - angle1;
-
-//    sweepDirection = 
-//  D2D1_ARC_SIZE        arcSize;
-//} D2D1_ARC_SEGMENT;
-    return S_OK;
-#endif
     }
 
 
@@ -112,23 +96,27 @@ return E_NOTIMPL;
 
     HRESULT Renderer::GraphicElements::Image(HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
 
-    FLOAT wUserSpace = 1.0f;
-    FLOAT hUserSpace = 1.0f;
+    FLOAT widthUserSpace = 1.0f;
+    FLOAT heightUserSpace = 1.0f;
 
     XFORM *pXForm = (XFORM *)pPSCurrentCTM;
 
-    FLOAT xResult = pXForm -> eM11 * wUserSpace + pXForm -> eM12 * hUserSpace;
-    FLOAT yResult = pXForm -> eM21 * wUserSpace + pXForm -> eM22 * hUserSpace;
+    FLOAT xResult = pXForm -> eM11 * widthUserSpace + pXForm -> eM12 * heightUserSpace;
+    FLOAT yResult = pXForm -> eM21 * widthUserSpace + pXForm -> eM22 * heightUserSpace;
 
-    wUserSpace = toDeviceSpace.eM11 * xResult + toDeviceSpace.eM12 * yResult;
-    hUserSpace = toDeviceSpace.eM21 * xResult + toDeviceSpace.eM22 * yResult;
+    widthUserSpace = toDeviceSpace.eM11 * xResult + toDeviceSpace.eM12 * yResult;
+    heightUserSpace = toDeviceSpace.eM21 * xResult + toDeviceSpace.eM22 * yResult;
 
-    //moveto(0.0,0.0);
+    xResult = pXForm -> eDx;
+    yResult = pXForm -> eDy;
+
+    FLOAT xDeviceSpace = toDeviceSpace.eM11 * xResult + toDeviceSpace.eM12 * yResult + toDeviceSpace.eDx;
+    FLOAT yDeviceSpace = toDeviceSpace.eM21 * xResult + toDeviceSpace.eM22 * yResult + toDeviceSpace.eDy;
 
     HDC hdcSource = CreateCompatibleDC(pParent -> hdc);
     SelectObject(hdcSource,hbmImage);
 
-    StretchBlt(pParent -> hdc,0,0,(long)wUserSpace,-(long)hUserSpace,
+    StretchBlt(pParent -> hdc,(long)xDeviceSpace,(long)yDeviceSpace,(long)widthUserSpace,(long)heightUserSpace,
                 hdcSource,0,0,(long)width,(long)height,SRCCOPY);
 
     return S_OK;

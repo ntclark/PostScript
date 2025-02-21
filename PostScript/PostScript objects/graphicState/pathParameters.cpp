@@ -122,5 +122,9 @@
     void pathParameters::RenderGeometry() {
     job::pIRenderer -> Render();
     pIRenderer_text -> Render();
+
+    //job::pIRenderer -> Reset();
+    //pIRenderer_text -> Reset();
+
     return;
     }

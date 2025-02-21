@@ -98,6 +98,7 @@
 
         object(job *,objectType,valueType,valueClassification);
         object(job *,BYTE value);
+        object(job *,unsigned short value);
         object(job *,long value);
         object(job *,double value);
 

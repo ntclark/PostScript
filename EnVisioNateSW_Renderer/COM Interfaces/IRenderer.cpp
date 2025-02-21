@@ -112,7 +112,12 @@ continue;
 }
             if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType  )
                 GraphicElements::path::pathAction pa = p -> apply(true,NULL);
+
+            p -> clear();
+
         }
+
+        pList -> clear();
 
         fillRender();
 
@@ -139,7 +144,12 @@ continue;
 }
             if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType  )
                 GraphicElements::path::pathAction pa = p -> apply(false,NULL);
+
+            p -> clear();
+
         }
+
+        pList -> clear();
 
         strokeRender();
 
