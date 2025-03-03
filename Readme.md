@@ -20,7 +20,7 @@ This system is PostScript itself, from the ground up. It is a raw C++ implementa
 
 <h2>WHY ?</h2>
 
-Yes, there is already an open source solution for this, don't assume I'm not intametly aware of GhostScript. In fact, I know more than 
+Yes, there is already an open source solution for this, don't assume I'm not intimatly aware of GhostScript. In fact, I know more than 
 I want to about that software. 
 
 In some ways, it was working with GhostScript that engendered my desire to re-visit my PostScript passion. This time, however, it is to create 
@@ -30,18 +30,26 @@ a replacement for GhostScript while at the same time forming the foundation upon
 
 To finally and completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.
 
-In my 43 years of deep technical software language; platform; techniques; that is, everything involved in the production of software experience - I have never
-been able to fathom why on EARTH the software I have encountered is considered "acceptable" when it is SO sloppy, absolutely fraught with bugs, 
+In my 43 years of deep technical software language; platform; techniques; that is, everything involved in the production of software; experience - I have never
+been able to fathom why on EARTH the software implementations I have encountered are considered "acceptable" when they (<b>all of them</b>) are SO sloppy, absolutely fraught with bugs, 
 while extensibility and maintainability is as far away as the moon, and which is architected no better than I could have done as a 10 year old.
 
 I have "rescued" systems over and over again, where every time, a rewrite from the ground up is the ONLY way to resuscitate the system. 
 And, more times than not, I've had to do that on my own time, or at least without the approval of the muckity-mucks - 
 because - those people, while in their incessant "design" meetings, have no clue how their own system even works - or, for that matter, 
 how software development actually works, while at the same time, nothing can be done without some bullshit time estimate that <b>nobody</b> can
-accurately predict and some sort of "task" created with feet to the fire on that estimate.
+accurately predict and some sort of "task" created with "feet to the fire" on that estimate.
 
-While all the time they buy into the bullshit best practices and engineering/software "processes" so they can pretend to be 
+Every time the muckity-mucks buy into the bullshit best practices and engineering/software "processes" so they can pretend to be 
 arriving at quality software. Which is way beyond their actual reach.
+
+<h3>Hear me O-muckety-mucks</h3>
+
+If they had the balls to really go into their system at the code and architecture level and actuall <b>see</b> what's ultimately
+being produced - to actually USE a debugger - then maybe they'd realize what I'm trying to say. And I'd be happy that maybe I can make some progress in my passion - 
+that of finally doing something to make the actual writing of software (don't get me going on the use of the term "programmer") the disciplined
+engineering endeavor that it should have been from the beginning, but currently is not.
+
 
 I worked for 8 years on the single most important system the US Federal Highway Administration uses to estimate it's bi-annual budgets.
 
