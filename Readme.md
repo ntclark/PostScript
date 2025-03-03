@@ -120,8 +120,8 @@ In the overall culture of OS, I see that 1) the growth and enhancement of tools 
 
 - People have the sources local and changes in the repository can't be immediately seen by them
     - Too effing bad. The masses need to learn how to use diff engines ( my favorite is Beyond Compare by Scooter Software) up until that time whenever repository technology gets better
-        - The repository technology is **not going** to get better. It is already too difficult and error prone, the masses will have to take responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it
-- The systems ire badly structured or architected.
+        - The repository technology is **not going** to get better. It is already too difficult and error prone. The masses will have to take responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it
+- The systems are badly structured and/or architected.
     - In the past systems were built without dynamically loaded component parts ('.dlls, etc) so there are usually way more sources a contributor may have to deal with even when only interested in a specific area
         - because there **AREN'T** any specific area(s)
 - Any of a plethora of technology aspects that are out pacing the original sources
@@ -153,14 +153,15 @@ My book will go into these and many more details about how software needs to be 
 
 ### On the other hand about commenting
 
-Take a look at sources in this repository that handle the PostScript operators. Currently there are two: operators_AtoL.cpp, and doperators_MtoZ.cpp.
+Take a look at sources in this repository that handle the PostScript operators. Currently there are two: operators_AtoL.cpp, and operators_MtoZ.cpp.
 
 First note that it is pretty obvious 1) what's in these files, and 2) where I need to go to find an operator given the first letter of it's name.
 
-Next, note the methods there-in that implement each of the operators. In every single one, I have scraped out the **actuall** description (definition) of the operator from the PostScript reference book **as** the comments in the source for every operator.
+Next, note the methods therein that implement each of the operators. In every single one, I have scraped out the **actual** description (definition) of the operator from the PostScript reference book **as** the comments in the source for every operator.
 
 
-**THAT** is commenting software. It is about precision in the description of what the software is doing from the absolute (and only) TRULY correct reference
+**THAT** is commenting software. It is about precision in the description of what the software is doing from the absolute (and only) TRULY correct reference. 
+This is also absolute truth that the correctness of comments MUST be considered more important than the code itself, and because of that, it MUST come from a guaranteed truset source - NEVER hand written
 
 
 
