@@ -25,12 +25,15 @@ In some ways, it was working with GhostScript that engendered my desire to re-vi
 a replacement for GhostScript while at the same time forming the foundation upon which I might realize my much more important lifetime passion[^1].
 
 [^1]: Okay, yes, I benefited from GhostScript and from the efforts of those people who put it together. I **did** use it in my own software 
-for electronic signature capture. However, like ALL Open Source Software, the amount of effort you're probably goint to spend getting what 
-you want out of it is, in the fullness of time, way more than if you had just started from scratch. In any case, the only value I've *ever* found with OS software is learning "how" something works by example, even if it is badly written. Both sloppy disorganized software **and** horribly bad or overcomplicated documentation on how an algorithm should work contribute mightily to the high cost of software development. And, *please* don't say "re-invent the wheel", that will make me puke.
+for electronic signature capture. However, like ALL Open Source Software, the amount of effort you're probably going to spend getting what 
+you want out of it is, in the fullness of time, way more than if you had just started from scratch. In any case, the only value I've *ever* 
+found with OS software is learning "how" something works by example, even if it is badly written and incredibly hard to follow.
+Both sloppy disorganized software **and** horribly bad or overcomplicated documentation on how an algorithm should work contribute
+mightily to the high cost of software development. *Please* don't say "re-inventing the wheel", that will make me puke.
 
 ## My lifetime passion
 
-<u>To finally and completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</u>
+<style="text-align:center;">To finally and completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</style>
 
 In my 43 years of deep technical software language; platform; techniques; that is, everything involved in the production of software; experience - I have never
 been able to fathom why on EARTH the software implementations I have encountered are considered "acceptable" when they (<b>all of them</b>) are SO sloppy, absolutely fraught with bugs, 
