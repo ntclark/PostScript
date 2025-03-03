@@ -20,21 +20,21 @@ This system is PostScript itself, from the ground up. It is a raw C++ implementa
 
 <h2>WHY ?</h2>
 
-Yes, there is already an open source solution for this, don't assume I'm not intimatly aware of GhostScript. In fact, I know more than 
+Yes, there is already an open source solution for this, please know that I am intimatly aware of GhostScript. In fact, I know more than 
 I want to about that software. 
 
 In some ways, it was working with GhostScript that engendered my desire to re-visit my PostScript passion. This time, however, it is to create 
 a replacement for GhostScript while at the same time forming the foundation upon which I might realize my much more important lifetime passion.
 
-<h2>That lifetime passion ??</h2>
+<h2>My lifetime passion</h2>
 
-To finally and completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.
+<u>To finally and completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</u>
 
 In my 43 years of deep technical software language; platform; techniques; that is, everything involved in the production of software; experience - I have never
 been able to fathom why on EARTH the software implementations I have encountered are considered "acceptable" when they (<b>all of them</b>) are SO sloppy, absolutely fraught with bugs, 
-while extensibility and maintainability is as far away as the moon, and which is architected no better than I could have done as a 10 year old.
+while extensibility and maintainability are as far away as the moon, and which is architected no better than I could have done as a 10 year old.
 
-I have "rescued" systems over and over again, where every time, a rewrite from the ground up is the ONLY way to resuscitate the system. 
+I have "rescued" systems over and over again, where every time, a rewrite from the ground up is the ONLY way to resuscitate it. 
 And, more times than not, I've had to do that on my own time, or at least without the approval of the muckity-mucks - 
 because - those people, while in their incessant "design" meetings, have no clue how their own system even works - or, for that matter, 
 how software development actually works, while at the same time, nothing can be done without some bullshit time estimate that <b>nobody</b> can
@@ -45,33 +45,37 @@ arriving at quality software. Which is way beyond their actual reach.
 
 <h3>Hear me O-muckety-mucks</h3>
 
-If they had the balls to really go into their system at the code and architecture level and actuall <b>see</b> what's ultimately
-being produced - to actually USE a debugger - then maybe they'd realize what I'm trying to say. And I'd be happy that maybe I can make some progress in my passion - 
+If they had the balls to really go into their system at the code and architecture level and actually <b>see</b> what's ultimately
+being produced - to actually USE a debugger - then maybe they'd realize what I'm trying to say and then I'd be happy that maybe I can make some progress in my passion - 
 that of finally doing something to make the actual writing of software (don't get me going on the use of the term "programmer") the disciplined
 engineering endeavor that it should have been from the beginning, but currently is not.
 
 Then, and perhaps only then - <i>maybe</i> all those high-fallutin' software processes might actually work, at least they might have a 
-foundation to actually stand upon. Until, then however, everyone is literally barking up the wrong tree, and are simply dancing around the problem looking like a bunch of fools.
+foundation to actually stand upon. Until then, however, everyone is literally barking up the wrong tree, and simply dancing around the problem looking like a bunch of fools.
 
 <h3>To whit...</h3>
 
 I worked for 8 years on the single most important system the US Federal Highway Administration uses to estimate it's bi-annual budgets.
 
-That system had the most insane massive software bug that I, for years, tried to point out to the people, ostensibly accountable to the government, 
-and was ignored over and over again. Why fix it if it's bringing in all the money right ? I tried to explain that bug to another individual 
-who would host the system and described using the debugger to discover this bug, at which point he said, "What's the debugger" - after at least 
-10 years as the person with the responsibility of the system.
+That system had the most insane massive software bug that I, for years, tried to point out to the people ostensibly accountable to the government, 
+and was ignored over and over again. Why fix it if it's bringing in all this money right? I tried to explain that bug to another individual 
+who hosted the system and described using the debugger to discover this bug, at which point he said, "What's the debugger" - this after being, for at least 
+10 years, the person with the ultimate responsibility of the system.
 
 This bug, impacting results in the trillions of dollars, yes, trillions with a T, first came to light when some moron manager - with a PhD in computer
 science, no less, directed the "programmer peon" that "Everywhere ____ appears, make that a call to ____ instead".
 
-That caused a bug to be in that system for years, either because "programmer peon" could not have thought it through, or didn't care, or the 
-manager moron had no clue how software works ( a given ), or all three.
+That caused a bug to be in that system for years, either because "programmer peon" could not have thought it through before implementing it, or didn't care, or the 
+manager moron had no clue how software works ( a given ), or all three. I came upon the system professionally and found this bug within three days.
 
-That real life example points out one of the reasons I have an absolute passion for software quality, that there can be severe ramifications
+The above real life example drives one of the reasons I have an absolute passion for software quality, that there can be severe ramifications
 to a) inattention to every last detail in software development, and b) the real cost of un-informed, un-caring, un-educated (or over-educated) 
 muckety mucks who can't possibly think beyond the top-level of system/software tools (i.e., can read any white paper and think they know something
 when they actually know nothing because white papers say nothing).
+
+With all of my being, I truly believe that the promise of software technology would be much further ahead if only the industry had demanded precision and cleanliness 
+akin to that of, say, engineering drafting and blueprints at the getgo.
+
 
 
 
