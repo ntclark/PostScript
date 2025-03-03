@@ -85,11 +85,11 @@ akin to that of, say, engineering drafting and blueprints at the getgo.
 
 This particular project is in fact intended to be the foundation for my book. 
 
-In fact, the book is 40 years in the making. As I've mentioned, I've come across many systems, proprietary ***and** Open Source, in which I am literally 
-amazed that they work at all, while immediately understand exctly why 1) they are SO long in development, and 2) it is SO difficult to bend into new and powerful uses.
+This book is 40 years in the making. As I've mentioned, I've come across many systems, proprietary **and** Open Source, in which I am literally 
+amazed that they work at all, while immediately I understand exactly why 1) they are SO long in development, and 2) it is SO difficult to mold them into new and powerful uses.
 
 My book will outline, side-by-side the incredible positive differences that come about thru pristinely written and to the point code that is free from distracting and 
-obnoxious constructs that literally crowd out the true meaning.I cannot wait to publish this book, but in the meantime, this site contains what might be considered
+obnoxious constructs that literally crowd out the true meaning. I cannot wait to publish this book, but in the meantime, this site contains what I consider to be 
 the prologue to it.
 
 In as much as I may come across as a jerk in my descriptions here and in the discussions about other peoples' work I will say that I truly hope the reader will 
@@ -104,7 +104,7 @@ I remember in the 80's when file names got the permission to be of length greate
 WOW ! I went absolutely bananas over this new and exciting realm of possibility!
 
 And here we are 4 decades later - and **STILL** most developers do not leverage this !! Well sure, it's great people figured out how to put like functionality grouped
-in file by file basis - but then don't indicate what that grouping is via file name !?!? To say nothing of the ability to group even higher levels using folders, and *that* is rarely done.
+in a file by file basis - but then don't indicate what that grouping is via file name !?!? To say nothing of the ability to group even higher levels using folders, and *that* is rarely done.
 I mean WTF ? Is it THAT hard to organize your sources ? Maybe people actually put all the source files in one place because they can't figure out how the environment points to the headers ?
 
 And, what's with prepending something on file names to indicate, I don't know, where it came from ? Something ? Are you kidding me ? Is there a point to using up space in every file name in the sources for 
@@ -116,6 +116,25 @@ a declaration in some other source file when they finally want to expand; then ,
 
 Yes, a hundred times yes, it is best to follow the common sense strategy for **EVERY** situation, 1 file in the system, or 1000 files. There is no excuse for shortcuts, do it right every time and every place.
 
+In the overall culture of OS, I see that 1) the growth and enhancement of tools *cannot* be leveraged by the community, and 2) (among others) structure and organization are stagnant. Why ? 
+
+- People have the sources local and changes in the repository can't be immediately seen by them
+    - Too effing bad. The masses need to learn how to use diff engines ( my favorite is Beyond Compare by Scooter Software) up until that time whenever repository technology gets better
+        - The repository technology is **not going** to get better. It is already too difficult and error prone, the masses will have to take responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it
+- The systems ire badly structured or architected.
+    - In the past systems were built without dynamically loaded component parts ('.dlls, etc) so there are usually way more sources a contributor may have to deal with even when only interested in a specific area
+        - because there **AREN'T** any specific area(s)
+- Any of a plethora of technology aspects that are out pacing the original sources
+    - Adapt the sources and do it now
+- The insistence on multi-platform operability is a pipe dream
+    - If the target platform poses significant impacts on the sources - someone fix the effing target platform.
+        - The needs of the many outweigh the needs of the few
+
+Get Over It !!
+
+The fact that contemporary technologies weren't implemented in the past SHOULD NEVER hold an OS system back. 
+These systems need to "Bite the Bullet" and get themselves updated already - those who are too lazy and/or insist on no changes because they are inconvenienced need to Get Over It.
+
 My book will go into these and many more details about how software needs to be written, here are some topics:
 
 - Learn and understand at the deepest level of detail the technology and keep up to date, and go back and improve when you realize you did it wrong the first time
@@ -125,7 +144,28 @@ My book will go into these and many more details about how software needs to be 
     - If you DO comment code, keep "We" out of it. There is no "We", it is "the system" **not** "We".
     - If your code has comments - the correctness of the comment is FAR MORE IMPORTANT THAN THE CORRECTNESS OF THE CODE ITSELF. You **MUST** update any comment if even the **SLIGHTEST** change is made to code
         - DO NOT READ OR TRUST COMMENTS. They are **NOT** reality. There is only **ONE** reality in software, that is how the instructions flow thru the CPU - there is NO OTHER TRUTH, never trust comments, only trust code by DEBUGGING it or thorough understanding. If the comment is wrong DELETE IT WITHOUT QUESTION
--- DO NOT COMMENT CODE (see below)
+- DO NOT COMMENT CODE. If you don't understand why, go to the above list item and read it slowly until you do.(see below)
+- Keep the fucking tabs out of software. You can "say" that "our group uses x-spaces for tabs" is nothing but absolute proof you could not care less about the visual appearance of the sources. I will be damned if I'll be changing my tab settings just to look at your code. AND, "insert spaces" for tabs makes it still look consistent regarding indents
+- Don't even get me started on indenting 
+- Also keep the fucking prettiness out of formatting. If I see another set of parameter declarations or variable names "lined up" I am going to absolutely puke.
+- Never prepend variable names with some bullshit thing like "m_". If you're class needs to have "reminders" about what's in it, maybe you should go back and revisit your design and/or actually try to understand your own software
+- Lot's more
+
+### On the other hand about commenting
+
+Take a look at sources in this repository that handle the PostScript operators. Currently there are two: operators_AtoL.cpp, and doperators_MtoZ.cpp.
+
+First note that it is pretty obvious 1) what's in these files, and 2) where I need to go to find an operator given the first letter of it's name.
+
+Next, note the methods there-in that implement each of the operators. In every single one, I have scraped out the **actuall** description (definition) of the operator from the PostScript reference book **as** the comments in the source for every operator.
+
+
+**THAT** is commenting software. It is about precision in the description of what the software is doing from the absolute (and only) TRULY correct reference
+
+
+
+
+
 
 
 
