@@ -33,7 +33,7 @@ mightily to the high cost of software development. *Please* don't say "re-invent
 
 ## My lifetime passion
 
-<p style="text-align:center;">To completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</p>
+<p style="text-align:center;width: 256px">To completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</p>
 
 In my 43 years of deep technical software language; platform; techniques; that is, everything involved in the production of software; experience - I have never
 been able to fathom why on EARTH the software implementations I have encountered are considered "acceptable" when they (<b>all of them</b>) are SO sloppy, absolutely fraught with bugs, 
