@@ -36,20 +36,24 @@ while extensibility and maintainability is as far away as the moon, and which is
 
 I have "rescued" systems over and over again, where every time, a rewrite from the ground up is the ONLY way to resuscitate the system. 
 And, more times than not, I've had to do that on my own time, or at least without the approval of the muckity-mucks - 
-because - those people, while in their incessant "design" meetings, have no clue how their own system even works - or, for that matter, 
+because - those people, while in their incessant &quotdesign&quot meetings, have no clue how their own system even works - or, for that matter, 
 how software development actually works, while at the same time, nothing can be done without some bullshit time estimate that <b>nobody</b> can
-accurately predict and some sort of "task" created with "feet to the fire" on that estimate.
+accurately predict and some sort of "task" created with &quotfeet to the fire&quot on that estimate.
 
-Every time the muckity-mucks buy into the bullshit best practices and engineering/software "processes" so they can pretend to be 
+Every time the muckity-mucks buy into the bullshit best practices and engineering/software &quotprocesses&quot so they can pretend to be 
 arriving at quality software. Which is way beyond their actual reach.
 
 <h3>Hear me O-muckety-mucks</h3>
 
 If they had the balls to really go into their system at the code and architecture level and actuall <b>see</b> what's ultimately
 being produced - to actually USE a debugger - then maybe they'd realize what I'm trying to say. And I'd be happy that maybe I can make some progress in my passion - 
-that of finally doing something to make the actual writing of software (don't get me going on the use of the term "programmer") the disciplined
+that of finally doing something to make the actual writing of software (don't get me going on the use of the term &quotprogrammer&quot) the disciplined
 engineering endeavor that it should have been from the beginning, but currently is not.
 
+Then, and perhaps only then - <i>maybe</i> all those high-fallutin' software processes might actually work, at least they might have a 
+foundation to actually stand upon. Until, then however, everyone is literally barking up the wrong tree, and are simply dancing around the problem looking like a bunch of fools.
+
+<h3>To whit...</h3>
 
 I worked for 8 years on the single most important system the US Federal Highway Administration uses to estimate it's bi-annual budgets.
 
