@@ -1,10 +1,8 @@
-<h1>Software quality is my passion</h1>
+# Software quality is my passion
 
-I became a PostScript guru back in 1985 or so, that is 40 years ago.
+I became a PostScript guru back in 1985 or so, that is 40 years ago. My specific dive into the language was to write a TeX like markup language in a DEC Vax environment.
 
-My specific dive into the language was to write a TeX like markup language in a DEC Vax environment.
-
-I used the PL/I language, in which I was very proficient, to interpret plain text files, containing 
+I used the PL/I language, in which I was very proficient, to read plain text files, containing 
 markup escape sequences defined by my system, and output PostScript language files sent to PostScript printers.
 
 This was in the US Defense engineering industry, and my user base consisted of highly technical engineering and mathematics staff who gravitated 
@@ -13,20 +11,24 @@ to my system and took full advantage of the incredible flexibility and power of 
 Indeed, one colleague invented an entirely new algebraic notation under government contract, and in fact, it could <i>only</i> be realized 
 utilizing my markup system.
 
-Unlike that system in the 80's, the software hosted here-in is <b>not</b> a markup language, or in any way a "client" of PostScript.
+Unlike that system in the 80's, the software hosted herein is <b>not</b> a markup language, or in any way a "client" of PostScript.
 
 This system is PostScript itself, from the ground up. It is a raw C++ implementation of the PostScript language! In other words, this software reads 
 *.ps input files, and renders the contents WYSIWYG per the PostScript language definition.
 
-<h2>WHY ?</h2>
+# WHY ?
 
 Yes, there is already an open source solution for this, please know that I am intimatly aware of GhostScript. In fact, I know more than 
 I want to about that software. 
 
 In some ways, it was working with GhostScript that engendered my desire to re-visit my PostScript passion. This time, however, it is to create 
-a replacement for GhostScript while at the same time forming the foundation upon which I might realize my much more important lifetime passion.
+a replacement for GhostScript while at the same time forming the foundation upon which I might realize my much more important lifetime passion[^1].
 
-<h2>My lifetime passion</h2>
+[^1]: Okay, yes, I benefited from GhostScript and from the efforts of those people who put it together. I **did** use it in my own software 
+for electronic signature capture. However, like ALL Open Source Software, the amount of effort you're probably goint to spend getting what 
+you want out of it is, in the fullness of time, way more than if you had just started from scratch. In any case, the only value I've *ever* found with OS software is learning "how" something works by example, even if it is badly written. Both sloppy disorganized software **and** horribly bad or overcomplicated documentation on how an algorithm should work contribute mightily to the high cost of software development. And, *please* don't say "re-invent the wheel", that will make me puke.
+
+## My lifetime passion
 
 <u>To finally and completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</u>
 
@@ -43,7 +45,7 @@ accurately predict and some sort of "task" created with "feet to the fire" on th
 Every time the muckity-mucks buy into the bullshit best practices and engineering/software "processes" so they can pretend to be 
 arriving at quality software. Which is way beyond their actual reach.
 
-<h3>Hear me O-muckety-mucks</h3>
+### Hear me O-muckety-mucks
 
 If they had the balls to really go into their system at the code and architecture level and actually <b>see</b> what's ultimately
 being produced - to actually USE a debugger - then maybe they'd realize what I'm trying to say and then I'd be happy that maybe I can make some progress in my passion - 
@@ -53,7 +55,7 @@ engineering endeavor that it should have been from the beginning, but currently 
 Then, and perhaps only then - <i>maybe</i> all those high-fallutin' software processes might actually work, at least they might have a 
 foundation to actually stand upon. Until then, however, everyone is literally barking up the wrong tree, and simply dancing around the problem looking like a bunch of fools.
 
-<h3>To whit...</h3>
+### To whit...
 
 I worked for 8 years on the single most important system the US Federal Highway Administration uses to estimate it's bi-annual budgets.
 
