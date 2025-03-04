@@ -162,7 +162,7 @@ Exit 0</Command>
     </ClCompile>
     <Link>
       <AdditionalDependencies>d2d1.lib;freetype.lib;gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -213,7 +213,7 @@ Exit 0</Command>
     </ClCompile>
     <Link>
       <AdditionalDependencies>d2d1.lib;freetype.lib;gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -268,7 +268,7 @@ Exit 0</Command>
     </ClCompile>
     <Link>
       <AdditionalDependencies>d2d1.lib;freetype.lib;gdiplus.lib;pdfEnabler.lib;crypt32.lib;shlwapi.lib;Ws2_32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>PostScript.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -302,83 +302,83 @@ Exit 0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
-    <ClCompile Include="ascii85EncodeDecode.cpp" />
-    <ClCompile Include="cmdPaneHandler.cpp" />
-    <ClCompile Include="COM Events\IConnectionPoint.cpp" />
-    <ClCompile Include="COM Events\IConnectionPointContainer.cpp" />
-    <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
-    <ClCompile Include="COM Events\IEnumerateConnections.cpp" />
-    <ClCompile Include="COM Implementation\dllMain.cpp" />
-    <ClCompile Include="COM Interfaces\Being Hosted\IOleInPlaceObject.cpp" />
-    <ClCompile Include="COM Interfaces\Being Hosted\IOleObject.cpp" />
-    <ClCompile Include="COM Interfaces\IPostScript.cpp" />
-    <ClCompile Include="COM Interfaces\IUnknown.cpp" />
-    <ClCompile Include="Fonts\font.cpp" />
-    <ClCompile Include="Fonts\font_transforms.cpp" />
-    <ClCompile Include="handler.cpp" />
-    <ClCompile Include="job\job.cpp" />
-    <ClCompile Include="job\job_operators.cpp">
+    <ClCompile Include="Sources\ascii85EncodeDecode.cpp" />
+    <ClCompile Include="Sources\cmdPaneHandler.cpp" />
+    <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />
+    <ClCompile Include="Sources\COM Events\IConnectionPointContainer.cpp" />
+    <ClCompile Include="Sources\COM Events\IEnumConnectionPoints.cpp" />
+    <ClCompile Include="Sources\COM Events\IEnumerateConnections.cpp" />
+    <ClCompile Include="Sources\COM Implementation\dllMain.cpp" />
+    <ClCompile Include="Sources\COM Interfaces\Being Hosted\IOleInPlaceObject.cpp" />
+    <ClCompile Include="Sources\COM Interfaces\Being Hosted\IOleObject.cpp" />
+    <ClCompile Include="Sources\COM Interfaces\IPostScript.cpp" />
+    <ClCompile Include="Sources\COM Interfaces\IUnknown.cpp" />
+    <ClCompile Include="Sources\Fonts\font.cpp" />
+    <ClCompile Include="Sources\Fonts\font_transforms.cpp" />
+    <ClCompile Include="Sources\handler.cpp" />
+    <ClCompile Include="Sources\job\job.cpp" />
+    <ClCompile Include="Sources\job\job_operators.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="job\job_pdfOperators.cpp">
+    <ClCompile Include="Sources\job\job_pdfOperators.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="job\parse.cpp" />
-    <ClCompile Include="job\parseJob.cpp" />
-    <ClCompile Include="job\parseJob_execute.cpp" />
-    <ClCompile Include="logPaneHandler.cpp" />
-    <ClCompile Include="operators\operators_AtoL.cpp" />
-    <ClCompile Include="operators\operators_MtoZ.cpp" />
-    <ClCompile Include="operators\pdfOperators.cpp" />
-    <ClCompile Include="PostScript objects\array.cpp" />
-    <ClCompile Include="PostScript objects\binaryString.cpp" />
-    <ClCompile Include="PostScript objects\booleanObject.cpp" />
-    <ClCompile Include="PostScript objects\colorSpace.cpp" />
-    <ClCompile Include="PostScript objects\dictionary.cpp" />
-    <ClCompile Include="PostScript objects\file.cpp" />
-    <ClCompile Include="PostScript objects\filter.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\gdiParameters.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_images.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_filter.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_fonts.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_drawGlyph.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_movesLines.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_paths.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_initialize.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_saveRestore.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_showPage.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\graphicsState_transforms.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\pathParameters.cpp" />
-    <ClCompile Include="PostScript objects\graphicState\pathParameters_Forwarder.cpp" />
-    <ClCompile Include="PostScript objects\literal.cpp" />
-    <ClCompile Include="PostScript objects\mark.cpp" />
-    <ClCompile Include="PostScript objects\matrix.cpp" />
-    <ClCompile Include="PostScript objects\name.cpp" />
-    <ClCompile Include="PostScript objects\object.cpp" />
-    <ClCompile Include="PostScript objects\pattern.cpp" />
-    <ClCompile Include="PostScript objects\procedure.cpp" />
-    <ClCompile Include="PostScript objects\resource.cpp" />
-    <ClCompile Include="PostScript objects\save.cpp" />
-    <ClCompile Include="PostScript objects\string.cpp" />
-    <ClCompile Include="PostScript objects\constantString.cpp" />
-    <ClCompile Include="PostScript objects\structureSpec.cpp" />
-    <ClCompile Include="PostScript.cpp" />
-    <ClCompile Include="PostScript_CommitCurrentPage.cpp" />
-    <ClCompile Include="PostScript_DisplayStack.cpp" />
-    <ClCompile Include="PostScript_initWindows.cpp" />
-    <ClCompile Include="PostScript_Log.cpp" />
-    <ClCompile Include="runLengthEncodeDecode.cpp" />
-    <ClCompile Include="Stacks\dictionaryStack.cpp" />
-    <ClCompile Include="Stacks\objectStack.cpp" />
-    <ClCompile Include="Stacks\pathParametersStack.cpp" />
-    <ClCompile Include="Stacks\psTransformsStack.cpp" />
+    <ClCompile Include="Sources\job\parse.cpp" />
+    <ClCompile Include="Sources\job\parseJob.cpp" />
+    <ClCompile Include="Sources\job\parseJob_execute.cpp" />
+    <ClCompile Include="Sources\logPaneHandler.cpp" />
+    <ClCompile Include="Sources\operators\operators_AtoL.cpp" />
+    <ClCompile Include="Sources\operators\operators_MtoZ.cpp" />
+    <ClCompile Include="Sources\operators\pdfOperators.cpp" />
+    <ClCompile Include="Sources\PostScript objects\array.cpp" />
+    <ClCompile Include="Sources\PostScript objects\binaryString.cpp" />
+    <ClCompile Include="Sources\PostScript objects\booleanObject.cpp" />
+    <ClCompile Include="Sources\PostScript objects\colorSpace.cpp" />
+    <ClCompile Include="Sources\PostScript objects\dictionary.cpp" />
+    <ClCompile Include="Sources\PostScript objects\file.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\gdiParameters.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_images.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_filter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_fonts.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_drawGlyph.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_movesLines.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_paths.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_initialize.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_saveRestore.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_showPage.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_transforms.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters_Forwarder.cpp" />
+    <ClCompile Include="Sources\PostScript objects\literal.cpp" />
+    <ClCompile Include="Sources\PostScript objects\mark.cpp" />
+    <ClCompile Include="Sources\PostScript objects\matrix.cpp" />
+    <ClCompile Include="Sources\PostScript objects\name.cpp" />
+    <ClCompile Include="Sources\PostScript objects\object.cpp" />
+    <ClCompile Include="Sources\PostScript objects\pattern.cpp" />
+    <ClCompile Include="Sources\PostScript objects\procedure.cpp" />
+    <ClCompile Include="Sources\PostScript objects\resource.cpp" />
+    <ClCompile Include="Sources\PostScript objects\save.cpp" />
+    <ClCompile Include="Sources\PostScript objects\string.cpp" />
+    <ClCompile Include="Sources\PostScript objects\constantString.cpp" />
+    <ClCompile Include="Sources\PostScript objects\structureSpec.cpp" />
+    <ClCompile Include="Sources\PostScript.cpp" />
+    <ClCompile Include="Sources\PostScript_CommitCurrentPage.cpp" />
+    <ClCompile Include="Sources\PostScript_DisplayStack.cpp" />
+    <ClCompile Include="Sources\PostScript_initWindows.cpp" />
+    <ClCompile Include="Sources\PostScript_Log.cpp" />
+    <ClCompile Include="Sources\runLengthEncodeDecode.cpp" />
+    <ClCompile Include="Sources\Stacks\dictionaryStack.cpp" />
+    <ClCompile Include="Sources\Stacks\objectStack.cpp" />
+    <ClCompile Include="Sources\Stacks\pathParametersStack.cpp" />
+    <ClCompile Include="Sources\Stacks\psTransformsStack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\glyphList.txt" />
@@ -387,7 +387,7 @@ Exit 0</Command>
     <ResourceCompile Include="PostScript.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\PostScriptGen2.odl" />
+    <Midl Include="Sources\COM Implementation\PostScriptGen2.odl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ascii85.h" />
@@ -430,6 +430,9 @@ Exit 0</Command>
     <ClInclude Include="include\Stacks\objectStack.h" />
     <ClInclude Include="include\Stacks\pathParametersStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

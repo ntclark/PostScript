@@ -4,6 +4,8 @@
 
 #include "job.h"
 
+   char *replaceChar(char *pszString,char theChar,char *pszReplacement);
+
    static std::queue<char *> theLog;
 
    long PStoPDF::clearLog() {
@@ -88,7 +90,6 @@
 
 #ifdef DO_RTF
    PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_RTF | SFF_SELECTION),(LPARAM)&logStream);
-   //PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_TEXT | SFF_SELECTION),(LPARAM)&logStream);
 #else
    PostMessage(hwndLog,EM_STREAMIN,(WPARAM)(SF_TEXT | SFF_SELECTION),(LPARAM)&logStream);
 #endif
@@ -119,29 +120,52 @@
 
     theLog.pop();
 
-    long n = (long)strlen(p);
+#ifdef DO_RTF
+
+    char *pNew = replaceChar(p,'{',"\\{");
+
+    if ( ! ( p == pNew ) ) {
+        char *pNew2 = replaceChar(pNew,'/',"\\/");
+        if ( ! ( pNew2 == pNew ) ) {
+            delete [] pNew;
+            pNew = pNew2;
+        }
+    }
+
+    long n = (long)strlen(pNew);
 
     if ( n > bufferSize ) {
-        p[bufferSize - 1] = '\0';
+        pNew[bufferSize - 1] = '\0';
         n = bufferSize;
     }
 
-#ifdef DO_RTF
+#if 1
     CHARRANGE chr;
     nativeRichEditHandler(hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
 
     long charFirst = nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
 
     if ( chr.cpMax > charFirst )
-        *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF" \\par%s",p);
+        *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF" \\par%s",pNew);
     else
-        *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s",p);
-    
-    //*pBytesReturned = sprintf((char *)pBuffer,"%s",p);
+        *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s",pNew);
+#endif
+
+    //*pBytesReturned = sprintf((char *)pBuffer,"%s",pNew);
     //*pBytesReturned = n;
+
     //memcpy(pBuffer,p,n);
 
+    if ( ! ( pNew == p ) )
+        delete [] pNew;
 #else
+
+    long n = (long)strlen(p);
+
+    if ( n > bufferSize ) {
+        p[bufferSize - 1] = '\0';
+        n = bufferSize;
+    }
 
     *pBytesReturned = n;
 
@@ -156,4 +180,53 @@
     LeaveCriticalSection(&theQueueCriticalSection);
 
     return 0;
+    }
+
+
+    char *replaceChar(char *pszString,char theChar,char *pszRepString) {
+
+    char *p = strchr(pszString,theChar);
+
+    if ( ! p )
+        return pszString;
+
+    long countReplacement = (DWORD)strlen(pszRepString);
+
+    long countOriginal = (DWORD)strlen(pszString);
+
+    char *pszReplacement = new char[countOriginal + 1];
+    strcpy(pszReplacement,pszString);
+
+    char *pStart = pszReplacement;
+    p = pStart + (p - pszString);
+
+    while ( p ) {
+
+        long countBefore = p - pStart;
+        *p = '\0';
+        long countAfter = (DWORD)strlen(p + 1);
+
+        char *pszRemainder = new char[countAfter + 1];
+        strcpy(pszRemainder,p + 1);
+
+        char *pszOldReplacement = pszReplacement;
+
+        countReplacement = countBefore + countReplacement + countAfter;
+
+        pszReplacement = new char[countReplacement + 1];
+        memset(pszReplacement,0,(countReplacement + 1) * sizeof(char));
+
+        strcat(pszReplacement,pStart);
+        strcat(pszReplacement,pszRepString);
+        strcat(pszReplacement,pszRemainder);
+
+        pStart = pszReplacement;
+
+        delete [] pszOldReplacement;
+
+        p = strrchr(pStart + countBefore + 2,theChar);
+
+    }
+
+    return pszReplacement;
     }
