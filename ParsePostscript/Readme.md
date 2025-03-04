@@ -1,6 +1,6 @@
 # ParsePostscript
 
-This is the GUI host used to embed the actual [PostScript interpreter](./PostScript) for development purposes, or, for that matter demonstration purposes.
+This is the GUI host used to embed the actual [PostScript interpreter](../PostScript) for development purposes, or, for that matter demonstration purposes.
 
 This is a windows application that implements the appropriate COM interfaces used to host the PS Interpret COM object
 
