@@ -5,7 +5,7 @@ I became a PostScript guru back in 1985 or so, that is 40 years ago. My specific
 I used the PL/I language, in which I was very proficient, to read plain text files, containing 
 markup escape sequences defined by my system, and output PostScript language files sent to PostScript printers.
 
-This was in the US Defense engineering industry, and my user base consisted of highly technical engineering and mathematics staff who gravitated 
+This was in the US Defense engineering industry, and my user base consisted of highly technical engineering and mathematics professionals who gravitated 
 to my system and took full advantage of the incredible flexibility and power of it.
 
 Indeed, one colleague invented an entirely new algebraic notation under government contract, and in fact, it could <i>only</i> be realized 
@@ -13,7 +13,7 @@ utilizing my markup system.
 
 Unlike that system in the 80's, the software hosted herein is <b>not</b> a markup language, or in any way a "client" of PostScript.
 
-This system is PostScript itself, from the ground up. It is a raw C++ implementation of the PostScript language! In other words, this software reads 
+This system **is** PostScript itself, from the ground up. It is a raw C++ implementation of a PostScript language interpreter! In other words, this software reads 
 *.ps input files, and renders the contents WYSIWYG per the PostScript language definition.
 
 # WHY ?
@@ -32,9 +32,9 @@ Both sloppy disorganized software **and** horribly bad or overcomplicated docume
 mightily to the high cost of software development. *Please* don't say "re-inventing the wheel", that will make me puke.
 
 ## My lifetime passion
-
-<p style="text-align:center;width: 256px">To completely expose the absolute SHIT that ALL open source, and as far as I know, most if not ALL proprietary software truly is.</p>
-
+---
+<p style="margin-left:64px; text-align:center;width: 256px">To completely expose the absolute **shit** that ALL open source, and, as far as I know, most if not ALL proprietary software truly is.</p>
+---
 In my 43 years of deep technical software language; platform; techniques; that is, everything involved in the production of software; experience - I have never
 been able to fathom why on EARTH the software implementations I have encountered are considered "acceptable" when they (<b>all of them</b>) are SO sloppy, absolutely fraught with bugs, 
 while extensibility and maintainability are as far away as the moon, and which is architected no better than I could have done as a 10 year old.
