@@ -4,4 +4,4 @@
 
 #### Everything else was built to support the interpreter
 
-##### However, the FontManager and Renderer are both full featured COM objects that can be used for their respective purposes anywhere
+However, the [Font Manager](../EnVisioNatesW_FontManager) and [Renderer](../EnVisioNateSW_Renderer) are both full featured COM objects that can be used for their respective purposes anywhere
