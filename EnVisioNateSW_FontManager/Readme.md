@@ -1,4 +1,4 @@
-# The EnVisioNateSW Font management and rendering system
+# The EnVisioNateSW Font Management System
 
 A far more flexible, usable, simpler, and cleaner font rendering system than freetype which is intended
 to demonstrate how a system **can** be constructed such that it is accessible and easy to see and follow how something
@@ -22,7 +22,7 @@ for Direct2D and if so, great, maybe someday I'll try it.
 But, as I've said before "The needs of the many outweigh the needs of the few" - Spock.
 
 In fact, rendering itself actually does <u>not</u> occur using this component. Instead, it uses yet another component
-of this system (as a COM object) to actually [render the graphics](../EnVisioNateSW_Renderer/Readme.md).
+of this system (as a COM object) to actually [render the graphics](../EnVisioNateSW_Renderer).
 That component is not specific to font rendering at all, it is a powerful graphics engine in it's own right.
 Font rendering in this context is just drawing and filling shapes that are defined by *this* component, the "Font Manager".
 
