@@ -1,4 +1,4 @@
-# ParsePostscript
+# HostPostscript
 
 This is the GUI host used to embed the actual [PostScript interpreter](../PostScript) for development purposes, or, for that matter demonstration purposes.
 
