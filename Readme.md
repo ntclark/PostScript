@@ -135,23 +135,28 @@ responsibility for proper merging on their own, and at the same time one and onl
 
 Get Over It !!
 
-The fact that contemporary technologies weren't implemented in the past SHOULD NEVER hold an OS system back. 
-These systems need to "Bite the Bullet" and get themselves updated already - those who are too lazy and/or insist on no changes because they are inconvenienced need to Get Over It.
+The fact that contemporary technologies weren't implemented in the past SHOULD NEVER hold an Open Source system back. 
+These systems need to "Bite the Bullet" and get themselves updated already - those who are too lazy and/or insist on no changes because they are inconvenienced need to Get Over It or Get Out Of The Way.
 
-My book will go into these and many more details about how software needs to be written, here are some topics:
+My book will go into these and many more details about how software needs to be written, here are some, but by no means all, topics:
 
-- Learn and understand at the deepest level of detail the technology and keep up to date, and go back and improve when you realize you did it wrong the first time
+- Learn and understand at the deepest level of detail for the technology and keep up to date, and go back and improve when you realize you did it wrong the first time
     - Be incredibly knowledgeable about the technology to the point you've forgotten more than your co-workers will ever know. However, don't talk about Object Orientation at the Christmas party
 - Do continuous refactoring all the time. If you look at your code in the future and you don't immediatly understand it, rewrite it until you do
 - Do not comment code.
-    - If you DO comment code, keep "We" out of it. There is no "We", it is "the system" **not** "We".
-    - If your code has comments - the correctness of the comment is FAR MORE IMPORTANT THAN THE CORRECTNESS OF THE CODE ITSELF. You **MUST** update any comment if even the **SLIGHTEST** change is made to code
-        - DO NOT READ OR TRUST COMMENTS. They are **NOT** reality. There is only **ONE** reality in software, that is how the instructions flow thru the CPU - there is NO OTHER TRUTH, never trust comments, only trust code by DEBUGGING it or thorough understanding. If the comment is wrong DELETE IT WITHOUT QUESTION
+    - If you DO comment code, keep "We" out of it. There is no "We", it is "the system" **not** "We"
+    - If your code has a comment - the correctness of the comment is <u>FAR MORE IMPORTANT</u> THAN THE CORRECTNESS OF THE CODE ITSELF. You **MUST** update any comment if even the **SLIGHTEST** change is made to code
+        - The corallary to that is: DO NOT READ OR TRUST COMMENTS. They are **NOT** reality.
+There is only **ONE** reality in software, that is how the instructions flow thru the CPU - there is <u>NO OTHER TRUTH</u>,
+never trust comments, only trust code by DEBUGGING it or thorough understanding. If the comment is wrong DELETE IT WITHOUT QUESTION
 - DO NOT COMMENT CODE. If you don't understand why, go to the above list item and read it slowly until you do.(see below)
-- Keep the fucking tabs out of software. You can "say" that "our group uses x-spaces for tabs" is nothing but absolute proof you could not care less about the visual appearance of the sources. I will be damned if I'll be changing my tab settings just to look at your code. AND, "insert spaces" for tabs makes it still look consistent regarding indents
+- Keep the fucking tabs out of software. You can "say" that "our group uses x-spaces for tabs" until you're blue in the face, 
+However, there is nothing as more positive proof that you could not care less about the visual appearance/readability of the sources.
+I will be damned if I'll be changing my tab settings just to look at your code. Using "insert spaces" for tabs at least makes it look consistent regarding indents
 - Don't even get me started on indenting 
 - Also keep the fucking prettiness out of formatting. If I see another set of parameter declarations or variable names "lined up" I am going to absolutely puke.
-- Never prepend variable names with some bullshit thing like "m_". If you're class needs to have "reminders" about what's in it, maybe you should go back and revisit your design and/or actually try to understand your own software
+- Never prepend variable names with some bullshit thing like "m_" who in the hell thought of that ??.
+If you're class needs to have "reminders" about what's in it, maybe you should go back and revisit your design and/or actually try to understand your own software.
 - Lot's more
 
 ### On the other hand about commenting
