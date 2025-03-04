@@ -32,7 +32,7 @@
 
 #include "resourceIdentifiers.h"
 
-//#define DO_RTF
+#define DO_RTF
 
 #define PS_VERSION   3000L
 #define PRODUCT_NAME "InnoVisioNate PostScript interpreter"

@@ -78,5 +78,6 @@
     <None Include="FontManager.def">
       <Filter>Source Files\COM Implementation</Filter>
     </None>
+    <None Include="Readme.md" />
   </ItemGroup>
 </Project>

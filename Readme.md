@@ -169,7 +169,6 @@ First note that it is pretty obvious 1) what's in these files, and 2) where I ne
 
 Next, note the methods therein that implement each of the operators. In every single one, I have scraped out the **actual** description (definition) of the operator from the PostScript reference book **as** the comments in the source for every operator.
 
-
 **THAT** is commenting software. It is about precision in the description of what the software is doing from the absolute (and only) TRULY correct **and complete** reference. 
 This is also a precise example of what I mean that the correctness of comments MUST be considered more important than the code itself, and because of that, it MUST come from a guaranteed truset source - NEVER hand written
 

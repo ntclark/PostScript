@@ -176,6 +176,7 @@
     <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Readme.md" />
     <None Include="Renderer.def" />
   </ItemGroup>
   <ItemGroup>
