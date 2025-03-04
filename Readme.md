@@ -53,34 +53,35 @@ arriving at quality software. Which is way beyond their actual reach.
 
 If they had the balls to really go into their system at the code and architecture level and actually <b>see</b> what's ultimately
 being produced - to actually USE a debugger - then maybe they'd realize what I'm trying to say and then I'd be happy that maybe I can make some progress in my passion - 
-that of finally doing something to make the actual writing of software (don't get me going on the use of the term "programmer") the disciplined
+that of finally doing something to make the actual writing of software (don't get me going on the use of the term "programming") the disciplined
 engineering endeavor that it should have been from the beginning, but currently is not.
 
-Then, and perhaps only then - <i>maybe</i> all those high-fallutin' software processes might actually work, at least they might have a 
+Then, and perhaps only then - <i>maybe</i> some of those high-fallutin' software processes might actually work, at least they might have a 
 foundation to actually stand upon. Until then, however, everyone is literally barking up the wrong tree, and simply dancing around the problem looking like a bunch of fools.
 
 ### To whit...
 
 I worked for 8 years on the single most important system the US Federal Highway Administration uses to estimate it's bi-annual budgets.
 
-That system had the most insane massive software bug that I, for years, tried to point out to the people ostensibly accountable to the government, 
-and was ignored over and over again. Why fix it if it's bringing in all this money right? I tried to explain that bug to another individual 
-who hosted the system and described using the debugger to discover this bug, at which point he said, "What's the debugger" - this after being, for at least 
+That system had the most insane massive software bug which I, for years, tried to point out to those ostensibly accountable to the government. 
+I was ignored over and over again for years, "Why fix it if it's bringing in all this money right?" I tried to explain that bug to an individual 
+who hosted the system and described using the debugger to discover the bug, at which point he said, "What's the debugger" - this after being, for at least 
 10 years, the person with the ultimate responsibility of the system.
 
 This bug, impacting results in the trillions of dollars, yes, trillions with a T, first came to light when some moron manager - with a PhD in computer
 science, no less, directed the "programmer peon" that "Everywhere the variable ____ appears, make that a call to ____ instead".
 
-That caused a bug to be in that system for years, either because "programmer peon" could not have thought it through before implementing it, or didn't care, or the 
-manager moron had no clue how software works ( a given ), or all three. I came upon the system professionally and found this bug within three days.
+That caused a bug to be in that system for years, either because "programmer peon" did not have the technical acumen (typical) to think it through, or didn't care, or the 
+manager moron had no clue how software works ( a given in this case ), or all three. When I came upon the system I found this bug within three days.
 
-The above real life example drives one of the reasons I have an absolute passion for software quality, that there can be severe ramifications
+The commonality of situations as in the above real life example is a major factor in the growth of my absolute passion for software quality.
+Over the years I have found that there can be severe ramifications of poorly built software due
 to a) inattention to every last detail in software development, and b) the real cost of un-informed, un-caring, un-educated (or over-educated) 
-muckety mucks who can't possibly think beyond the top-level of system/software tools (i.e., can read any white paper and think they know something
-when they actually know nothing because white papers say nothing).
+muckety mucks who can't possibly think beyond the top-level of system/software tools. These are the people who can read any white paper and think they know everything
+when they actually know nothing because white papers say nothing.
 
 With all of my being, I truly believe that the promise of software technology would be much further ahead if only the industry had demanded precision and cleanliness 
-akin to that of, say, engineering drafting and blueprints at the getgo.
+akin to that of, say, engineering drafting and architectural blueprinting at the getgo.
 
 # How it should be
 
@@ -89,13 +90,13 @@ This particular project is in fact intended to be the foundation for my book.
 This book is 40 years in the making. As I've mentioned, I've come across many systems, proprietary **and** Open Source, in which I am literally 
 amazed that they work at all, while immediately I understand exactly why 1) they are SO long in development, and 2) it is SO difficult to mold them into new and powerful uses.
 
-My book will outline, side-by-side the incredible positive differences that come about thru pristinely written and to the point code that is free from distracting and 
+My book will outline, using side-by-side comparison, the incredible positive differences that come about thru pristinely written and to the point code that is free from distracting and 
 obnoxious constructs that literally crowd out the true meaning. I cannot wait to publish this book, but in the meantime, this site contains what I consider to be 
 the prologue to it.
 
 In as much as I may come across as a jerk in my descriptions here and in the discussions about other peoples' work I will say that I truly hope the reader will 
 understand that my goal is pure - that of truly improving the state of the software development industry by highlighting those things that have prevented that
-improvement for probably about 75 years !!
+improvement for about 75 years !!
 
 This is not a work of fiction, and no names have been changed to protect the innocent. If a name is mentioned, that individual is probably a part of the problem, and is **not** innocent - sorry.
 
@@ -105,23 +106,24 @@ I remember in the 80's when file names got the permission to be of length greate
 WOW ! I went absolutely bananas over this new and exciting realm of possibility!
 
 And here we are 4 decades later - and **STILL** most developers do not leverage this !! Well sure, it's great people figured out how to put like functionality grouped
-in a file by file basis - but then don't indicate what that grouping is via file name !?!? To say nothing of the ability to group even higher levels using folders, and *that* is rarely done.
+in a file by file basis - but why then don't they indicate what that grouping is via file name !?!? To say nothing of the ability to group even higher levels using folders, and *that* is rarely done.
 I mean WTF ? Is it THAT hard to organize your sources ? Maybe people actually put all the source files in one place because they can't figure out how the environment points to the headers ?
 
 And, what's with prepending something on file names to indicate, I don't know, where it came from ? Something ? Are you kidding me ? Is there a point to using up space in every file name in the sources for 
 any reason ? Especially when it's apparently some kind of problem to actually name a file for it's relevance ? 
 
-Don't get me started on that incredibly lazy practice of putting "main" at the bottom of a file, just so you don't have to create a header for all the artifacts main might use! That, dear reader, 
-is a glaring indicator of not only a lazy individual, but also one who could not care less about understanding structure and organization. I'm going to bet you that this person will repeat 
-a declaration in some other source file when they finally want to expand; then , there we go, the system is falling apart even when only two source files comprise it.
+Don't get me started on that incredibly lazy practice of putting "main" at the bottom of a file, just so you don't have to create a header for all the artifacts main might use! That 
+is a glaring indication of not only a lazy individual, but also one who could not care less about understanding structure and organization. I'm going to bet you that this person will repeat 
+a declaration in some other source file when they finally want to expand; then, there we go, the system is falling apart even when only two source files comprise it.
 
-Yes, a hundred times yes, it is best to follow the common sense strategy for **EVERY** situation, 1 file in the system, or 1000 files. There is no excuse for shortcuts, do it right every time and every place.
+Yes, a hundred times yes, it is best to follow the common sense strategy for **every** situation, 1 file in the system, or 1000 files. There is no excuse for shortcuts, do it right every time and every place.
 
-In the overall culture of OS, I see that 1) the growth and enhancement of tools *cannot* be leveraged by the community, and 2) (among others) structure and organization are stagnant. Why ? 
+In the overall culture of Open Source, I see that 1) the growth and enhancement of tools *cannot* be leveraged by the community, and 2) (among others) structure and organization are stagnant. Why ? 
 
 - People have the sources local and changes in the repository can't be immediately seen by them
     - Too effing bad. The masses need to learn how to use diff engines ( my favorite is Beyond Compare by Scooter Software) up until that time whenever repository technology gets better
-        - The repository technology is **not going** to get better. It is already too difficult and error prone. The masses will have to take responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it
+        - The repository technology is **not going** to get better. It is already too difficult and error prone. The masses will have to take 
+responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it
 - The systems are badly structured and/or architected.
     - In the past systems were built without dynamically loaded component parts ('.dlls, etc) so there are usually way more sources a contributor may have to deal with even when only interested in a specific area
         - because there **AREN'T** any specific area(s)
