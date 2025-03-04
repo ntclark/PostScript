@@ -4,7 +4,7 @@ This component of the system affects the visual representation of everything els
 
 In other words, nowhere else is there any code that calls the Windows GDI or Direct2D components to show entities on the screen (or any Device Context).
 
-At some point, this component simply rendered text on behalf of the [Font Manager](.//EnVisioNateSW_FontManager) however, it evolved to handle all lines, shapes, and images for all components of the system.
+At some point, this component simply rendered text on behalf of the [Font Manager](../EnVisioNateSW_FontManager) however, it evolved to handle all lines, shapes, and images for all components of the system.
 
 As a COM compnent, you can instantiate this from any software system you might want to generate graphics in. It has a simple COM interface and an elegant and flexible
 implementation pattern that you could easily expand when your needs exceed those of the rest of this system.
