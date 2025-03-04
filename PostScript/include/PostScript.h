@@ -35,7 +35,7 @@
 #define DO_RTF
 
 #define PS_VERSION   3000L
-#define PRODUCT_NAME "InnoVisioNate PostScript interpreter"
+#define PRODUCT_NAME "EnVisioNateSW PostScript interpreter"
 
 #define POINTS_TO_PIXELS    2
 #define CMD_PANE_HEIGHT     96

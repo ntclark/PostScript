@@ -4,8 +4,8 @@
 #include <olectl.h>
 #include <stdio.h>
 
-#define OBJECT_NAME "InnoVisioNate.PStoPDFGen2"
-#define OBJECT_NAME_V "InnoVisioNate.PStoPDFGen2.1"
+#define OBJECT_NAME "EnVisioNateSW.PStoPDFGen2"
+#define OBJECT_NAME_V "EnVisioNateSW.PStoPDFGen2.1"
 #define OBJECT_VERSION "1.0"
 #define OBJECT_CLSID CLSID_PostScriptGen2
 #define OBJECT_LIBID LIBID_PostScriptGen2
@@ -34,7 +34,7 @@
         GetModuleFileNameW(hModule,wstrModuleName,256);
 
         GetCommonAppDataLocation(NULL,szApplicationDataDirectory);
-        strcat(szApplicationDataDirectory,"\\InnoVisioNate");
+        strcat(szApplicationDataDirectory,"\\EnVisioNateSW");
 
         CreateDirectory(szApplicationDataDirectory,NULL);
 
@@ -108,7 +108,7 @@
     RegOpenKeyEx(HKEY_CLASSES_ROOT,"CLSID",0,KEY_CREATE_SUB_KEY,&keyHandle);
 
     RegCreateKeyEx(keyHandle,szCLSID,0,NULL,REG_OPTION_NON_VOLATILE,KEY_ALL_ACCESS,NULL,&clsidHandle,&disposition);
-    sprintf(szTemp,"InnoVisioNate PostScript Interpreter Object");
+    sprintf(szTemp,"EnVisioNateSW PostScript Interpreter Object");
     RegSetValueEx(clsidHandle,NULL,0,REG_SZ,(BYTE *)szTemp,(DWORD)strlen(szTemp));
 
     sprintf(szTemp,"Control");

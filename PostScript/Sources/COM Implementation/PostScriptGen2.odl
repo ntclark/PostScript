@@ -3,7 +3,7 @@
 
 [ 
    uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6A),
-   helpstring("InnoVisioNate PostScript interpreter"), 
+   helpstring("EnVisioNateSW PostScript interpreter"), 
    lcid(0x0), 
    version(1.0)
 ] 

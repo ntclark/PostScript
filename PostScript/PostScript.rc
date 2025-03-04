@@ -15,7 +15,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "\0"
-            VALUE "CompanyName", "InnoVisioNate\0"
+            VALUE "CompanyName", "EnVisioNateSW\0"
             VALUE "FileDescription", "A PostScript interpreter. Destined to replace ghostscript once and for all, and for many other things.\0"
             VALUE "FileVersion", CV_PRODUCT_VERSION
             VALUE "InternalName", "PostScript.dll\0"

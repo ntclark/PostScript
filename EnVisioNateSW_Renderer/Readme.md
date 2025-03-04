@@ -9,7 +9,7 @@ At some point, this component simply rendered text on behalf of the [Font Manage
 As a COM compnent, you can instantiate this from any software system you might want to generate graphics in. It has a simple COM interface and an elegant and flexible
 implementation pattern that you could easily expand when your needs exceed those of the rest of this system.
 
-In addition, you probably need not be an expert in the MS graphics components to utlize this component.
+In addition, you need not be an expert in the MS graphics components to utlize this component.
 
 I pontificate elsewhere about commenting code. I've made the point that if you **are** going to comment code, do so in a manner similar to that 
 indicated by [this file](./EnVisioNateSW_Renderer/COM Interfaces/IGraphicElements_Paths.cpp).

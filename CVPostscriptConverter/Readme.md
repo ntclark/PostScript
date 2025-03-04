@@ -1,8 +1,10 @@
 # CV Postscript Converter
 
+# This project is not used at this point and does not build
+
 "CV" is for CursiVision
 
-This project is currently just a COM (Component Object Model) stub intended for future use 
+This project is just a COM (Component Object Model) stub intended for future use 
 to convert incoming '.ps files (prolly from the MS pscript5.dll which in turn is probably from a custom print driver) 
 into '.PDF files ( Or, to render the ps to the screen or printer using the PostscriptGen2 COM object)
 

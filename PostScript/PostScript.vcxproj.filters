@@ -265,11 +265,6 @@
     <Text Include="resources\glyphList.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\PostScriptGen2.odl">
-      <Filter>Source Files\COM Implementation</Filter>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="include\PostScript objects\array.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
@@ -392,6 +387,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Readme.md" />
+    <Midl Include="Sources\COM Implementation\PostScriptGen2.odl">
+      <Filter>Source Files\COM Implementation</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

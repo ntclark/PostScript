@@ -81,8 +81,8 @@
    GUID OBJECT_LIBID;
    char *OBJECT_DESCRIPTION;
 
-   OBJECT_NAME = (char *)"InnoVisioNate.CVPostscriptConverter";
-   OBJECT_NAME_V = (char *)"InnoVisioNate.CVPostscriptConverter.1";
+   OBJECT_NAME = (char *)"EnVisioNateSW.CVPostscriptConverter";
+   OBJECT_NAME_V = (char *)"EnVisioNateSW.CVPostscriptConverter.1";
    OBJECT_VERSION = (char *)"1.0";
 
    memcpy(&OBJECT_CLSID,&CLSID_CVPostscriptConverter,sizeof(GUID));
@@ -198,8 +198,8 @@
 
    CoInitialize(NULL);
 
-   OBJECT_NAME = (char *)"InnoVisioNate.CVPostscriptConverter";
-   OBJECT_NAME_V = (char *)"InnoVisioNate.CVPostscriptConverter.1";
+   OBJECT_NAME = (char *)"EnVisioNateSW.CVPostscriptConverter";
+   OBJECT_NAME_V = (char *)"EnVisioNateSW.CVPostscriptConverter.1";
    memcpy(&OBJECT_CLSID,&CLSID_CVPostscriptConverter,sizeof(GUID));
 
    HKEY keyHandle;

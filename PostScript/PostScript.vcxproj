@@ -23,7 +23,7 @@
     <RootNamespace>PostScript</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>PostScriptGen2</ProjectName>
+    <ProjectName>PostScript</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -430,9 +430,6 @@ Exit 0</Command>
     <ClInclude Include="include\Stacks\objectStack.h" />
     <ClInclude Include="include\Stacks\pathParametersStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
