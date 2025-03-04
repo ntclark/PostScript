@@ -150,11 +150,13 @@ My book will go into these and many more details about how software needs to be 
 There is only **ONE** reality in software, that is how the instructions flow thru the CPU - there is <u>NO OTHER TRUTH</u>,
 never trust comments, only trust code by DEBUGGING it or thorough understanding. If the comment is wrong DELETE IT WITHOUT QUESTION
 - DO NOT COMMENT CODE. If you don't understand why, go to the above list item and read it slowly until you do.(see below)
-- Keep the fucking tabs out of software. You can "say" that "our group uses x-spaces for tabs" until you're blue in the face, 
-However, there is nothing as more positive proof that you could not care less about the visual appearance/readability of the sources.
+- Keep the fucking tabs out of software. You can "say" that "our group uses x-spaces for tabs" until you're blue in the face. 
+However, there is no more glaring proof that you could not care less about the visual appearance/readability of the sources.
 I will be damned if I'll be changing my tab settings just to look at your code. Using "insert spaces" for tabs at least makes it look consistent regarding indents
 - Don't even get me started on indenting 
 - Also keep the fucking prettiness out of formatting. If I see another set of parameter declarations or variable names "lined up" I am going to absolutely puke.
+I don't care about your artsy trite constructs with hieroglyphics invented out of ascii characters. If you put that crap in a book I want to read, I'd throw it in the
+trash and demand my money back. It is **not** impressive and it is **not** cool.
 - Never prepend variable names with some bullshit thing like "m_" who in the hell thought of that ??.
 If you're class needs to have "reminders" about what's in it, maybe you should go back and revisit your design and/or actually try to understand your own software.
 - Lot's more
