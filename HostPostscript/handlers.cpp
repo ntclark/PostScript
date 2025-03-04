@@ -1,5 +1,5 @@
 
-#include "ParsePostscript.h"
+#include "HostPostscript.h"
 
     LRESULT CALLBACK ParsePSHost::frameHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 

@@ -431,6 +431,9 @@ Exit 0</Command>
     <ClInclude Include="include\Stacks\pathParametersStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

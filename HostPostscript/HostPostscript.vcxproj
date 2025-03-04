@@ -22,9 +22,9 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{5f63389a-7feb-48cd-8463-1b11145c826b}</ProjectGuid>
-    <RootNamespace>ParsePostscript</RootNamespace>
+    <RootNamespace>HostPostscript</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>ParsePostscript</ProjectName>
+    <ProjectName>HostPostscript</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -237,15 +237,15 @@ if '$(USERNAME)' == 'Nate' (
     <ClCompile Include="COM Interfaces\Control Hosting\IOleInPlaceFrame.cpp" />
     <ClCompile Include="COM Interfaces\Control Hosting\IOleInPlaceSite.cpp" />
     <ClCompile Include="handlers.cpp" />
-    <ClCompile Include="ParsePSHost.cpp" />
+    <ClCompile Include="HostPSHost.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ParsePostscript.h" />
+    <ClInclude Include="HostPostscript.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ParsePostscript.rc" />
+    <ResourceCompile Include="HostPostscript.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

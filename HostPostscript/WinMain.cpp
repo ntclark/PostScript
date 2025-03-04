@@ -1,5 +1,5 @@
 
-#include "ParsePostscript.h"
+#include "HostPostscript.h"
 
 #include "Properties_i.c"
 #include "PostScriptGen2_i.c"
@@ -42,7 +42,7 @@ RECT rcFrame{512,512,1024,768};
 
     WCHAR szwDataFile[MAX_PATH];
     MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
-    wcscat(szwDataFile,L"\\ParsePostscript.settings");
+    wcscat(szwDataFile,L"\\HostPostscript.settings");
 
     pIGProperties -> put_FileName(szwDataFile);
 

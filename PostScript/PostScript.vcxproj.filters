@@ -391,4 +391,7 @@
       <Filter>Source Files\COM Implementation</Filter>
     </Midl>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.md" />
+  </ItemGroup>
 </Project>

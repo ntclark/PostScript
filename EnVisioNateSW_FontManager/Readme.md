@@ -29,7 +29,7 @@ Font rendering in this context is just drawing and filling shapes that are defin
 Note also that just about everything done here (if not everything) is built using the [online documentation](https://learn.microsoft.com/en-us/typography/opentype/spec/)
 published by MicroSoft. Most everything needed to build more capability, if necessary, would be described therein.
 
-The project contains my simple COM object boilerplate. For a complex (hostable) COM object, see the PostScriptGen2 project as the object, and the ParsePostcript project as a sample host
+The project contains my simple COM object boilerplate. For a complex (hostable) COM object, see the PostScript project as the object, and the HostPostcript project as a sample host
 
 
 
