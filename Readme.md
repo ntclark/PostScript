@@ -163,15 +163,15 @@ If you're class needs to have "reminders" about what's in it, maybe you should g
 
 ### On the other hand about commenting
 
-Take a look at sources in this repository that handle the PostScript operators. Currently there are two: operators_AtoL.cpp, and operators_MtoZ.cpp.
+Take a look at sources in this repository that handle the PostScript operators. Currently there are two: [OperatorsAtoL](./PostScript/operators/operators_AtoL.cpp), and operators_MtoZ.cpp.
 
 First note that it is pretty obvious 1) what's in these files, and 2) where I need to go to find an operator given the first letter of it's name.
 
 Next, note the methods therein that implement each of the operators. In every single one, I have scraped out the **actual** description (definition) of the operator from the PostScript reference book **as** the comments in the source for every operator.
 
 
-**THAT** is commenting software. It is about precision in the description of what the software is doing from the absolute (and only) TRULY correct reference. 
-This is also absolute truth that the correctness of comments MUST be considered more important than the code itself, and because of that, it MUST come from a guaranteed truset source - NEVER hand written
+**THAT** is commenting software. It is about precision in the description of what the software is doing from the absolute (and only) TRULY correct **and complete** reference. 
+This is also a precise example of what I mean that the correctness of comments MUST be considered more important than the code itself, and because of that, it MUST come from a guaranteed truset source - NEVER hand written
 
 
 
