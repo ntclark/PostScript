@@ -11,12 +11,15 @@ However, the [Font Manager](../EnVisioNateSW_FontManager) and [Renderer](../EnVi
 PostScript is the programming language that built Adobe. You probably know that originally (mid 80's ?) the language interpreter was generally executing in the firmware of laser printers. 
 I became enamored with the language around that time because we needed rich and powerful (and flexible) document processing capabilities in my place of employment.
 I obtained and quickly consumed the famous red and green PostScript reference manuals published by Adobe which fully described the language.
-As a "forth type" language, it was all new to me at the time, but I soon started hearing things like "begin 4 1 roll dup exch def end" in my dreams.
+Using this understanding of the language, I wrote a document processing mark up language, like TeX, in PL/I in a VAX environment. That tool was very well
+received and utilized extensively by engineering and mathematics staff.
+
+As a "forth type" language, it was all new to me at the time, but I soon started hearing things like "begin 4 1 roll dup exch pop def end" in my dreams.
 That's not a real statement but you get the idea.
 
-If you've only heard of PostScript in the context of printers and never in the realm of windows applications, you may be wondering why anyone (me) needs to create a new version of it.
+If you've only heard of PostScript in the context of printers and never in the realm of windows applications, you may be wondering why anyone (me) needs to create a new interpreter for it.
 
-## Myth busted
+### Myth busted
 
 > PostScript is a dead language and is going away
 
@@ -51,16 +54,16 @@ One such option that everyone knows is GhostScript. There are others you can fin
 
 Another far better option in the future will be right here. Watch this space, my next task will be just that, implement the PDF creation part of my system.
 
-My disdain for most Open Source is not a secret, if you're curious about that, peruse my thoughts on the [root page]('./') readme.
+My disdain for most Open Source is not a secret, if you're curious about that, peruse my thoughts on the [root page](../) readme.
 
 In fact, my entire reason for writing this system is because I believe GhostScript is an absolute nightmare to understand.
 I guess those shocked by that statement probably think I'm unfair and wonder if I had bothered to read the documentation or usage notes.
 What those people may have assumed is that I'm talking about "usage" - I am not.
 
-You see, *anytime* I'm going to use any software whatsoever in a system that I am writing, I will always bring that system as a project in my
-own development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understand everything that software
+You see, *anytime* I'm going to use any software whatsoever in a system that will have my name associated it, I will always bring that software as a project sid by side into my
+development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understand everything that software
 does and how it does it, and most importantly - what are, and how did they implement, the underlying algorithms, equations, or any aspect
-of the solution domain of the system.
+of the solution domain for the system.
 
 Put simply, I will **not** put my name on software if it includes software that I do not **completely** understand. I must also believe that it is completely free 
 of bugs and has at least some modicum of cleanliness, readability, efficiency and ability for maintainability and extensibility.
@@ -72,8 +75,8 @@ When I say GhostScript is "a nightmare to understand" - I refer directly to the 
 software itself, the antiquated arrangement of the sources, etc[^1]. Yes - I gave it weeks of my time to unravel - and ultimately just simply realized that, holy shit,
 I just need to start this from scratch. The Adobe PostScript books are very detailed and precise, why not just start there and get it done right once and for all.
 
-[^1]: Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. 
-*That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
+<span style="font-size: 2Em">[^1]: Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. 
+*That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.</span>
 
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse.
