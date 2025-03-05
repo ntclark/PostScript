@@ -82,7 +82,11 @@ I just need to start this from scratch. The Adobe PostScript books are very deta
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse.
 
-[^1]: **Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.**
+[^1]: **Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors.**
+
+However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. 
+
+*That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
 
 
 
