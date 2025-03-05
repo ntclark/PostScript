@@ -26,7 +26,7 @@ If you've only heard of PostScript in the context of printers and never in the r
 This is absolutely <u>not true</u>.
 
 First, the PostScript language is actually used a lot more than people may realize. Microsoft ships the pscript5 dll on Windows. That component makes it incredibly easy to create a
-"PostScript compatible" print driver that can print from literally *anything* and produce a robust PostScript ('.ps) output file. And those files, given tools downstream from the print driver, are the
+"PostScript compatible" print driver that can print from literally *anything* and produce a robust PostScript ('.ps) language output file. And those files, given tools downstream from the print driver, are the
 raw materials to go on and create '.PDF (Portable Document Format) WYSIWYG soft copy documentation. These PS print drivers are literally everywhere and are a dime a dozen. However, they invariably 
 also include or invoke one of those "downstream tools" to produce '.PDF from the generated PS source, then throw out the '.ps file.
 
@@ -34,11 +34,15 @@ To believe PostScript is going away is to believe PDF files are going away and a
 
 However, creating PDF files is **only one** possibility enabled by PostScript sources.
 
-All the time I see talk of the need to analyze and/or otherwise scrape or pull data from '.PDF files. I see it all the time: "extract this or that 
+Often I see talk of the need to analyze and/or otherwise scrape or pull data from '.PDF files. I see it all the time: "extract this or that 
 from our PDF files" in proposals for contract work.
 
 Well, why not think upstream just a bit, and rather than actually create a 'PDF file and *then* do your analysis on *that*, instead, 
 let the PS interpreter spit out the data you're looking *while* the PostScript language is being parsed by *this* interpreter?
+
+How can this particular repository help you do that ? Why, with COM (Component Object Model) Event interfaces naturally.
+
+To learn more of this, please checkout the [information](./Sources/COM Events) about interfaces in this system.
 
 ## What about the PDF creation tools
 
@@ -75,7 +79,7 @@ When I say GhostScript is "a nightmare to understand" - I refer directly to the 
 software itself, the antiquated arrangement of the sources, etc[^1]. Yes - I gave it weeks of my time to unravel - and ultimately just simply realized that, holy shit,
 I just need to start this from scratch. The Adobe PostScript books are very detailed and precise, why not just start there and get it done right once and for all.
 
-[^1]: ### >Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
+[^1]: ## >Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
 
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse.
