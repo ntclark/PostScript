@@ -42,7 +42,7 @@ let the PS interpreter spit out the data you're looking *while* the PostScript l
 
 How can this particular repository help you do that ? Why, with COM (Component Object Model) Event interfaces naturally.
 
-To learn more of this, please checkout the [information](./Sources/COM Events) about interfaces in this system.
+To learn more of this, please checkout the [information]('./Sources/COM Events') about interfaces in this system.
 
 ## What about the PDF creation tools
 
