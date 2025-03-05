@@ -65,7 +65,7 @@ I guess those shocked by that statement probably think I'm unfair and wonder if 
 What those people may have assumed is that I'm talking about "usage" - I am not.
 
 You see, *anytime* I'm going to use any software whatsoever in a system that will have my name associated it, I will always bring that software as a project sid by side into my
-development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understand everything that software
+development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understanding everything that software
 does and how it does it, and most importantly - what are, and how did they implement, the underlying algorithms, equations, or any aspect
 of the solution domain for the system.
 
@@ -73,16 +73,16 @@ Put simply, I will **not** put my name on software if it includes software that 
 of bugs and has at least some modicum of cleanliness, readability, efficiency and ability for maintainability and extensibility.
 
 Therefore, as it happens, I have rarely actually used Open Source in my software. I use open source to learn of it's strategy in satisfying the domain space, and I'll
-usually inspect multiple approaches. Ultimately, I generally go back to inventing my own approach based on the definitive documentation if I can find that.
+usually inspect multiple approaches. Ultimately, I generally go back to inventing my own approach based on any definitive documentation if I can find that.
 
 When I say GhostScript is "a nightmare to understand" - I refer directly to the horrible spaghetti code in the system, the incredibly bad structure of the
 software itself, the antiquated arrangement of the sources, etc[^1]. Yes - I gave it weeks of my time to unravel - and ultimately just simply realized that, holy shit,
 I just need to start this from scratch. The Adobe PostScript books are very detailed and precise, why not just start there and get it done right once and for all.
 
-[^1]: ## >Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
-
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse.
+
+[^1]: ### Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
 
 
 
