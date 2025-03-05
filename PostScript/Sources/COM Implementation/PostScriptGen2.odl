@@ -34,18 +34,19 @@ library PostScriptGen2 {
       HRESULT TakeText(RECT *pLocationPDF,char *pszText);
    };
 
-/*
+
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6D) ]
-   interface IPStoPDFEvents : IUnknown {
+   interface IPostScriptEvents : IUnknown {
+       HRESULT RenderChar(char theChar);
+       HRESULT RenderString(char *pszString);
    };
-*/
+
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6E)]
    coclass PostScriptGen2 {
       [default] interface IPostScript;
-/*
-      [source] interface IPStoPDFEvents;
-*/
+      [source] interface IPostScriptEvents;
+
    };
 
 };

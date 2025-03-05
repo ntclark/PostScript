@@ -44,6 +44,12 @@ How can this particular repository help you do that ? Why, with COM (Component O
 
 To learn more of this, please checkout the information about [interfaces](./Sources/COM%20Events) in this system.
 
+# Note:
+
+I have developed a Print to PostScript/PDF print driver for my CursiVision product. That print driver, out of the box, can be configured to do **anything** with the 
+resulting PostScript language file. If you have some need to develop some PostScript analyzation process as above, and you need a front end for your process
+I have no problem giving you an installer for that print driver. Simply ask and you shall receive, send an e-mail to [Nate](email:Nate@EnVisioNateSW.com).
+
 ## What about the PDF creation tools
 
 The ultimate goal of this repository and it's future capabilities is in fact developing the tools to enable the creation of PDF artifacts from the PostScript source.
@@ -82,11 +88,7 @@ I just need to start this from scratch. The Adobe PostScript books are very deta
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse.
 
-[^1]: **Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors.**
-
-However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. 
-
-*That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
+[^1]: **Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors.*However*, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.**
 
 
 
