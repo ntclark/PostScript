@@ -75,8 +75,8 @@ When I say GhostScript is "a nightmare to understand" - I refer directly to the 
 software itself, the antiquated arrangement of the sources, etc[^1]. Yes - I gave it weeks of my time to unravel - and ultimately just simply realized that, holy shit,
 I just need to start this from scratch. The Adobe PostScript books are very detailed and precise, why not just start there and get it done right once and for all.
 
-[^1]: <span style="font-size: 2Em">Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. 
-*That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.</span>
+[^1]: ### >Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors. However, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. 
+### *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.
 
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse.
