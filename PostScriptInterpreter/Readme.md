@@ -40,7 +40,7 @@ However, creating PDF files is **only one** possibility enabled by PostScript so
 
 ### PostScript rendering
 
-This project was built to *display*, or "render" PostScript sources exactly as they would look if they *were* transformed to PDF.
+The phase one aim of this project is to *display*, or "render" PostScript sources exactly as they would look if they *were* transformed to PDF.
 
 In fact, you may not want PDF at all, maybe you just want to paint the document in some Windows application window. No need to go to the extra,
 significantly complex, step of creating a PDF file, and then use some other tool, like pdfium, to display it. I've worked with pdfium hosting
@@ -52,7 +52,7 @@ physical printer for that matter.
 
 For guidance on rendering PostScript in a Windows application, see the [HostPostScript](../HostPostscript) project in this repository.
 That project uses the COM interfaces (IOleObject, etc) that are necessary to instantiate and control a visual COM object while *this* project
-defines [interfaces](./Sources\COM%20Interfaces) that allow it to be a client hosted into a project like HostPostscript.
+defines [interfaces](./Sources/COM%20Interfaces) that allow it to be a client hosted into a project like HostPostscript.
 
 For that matter, these two projects, host and client, utilize the COM boilerplate code that I have used for more than a decade
 to achieve embedding a visual component into a hosting windows application. This code is robust and almost completely plug and play
