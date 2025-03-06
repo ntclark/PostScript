@@ -2,7 +2,7 @@
 #include "HostPostscript.h"
 
 #include "Properties_i.c"
-#include "PostScriptGen2_i.c"
+#include "PostScriptInterpreter_i.c"
 
 IGProperties *pIGProperties = NULL;
 
@@ -86,7 +86,7 @@ RECT rcFrame{512,512,1024,768};
     pParsePSHost -> pIOleClientSite_HTML_Host = new ParsePSHost::_IOleClientSite(pParsePSHost,pParsePSHost -> pIOleInPlaceSite_HTML_Host,pParsePSHost -> pIOleInPlaceFrame_HTML_Host);
     pParsePSHost -> pIOleDocumentSite_HTML_Host = new ParsePSHost::_IOleDocumentSite(pParsePSHost,pParsePSHost -> pIOleClientSite_HTML_Host);
 
-    rc = CoCreateInstance(CLSID_PostScriptGen2,NULL,CLSCTX_ALL,IID_IPostScript,reinterpret_cast<void **>(&pParsePSHost -> pIPostScript));
+    rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScript,reinterpret_cast<void **>(&pParsePSHost -> pIPostScript));
 
     pParsePSHost -> pIPostScript -> QueryInterface(IID_IOleObject,reinterpret_cast<void **>(&pParsePSHost -> pIOleObject_HTML));
 

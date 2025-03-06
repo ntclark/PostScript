@@ -247,6 +247,9 @@ if '$(USERNAME)' == 'Nate' (
   <ItemGroup>
     <ResourceCompile Include="HostPostscript.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

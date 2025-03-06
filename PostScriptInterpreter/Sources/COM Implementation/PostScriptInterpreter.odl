@@ -1,0 +1,52 @@
+
+#include <olectl.h>
+
+[ 
+   uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6A),
+   helpstring("EnVisioNateSW PostScript interpreter"), 
+   lcid(0x0), 
+   version(1.0)
+] 
+
+library PostScriptInterpreter { 
+
+   typedef enum logLevel { none = 0, verbose = 1 } logLevel;
+
+   [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6B)] 
+
+   interface IPostScript : IUnknown {
+
+      HRESULT SetSource(char *pszFileName);
+
+      HRESULT Parse([defaultvalue(NULL)]char *pszFileName);
+
+      HRESULT ParseText(char *pszText,long length,void *pvIPdfPage,void *pvIPostScriptTakeText,HDC hdc,RECT *prcWindowsClip);
+
+      HRESULT GetLastError(char **ppszError);
+
+      HRESULT LogLevel(logLevel theLogLevel);
+
+   };
+
+   [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6C)] 
+
+   interface IPostScriptTakeText {
+      HRESULT TakeText(RECT *pLocationPDF,char *pszText);
+   };
+
+
+   [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6D) ]
+   interface IPostScriptEvents : IUnknown {
+       HRESULT RenderChar(char theChar);
+       HRESULT RenderString(char *pszString);
+   };
+
+
+   [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6E)]
+   coclass PostScriptInterpreter {
+      [default] interface IPostScript;
+      [source] interface IPostScriptEvents;
+
+   };
+
+};

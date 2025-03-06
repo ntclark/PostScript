@@ -36,10 +36,10 @@
     <ClCompile Include="COM Interfaces\Control Hosting\IOleInPlaceSite.cpp">
       <Filter>Source Files\COM Interfaces\Control Hosting</Filter>
     </ClCompile>
-    <ClCompile Include="ParsePSHost.cpp">
+    <ClCompile Include="handlers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="handlers.cpp">
+    <ClCompile Include="HostPSHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,13 +47,16 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParsePostscript.h">
+    <ClInclude Include="HostPostscript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ParsePostscript.rc">
+    <ResourceCompile Include="HostPostscript.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.md" />
   </ItemGroup>
 </Project>

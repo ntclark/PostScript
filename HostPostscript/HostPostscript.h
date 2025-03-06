@@ -12,7 +12,7 @@
 #include "resource.h"
 
 #include "Properties_i.h"
-#include "PostScriptGen2_i.h"
+#include "PostScriptInterpreter_i.h"
 
 
 class ParsePSHost : public IUnknown {
