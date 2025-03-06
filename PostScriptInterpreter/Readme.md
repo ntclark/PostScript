@@ -65,7 +65,7 @@ resulting PostScript language file. If you have a need to develop a process that
 I have no problem giving you an installer for that print driver. Simply ask and you shall receive, send an e-mail to Nate@EnVisioNateSW.com.
 
 As a real world example of this, consider configuring the print driver I mention to launch the [HostPostscript](../HostPostscript) executable from this repository.
-If you do that, you can print any document whatsoever, and immediately render it to your screen, out of the box today.
+If you do that, you can print any document whatsoever, and immediately render it to your screen.
 
 ## Analyzing data in/from PDF files
 
@@ -75,18 +75,19 @@ from our PDF files", for example, in proposals for contract work.
 Well, why not think upstream just a bit, and rather than actually create a 'PDF file and *then* do your analysis on *that*, instead, 
 let the PS interpreter spit out the information you're looking *while* the PostScript language is being parsed by a smart, and more advanced, interpreter, such as this one?
 
-How can this particular repository help you do that ? Why, with COM (Component Object Model) Event interfaces naturally.
+How can this particular repository help you do that ? Why, with COM Event interfaces naturally.
 
 To learn more of this, please checkout the information about [event interfaces](./Sources/COM%20Events) in this system.
 
 ## What about the PDF creation tools
 
-The ultimate goal of this repository and it's future capabilities is in fact developing the tools to enable the creation of PDF artifacts from the PostScript source.
+The ultimate goals of this repository and it's future capabilities do entail developing the tools for the creation of PDF documents from the PostScript source.
 
 However, this is really a two step evolution. 
 
-First, the idea expressed above to obtain information within '.ps files at the time they are parsed is a very real
-and useful capability. I need this functionality myself in some of my other work and having that available and implemented here is in fact a viable product in it's own right.
+First, the ability to simply render the document without necesssarily creating a PDF has been very important in my work and I rely on it heavilty.
+Also, the idea expressed above to obtain information within '.ps files at the time they are parsed is also a useful capability.
+I need this functionality myself in some of my other work and having that available and implemented here is in fact a viable product in it's own right.
 
 Second, if you really want PDF generation right now, there are other Open Source options for you. 
 One such option that everyone knows is GhostScript. There are others you can find via a google search
@@ -99,12 +100,13 @@ In fact, my entire reason for writing this system is because I believe GhostScri
 I guess those shocked by that statement probably think I'm unfair and wonder if I had bothered to read the documentation or usage notes.
 What those people may have assumed is that I'm talking about "usage" - I am not.
 
-You see, *anytime* I'm going to use any software whatsoever in a system that will have my name associated it, I will always bring that software as a project sid by side into my
+You see, *anytime* I'm going to use any software I didn't write in a system that will have my name associated with it, I will always bring that software as a project side by side into my
 development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understanding everything that software
 does and how it does it, and most importantly - what are, and how did they implement, the underlying algorithms, equations, or any aspect
 of the solution domain for the system.
+You could say I trust no-one but myself in terms of assuring defect free, robust, and extensible software, and you'd be 100% correct.
 
-Put simply, I will **not** put my name on software if it includes software that I do not **completely** understand. I must also believe that it is completely free 
+Put simply, I will **not** put my name on software if it includes software that I do not **completely** understand. I must also believe that it is 100% free 
 of bugs and has at least some modicum of cleanliness, readability, efficiency and ability for maintainability and extensibility.
 
 Therefore, as it happens, I have rarely actually used Open Source in my software. I use open source to learn of it's strategy in satisfying the domain space, and I'll
@@ -115,7 +117,7 @@ software itself, the antiquated arrangement of the sources, etc[^2]. Yes - I gav
 I just need to start this from scratch. The Adobe PostScript books are very detailed and precise, why not just start there and get it done right once and for all.
 
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
-that was even worse.
+that was even worse and I have nothing to show for, again, weeks of my time trying to follow it.
 
 [^1]: **However, I encourage you to use your debugger and step through the code in all of these interfaces in order to really understand how it works. It is ultimately somewhat simple, though the quality of the MS documentation may leave you wondering as to that.**
 

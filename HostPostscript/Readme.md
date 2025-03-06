@@ -1,6 +1,9 @@
 # HostPostscript
 
-This is the GUI host used to embed the actual [PostScript interpreter](../PostScript) for development purposes, or, for that matter demonstration purposes.
+This is the GUI host used to embed the actual [PostScript interpreter](../PostScript) for development purposes, or, for demonstration purposes, or, if you want,
+as something that you could modify to be the document rendering component of your existing or planned software system.
+
+This latter concept is discussed [here](../PostScriptInterpreter/#note).
 
 It is a windows application that implements the appropriate COM interfaces used to host the PS Interpreter COM object
 
