@@ -21,7 +21,7 @@ no need to worry about it because the MS Direct2D components do that for you pre
 for Direct2D and if so, great, maybe someday I'll try it.
 But, as I've said before "The needs of the many outweigh the needs of the few" - Spock.
 
-In fact, rendering itself actually does <u>not</u> occur using this component. Instead, it uses yet another component
+In fact, rendering itself also does **not** occur using this component. Instead, it uses yet another component
 of this system (as a COM object) to actually [render the graphics](../EnVisioNateSW_Renderer).
 That component is not specific to font rendering at all, it is a powerful graphics engine in it's own right.
 Font rendering in this context is just drawing and filling shapes that are defined by *this* component, the "Font Manager".
