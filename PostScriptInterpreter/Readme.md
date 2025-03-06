@@ -50,13 +50,22 @@ With this PS Interpreter as an embeddable COM object it is very easy to render t
 windows application you may be developing. All you need is a device context to point the rendering to. And, *that* could be one from a 
 physical printer for that matter.
 
-For guidance on rendering PostScript in a Windows application, see the [HostPostScript](../HostPostscript) project in this repository.
+For guidance on rendering PostScript in a Windows application, see the [HostPostscript](../HostPostscript) project in this repository.
 That project uses the COM interfaces (IOleObject, etc) that are necessary to instantiate and control a visual COM object while *this* project
 defines [interfaces](./Sources/COM%20Interfaces) that allow it to be a client hosted into a project like HostPostscript.
 
 For that matter, these two projects, host and client, utilize the COM boilerplate code that I have used for more than a decade
-to achieve embedding a visual component into a hosting windows application. This code is robust and almost completely plug and play
+to achieve the embedding of a visual component into a hosting windows application. This code is robust and almost completely plug and play
 for future projects you may want to build[^1].
+
+# Note:
+
+I have developed a Print to PostScript/PDF print driver for my CursiVision product. That print driver, out of the box, can be configured to do **anything** with the 
+resulting PostScript language file. If you have a need to develop a process that could be front-ended by printing a file (which can be automated by the way),
+I have no problem giving you an installer for that print driver. Simply ask and you shall receive, send an e-mail to Nate@EnVisioNateSW.com.
+
+As a real world example of this, consider configuring the print driver I mention to launch the [HostPostscript](../HostPostscript) executable from this repository.
+If you do that, you can print any document whatsoever, and immediately render it to your screen, out of the box today.
 
 ## Analyzing data in/from PDF files
 
@@ -69,12 +78,6 @@ let the PS interpreter spit out the information you're looking *while* the PostS
 How can this particular repository help you do that ? Why, with COM (Component Object Model) Event interfaces naturally.
 
 To learn more of this, please checkout the information about [event interfaces](./Sources/COM%20Events) in this system.
-
-# Note:
-
-I have developed a Print to PostScript/PDF print driver for my CursiVision product. That print driver, out of the box, can be configured to do **anything** with the 
-resulting PostScript language file. If you have a need to develop some PostScript analyzation process as above, and you need a front end for your process
-I have no problem giving you an installer for that print driver. Simply ask and you shall receive, send an e-mail to Nate@EnVisioNateSW.com.
 
 ## What about the PDF creation tools
 
