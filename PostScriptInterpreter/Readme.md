@@ -12,10 +12,10 @@ objects that can be used for their respective purposes anywhere you need the fun
 PostScript is the programming language that built Adobe. You probably know that originally (mid 80's ?) the language interpreter was generally executing in the firmware of laser printers. 
 I became enamored with the language around that time because we needed rich and powerful (and flexible) document processing capabilities in my place of employment.
 I obtained and quickly consumed the famous red and green PostScript reference manuals published by Adobe which fully described the language.
-Using this understanding of the language, I wrote a document processing mark up language, like TeX, in PL/I in a VAX environment. That tool was very well
-received and utilized extensively by engineering and mathematics staff.
+I wrote a document processing mark up language, like TeX, in PL/I in a VAX environment that would output PostScript compatible code to a file or printer.
+That tool was very well received and utilized extensively by engineering and mathematics staff.
 
-As a "forth type" language, it was all new to me at the time, but I soon started hearing things like "begin 4 1 roll dup exch pop def end" in my dreams.
+As a language similar to forth, it was all new to me at the time, but I soon started hearing things like "begin 4 1 roll dup exch pop def end" in my dreams.
 That's not a real statement but you get the idea.
 
 If you've only heard of PostScript in the context of printers and never in the realm of windows applications, you may be wondering why anyone (me) needs to create a new interpreter for it.
@@ -35,15 +35,31 @@ To believe PostScript is going away is to believe PDF files are going away and a
 
 However, creating PDF files is **only one** possibility enabled by PostScript sources.
 
+### PostScript rendering
+
+This project was built to *display*, or "render" PostScript sources exactly as they would look if they *were* transformed to PDF.
+
+In fact, you may not want PDF at all, maybe you just want to paint the document in some Windows application window. No need to go to the extra,
+significantly complex, step of creating a PDF file, and then use some other tool, like pdfium, to display it. I've worked with pdfium hosting
+PDF documents in a series of web pages using the MSHTML, or WebView tool. Though powerful, it is by no means trivial. 
+
+With this PS Interpreter as an embedable COM object it is very easy to render the output of a Postscript printer ('.ps files) in any
+windows application you may be developing. All you need is a device context to point the rendering too. And, *that* could be one from a 
+physical printer for that matter.
+
+For guidance on rendering PostScript in a Windows application, see the [Host PostScript](../HOstPostscript) project in this repository.
+
+## Analyzing data in/from PDF files
+
 Often I see talk of the need to analyze and/or otherwise scrape or pull data from '.PDF files. I see it all the time: "extract this or that 
-from our PDF files" in proposals for contract work.
+from our PDF files", for example, in proposals for contract work.
 
 Well, why not think upstream just a bit, and rather than actually create a 'PDF file and *then* do your analysis on *that*, instead, 
-let the PS interpreter spit out the data you're looking *while* the PostScript language is being parsed by *this* interpreter?
+let the PS interpreter spit out the information you're looking *while* the PostScript language is being parsed by a smart, and more advanced, interpreter, such as this one?
 
 How can this particular repository help you do that ? Why, with COM (Component Object Model) Event interfaces naturally.
 
-To learn more of this, please checkout the information about [interfaces](./Sources/COM%20Events) in this system.
+To learn more of this, please checkout the information about [event interfaces](./Sources/COM%20Events) in this system.
 
 # Note:
 
