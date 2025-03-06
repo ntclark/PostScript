@@ -4,7 +4,8 @@
 
 #### Everything else was built to support the interpreter
 
-However, the [Font Manager](../EnVisioNateSW_FontManager) and [Renderer](../EnVisioNateSW_Renderer) are both full featured COM objects that can be used for their respective purposes anywhere you need the functionality.
+However, the [Font Manager](../EnVisioNateSW_FontManager) and [Renderer](../EnVisioNateSW_Renderer) are both full featured COM 
+objects that can be used for their respective purposes anywhere you need the functionality completely independent of the interpreter.
 
 ## A PostScript language interpreter
 
@@ -23,7 +24,7 @@ If you've only heard of PostScript in the context of printers and never in the r
 
 > PostScript is a dead language and is going away
 
-This is absolutely <u>not true</u>.
+This is absolutely **not true**.
 
 First, the PostScript language is actually used a lot more than people may realize. Microsoft ships the pscript5 dll on Windows. That component makes it incredibly easy to create a
 "PostScript compatible" print driver that can print from literally *anything* and produce a robust PostScript ('.ps) language output file. And those files, given tools downstream from the print driver, are the
