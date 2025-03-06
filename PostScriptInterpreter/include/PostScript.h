@@ -167,7 +167,8 @@ class job;
         STDMETHOD(FindConnectionPoint)(REFIID riid,IConnectionPoint **);
         STDMETHOD(EnumConnectionPoints)(IEnumConnectionPoints **);
 
-        //        void fire_DataEvent(long status);
+        void fire_RenderChar(POINT *pPoint,char theCar);
+        void fire_RenderString(POINT *pPoint,char *pszString);
 
         private:
 

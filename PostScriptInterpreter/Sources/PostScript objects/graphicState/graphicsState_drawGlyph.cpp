@@ -24,6 +24,15 @@
 
     moveto(&endPoint);
 
+    POINT ptStart{(int)startPoint.x,(int)startPoint.y};
+
+    if ( NULL == pPStoPDF -> HwndClient() ) {
+        ptStart.x = -1;
+        ptStart.y = -1;
+    }
+
+    pPStoPDF -> pIConnectionPointContainer -> fire_RenderChar(&ptStart,(char)glyphIndex);
+
     return;
     }
 
@@ -85,6 +94,18 @@
         startPoint = endPoint;
 
     }
+
+    POINT ptStart{(int)currentPageSpacePoint.x,(int)currentPageSpacePoint.y};
+
+    if ( NULL == pPStoPDF -> HwndClient() ) {
+        ptStart.x = -1;
+        ptStart.y = -1;
+    }
+
+    if ( ! ( NULL == pBinary ) )
+        pPStoPDF -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pBinary -> Contents());
+    else
+        pPStoPDF -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pString -> Contents());
 
     return;
     }

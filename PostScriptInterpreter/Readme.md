@@ -67,6 +67,8 @@ I have no problem giving you an installer for that print driver. Simply ask and 
 As a real world example of this, consider configuring the print driver I mention to launch the [HostPostscript](../HostPostscript) executable from this repository.
 If you do that, you can print any document whatsoever, and immediately render it to your screen.
 
+For that matter, take the HostPostscript out of this repository - and modify it to be the rendering component of your some system you're developing.
+
 ## Analyzing data in/from PDF files
 
 Often I see talk of the need to analyze and/or otherwise scrape or pull data from '.PDF files. I see it all the time: "extract this or that 

@@ -23,6 +23,7 @@
     public:
 
         job(char *pszFileName,HWND hwndSurface,IPostScriptTakeText *pIPostScriptTakeText);
+        job() : job(NULL,NULL,NULL) {}
         ~job();
 
         void *CurrentObjectHeap();
@@ -77,7 +78,7 @@
 
    private:
 
-        job();
+        //job();
 
         void resolve();
         object *resolve(char *pszObjectName);

@@ -50,7 +50,17 @@
 
     HRESULT PStoPDF::ParseText(char *pszStream,long length,void *pv_pipage,void *pvIPostScriptTakeText,HDC hdcTarget,RECT *prcWindowsClip) {
 
-#if 0
+#if 1
+    if ( pJob )
+        delete pJob;
+
+    pJob = new job();
+
+    WaitForSingleObject(pJob -> hsemIsInitialized,INFINITE);
+
+    pJob -> execute(pszStream);
+
+#else
     if ( pJob )
         delete pJob;
 

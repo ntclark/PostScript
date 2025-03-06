@@ -393,5 +393,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />
+    <None Include="Sources\COM Interfaces\Readme.md">
+      <Filter>Source Files\COM Interfaces</Filter>
+    </None>
+    <None Include="Sources\COM Events\Readme.md">
+      <Filter>Source Files\COM Events</Filter>
+    </None>
   </ItemGroup>
 </Project>

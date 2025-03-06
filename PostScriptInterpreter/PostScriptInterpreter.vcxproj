@@ -417,6 +417,8 @@ Exit 0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />
+    <None Include="Sources\COM Events\Readme.md" />
+    <None Include="Sources\COM Interfaces\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

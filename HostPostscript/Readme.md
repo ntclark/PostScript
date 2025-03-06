@@ -5,11 +5,11 @@ as something that you could modify to be the document rendering component of you
 
 This latter concept is discussed [here](../PostScriptInterpreter/#note).
 
-It is a windows application that implements the appropriate COM interfaces used to host the PS Interpreter COM object
+This project is a windows application that implements the appropriate COM interfaces used to host the PS Interpreter COM object
 
 As such, it is an excellent example of my COM centric interaction techniques between a windows user interface application, and any given COM object
 that understands the IOleObject type of interfaces.
 
 Specifically, this project demonstrates to you how you would embed the main PostScript interpreter engine in some system **you** may be developing in order 
-to seamlessly implement PostScript file ('.ps) interpretation for whatever reason you might find necessary.
+to seamlessly implement PostScript file ('.ps) interpretation or rendering for whatever reason you might find necessary.
 
