@@ -163,7 +163,8 @@ If you're class needs to have "reminders" about what's in it, maybe you should g
 
 ### On the other hand about commenting
 
-Take a look at sources in this repository that handle the PostScript operators. Currently there are two: [operatorsAtoL.cpp](./PostScript/Sources/operators/operators_AtoL.cpp), and [operatorsMtoZ.cpp](./PostScript/Sources/operators/operators_MtoZ.cpp).
+Take a look at sources in this repository that handle the PostScript operators. Currently there are two: 
+[operatorsAtoL.cpp](./PostScriptInterpreter/Sources/operators/operators_AtoL.cpp), and [operatorsMtoZ.cpp](./PostScriptInterpreter/Sources/operators/operators_MtoZ.cpp).
 
 First note that it is pretty obvious 1) what's in these files, and 2) where I need to go to find an operator given the first letter of it's name.
 
