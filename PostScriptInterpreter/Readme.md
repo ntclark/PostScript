@@ -138,9 +138,9 @@ with open source**
 **Having been writing software for 50 years, and being goood at it, and especially having produced high quality systems, I am taking it on myself to say these things
 whether or not doing so makes me popular among my peers.**
 
-<span style="font-size: 2Em">**What I'm saying needs to be said - and my goal is very much for the good of the state of software development. 
+<span style="font-size: 2Em">What I'm saying needs to be said - and my goal is very much for the good of the state of software development. 
 My hope is that, at nearing 70 years of age, these thoughts will be discovered and understood by someone with the power of influence and change greater than mine,
-so that I will have done something with greater impact than just writing a few sofware systems in my life and career**</span>
+so that I will have done something with greater impact than just writing a few sofware systems in my life and career</span>
 
 [^1]: **However, I encourage you to use your debugger and step through the code in all of these interfaces in order to really understand how it works. It is ultimately somewhat simple, though the quality of the MS documentation may leave you wondering as to that.**
 
