@@ -7,8 +7,9 @@ mechanism to allow the tool the ability to let you know when certain things happ
 
 You need to implement an event interface.
 
-To be clear, *your* software "implements" an interface. That is, you write the code that follows a precise definition in terms of calling convention, parameters, and order of functions.
-*Then*, you provide a pointer **to** that interface to *this* object, and the interpreter will call the appropriate functions in your interface with the specific parameters at the proper time.
+To be clear, *your* software "implements" an interface. That is, you write the code that follows a precise definition in terms of 
+calling convention, parameters, and order of functions. *Then*, you provide a pointer **to** that interface to the interpreter 
+object, and the interpreter will call the appropriate functions in your interface with the specific parameters at the proper time.
 
 You may already be familiar with all of that, though if it helps there will be a step by step later on.
 
@@ -30,12 +31,12 @@ The typical usage of this interface is probably when you are looking at what tex
 As each element of text is found in the PostScript language file, the system will pass that text and it's location 
 (in units of points) in the document and you can do with it whatever you want.
 
-Text from PostScript files may be printed in a couple of ways. Some text may be placed in the result a character at a time. 
+Text from PostScript files may be represented in a couple of ways. Some text may be placed in the result a character at a time. 
 In other words, the PostScript code contains a "moveto" command followed by the output of a single character, followed
 by another "moveto" for the next character[^1], and so on. This would result in multiple calls to `RenderChar` in the events interface.
 
 Other times an entire string, or parts of a string, might be placed in the document. In this case, a call to `RenderString` would occur.
-The software in this repository has no control over how the print processor (typically pscript5.dll) chooses to print the text.
+The software in this repository has no control over how the print processor, or creator of the PostScript ('.ps) file chooses to represent the text.
 
 It is also important to understand that some print jobs might use a Type3 font. This type of font does not have recognizable
 "characters" that you would be able to actually "extract" because these "characters" are a series of PostScript compatible
@@ -62,10 +63,10 @@ If you don't already know how, I'll describe here the steps you take to integrat
 
 If you'd like to see an example, check out the [psDemo](../../../psDemo) project, we'll use code from that example in this material.
 
-### Ask if the intepreter supports the event interfaCE
+### Ask if the intepreter supports events
 
-After you get a pointer to any interface the intepreter provides, IPostScript, for exmaple, probably by calling CoCreateInstance, you then ask for an IConnectionPointContainer
-interface from that interface:
+After you get a pointer to any interface the intepreter provides, IPostScript, for exmaple, probably by calling CoCreateInstance, you then ask 
+for an IConnectionPointContainer interface from that interface:
 
 ```
 #include "PostScriptInterpreter_i.h"
@@ -85,11 +86,15 @@ interface from that interface:
 
 ```
 
+You would have gotten an S_OK in the hr from the last statement.
+
+### Okay then, now ask the connection point container if it supports this specific interface
+
 So, now, with this last interface, you have the ability to ask the interpreter, "What outgoing (events or "source") interfaces
-do you support anyway"?
+do you support anyway"? You must ask this for specific interfaces you want, you don't get a list back.
 
 Note that I've used the '_i.h and '_i.c include files, there are many ways to do this but if you are going to 
-actually building the interpreter, you'll have these files availalable anyway. You can also use #importlib 
+actually be building the interpreter, you'll have these files availalable anyway. You can also use #importlib 
 but I keep forgetting how to do that so won't be describing that strategy here.
 
 So now, you need to ask the interpreter if it has a "connection point" for the specific interface of 
@@ -104,6 +109,8 @@ interest, that being IPostScriptEvents.
 
 So, the interpreter will respond, "Of course I have that connection point", and place a pointer to it in the
 pIConnectionPoint parameter.
+
+### Since the source interface is supported, tell the interpreter you want to be a sink
 
 All that is left to do now is let the interpreter know that you would like to receive calls on your implementation
 at the approprite times. Therefore, you "Advise" the connection point that you are out there, waiting for 
@@ -120,11 +127,20 @@ just those notifications.
 
 I usually pass a pointer to my object's IUnknown when I Advise a "source" object of my interest in being a "sink".
 
-Mostly because I like the way it looks, and partially because my event interfaces are usually what I call either
-"tear off" interfaces, or in some cases NULL pointers that won't get populated until *during* MY QueryInterface, 
+Mostly because I like the way it looks, and partially because my event interfaces may be what I call either
+"tear off" interface, or in some cases NULL pointers that won't get populated until *during* MY QueryInterface, 
 because I don't actually create them until and when they are actually going to be used. 
 This supports that model, I don't create an instance of an events interface up front, only when I know they're being
 used, which is obviously when some other entity asks for them.
+
+When you are no longer interested in receiving the events, at system shutdown maybe ?, you should call
+Unadvise on that IConnectionPointContainer you recieved. Passing the cookie you recieved tells the interpreter
+exactly which pointer to the sink it should release.
+
+```
+    pIConnectionPoint -> Unadvise(dwCookie);
+
+```
 
 You will also notice I don't check the return codes from these calls on the external (event source object) interfaces.
 

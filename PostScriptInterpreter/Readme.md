@@ -16,7 +16,7 @@ I wrote a document processing mark up language, like TeX, in PL/I in a VAX envir
 That tool was very well received and utilized extensively by engineering and mathematics staff.
 
 As a language similar to forth, it was all new to me at the time, but I soon started hearing things like "begin 4 1 roll dup exch pop def end" in my dreams.
-That's a real snipped of PostScript.
+That's a real snippet of PostScript.
 
 If you've only heard of PostScript in the context of printers and never in the realm of windows applications, you may be wondering why anyone (me) needs to create a new interpreter for it.
 
@@ -46,7 +46,7 @@ In fact, you may not want PDF at all, maybe you just want to paint the document 
 significantly complex, step of creating a PDF file, and then use some other tool, like pdfium, to display it. I've worked with pdfium hosting
 PDF documents in a series of web pages using the MSHTML, or WebView tool. Though powerful, it is by no means trivial. 
 
-With this PS Interpreter as an embeddable COM object it is very easy to render the output of a Postscript printer ('.ps files) in any
+With this PS Interpreter as an embeddable COM object it is very easy to render a Postscript printer language file ('.ps files) in any
 windows application you may be developing. All you need is a device context to point the rendering to. And, *that* could be one from a 
 physical printer for that matter.
 
@@ -56,7 +56,10 @@ defines [interfaces](./Sources/COM%20Interfaces) that allow it to be a client ho
 
 For that matter, these two projects, host and client, utilize the COM boilerplate code that I have used for more than a decade
 to achieve the embedding of a visual component into a hosting windows application. This code is robust and almost completely plug and play
-for future projects you may want to build[^1].
+for future projects you may want to build[^1]. Check it out and use it in one of your own projects if desired. Like all my software,
+though it is part of the projects in this repository - I have done as much as I can to enable you to see exactly HOW to extract it
+and use it elsewhere. If source filters and folders like "COM Interfaces/being hosted" aren't useful, then I'll have to rethink
+how to organize this stuff even better (but they are useful).
 
 # Note:
 
@@ -67,7 +70,7 @@ I have no problem giving you an installer for that print driver. Simply ask and 
 As a real world example of this, consider configuring the print driver I mention to launch the [HostPostscript](../HostPostscript) executable from this repository.
 If you do that, you can print any document whatsoever, and immediately render it to your screen.
 
-For that matter, take the HostPostscript out of this repository - and modify it to be the rendering component of your some system you're developing.
+For that matter, take the HostPostscript out of this repository - and modify it to be the rendering component of some system you're developing.
 
 ## Analyzing data in/from PDF files
 
@@ -99,17 +102,25 @@ Another far better option in the future will be right here. Watch this space, my
 My disdain for most Open Source is not a secret, if you're curious about that, peruse my thoughts on the [root page](../) readme.
 
 In fact, my entire reason for writing this system is because I believe GhostScript is an absolute nightmare to understand.
-I guess those shocked by that statement probably think I'm unfair and wonder if I had bothered to read the documentation or usage notes.
+
+I'm sure those shocked by that statement probably think I'm unfair and wonder if I had bothered to read the documentation or usage notes.
 What those people may have assumed is that I'm talking about "usage" - I am not.
 
 You see, *anytime* I'm going to use any software I didn't write in a system that will have my name associated with it, I will always bring that software as a project side by side into my
 development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understanding everything that software
 does and how it does it, and most importantly - what are, and how did they implement, the underlying algorithms, equations, or any aspect
 of the solution domain for the system.
-You could say I trust no-one but myself in terms of assuring defect free, robust, and extensible software, and you'd be 100% correct.
 
-Put simply, I will **not** put my name on software if it includes software that I do not **completely** understand. I must also believe that it is 100% free 
-of bugs and has at least some modicum of cleanliness, readability, efficiency and ability for maintainability and extensibility.
+You could say I trust no-one but myself in terms of assuring defect free, robust, and extensible software, and you'd be 90% correct.
+Actually, I don't even trust myself - the only thing I trust is what I see executing in the CPU and what I see on the other side of executing in the CPU.
+In otherwords, with everthing I develop I am in the debugger watching every single line execute and I am in there for way more time than I'm in the editor itself.
+It is painfully obvious that the vast majority of Open Source Software developers, from the standpoint of lack of readability alone, have a tenth the 
+dedication that I do for debugging, and that alone is enough to reject the use of that system in my software.
+
+Put simply, I will **not** put my name on software if it includes parts that I do not **completely** understand. I must also believe that it is 100% free 
+of bugs and has at least some modicum of cleanliness, readability, efficiency and ability for maintainability and extensibility. The term "black box" has
+a use in something like electronics. In software, not so much. It's bad enough I have to trust Windows internals without seeing the source code but I 
+can't bring myself to use something when I have the option to see what it's made of.
 
 Therefore, as it happens, I have rarely actually used Open Source in my software. I use open source to learn of it's strategy in satisfying the domain space, and I'll
 usually inspect multiple approaches. Ultimately, I generally go back to inventing my own approach based on any definitive documentation if I can find that.
