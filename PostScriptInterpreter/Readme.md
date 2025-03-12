@@ -132,6 +132,14 @@ I just need to start this from scratch. The Adobe PostScript books are very deta
 I'll have to say as well, if I thought GhostScript was bad - I was in for double shock when I tried to understand font technology/rendering with Freetype - AACH 
 that was even worse and I have nothing to show for, again, weeks of my time trying to follow it.
 
+**I have very strong opinions about software quality, and Open Source in particular. As far as I know, closed source is just as bad, but all I can do is  start 
+with open source**
+
+**Having been writing software for 50 years, and being goood at it, and especially having produced high quality systems, I am taking it on myself to say these things
+whether or not doing so makes me popular among my peers.**
+
+<span style="font-size: 2Em">**What I'm saying needs to be said - and my goal is very much for the good of the state of software development**</span>
+
 [^1]: **However, I encourage you to use your debugger and step through the code in all of these interfaces in order to really understand how it works. It is ultimately somewhat simple, though the quality of the MS documentation may leave you wondering as to that.**
 
 [^2]: **Yes, okay, it's decades old, I get that and maybe I'm unfair to the original authors.*However*, maybe if the system truly is the pride of those authors, why then, wouldn't they want to see it grow and mature and keep up with the times. *That* is what I would do and I think that *my* dedication and promise to the software that I bring into this world gives me at least some license to criticize those who abandon their own creations.**
