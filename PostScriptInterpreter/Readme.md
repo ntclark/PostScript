@@ -107,7 +107,7 @@ I'm sure those shocked by that statement probably think I'm unfair and wonder if
 What those people may have assumed is that I'm talking about "usage" - I am not.
 
 You see, *anytime* I'm going to use any software I didn't write in a system that will have my name associated with it, I will always bring that software as a project side by side into my
-development environment and build and debug through it at the **very** deepest level. I insist in thoroughly understanding everything that software
+development environment and build and debug through it at the **very** deepest level. I insist on thoroughly understanding everything that software
 does and how it does it, and most importantly - what are, and how did they implement, the underlying algorithms, equations, or any aspect
 of the solution domain for the system.
 
@@ -115,12 +115,12 @@ You could say I trust no-one but myself in terms of assuring defect free, robust
 Actually, I don't even trust myself - the only thing I trust is what I see executing in the CPU and what I see on the other side of executing in the CPU.
 In otherwords, with everthing I develop I am in the debugger watching every single line execute and I am in there for way more time than I'm in the editor itself.
 It is painfully obvious that the vast majority of Open Source Software developers, from the standpoint of lack of readability alone, have a tenth the 
-dedication that I do for debugging, and that alone is enough to reject the use of that system in my software.
+dedication that I do for debugging, and that alone is enough for me to reject the use of that system in my software.
 
 Put simply, I will **not** put my name on software if it includes parts that I do not **completely** understand. I must also believe that it is 100% free 
 of bugs and has at least some modicum of cleanliness, readability, efficiency and ability for maintainability and extensibility. The term "black box" has
 a use in something like electronics. In software, not so much. It's bad enough I have to trust Windows internals without seeing the source code but I 
-can't bring myself to use something when I have the option to see what it's made of.
+can't bring myself to use something without thorough inspection when I do have the option to see what it's made of.
 
 Therefore, as it happens, I have rarely actually used Open Source in my software. I use open source to learn of it's strategy in satisfying the domain space, and I'll
 usually inspect multiple approaches. Ultimately, I generally go back to inventing my own approach based on any definitive documentation if I can find that.
@@ -138,7 +138,9 @@ with open source**
 **Having been writing software for 50 years, and being goood at it, and especially having produced high quality systems, I am taking it on myself to say these things
 whether or not doing so makes me popular among my peers.**
 
-<span style="font-size: 2Em">**What I'm saying needs to be said - and my goal is very much for the good of the state of software development**</span>
+<span style="font-size: 2Em">**What I'm saying needs to be said - and my goal is very much for the good of the state of software development. 
+My hope is that, at nearing 70 years of age, these thoughts will be discovered and understood by someone with the power of influence and change greater than mine,
+so that I will have done something with greater impact than just writing a few sofware systems in my life and career**</span>
 
 [^1]: **However, I encourage you to use your debugger and step through the code in all of these interfaces in order to really understand how it works. It is ultimately somewhat simple, though the quality of the MS documentation may leave you wondering as to that.**
 
