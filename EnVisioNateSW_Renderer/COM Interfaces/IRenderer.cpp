@@ -6,27 +6,9 @@
 #include <algorithm>
 
     HRESULT Renderer::Prepare(HDC theHDC) {
-
     hdc = theHDC;
-
-    setupRenderer();
-
-    pID2D1PathGeometry = NULL;
-
-    HRESULT hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
-}
-
-    hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
-}
-
+    if ( NULL == pID2D1Factory1 ) 
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,&pID2D1Factory1);
     return S_OK;
     }
 
@@ -58,9 +40,6 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
 
 
     HRESULT Renderer::Render() {
-
-    if ( NULL == pID2D1Factory1 )
-        return E_UNEXPECTED;
 
     if ( NULL == pIGraphicElements -> pFirstPath )
         return E_UNEXPECTED;
@@ -96,6 +75,8 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
         p = p -> pNext;
     }
 
+    setupRenderer();
+
     std::sort(fillPathSorter.begin(), fillPathSorter.end(), [=](std::pair<long,long> &a, std::pair<long,long > &b) { return a.second < b.second; });
 
     for ( std::pair<long,long> sortedPair : fillPathSorter ) {
@@ -103,6 +84,8 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
         std::list<GraphicElements::path *> *pList = fillPathsMap[sortedPair.first];
 
         pIGraphicParameters -> resetParameters(pList -> front() -> szLineSettings);
+
+        setupPathAndSink();
 
         for ( GraphicElements::path *p : *pList ) {
 
@@ -119,7 +102,11 @@ continue;
 
         pList -> clear();
 
+        closeSink();
+
         fillRender();
+
+        shutdownPathAndSink();
 
     }
 
@@ -136,6 +123,8 @@ continue;
 
         pIGraphicParameters -> resetParameters(pList -> front() -> szLineSettings);
 
+        setupPathAndSink();
+
         for ( GraphicElements::path *p : *pList ) {
 
 if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) {
@@ -151,7 +140,11 @@ continue;
 
         pList -> clear();
 
+        closeSink();
+
         strokeRender();
+
+        shutdownPathAndSink();
 
     }
 
@@ -162,6 +155,8 @@ continue;
 
     pIGraphicElements -> pFirstPath = NULL;
     pIGraphicElements -> pCurrentPath = NULL;
+
+    shutdownRenderer();
 
     return S_OK;
     }

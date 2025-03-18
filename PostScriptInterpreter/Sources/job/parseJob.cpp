@@ -59,7 +59,8 @@
 
     unsigned int __stdcall job::executeThread(void *pvThis) {
     job *pThis = reinterpret_cast<job *>(pvThis);
-    WaitForSingleObject(pThis -> hsemIsInitialized,INFINITE);
+    if ( ! ( INVALID_HANDLE_VALUE == pThis -> hsemIsInitialized ) )
+        WaitForSingleObject(pThis -> hsemIsInitialized,INFINITE);
     pThis -> execute((char *)(pThis -> pStorage));
     return 0L;
     }

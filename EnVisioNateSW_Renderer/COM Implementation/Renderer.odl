@@ -19,10 +19,12 @@ library Renderer {
     interface IRenderer : IUnknown {
 
         HRESULT Prepare(HDC);
+
         [propput] HRESULT TransformMatrix(UINT_PTR /*XFORM*/ pXformToDeviceSpace);
         [propget] HRESULT IsPrepared([out,retval] BOOL *pIsPrepared);
         [propput] HRESULT DownScale(FLOAT downScale);
         [propput] HRESULT Origin(POINTF origin);
+
         HRESULT Render();
         HRESULT Reset();
 

@@ -4,10 +4,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnVisioNateSW_FontManager", "EnVisioNateSW_FontManager\EnVisioNateSW_FontManager.vcxproj", "{216C47AD-6C9A-47F2-ADC5-877A3C5BD85D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3529245-5B1F-4927-B6DD-95DE5F17D08D} = {B3529245-5B1F-4927-B6DD-95DE5F17D08D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnVisioNateSW_Renderer", "EnVisioNateSW_Renderer\EnVisioNateSW_Renderer.vcxproj", "{B3529245-5B1F-4927-B6DD-95DE5F17D08D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HostPostscript", "HostPostscript\HostPostscript.vcxproj", "{5F63389A-7FEB-48CD-8463-1B11145C826B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F55E01B-7491-42CA-9936-5969C84FB14E} = {3F55E01B-7491-42CA-9936-5969C84FB14E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fontDemo", "fontDemo\fontDemo.vcxproj", "{3FEE4F8F-28DA-4044-BA24-220708E216B7}"
 EndProject
@@ -16,6 +22,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "psDemo", "psDemo\psDemo.vcxproj", "{52372572-C133-407E-9406-8AE14D4AA978}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3F55E01B-7491-42CA-9936-5969C84FB14E} = {3F55E01B-7491-42CA-9936-5969C84FB14E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fontManagerDemo", "EnVisioNateSW_FontManager\fontManagerDemo\fontManagerDemo.vcxproj", "{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}"
+	ProjectSection(ProjectDependencies) = postProject
+		{216C47AD-6C9A-47F2-ADC5-877A3C5BD85D} = {216C47AD-6C9A-47F2-ADC5-877A3C5BD85D}
+		{B3529245-5B1F-4927-B6DD-95DE5F17D08D} = {B3529245-5B1F-4927-B6DD-95DE5F17D08D}
 	EndProjectSection
 EndProject
 Global
@@ -74,6 +86,14 @@ Global
 		{52372572-C133-407E-9406-8AE14D4AA978}.Release|Win32.Build.0 = Release|Win32
 		{52372572-C133-407E-9406-8AE14D4AA978}.Release|x64.ActiveCfg = Release|x64
 		{52372572-C133-407E-9406-8AE14D4AA978}.Release|x64.Build.0 = Release|x64
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Debug|Win32.Build.0 = Debug|Win32
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Debug|x64.ActiveCfg = Debug|x64
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Debug|x64.Build.0 = Debug|x64
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|Win32.ActiveCfg = Release|Win32
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|Win32.Build.0 = Release|Win32
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|x64.ActiveCfg = Release|x64
+		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

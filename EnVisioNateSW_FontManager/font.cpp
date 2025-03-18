@@ -51,6 +51,16 @@
         delete matrixStack.top();
         matrixStack.pop();
     }
+    for ( char *p : fontFullNames )
+        delete [] p;
+    for ( char *p : fontStyleNames )
+        delete [] p;
+    for ( char *p : fontScriptNames )
+        delete [] p;
+    fontFullNames.clear();
+    fontStyleNames.clear();
+    fontScriptNames.clear();
+    fontWeights.clear();
     return;
     }
 
@@ -66,19 +76,34 @@
     }
 
 
-    BYTE *font::getGlyphData(unsigned short glyphID) {
+    uint8_t *font::getGlyphData(unsigned short glyphID) {
+
+    /*
+    There are two formats of the loca table: a short format, and a long format. 
+    The format is specified by the indexToLocFormat entry in the 'head' table.
+    Short format
+        Offset16    offsets[numGlyphs + 1]  The local offset divided by 2 is stored.
+    Long format
+        Offset32    offsets[numGlyphs + 1]  The actual local offset is stored.
+    */
+
+    if ( 0 == pHeadTable -> indexToLocFormat ) {
+        uint16_t *pGlyphOffset = (uint16_t *)pLocaTable + glyphID;
+        uint16_t *pNextOffset = (uint16_t *)pLocaTable + glyphID + 1;
+        if ( *pGlyphOffset == *pNextOffset ) 
+            return NULL;
+        uint16_t offsetInGlyphTable = 0;
+        BE_TO_LE_U16(pGlyphOffset,offsetInGlyphTable)
+        return (uint8_t *)pGlyfTable + 2 * offsetInGlyphTable;
+    }
 
     uint32_t *pGlyphOffset = (uint32_t *)pLocaTable + glyphID;
     uint32_t *pNextOffset = (uint32_t *)pLocaTable + glyphID + 1;
-
     if ( *pGlyphOffset == *pNextOffset ) 
         return NULL;
-
     uint32_t offsetInGlyphTable = 0;
-
     BE_TO_LE_U32(pGlyphOffset,offsetInGlyphTable)
-
-    return pGlyfTable + offsetInGlyphTable;
+    return (uint8_t *)pGlyfTable + offsetInGlyphTable;
     }
 
 

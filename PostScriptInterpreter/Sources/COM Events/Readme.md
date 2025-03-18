@@ -142,40 +142,22 @@ exactly which pointer to the sink it should release.
 
 ```
 
-You will also notice I don't check the return codes from these calls on the external (event source object) interfaces.
+In fact, the interpreter won't release it's connection to the event interface until you unadvise your usage and
+you definately don't want to get called on that interface if you've deleted it or are no longer prepared for it.
 
-You will probably also notice I rarely check return codes on *any* calls on QueryInterface, in any case to those I provide in 
-my objects especially.
+Finally, you should always release any other interface (example IConnectionPointContainer) when you're done 
+with them.
 
-The *common* knowledge is that you must always check these return codes at runtime, and implement some sort of 
-`if ( SUCCEEDED(hr) ) {` cascading if - if - if ad infinitum down the line.
+### Another thing about events
 
-The *common* knowledge is pure bullshit.
+It should be mentioned that your interface members are going to be called on the interpreter's thread, and there
+is no guarantee at all what that thread is, you cannot dictate the threading of the intepreter. You can see what it is
+using the debugger for example, but that *may* change on a case by case basis.
 
-The fact is, *you* are building this system, and *you* know what is supposed to be in it's environment, and, as a
-really good developer, you have architected your system and you **religously** debug into and through it so *thoroughly*
-that you know each and every possible thing that could go wrong, **in your own head**. 
-
-You also know that those things can **never** go wrong because you've taken care to prevent even the possibility of them by 
-controlling every aspect of the client machine's environment, with respect to your software's presence in that environment.
-
-AND, for those "must haves" in your client's environment, again with respect to the needs of your system, you discovered
-at installation time whether your system would run, right?
-
-You **did** create an installer, right ? If you *did not* AND your system can't run on some environment, the onus is on you Bub. 
-Go back and re-think your dedication to quality, then may try again
-
-One of the many things that makes me puke is the cascading `if ( SUCCEEDED(hr) ) ` ifs in, not only code related to COM,
-but in all sorts of access to external OS support/services requests.
-
-And the thing that makes me puke even more is the MicroSoft pushes this garbage in literally every example they publish.
-
-The documentation DOES indicate the **specific** return codes for just about everything - USE THEM !! instead, you've got 
-these cascading ifs, and at the bottom of which you've thrown out any and all useful information and, all you can do is put up 
-a "Error in blah-blah"", and you're usually not even grammatical at that.
-
-Damn, who in the hell came up with this strategy !?
-
+Also, you should know that the interpreter will wait for your return when it sends you an event. For this reason,
+you should not do any lengthy computation then. You can create threads and synchronization objects if you want, but 
+should avoid taking a lot of time, for example, don't communicate with the user and wait for an answer in 
+an event handler.
 
 [^1]: Concepts such as kerning and other text positioning or size have no relevance to this software. Those issues are taken care 
 of upstream of any PostScript language file. That file contains all the information necessary to render the text in the

@@ -1,6 +1,7 @@
 
 #include "font.h"
 
+
     otSimpleGlyph::otSimpleGlyph(uint16_t glyphIndex,font *pFont,otGlyphHeader *ph,BYTE *pbInput) : 
         pGlyphHeader(ph),
         pbGlyphData(pbInput)

@@ -4,6 +4,8 @@
 
 #include "matrix.h"
 
+#include <vector>
+
 class job;
 class font;
 class graphicsState;
@@ -145,23 +147,75 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         uint16_t  searchRange{0};     // Maximum power of 2 less than or equal to numTables, times 16 ((2**floor(log2(numTables))) * 16, where “**” is an exponentiation operator).
         uint16_t  entrySelector{0};   // Log2 of the maximum power of 2 less than or equal to numTables (log2(searchRange/16), which is equal to floor(log2(numTables))).
         uint16_t  rangeShift{0};      // numTables times 16, minus searchRange ((numTables * 16) - searchRange).
-        //otTableRecord *pTableRecords{NULL};
-        otTableRecord pTableRecords[32];//{NULL};
-        
+        otTableRecord *pTableRecords{NULL};
+
         BYTE *pTableDirectoryRoot{NULL};
         boolean isCFFFont{false};
 
-        BYTE *table(const char *pszTableName) {
+        std::map<uint32_t,boolean> requiredTables;
+        std::map<uint32_t,boolean> requiredTTOutlineTables;
+        std::map<uint32_t,uint8_t *> tableDirectory;
+
+        uint8_t *table(const char *pszTableName) {
+#if 1
+            uint8_t x[]{(uint8_t)pszTableName[0],(uint8_t)pszTableName[1],(uint8_t)pszTableName[2],(uint8_t)pszTableName[3]};
+            uint32_t tableIndex = *(uint32_t *)x;
+            if ( tableDirectory.end() == tableDirectory.find(tableIndex) )
+                return NULL;
+            return tableDirectory[tableIndex];
+#else
             for ( long k = 0; k < numTables; k++ ) 
                 if ( 0 == strncmp((char *)pTableRecords[k].tag,pszTableName,(long)strlen(pszTableName)) ) 
                     return pTableDirectoryRoot + pTableRecords[k].offset;
             return NULL;
+#endif
+        }
+
+        otTableDirectory() {
+            { uint8_t x[]{'c','m','a','p'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'h','e','a','d'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'h','h','e','a'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'h','m','t','x'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'m','a','x','p'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'n','a','m','e'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'O','S','/','2'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'p','o','s','t'}; uint32_t *y = (uint32_t *)x; requiredTables[*y] = false; }
+            { uint8_t x[]{'g','l','y','f'}; uint32_t *y = (uint32_t *)x; requiredTTOutlineTables[*y] = false; }
+            { uint8_t x[]{'l','o','c','a'}; uint32_t *y = (uint32_t *)x; requiredTTOutlineTables[*y] = false; }
+            /*
+            These font types are not yet supported:
+                Tables Related to CFF Outlines
+                    'CFF '  Compact Font Format 1.0
+                    CFF2    Compact Font Format 2.0
+                    VORG    Vertical Origin (optional table)
+                Table Related to SVG Outlines
+                    'SVG '  The SVG (Scalable Vector Graphics) table
+                Tables Related to Bitmap Glyphs
+                    EBDT    Embedded bitmap data
+                    EBLC    Embedded bitmap location data
+                    EBSC    Embedded bitmap scaling data
+                    CBDT    Color bitmap data
+                    CBLC    Color bitmap location data
+                    'sbix'  Standard bitmap graphics
+            */
         }
 
         ~otTableDirectory() {
-            //if ( ! ( NULL == pTableRecords ) )
-            //   delete [] pTableRecords;
+            if ( ! ( NULL == pTableRecords ) )
+               delete [] pTableRecords;
+            requiredTables.clear();
+            tableDirectory.clear();
+            requiredTTOutlineTables.clear();
             return;
+        }
+
+        boolean allRequiredSupplied(uint8_t *pMissingTableTag) {
+        for ( std::pair<uint32_t,boolean> pPair : requiredTables )
+            if ( ! pPair.second ) {
+                memcpy(pMissingTableTag,&pPair.first,sizeof(uint32_t));
+                return false;
+            }
+        return true;
         }
 
         void load(BYTE *pb) {
@@ -175,10 +229,18 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
             BE_TO_LE_U16(pb,entrySelector)
             BE_TO_LE_U16(pb,rangeShift)
 
+            pTableRecords = new otTableRecord[numTables];
+
             for ( long k = 0; k < numTables; k++ ) {
                 pTableRecords[k].load(pb);
+                uint8_t x[]{pTableRecords[k].tag[0],pTableRecords[k].tag[1],pTableRecords[k].tag[2],pTableRecords[k].tag[3]};
+                uint32_t tableIndex = *(uint32_t *)x;
+                if ( ! ( requiredTables.end() == requiredTables.find(tableIndex) ) )
+                    requiredTables[tableIndex] = true;
+                tableDirectory[tableIndex] = pTableDirectoryRoot + pTableRecords[k].offset;
                 pb += sizeof(otTableRecord);
             }
+
         }
     };
 
@@ -222,6 +284,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
 
     struct otHeadTable {
+
         otHeadTable(BYTE *pb) {
             BE_TO_LE_16(pb,majorVersion)
             BE_TO_LE_16(pb,minorVersion)
@@ -346,7 +409,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
             BE_TO_LE_16(pb,reserved)
             BE_TO_LE_16(pb,reserved2)
             BE_TO_LE_16(pb,reserved3)
-            BE_TO_LE_16(pb,resrved4)
+            BE_TO_LE_16(pb,reserved4)
             BE_TO_LE_16(pb,metricDataFormat)
             BE_TO_LE_16(pb,numberOfHMetrics)
         }
@@ -366,7 +429,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         int16_t reserved;           // (reserved) set to 0
         int16_t reserved2;          // (reserved) set to 0
         int16_t reserved3;          // (reserved) set to 0
-        int16_t resrved4;           // (reserved) set to 0
+        int16_t reserved4;          // (reserved) set to 0
         int16_t metricDataFormat;   //  0 for current format.
         uint16_t numberOfHMetrics;  // Number of hMetric entries in 'hmtx' table
     };
@@ -723,6 +786,11 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
                 pEncodingRecords[k].tableAddress = (UINT_PTR)(void *)(pbStart + pEncodingRecords[k].subtableOffset);
             }
         }
+
+        ~otCmapTable() {
+            delete [] pEncodingRecords;
+        }
+
         struct otEncodingRecord {
             uint16_t platformID{0};        // Platform ID.
             uint16_t encodingID{0};        // Platform-specific encoding ID.
@@ -734,11 +802,16 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         otEncodingRecord  *pEncodingRecords{NULL};  //[numTables]
     };
 
-
     struct otCmapSubtableFormat4 {
+
         otCmapSubtableFormat4(BYTE **ppbData) {
             load(ppbData);
         }
+
+        ~otCmapSubtableFormat4() {
+            delete [] pEndCode;
+        }
+
         uint16_t format{0};        // Format number is set to ?
         uint16_t length{0};        // This is the length in bytes of the subtable.
         uint16_t language{0};      // For requirements on use of the language field, see “Use of the language field in 'cmap' subtables” in this document.
@@ -773,7 +846,9 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
             segCount = segCountX2 / 2;
 
-            BYTE *pEndOfParams = *ppbData + 2 * (4 * segCount + 1);
+            // There are 4 arrays uint16_ts of length segCount
+            // plus 1 uint16_t, and each uint16_t is 2 uint8_ts
+            uint8_t *pEndOfParams = *ppbData + 2 * (4 * segCount + 1);
 
             long cntIdValues = (length - (long)(pEndOfParams - pbStart)) / 2;
 
@@ -801,10 +876,9 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
             pGlyphIdArray = pIdRangeOffsets + segCount;
             for ( long k = 0; k < cntIdValues; k++ )
                 BE_TO_LE_U16(*ppbData,pGlyphIdArray[k])
-
         }
-    };
 
+    };
 
     struct otPostTable {
         otPostTable(BYTE *pbData) {
@@ -962,6 +1036,14 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         STDMETHOD(get_GlyphIndex)(unsigned short charCode,unsigned short *pGlyphId);
         STDMETHOD(SetEncoding)(UINT_PTR encodingVector);
         STDMETHOD(SetCharStrings)(UINT_PTR charStringsVector);
+        STDMETHOD(GetCharacteristics)(long cbName,char *pszName,long cbStyle,char *pszStyle,
+                                        long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
+                                        UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
+
+        STDMETHOD(RenderGlyph)(HDC hdc,unsigned short bGlyph,
+                                UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,
+                                POINTF *pStartPoint,POINTF *pEndPoint);
+
         STDMETHOD(SaveState)();
         STDMETHOD(RestoreState)();
 
@@ -971,11 +1053,14 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
         ~font();
 
-        BYTE *getGlyphData(unsigned short glyphId);
+        uint8_t *getGlyphData(unsigned short glyphId);
 
         char *InstalledFontName();
 
     private:
+
+        HRESULT drawType3Glyph(HDC,unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType42Glyph(HDC,unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
 
         void load(long countGlyphs);
         void type3load();
@@ -1022,8 +1107,8 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
         BYTE *pbFontData{NULL};
 
-        BYTE *pGlyfTable{NULL};
-        BYTE *pLocaTable{NULL};
+        uint8_t *pGlyfTable{NULL};
+        uint8_t *pLocaTable{NULL};
 
         otMaxProfileTable *pMaxProfileTable{NULL};
         otHeadTable *pHeadTable{NULL};
@@ -1068,6 +1153,17 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         std::stack<matrix *> matrixStack;
         FLOAT pointSize{1.0f};
         FLOAT currentScale{1.0f};
+        POINT currentPoint{0,0};
+
+        char szSelectedFontFullName[64]{64 * '\0'};
+        char szSelectedFontStyleName[64]{64 * '\0'};
+        char szSelectedFontScriptName[64]{64 * '\0'};
+        int selectedFontWeight{0};
+
+        std::vector<char *> fontFullNames;
+        std::vector<char *> fontStyleNames;
+        std::vector<char *> fontScriptNames;
+        std::vector<int> fontWeights;
 
         static char szFailureMessage[1024];
 

@@ -27,6 +27,8 @@ class font;
         STDMETHOD(LoadFont)(char *pszFontFamily,UINT_PTR cookie,IFont_EVNSW **ppIFont);
         STDMETHOD(DuplicateFont)(IFont_EVNSW *pIFont,UINT_PTR cookie,IFont_EVNSW **ppIFont);
 
+        STDMETHOD(ChooseFont)(HDC hdc,IFont_EVNSW **ppIFont);
+
         STDMETHOD(RenderGlyph)(HDC hdc,unsigned short bGlyph,
                                 UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pEndPoint);
@@ -40,12 +42,7 @@ class font;
 
     private:
 
-        HRESULT drawType3Glyph(HDC,unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
-        HRESULT drawType42Glyph(HDC,unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
-
         ULONG refCount{0};
-
-        POINT currentPoint{0,0};
 
         static IFont_EVNSW *pIFont_Current;
         static IRenderer *pIRenderer;
@@ -53,7 +50,11 @@ class font;
 
         static std::list<font *> managedFonts;
 
+        static int CALLBACK enumFonts(const LOGFONT *pLogFont,const TEXTMETRIC *pTextMetric,DWORD FontType,LPARAM lParam);
+
         static char *translateFamily(char *pszFamilyName,char *pszReturnedQualifier = NULL);
+
+        friend class font;
 
     };
 

@@ -33,9 +33,16 @@ library FontManager {
         HRESULT SetEncoding(UINT_PTR encoding);
         HRESULT SetCharStrings(UINT_PTR charStrings);
 
+        [helpstring("Please remember to CoTaskMemFree the UINT_PTR values")]
+        HRESULT GetCharacteristics(long cbName,char *pszName,long cbStyle,char *pszStyle,
+                                    long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
+                                    UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
+
+        HRESULT RenderGlyph(HDC hdc,unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+                                POINTF *pStartPoint,POINTF *pNextPoint);
+
         HRESULT SaveState();
         HRESULT RestoreState();
-
     };
 
     [uuid(1FC20340-4355-4347-8A32-A82E2FB89892),
@@ -45,10 +52,10 @@ library FontManager {
     interface IFontManager : IUnknown {
 
         HRESULT SeekFont(char *pszFamilyName,long dupCount,IFont_EVNSW **ppIFont);
-
         HRESULT LoadFont(char *pszFamilyName,UINT_PTR cookie,[out,retval] IFont_EVNSW **ppIFont);
-
         HRESULT DuplicateFont(IFont_EVNSW *pIFont,UINT_PTR cookie,IFont_EVNSW **ppIFont);
+
+        HRESULT ChooseFont(HDC hdc,IFont_EVNSW **ppIFont);
 
         HRESULT RenderGlyph(HDC hdc,unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pNextPoint);

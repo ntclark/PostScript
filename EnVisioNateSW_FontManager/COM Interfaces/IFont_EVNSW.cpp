@@ -234,6 +234,80 @@
     }
 
 
+    HRESULT font::GetCharacteristics(long cbName,char *pszName,long cbStyle,char *pszStyle,
+                                        long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
+                                        UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts) {
+
+    font *pFont = static_cast<font *>(this);
+
+    if ( pszName )
+        strncpy(pszName,pFont -> szSelectedFontFullName,cbName);
+
+    if ( pszStyle )
+        strncpy(pszStyle,pFont -> szSelectedFontStyleName,cbStyle);
+
+    if ( pszScript )
+        strncpy(pszScript,pFont -> szSelectedFontScriptName,cbScript);
+
+    if ( pFontWeight )
+        *pFontWeight = pFont -> selectedFontWeight;
+
+    if ( pSize ) 
+        *pSize = pFont -> PointSize();
+
+    UINT_PTR *targets[]{pAvailableNames,pAvailableStyles,pAvailableScripts};
+    std::vector<char *> *sources[]{&pFont -> fontFullNames,&pFont -> fontStyleNames,&pFont -> fontScriptNames};
+
+    long cbTotal = 0L;
+    for ( long k = 0; k < sizeof(targets) / sizeof(UINT_PTR *); k++ ) {
+        if ( NULL == targets[k] ) 
+            continue;
+        long cb = 0L;
+        for ( char *p : *sources[k] )
+            cb += strlen(p) + 1;
+        cbTotal += cb + 1;
+        *targets[k] = (UINT_PTR)CoTaskMemAlloc(cb + 1);
+        memset((void *)*targets[k],0,cb + 1);
+        char *pTarget = (char *)*targets[k];
+        for ( char *p : *sources[k] ) {
+            strcpy(pTarget,p);
+            pTarget += strlen(p) + 1;
+        }
+    }
+
+    *pAvailableFonts = (UINT_PTR)CoTaskMemAlloc(cbTotal + 1);
+
+    char *pTarget = (char *)*pAvailableFonts;
+
+    for ( long k = 0; k < pFont -> fontFullNames.size(); k++ ) {
+
+        strcpy(pTarget,pFont -> fontFullNames[k]);
+        long n = strlen(pFont -> fontFullNames[k]);
+        pTarget[n] = ' ';
+        char *p = pTarget;
+        while ( p - pTarget < n ) {
+            if ( *p == ' ' )
+                *p = '`';
+            p++;
+        }
+        pTarget += n + 1;
+
+        strcpy(pTarget,pFont -> fontStyleNames[k]);
+        n = strlen(pFont -> fontStyleNames[k]);
+        pTarget[n] = ':';
+        pTarget += n + 1;
+
+        strcpy(pTarget,pFont -> fontScriptNames[k]);
+        n = strlen(pFont -> fontScriptNames[k]);
+        pTarget[n] = '\0';
+        pTarget += n + 1;
+
+    }
+
+    return S_OK;
+    }
+
+
     HRESULT font::SaveState() {
     matrixStack.push(new matrix(*matrixStack.top()));
     return S_OK;

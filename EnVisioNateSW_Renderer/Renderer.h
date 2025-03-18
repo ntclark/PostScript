@@ -21,10 +21,12 @@
         // IRenderer
 
         STDMETHOD(Prepare)(HDC hdc);
+
         STDMETHOD(put_TransformMatrix)(UINT_PTR /*XFORM */ pXformToDeviceSpace);
         STDMETHOD(get_IsPrepared)(BOOL *pIsPrepared);
         STDMETHOD(put_DownScale)(FLOAT ds);
         STDMETHOD(put_Origin)(POINTF ptOrigin);
+
         STDMETHOD(Render)();
         STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
@@ -351,10 +353,15 @@
         } *pIGraphicParameters{NULL};
 
         void setupRenderer();
+        void shutdownRenderer();
+
+        void setupPathAndSink();
+        void shutdownPathAndSink();
+
+        void closeSink();
+
         HRESULT fillRender();
         HRESULT strokeRender();
-
-        HRESULT internalRender();
 
         HDC hdc{NULL};
 
@@ -368,6 +375,9 @@
         ID2D1DCRenderTarget *pID2D1DCRenderTarget{NULL};
 
         ULONG refCount{0};
+
+        D2D1_TAG tag1{0UL};
+        D2D1_TAG tag2{0UL};
 
         ULONG renderCount{0};
         boolean doRasterize{false};

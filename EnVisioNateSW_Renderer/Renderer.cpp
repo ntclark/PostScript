@@ -43,44 +43,73 @@
     }
 
 
-    HRESULT Renderer::fillRender() {
+    void Renderer::setupPathAndSink() {
 
-    if ( ! ( NULL == pID2D1GeometrySink ) ) {
-        pID2D1GeometrySink -> Close();
-        pID2D1GeometrySink -> Release();
-        pID2D1GeometrySink = NULL;
-    }
-
-    pID2D1DCRenderTarget -> BeginDraw();
-
-    pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
-
-    D2D1_TAG tag1;
-    D2D1_TAG tag2;
-
-    HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
-{
-if ( ! ( S_OK == hr ) )
-MessageBox(NULL,"BAD","BAD",MB_OK);
-}
-
-    pID2D1PathGeometry -> Release();
-
-    pID2D1PathGeometry = NULL;
-
-    hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
+    HRESULT hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
     if ( ! ( S_OK == hr ) )
 {
 MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
+        return;
 }
 
     hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
     if ( ! ( S_OK == hr ) )
 {
 MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
+        return;
 }
+
+    return;
+    }
+
+
+    void Renderer::closeSink() {
+    if ( NULL == pID2D1GeometrySink ) 
+        return;
+    pID2D1GeometrySink -> Close();
+    pID2D1GeometrySink -> Release();
+    pID2D1GeometrySink = NULL;
+    return;
+    }
+
+
+    void Renderer::shutdownPathAndSink() {
+    closeSink();
+    if ( ! ( NULL == pID2D1PathGeometry ) ) {
+        pID2D1PathGeometry -> Release();
+        pID2D1PathGeometry = NULL;
+    }
+    return;
+    }
+
+
+    void Renderer::shutdownRenderer() {
+
+    if ( ! ( NULL == pID2D1SolidColorBrush ) ) {
+        pID2D1SolidColorBrush -> Release();
+        pID2D1SolidColorBrush = NULL;
+    }
+
+    if ( ! ( NULL == pID2D1StrokeStyle1 ) ) {
+        pID2D1StrokeStyle1 -> Release();
+        pID2D1StrokeStyle1 = NULL;
+    }
+
+    pID2D1DCRenderTarget -> Release();
+    pID2D1DCRenderTarget = NULL;
+
+    return;
+    }
+
+
+    HRESULT Renderer::fillRender() {
+
+    pID2D1DCRenderTarget -> BeginDraw();
+    pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
+    HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
+
+    if ( ! ( S_OK == hr ) ) 
+        OutputDebugStringA("THAT ERROR HAPPENED\n");
 
     return S_OK;
     }
@@ -88,95 +117,12 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
 
     HRESULT Renderer::strokeRender() {
 
-    if ( ! ( NULL == pID2D1GeometrySink ) ) {
-        pID2D1GeometrySink -> Close();
-        pID2D1GeometrySink -> Release();
-        pID2D1GeometrySink = NULL;
-    }
-
     pID2D1DCRenderTarget -> BeginDraw();
-
     pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,pIGraphicParameters -> valuesStack.top() -> lineWidth,pID2D1StrokeStyle1);
-
-    D2D1_TAG tag1;
-    D2D1_TAG tag2;
-
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
-{
-if ( ! ( S_OK == hr ) )
-MessageBox(NULL,"BAD","BAD",MB_OK);
-}
 
-    pID2D1PathGeometry -> Release();
+    if ( ! ( S_OK == hr ) ) 
+        OutputDebugStringA("THAT ERROR HAPPENED\n");
 
-    pID2D1PathGeometry = NULL;
-
-    hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
-}
-
-    hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
-}
-
-    return S_OK;
-    }
-
-
-    HRESULT Renderer::internalRender() {
-
-    if ( pIGraphicElements -> isFigureStarted )
-        pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
-
-    if ( ! ( NULL == pID2D1GeometrySink ) ) {
-        pID2D1GeometrySink -> Close();
-        pID2D1GeometrySink -> Release();
-        pID2D1GeometrySink = NULL;
-    }
-
-    pID2D1DCRenderTarget -> BeginDraw();
-
-    if ( doRasterize )
-        pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
-    else
-        pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,pIGraphicParameters -> valuesStack.top() -> lineWidth,pID2D1StrokeStyle1);
-
-    lastRenderWasFilled = doRasterize;
-
-    doRasterize = false;
-
-    renderCount++;
-
-    D2D1_TAG tag1;
-    D2D1_TAG tag2;
-
-    HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
-{
-if ( ! ( S_OK == hr ) )
-MessageBox(NULL,"BAD","BAD",MB_OK);
-}
-    pID2D1PathGeometry -> Release();
-
-    pID2D1PathGeometry = NULL;
-
-    hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
-}
-
-    hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return hr;
-}
     return S_OK;
     }

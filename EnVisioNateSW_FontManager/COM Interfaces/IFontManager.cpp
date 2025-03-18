@@ -19,6 +19,39 @@
     }
 
 
+    static int cbFontStyles = 0;
+
+    int CALLBACK FontManager::enumFonts(const LOGFONT *pLogFont,const TEXTMETRIC *pTextMetric,DWORD FontType,LPARAM lParam) {
+
+    ENUMLOGFONTEX *pEnumLogFont = reinterpret_cast<ENUMLOGFONTEX *>(const_cast<LOGFONT *>(pLogFont));
+
+OutputDebugStringA((char *)pEnumLogFont -> elfFullName);
+OutputDebugStringA("-");
+OutputDebugStringA((char *)pEnumLogFont -> elfStyle);
+OutputDebugStringA("-");
+OutputDebugStringA((char *)pEnumLogFont -> elfScript);
+OutputDebugStringA("\n");
+
+    font *pFont = reinterpret_cast<font *>(lParam);
+
+    char *p = new char[strlen((char *)(pEnumLogFont -> elfFullName)) + 1];
+    strcpy(p,(char *)(pEnumLogFont -> elfFullName));
+    pFont -> fontFullNames.push_back(p);
+
+    p = new char[strlen((char *)(pEnumLogFont -> elfStyle)) + 1];
+    strcpy(p,(char *)(pEnumLogFont -> elfStyle));
+    pFont -> fontStyleNames.push_back(p);
+
+    p = new char[strlen((char *)(pEnumLogFont -> elfScript)) + 1];
+    strcpy(p,(char *)(pEnumLogFont -> elfScript));
+    pFont -> fontScriptNames.push_back(p);
+
+    pFont -> fontWeights.push_back(pLogFont -> lfWeight);
+
+    return 1;
+    }
+
+
     HRESULT FontManager::LoadFont(char *pszFamilyName,UINT_PTR cookie,IFont_EVNSW **ppFont) {
 
     if ( ! ppFont )
@@ -62,7 +95,26 @@
 
     SelectFont(hdcTemp,oldFont);
 
+    logFont.lfCharSet = DEFAULT_CHARSET;
+    logFont.lfPitchAndFamily = 0;
+
+    EnumFontFamiliesEx(hdcTemp,&logFont,enumFonts,reinterpret_cast<LPARAM>(pFont),0L);
+
+    int index = 0;
+    for ( char *pfName : pFont -> fontFullNames ) {
+        if ( 0 == strcmp(pFont -> InstalledFontName(),pfName) && strlen(pfName) == strlen(pFont -> InstalledFontName()) ) {
+            strcpy(pFont -> szSelectedFontFullName,pfName);
+            strcpy(pFont -> szSelectedFontStyleName,pFont -> fontStyleNames[index]);
+            strcpy(pFont -> szSelectedFontScriptName,pFont -> fontScriptNames[index]);
+            pFont -> selectedFontWeight = pFont -> fontWeights[index];
+            break;
+        }
+        index++;
+    }
+
     DeleteDC(hdcTemp);
+
+    DeleteObject(hFont);
 
     pFont -> fontType = font::ftype42;
 
@@ -83,10 +135,10 @@ Type42Font:
 
     pFont -> QueryInterface(IID_IFont_EVNSW,reinterpret_cast<void **>(ppFont));
 
-    if ( NULL == pIFont_Current ) {
+    //if ( NULL == pIFont_Current ) {
         pIFont_Current = *ppFont;
         pIFont_Current -> AddRef();
-    }
+    //}
 
     return S_OK;
     }
@@ -109,6 +161,38 @@ Type42Font:
     pFont -> QueryInterface(IID_IFont_EVNSW,reinterpret_cast<void **>(ppIFont));
 
     managedFonts.push_back(pFont);
+
+    return S_OK;
+    }
+
+
+    HRESULT FontManager::ChooseFont(HDC hdc,IFont_EVNSW **ppIFont) {
+
+    if ( NULL == ppIFont )
+        return E_POINTER;
+
+    CHOOSEFONT chooseFont{0};
+    LOGFONT logFont{0};
+
+    chooseFont.lStructSize = sizeof(CHOOSEFONT);
+    chooseFont.lpLogFont = &logFont;
+    chooseFont.Flags = CF_TTONLY;
+
+    if ( FALSE == ::ChooseFont(&chooseFont) )
+        return S_FALSE;
+
+    HRESULT rc = LoadFont(chooseFont.lpLogFont -> lfFaceName,0,ppIFont);
+
+    if ( ! ( rc == S_OK ) )
+        return rc;
+
+    font *pFont = reinterpret_cast<font *>(*ppIFont);
+
+    long pointSize = chooseFont.lpLogFont -> lfHeight;
+    if ( 0 > pointSize )
+        pointSize = MulDiv(-pointSize, 72, GetDeviceCaps(hdc, LOGPIXELSY));
+
+    pFont -> PointSize((FLOAT)pointSize);
 
     return S_OK;
     }
