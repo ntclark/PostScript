@@ -49,6 +49,9 @@
     <Filter Include="Source Files\COM Events">
       <UniqueIdentifier>{50ec6253-d34d-4c60-ab24-a5c8ff1ad4f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{f55dd765-11a4-4d2e-a304-46a83ad925e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\PostScript.cpp">
@@ -143,9 +146,6 @@
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\save.cpp">
       <Filter>Source Files\PostScript objects</Filter>
-    </ClCompile>
-    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\PostScript_initWindows.cpp">
       <Filter>Source Files</Filter>
@@ -254,6 +254,12 @@
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters_Forwarder.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
