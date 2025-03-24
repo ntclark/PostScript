@@ -3,8 +3,8 @@
 #include "error.h"
 
 #include "Properties_i.c"
-#include "PostScript_i.c"
-#include "CVPostscriptConverter_i.c"
+#include "PostScriptInterpreter_i.c"
+//#include "CVPostscriptConverter_i.c"
 
     CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
 
@@ -101,8 +101,10 @@
     pIGProperties -> Save();
     pIGProperties -> Release();
 
+#if 0
     if ( ! ( NULL == pICVPostscriptConverter ) ) 
         pICVPostscriptConverter -> Release();
+#endif
 
     if ( ! ( NULL == PStoPDF::nativeHostFrameHandler ) )
         SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PStoPDF::nativeHostFrameHandler);

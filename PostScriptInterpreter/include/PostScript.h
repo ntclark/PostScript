@@ -19,7 +19,7 @@
 
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
-#include "CVPostscriptConverter_i.h"
+//#include "CVPostscriptConverter_i.h"
 
 #ifdef GetWindowID
 #undef GetWindowID
@@ -285,7 +285,7 @@ class job;
         IOleClientSite *pIOleClientSite{NULL};
         IOleInPlaceSite *pIOleInPlaceSite{NULL};
 
-        ICVPostscriptConverter *pICVPostscriptConverter{NULL};
+        //ICVPostscriptConverter *pICVPostscriptConverter{NULL};
 
         static job *pJob;
 

@@ -120,11 +120,9 @@
 
 
     void pathParameters::RenderGeometry() {
-    job::pIRenderer -> Render(pPStoPDF -> GetDC());
-    pIRenderer_text -> Render(pPStoPDF -> GetDC());
-
-    //job::pIRenderer -> Reset();
-    //pIRenderer_text -> Reset();
-
+    RECT rcDrawing;
+    GetClientRect(pPStoPDF->HwndClient(),&rcDrawing);
+    job::pIRenderer -> Render(pPStoPDF -> GetDC(),&rcDrawing);
+    pIRenderer_text -> Render(pPStoPDF -> GetDC(),&rcDrawing);
     return;
     }

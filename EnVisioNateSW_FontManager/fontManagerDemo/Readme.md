@@ -13,6 +13,7 @@ bitmaps, or on your printer. Specifically, it does not help you in laying out te
 kerning or justification. However, it does offer everything about font (glyph) metrics with which you can implement those
 techniques yourself, if that is important for your application.
 
-Here's the font manager in action, wa are looking at the Arial font, size 36 points and it has rendered the given sentence.
+Here's the font manager in action, we are looking at the Arial font, size 36 points and it has rendered the given sentence.
 I've clicked the table button to show every glyph defined the font in a grid pattern. 
 ![FontManager screenshot](./fontManager.png)
+
