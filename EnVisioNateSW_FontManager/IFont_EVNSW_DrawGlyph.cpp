@@ -70,11 +70,6 @@
         pGlyphGeometry = static_cast<otGlyphGeometry *>(pSimpleGlyph);
     }
 
-    BOOL isPrepared = FALSE;
-    FontManager::pIRenderer -> get_IsPrepared(&isPrepared);
-    if ( ! isPrepared ) 
-        FontManager::pIRenderer -> Prepare(hdc);
-
     FontManager::pIRenderer -> put_TransformMatrix((UINT_PTR)pXformToDeviceSpace);
 
     if ( NULL == FontManager::pIGraphicElements )

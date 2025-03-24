@@ -25,13 +25,6 @@
 
     ENUMLOGFONTEX *pEnumLogFont = reinterpret_cast<ENUMLOGFONTEX *>(const_cast<LOGFONT *>(pLogFont));
 
-OutputDebugStringA((char *)pEnumLogFont -> elfFullName);
-OutputDebugStringA("-");
-OutputDebugStringA((char *)pEnumLogFont -> elfStyle);
-OutputDebugStringA("-");
-OutputDebugStringA((char *)pEnumLogFont -> elfScript);
-OutputDebugStringA("\n");
-
     font *pFont = reinterpret_cast<font *>(lParam);
 
     char *p = new char[strlen((char *)(pEnumLogFont -> elfFullName)) + 1];
@@ -82,10 +75,17 @@ OutputDebugStringA("\n");
 
     HGDIOBJ oldFont = SelectFont(hdcTemp,hFont);
 
-    DWORD cbData = GetFontData(hdcTemp,0L,0L,NULL,0L);
+    DWORD cbData = GetFontData(hdcTemp,/*0x66637474*/0L,0L,NULL,0L);
 
-    if ( GDI_ERROR == cbData ) 
+    if ( GDI_ERROR == cbData ) {
+        sprintf_s<1024>(FontManager::szFailureMessage,"The specified font (%s) is (probably) a TrueType or OpenType font, however, the GetFontData call returns failure on it",pFont -> InstalledFontName());
+        FireErrorNotification(FontManager::szFailureMessage);
         goto NonType42Font;
+    }
+
+    memset(szFailureMessage,0,sizeof(szFailureMessage));
+
+    FireErrorNotification(FontManager::szFailureMessage);
 
     pFont -> cbFontData = cbData;
 
@@ -135,10 +135,8 @@ Type42Font:
 
     pFont -> QueryInterface(IID_IFont_EVNSW,reinterpret_cast<void **>(ppFont));
 
-    //if ( NULL == pIFont_Current ) {
-        pIFont_Current = *ppFont;
-        pIFont_Current -> AddRef();
-    //}
+    pIFont_Current = *ppFont;
+    pIFont_Current -> AddRef();
 
     return S_OK;
     }

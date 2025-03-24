@@ -40,7 +40,126 @@ class font;
         STDMETHOD(get_CurrentFont)(IFont_EVNSW **ppIFont);
         STDMETHOD(put_CurrentFont)(IFont_EVNSW *pIFont);
 
+        static char szFailureMessage[1024];
+
+        static void FireErrorNotification(char *pszNotification) {
+            pIConnectionPointContainer -> fire_ErrorNotification(pszNotification);
+            return;
+        }
+
     private:
+
+        // IConnectionPointContainer
+
+        struct _IConnectionPointContainer : public IConnectionPointContainer {
+        public:
+
+            _IConnectionPointContainer(FontManager *pp) : pParent(pp) {};
+            ~_IConnectionPointContainer() {};
+
+        STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
+        STDMETHOD_ (ULONG, AddRef)();
+        STDMETHOD_ (ULONG, Release)();
+
+        STDMETHOD(FindConnectionPoint)(REFIID riid,IConnectionPoint **);
+        STDMETHOD(EnumConnectionPoints)(IEnumConnectionPoints **);
+
+        void fire_ErrorNotification(char *pszError);
+
+        private:
+
+            FontManager *pParent{NULL};
+
+        };
+
+        static _IConnectionPointContainer *pIConnectionPointContainer;
+
+        // IConnectionPoint
+
+        struct _IConnectionPoint : IConnectionPoint {
+        public:
+
+            _IConnectionPoint(FontManager *pp);
+            ~_IConnectionPoint();
+
+            STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
+            STDMETHOD_ (ULONG, AddRef)();
+            STDMETHOD_ (ULONG, Release)();
+
+            STDMETHOD (GetConnectionInterface)(IID *);
+            STDMETHOD (GetConnectionPointContainer)(IConnectionPointContainer **ppCPC);
+            STDMETHOD (Advise)(IUnknown *pUnk,DWORD *pdwCookie);
+            STDMETHOD (Unadvise)(DWORD);
+            STDMETHOD (EnumConnections)(IEnumConnections **ppEnum);
+
+            IUnknown *AdviseSink() { return adviseSink; };
+
+        private:
+
+            int getSlot();
+            int findSlot(DWORD dwCookie);
+
+            IUnknown *adviseSink{NULL};
+            FontManager *pParent{NULL};
+            DWORD nextCookie{0L};
+            int countConnections{0};
+            int countLiveConnections{0};
+
+            CONNECTDATA *connections{NULL};
+
+        } *pIConnectionPoint{NULL};
+
+        // IEnumConnectionPoints
+
+        struct _IEnumConnectionPoints : IEnumConnectionPoints {
+        public:
+
+            _IEnumConnectionPoints(FontManager *pp,_IConnectionPoint **cp,int connectionPointCount);
+            ~_IEnumConnectionPoints();
+
+            STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
+            STDMETHOD_ (ULONG, AddRef)();
+            STDMETHOD_ (ULONG, Release)();
+
+            STDMETHOD (Next)(ULONG cConnections,IConnectionPoint **rgpcn,ULONG *pcFetched);
+            STDMETHOD (Skip)(ULONG cConnections);
+            STDMETHOD (Reset)();
+            STDMETHOD (Clone)(IEnumConnectionPoints **);
+
+        private:
+
+        int cpCount{0};
+        int enumeratorIndex{0};
+        FontManager *pParent{NULL};
+        _IConnectionPoint **connectionPoints{NULL};
+
+        } *pIEnumConnectionPoints{NULL};
+
+        // IEnumerateConnections
+
+        struct _IEnumerateConnections : public IEnumConnections {
+        public:
+
+        _IEnumerateConnections(IUnknown* pParentUnknown,ULONG cConnections,CONNECTDATA* paConnections,ULONG initialIndex);
+        ~_IEnumerateConnections();
+
+            STDMETHODIMP QueryInterface(REFIID, void **);
+            STDMETHODIMP_(ULONG) AddRef();
+            STDMETHODIMP_(ULONG) Release();
+            STDMETHODIMP Next(ULONG, CONNECTDATA*, ULONG*);
+            STDMETHODIMP Skip(ULONG);
+            STDMETHODIMP Reset();
+            STDMETHODIMP Clone(IEnumConnections**);
+
+        private:
+
+        ULONG refCount{0L};
+        IUnknown *pParentUnknown{NULL};
+        ULONG enumeratorIndex{0L};
+        ULONG countConnections{0L};
+        CONNECTDATA *connections{NULL};
+
+        } *pIEnumerateConnections{NULL};
 
         ULONG refCount{0};
 

@@ -1,8 +1,6 @@
 
 #include "font.h"
 
-    char font::szFailureMessage[]{'\0'};
-
     font::font(char *pszClientName) {
 
     if ( pszClientName )

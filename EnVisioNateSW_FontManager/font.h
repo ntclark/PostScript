@@ -157,18 +157,11 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         std::map<uint32_t,uint8_t *> tableDirectory;
 
         uint8_t *table(const char *pszTableName) {
-#if 1
             uint8_t x[]{(uint8_t)pszTableName[0],(uint8_t)pszTableName[1],(uint8_t)pszTableName[2],(uint8_t)pszTableName[3]};
             uint32_t tableIndex = *(uint32_t *)x;
             if ( tableDirectory.end() == tableDirectory.find(tableIndex) )
                 return NULL;
             return tableDirectory[tableIndex];
-#else
-            for ( long k = 0; k < numTables; k++ ) 
-                if ( 0 == strncmp((char *)pTableRecords[k].tag,pszTableName,(long)strlen(pszTableName)) ) 
-                    return pTableDirectoryRoot + pTableRecords[k].offset;
-            return NULL;
-#endif
         }
 
         otTableDirectory() {
@@ -802,6 +795,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         otEncodingRecord  *pEncodingRecords{NULL};  //[numTables]
     };
 
+
     struct otCmapSubtableFormat4 {
 
         otCmapSubtableFormat4(BYTE **ppbData) {
@@ -879,6 +873,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         }
 
     };
+
 
     struct otPostTable {
         otPostTable(BYTE *pbData) {
@@ -1027,6 +1022,11 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
         STDMETHOD(get_Matrix)(LPVOID pResult);
         STDMETHOD(put_Matrix)(UINT_PTR pMatrix);
+        STDMETHOD(get_PointSize)(FLOAT *pPointSize);
+        STDMETHOD(put_PointSize)(FLOAT pointSize);
+
+        STDMETHOD(FontBoundingBox)(POINTF *pLowerLeft,POINTF *pUpperRight);
+
         STDMETHOD(Scale)(FLOAT scaleX,FLOAT scaleY);
         STDMETHOD(Translate)(FLOAT translateX,FLOAT translateY);
         STDMETHOD(ConcatMatrix)(/*XFORM*/ UINT_PTR pXForm);
@@ -1164,8 +1164,6 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         std::vector<char *> fontStyleNames;
         std::vector<char *> fontScriptNames;
         std::vector<int> fontWeights;
-
-        static char szFailureMessage[1024];
 
         friend class FontManager;
         friend class otSimpleGlyph;

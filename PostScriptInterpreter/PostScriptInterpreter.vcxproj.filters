@@ -14,9 +14,6 @@
     <Filter Include="Source Files\COM Interfaces\Being Hosted">
       <UniqueIdentifier>{b332d107-d055-4b97-8f06-5cafe677c3c6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\COM Events">
-      <UniqueIdentifier>{50ec6253-d34d-4c60-ab24-a5c8ff1ad4f4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\PostScript objects">
       <UniqueIdentifier>{c27cfe2c-c496-4fed-827d-ee3f7ed2d3db}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,9 @@
     </Filter>
     <Filter Include="Source Files\operators">
       <UniqueIdentifier>{54b05f3b-58d8-4db1-b747-e048b32edc0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\COM Events">
+      <UniqueIdentifier>{50ec6253-d34d-4c60-ab24-a5c8ff1ad4f4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

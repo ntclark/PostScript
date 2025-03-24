@@ -17,6 +17,12 @@
     else if ( IID_IRenderer == refIID )
         return pIRenderer -> QueryInterface(refIID,pvResult);
 
+    else if ( IID_IConnectionPointContainer == refIID ) 
+      return pIConnectionPointContainer -> QueryInterface(refIID,pvResult);
+
+    else if ( IID_IConnectionPoint == refIID ) 
+        return pIConnectionPoint -> QueryInterface(refIID,pvResult);
+
     if ( ! ( NULL == *pvResult ) ) {
         AddRef();
         return S_OK;

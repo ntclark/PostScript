@@ -1,7 +1,7 @@
 
-#include "PostScript.h"
+#include "FontManager.h"
 
-  PStoPDF::_IEnumConnectionPoints::_IEnumConnectionPoints(PStoPDF *pp,_IConnectionPoint **cp,int connectionPointCount) : 
+  FontManager::_IEnumConnectionPoints::_IEnumConnectionPoints(FontManager *pp,_IConnectionPoint **cp,int connectionPointCount) : 
    	  cpCount(connectionPointCount),
         pParent(pp) {
  
@@ -17,7 +17,7 @@
   };
 
 
-  PStoPDF::_IEnumConnectionPoints::~_IEnumConnectionPoints() { 
+  FontManager::_IEnumConnectionPoints::~_IEnumConnectionPoints() { 
   for ( int k = 0; k < cpCount; k++ )
      connectionPoints[k] -> Release();
   delete [] connectionPoints;
@@ -25,18 +25,18 @@
   };
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::QueryInterface(REFIID riid,void **ppv) {
+  HRESULT FontManager::_IEnumConnectionPoints::QueryInterface(REFIID riid,void **ppv) {
   return pParent -> QueryInterface(riid,ppv);
   }
-  unsigned long __stdcall PStoPDF::_IEnumConnectionPoints::AddRef() {
+  unsigned long __stdcall FontManager::_IEnumConnectionPoints::AddRef() {
   return pParent -> AddRef();
   }
-  unsigned long __stdcall PStoPDF::_IEnumConnectionPoints::Release() {
+  unsigned long __stdcall FontManager::_IEnumConnectionPoints::Release() {
   return pParent -> Release();
   }
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Next(ULONG countRequested,IConnectionPoint **rgpcn,ULONG *pcFetched) {
+  HRESULT FontManager::_IEnumConnectionPoints::Next(ULONG countRequested,IConnectionPoint **rgpcn,ULONG *pcFetched) {
   ULONG found;
 
   if ( !rgpcn ) return E_POINTER;
@@ -60,19 +60,19 @@
   }
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Skip(ULONG cSkip) {
+  HRESULT FontManager::_IEnumConnectionPoints::Skip(ULONG cSkip) {
   if ( cpCount < 1 || ((enumeratorIndex + (int)cSkip) < cpCount) ) return S_FALSE;
   enumeratorIndex += cSkip;
   return S_OK;
   }
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Reset() {
+  HRESULT FontManager::_IEnumConnectionPoints::Reset() {
   enumeratorIndex = 0;
   return S_OK;
   }
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Clone(IEnumConnectionPoints **ppEnum) {
+  HRESULT FontManager::_IEnumConnectionPoints::Clone(IEnumConnectionPoints **ppEnum) {
   _IEnumConnectionPoints* p;
 
   *ppEnum = NULL;

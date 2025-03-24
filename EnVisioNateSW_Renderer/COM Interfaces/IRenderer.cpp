@@ -5,24 +5,8 @@
 #include <map>
 #include <algorithm>
 
-    HRESULT Renderer::Prepare(HDC theHDC) {
-    hdc = theHDC;
-    if ( NULL == pID2D1Factory1 ) 
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,&pID2D1Factory1);
-    return S_OK;
-    }
-
-
     HRESULT Renderer::put_TransformMatrix(UINT_PTR pXFormToDeviceSpace) {
     memcpy(&pIGraphicElements -> toDeviceSpace,(void *)pXFormToDeviceSpace,sizeof(XFORM));
-    return S_OK;
-    }
-
-
-    HRESULT Renderer::get_IsPrepared(BOOL *pIsPrepared) {
-    if ( ! pIsPrepared )
-        return E_POINTER;
-    *pIsPrepared = ! ( NULL == pID2D1Factory1 );
     return S_OK;
     }
 
@@ -39,10 +23,12 @@
     }
 
 
-    HRESULT Renderer::Render() {
+    HRESULT Renderer::Render(HDC hdc,RECT *pDrawingRect) {
 
     if ( NULL == pIGraphicElements -> pFirstPath )
         return E_UNEXPECTED;
+
+    setupRenderer(hdc,pDrawingRect);
 
     std::map<long,std::list<GraphicElements::path *> *> strokePathsMap;
     std::map<long,std::list<GraphicElements::path *> *> fillPathsMap;
@@ -75,8 +61,6 @@
         p = p -> pNext;
     }
 
-    setupRenderer();
-
     std::sort(fillPathSorter.begin(), fillPathSorter.end(), [=](std::pair<long,long> &a, std::pair<long,long > &b) { return a.second < b.second; });
 
     for ( std::pair<long,long> sortedPair : fillPathSorter ) {
@@ -93,20 +77,20 @@ if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -
 MessageBox(NULL,"stroke path in fill collection","Error",MB_OK);
 continue;
 }
-            if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType  )
+            if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType )
                 GraphicElements::path::pathAction pa = p -> apply(true,NULL);
 
             p -> clear();
 
         }
 
-        pList -> clear();
-
         closeSink();
 
         fillRender();
 
         shutdownPathAndSink();
+
+        pList -> clear();
 
     }
 
@@ -138,13 +122,13 @@ continue;
 
         }
 
-        pList -> clear();
-
         closeSink();
 
         strokeRender();
 
         shutdownPathAndSink();
+
+        pList -> clear();
 
     }
 
@@ -158,6 +142,30 @@ continue;
 
     shutdownRenderer();
 
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::Discard() {
+
+    if ( NULL == pIGraphicElements -> pFirstPath )
+        return S_OK;
+
+    GraphicElements::path *p = pIGraphicElements -> pFirstPath;
+
+    while ( ! ( p == NULL ) ) {
+        GraphicElements::path *pNext = p -> pNext;
+        delete p;
+        p = pNext;
+    }
+    pIGraphicElements -> pFirstPath = NULL;
+    pIGraphicElements -> pCurrentPath = NULL;
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::ClearRect(HDC hdc,RECT *pRect,COLORREF theColor) {
+    FillRect(hdc,pRect,CreateSolidBrush(theColor));
     return S_OK;
     }
 

@@ -11,7 +11,7 @@ import "ocidl.idl";
 
 library FontManager { 
 
-    [uuid(1FC20340-4355-4347-8A32-A82E2FB89893),
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89891),
       helpstring("EnVisioNateSW Font Interface: FUCK MIDL DOCUMENTATION FOR NOT DESCRIBING HOW TO OVERRIDE A SYSTEM INTERFACE"),
       nonextensible,pointer_default(unique)] 
 
@@ -19,6 +19,13 @@ library FontManager {
 
         [propget] HRESULT Matrix([out,retval]/*XFORM*/ LPVOID pResult);
         [propput] HRESULT Matrix(/*XFORM*/ UINT_PTR pXForm);
+
+        [propget]
+        HRESULT PointSize([out,retval] FLOAT *pPointSize);
+        [propput]
+        HRESULT PointSize([in] FLOAT pointSize);
+
+        HRESULT FontBoundingBox(POINTF *pLowerLeft,POINTF *pUpperRight);
 
         HRESULT Scale(FLOAT scaleX,FLOAT scaleY);
         HRESULT Translate(FLOAT translateX,FLOAT translateY);
@@ -70,11 +77,20 @@ library FontManager {
 
     };
 
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89893),
+      helpstring("EnVisioNateSW Font Manager Notifications Interface"),
+      nonextensible,pointer_default(unique)] 
+    
+    interface IFontManagerNotifications : IUnknown {
+        [helpstring("Please DO NOT free the UINT_PTR, it is statically allocated")]
+        HRESULT ErrorNotification(UINT_PTR errorMessage);
+    };
 
-    [uuid(1FC20340-4355-4347-8A32-A82E2FB89891),
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89899),
     helpstring("")]
         coclass FontManager {
         [default] interface IFontManager;
+        [source] interface IFontManagerNotifications;
     };
 
 };

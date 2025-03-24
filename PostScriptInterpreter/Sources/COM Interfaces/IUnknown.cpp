@@ -9,7 +9,6 @@
 
    if ( riid == IID_IUnknown )
       *ppv = static_cast<IUnknown *>(this);
-
    else 
 
    if ( riid == IID_IPostScript )
@@ -28,30 +27,13 @@
       return pIConnectionPoint -> QueryInterface(riid,ppv);
    else
 
-#if 0
-   if ( IID_IObjectSafety == riid )
-      return pIObjectSafety -> QueryInterface(riid,ppv);
-   else
-#endif
-
    if ( IID_IOleObject == riid )
       return pIOleObject -> QueryInterface(riid,ppv);
    else
-#if 0
-   if ( IID_IOleControl == riid ) 
-      return pIOleControl -> QueryInterface(riid,ppv);
-   else
-#endif
 
    if ( IID_IOleInPlaceObject == riid )
       return pIOleInPlaceObject -> QueryInterface(riid,ppv);
    else
-
-#if 0
-   if ( IID_IOleInPlaceActiveObject == riid )
-      return pIOleInPlaceActiveObject -> QueryInterface(riid,ppv);
-   else
-#endif
 
       return E_NOINTERFACE;
 

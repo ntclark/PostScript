@@ -36,11 +36,11 @@
     <ClCompile Include="COM Interfaces\IGraphicElements_Paths.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="COM Interfaces\IRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Interfaces\IRenderer.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

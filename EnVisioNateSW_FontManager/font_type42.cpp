@@ -7,12 +7,14 @@
 
     uint8_t missingTag[4];
     if ( ! tableDirectory.allRequiredSupplied(missingTag) ) {
-        sprintf(font::szFailureMessage,"font %s is invalid, it is missing the required table %c%c%c%c",InstalledFontName(),missingTag[0],missingTag[1],missingTag[2],missingTag[3]);
+        sprintf(FontManager::szFailureMessage,"font %s is invalid, it is missing the required table %c%c%c%c",InstalledFontName(),missingTag[0],missingTag[1],missingTag[2],missingTag[3]);
+        FontManager::FireErrorNotification(FontManager::szFailureMessage);
         return NULL;
     }
 
     if ( ! ( NULL == tableDirectory.table("vhea") ) && ( NULL == tableDirectory.table("vmtx") ) ) {
-        sprintf(font::szFailureMessage,"font %s is invalid, it contains a vhea table, but does not contain a vmtx table",InstalledFontName());
+        sprintf(FontManager::szFailureMessage,"font %s is invalid, it contains a vhea table, but does not contain a vmtx table",InstalledFontName());
+        FontManager::FireErrorNotification(FontManager::szFailureMessage);
         return E_FAIL;
     }
 
@@ -21,7 +23,8 @@
         pGlyfTable = tableDirectory.table("glyx");
 
     if ( NULL == pGlyfTable ) {
-        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a glyf (or glyx) table",InstalledFontName());
+        sprintf(FontManager::szFailureMessage,"font %s is invalid, it does not have a glyf (or glyx) table",InstalledFontName());
+        FontManager::FireErrorNotification(FontManager::szFailureMessage);
         return E_FAIL;
     }
 
@@ -30,7 +33,8 @@
         pLocaTable = (uint8_t *)tableDirectory.table("locx");
 
     if ( NULL == pLocaTable ) {
-        sprintf(font::szFailureMessage,"font %s is invalid, it does not have a loca (or locx ) table",InstalledFontName());
+        sprintf(FontManager::szFailureMessage,"font %s is invalid, it does not have a loca (or locx ) table",InstalledFontName());
+        FontManager::FireErrorNotification(FontManager::szFailureMessage);
         return E_FAIL;
     }
 
@@ -66,8 +70,11 @@
         if ( ! ( 3 == theCmapTable.pEncodingRecords[k].platformID ) )
             continue;
 
-        if ( ! ( 1 == theCmapTable.pEncodingRecords[k].encodingID ) && ! ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) ) {
-            sprintf(font::szFailureMessage,"operator: findfont. font %s is invalid. only Cmap platformID = 3 and encodingID = [1 | 10] is supported.",InstalledFontName());
+        if ( ! ( 0 == theCmapTable.pEncodingRecords[k].encodingID ) &&
+                ! ( 1 == theCmapTable.pEncodingRecords[k].encodingID ) && 
+                    ! ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) ) {
+            sprintf(FontManager::szFailureMessage,"font %s is invalid. only cmap platformID = 3 and encodingID = [0 | 1 | 10] is supported.",InstalledFontName());
+            FontManager::FireErrorNotification(FontManager::szFailureMessage);
             return E_FAIL;
         }
 
@@ -78,12 +85,13 @@
         uint16_t format;
         BE_TO_LE_U16(pLoad,format)
 
-        pLoad = (BYTE *)theCmapTable.pEncodingRecords[k].tableAddress;
+        pLoad -= sizeof(uint16_t);
 
-        if ( 1 == theCmapTable.pEncodingRecords[k].encodingID ) {
+        if ( 0 == theCmapTable.pEncodingRecords[k].encodingID || 1 == theCmapTable.pEncodingRecords[k].encodingID ) {
 
             if ( ! ( 4 == format ) ) {
-                sprintf(font::szFailureMessage,"operator: findfont. font %s is invalid. Only Cmap Subtable format 4 is supported when encodingID = 1.",InstalledFontName());
+                sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 4 is supported when encodingID = 1.",InstalledFontName());
+                FontManager::FireErrorNotification(FontManager::szFailureMessage);
                 return E_FAIL;
             }
 
@@ -94,11 +102,13 @@
         } else if ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) {
 
             if ( ! ( 12 == format ) ) {
-                sprintf(font::szFailureMessage,"operator: findfont. font %s is invalid. Only Cmap Subtable format 12 is supported WHEN encodingID = 10.",InstalledFontName());
+                sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 12 is supported WHEN encodingID = 10.",InstalledFontName());
+                FontManager::FireErrorNotification(FontManager::szFailureMessage);
                 return E_FAIL;
             }
 
-            sprintf(font::szFailureMessage,"operator: findfont. font %s is invalid. Only Cmap Subtable format 12 is not implemented yet.",InstalledFontName());
+            sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 12 is not implemented yet.",InstalledFontName());
+            FontManager::FireErrorNotification(FontManager::szFailureMessage);
             return E_NOTIMPL;
 
         }
@@ -108,7 +118,8 @@
     }
 
     if ( ! validPlatform ) {
-        sprintf(font::szFailureMessage,"operator: findfont. font %s is invalid. only Cmap platformID = 3 and encodingID = 1is supported.",InstalledFontName());
+        sprintf(FontManager::szFailureMessage,"font %s is invalid. only cmap platformID = 3 and encodingID = [0 | 1 | 10] is supported.",InstalledFontName());
+        FontManager::FireErrorNotification(FontManager::szFailureMessage);
         return E_FAIL;
     }
 

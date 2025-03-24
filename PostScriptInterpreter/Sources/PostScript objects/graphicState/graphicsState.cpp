@@ -44,21 +44,8 @@
 
 
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
-
-    BOOL isPrepared;
-
-    job::pIRenderer -> get_IsPrepared(&isPrepared);
-    if ( ! isPrepared )
-        job::pIRenderer -> Prepare(pPStoPDF -> GetDC());
-
-    pathParameters::pIRenderer_text -> get_IsPrepared(&isPrepared);
-    if ( ! isPrepared )
-        pathParameters::pIRenderer_text -> Prepare(pPStoPDF -> GetDC());
-
     pathParametersStack.top() -> initialize();
-
     initMatrix(hwndSurface,pageNumber);
-
     return;
     }
 

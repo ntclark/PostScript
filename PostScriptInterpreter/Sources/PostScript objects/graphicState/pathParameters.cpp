@@ -120,8 +120,8 @@
 
 
     void pathParameters::RenderGeometry() {
-    job::pIRenderer -> Render();
-    pIRenderer_text -> Render();
+    job::pIRenderer -> Render(pPStoPDF -> GetDC());
+    pIRenderer_text -> Render(pPStoPDF -> GetDC());
 
     //job::pIRenderer -> Reset();
     //pIRenderer_text -> Reset();

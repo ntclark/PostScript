@@ -8,19 +8,19 @@
     Renderer::Renderer(IUnknown *pUnkOuter) {
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
+    D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,&pID2D1Factory1);
     return;
     }
 
 
     Renderer::~Renderer() {
+    pID2D1Factory1 -> Release();
+    pID2D1Factory1 = NULL;
     return;
     }
 
 
-    void Renderer::setupRenderer() {
-
-    if ( NULL == pID2D1Factory1 ) 
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,&pID2D1Factory1);
+    void Renderer::setupRenderer(HDC hdc,RECT *pDrawingRect) {
 
     D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -32,10 +32,7 @@
 
     HRESULT hr = pID2D1Factory1 -> CreateDCRenderTarget(&props, &pID2D1DCRenderTarget);
 
-    RECT rcImage{0,0,0,0};
-    GetClientRect(WindowFromDC(hdc),&rcImage);
-
-    hr = pID2D1DCRenderTarget -> BindDC(hdc,&rcImage);
+    hr = pID2D1DCRenderTarget -> BindDC(hdc,pDrawingRect);
 
     pID2D1DCRenderTarget -> SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 

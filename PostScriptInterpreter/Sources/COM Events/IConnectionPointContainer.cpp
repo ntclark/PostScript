@@ -1,7 +1,6 @@
 
 #include "PostScript.h"
 
-
     HRESULT PStoPDF::_IConnectionPointContainer::QueryInterface(REFIID riid,void **ppv) {
 
     if ( IID_IConnectionPointContainer == riid ) {

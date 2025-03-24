@@ -20,14 +20,13 @@
 
         // IRenderer
 
-        STDMETHOD(Prepare)(HDC hdc);
-
         STDMETHOD(put_TransformMatrix)(UINT_PTR /*XFORM */ pXformToDeviceSpace);
-        STDMETHOD(get_IsPrepared)(BOOL *pIsPrepared);
         STDMETHOD(put_DownScale)(FLOAT ds);
         STDMETHOD(put_Origin)(POINTF ptOrigin);
 
-        STDMETHOD(Render)();
+        STDMETHOD(Render)(HDC hdc,RECT *pDrawingRect);
+        STDMETHOD(Discard)();
+        STDMETHOD(ClearRect)(HDC hdc,RECT *pREct,COLORREF theColor);
         STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
         STDMETHOD(GetParametersBundle)(UINT_PTR **pptrBundleStorage);
@@ -61,7 +60,7 @@
             STDMETHOD(CubicBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
             STDMETHOD(QuadraticBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-            STDMETHOD(Image)(HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+            STDMETHOD(Image)(HDC hdc,HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
 
             struct primitive {
 
@@ -352,7 +351,7 @@
 
         } *pIGraphicParameters{NULL};
 
-        void setupRenderer();
+        void setupRenderer(HDC hdc,RECT *pDrawingRect);
         void shutdownRenderer();
 
         void setupPathAndSink();
@@ -362,8 +361,6 @@
 
         HRESULT fillRender();
         HRESULT strokeRender();
-
-        HDC hdc{NULL};
 
         ID2D1Factory1 *pID2D1Factory1{NULL};
 

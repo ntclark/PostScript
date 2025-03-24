@@ -17,13 +17,9 @@ library PostScriptInterpreter {
    interface IPostScript : IUnknown {
 
       HRESULT SetSource(char *pszFileName);
-
       HRESULT Parse([defaultvalue(NULL)]char *pszFileName);
-
       HRESULT ParseText(char *pszText,long length,void *pvIPdfPage,void *pvIPostScriptTakeText,HDC hdc,RECT *prcWindowsClip);
-
       HRESULT GetLastError(char **ppszError);
-
       HRESULT LogLevel(logLevel theLogLevel);
 
    };

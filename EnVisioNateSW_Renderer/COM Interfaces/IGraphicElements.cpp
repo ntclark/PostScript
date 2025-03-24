@@ -94,7 +94,7 @@ return E_NOTIMPL;
     }
 
 
-    HRESULT Renderer::GraphicElements::Image(HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
+    HRESULT Renderer::GraphicElements::Image(HDC hdc,HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
 
     FLOAT widthUserSpace = 1.0f;
     FLOAT heightUserSpace = 1.0f;
@@ -113,10 +113,10 @@ return E_NOTIMPL;
     FLOAT xDeviceSpace = toDeviceSpace.eM11 * xResult + toDeviceSpace.eM12 * yResult + toDeviceSpace.eDx;
     FLOAT yDeviceSpace = toDeviceSpace.eM21 * xResult + toDeviceSpace.eM22 * yResult + toDeviceSpace.eDy;
 
-    HDC hdcSource = CreateCompatibleDC(pParent -> hdc);
+    HDC hdcSource = CreateCompatibleDC(hdc);
     SelectObject(hdcSource,hbmImage);
 
-    StretchBlt(pParent -> hdc,(long)xDeviceSpace,(long)yDeviceSpace,(long)widthUserSpace,(long)heightUserSpace,
+    StretchBlt(hdc,(long)xDeviceSpace,(long)yDeviceSpace,(long)widthUserSpace,(long)heightUserSpace,
                 hdcSource,0,0,(long)width,(long)height,SRCCOPY);
 
     return S_OK;

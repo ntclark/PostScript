@@ -13,11 +13,16 @@
     IFont_EVNSW *FontManager::pIFont_Current = NULL;
     std::list<font *> FontManager::managedFonts;
 
+    char FontManager::szFailureMessage[]{'\0'};
+    FontManager::_IConnectionPointContainer *FontManager::pIConnectionPointContainer = NULL;
+
     FontManager::FontManager(IUnknown *pUnkOuter) {
     if ( NULL == pIRenderer ) {
         CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
         pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
     }
+    pIConnectionPointContainer = new _IConnectionPointContainer(this);
+    pIConnectionPoint = new _IConnectionPoint(this);
     return;
     }
 
@@ -25,6 +30,8 @@
     FontManager::~FontManager() {
     for ( font *pFont : managedFonts)
         delete pFont;
+    delete pIConnectionPointContainer;
+    delete pIConnectionPoint;
     return;
     }
 

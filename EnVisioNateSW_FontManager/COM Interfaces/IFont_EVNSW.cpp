@@ -54,6 +54,35 @@
     }
 
 
+    HRESULT font::put_PointSize(FLOAT pointSize) {
+    PointSize(pointSize);
+    return S_OK;
+    }
+
+
+    HRESULT font::get_PointSize(FLOAT *pPointSize) {
+    if ( ! pPointSize )
+        return E_POINTER;
+    *pPointSize = PointSize();
+    return S_OK;
+    }
+
+
+    HRESULT font::FontBoundingBox(POINTF *pLowerLeft,POINTF *pUpperRight) {
+    if ( ! pLowerLeft && ! pUpperRight )
+        return E_POINTER;
+    if ( pLowerLeft ) {
+        pLowerLeft -> x = PointSize() * (FLOAT)pHeadTable -> xMin / (FLOAT)pHeadTable -> unitsPerEm;
+        pLowerLeft -> y = PointSize() * (FLOAT)pHeadTable -> yMin/ (FLOAT)pHeadTable -> unitsPerEm;
+    }
+    if ( pUpperRight ) {
+        pUpperRight -> x = PointSize() * (FLOAT)pHeadTable -> xMax / (FLOAT)pHeadTable -> unitsPerEm;
+        pUpperRight -> y = PointSize() * (FLOAT)pHeadTable -> yMax/ (FLOAT)pHeadTable -> unitsPerEm;
+    }
+    return S_OK;
+    }
+
+
     HRESULT font::Scale(FLOAT scaleX,FLOAT scaleY) {
     XFORM scaleMatrix{scaleX / currentScale,0.0f,0.0f,scaleY / currentScale,0.0f,0.0f};
     ConcatMatrix((UINT_PTR)&scaleMatrix);
@@ -264,14 +293,14 @@
             continue;
         long cb = 0L;
         for ( char *p : *sources[k] )
-            cb += strlen(p) + 1;
+            cb += (long)strlen(p) + 1;
         cbTotal += cb + 1;
         *targets[k] = (UINT_PTR)CoTaskMemAlloc(cb + 1);
         memset((void *)*targets[k],0,cb + 1);
         char *pTarget = (char *)*targets[k];
         for ( char *p : *sources[k] ) {
             strcpy(pTarget,p);
-            pTarget += strlen(p) + 1;
+            pTarget += (long)strlen(p) + 1;
         }
     }
 
@@ -282,7 +311,7 @@
     for ( long k = 0; k < pFont -> fontFullNames.size(); k++ ) {
 
         strcpy(pTarget,pFont -> fontFullNames[k]);
-        long n = strlen(pFont -> fontFullNames[k]);
+        long n = (long)strlen(pFont -> fontFullNames[k]);
         pTarget[n] = ' ';
         char *p = pTarget;
         while ( p - pTarget < n ) {
@@ -293,12 +322,12 @@
         pTarget += n + 1;
 
         strcpy(pTarget,pFont -> fontStyleNames[k]);
-        n = strlen(pFont -> fontStyleNames[k]);
+        n = (long)strlen(pFont -> fontStyleNames[k]);
         pTarget[n] = ':';
         pTarget += n + 1;
 
         strcpy(pTarget,pFont -> fontScriptNames[k]);
-        n = strlen(pFont -> fontScriptNames[k]);
+        n = (long)strlen(pFont -> fontScriptNames[k]);
         pTarget[n] = '\0';
         pTarget += n + 1;
 

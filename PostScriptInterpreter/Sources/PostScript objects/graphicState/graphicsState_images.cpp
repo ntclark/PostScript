@@ -295,7 +295,7 @@ break;
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
-    job::pIGraphicElements_External -> Image(hbmResult,
+    job::pIGraphicElements_External -> Image(pPStoPDF -> GetDC(),hbmResult,
                                                 (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
     return;

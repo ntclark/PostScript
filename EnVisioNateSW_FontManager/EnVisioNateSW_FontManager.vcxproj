@@ -153,6 +153,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="COM Events\ConnectionPointContainer.cpp" />
+    <ClCompile Include="COM Events\IConnectionPoint.cpp" />
+    <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
+    <ClCompile Include="COM Events\IEnumerateConnections.cpp" />
     <ClCompile Include="COM Implementation\dllMain.cpp" />
     <ClCompile Include="COM Interfaces\IFontManager.cpp" />
     <ClCompile Include="COM Interfaces\IFontManager_DrawGlyph.cpp" />
