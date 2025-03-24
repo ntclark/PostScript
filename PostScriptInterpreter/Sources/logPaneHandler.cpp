@@ -36,15 +36,6 @@
         break;
 #endif
 
-    case WM_COMMAND: {
-        switch( LOWORD(wParam) ) {
-        default:
-            break;
-        }
-
-        }
-        break;
-
     default:
         break;
     }

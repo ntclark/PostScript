@@ -117,10 +117,10 @@
 
     for ( long k = 0; k < pGlyphGeometry -> ContourCount(); k++ ) {
 
-        uint16_t pointCount = pGlyphGeometry -> ContourPointCount(k);
+        uint16_t pointCount = pGlyphGeometry -> ContourPointCount((uint16_t)k);
 
-        uint8_t *pOnCurve = pGlyphGeometry -> FlagsFirst(k);
-        POINT *pPoints = pGlyphGeometry -> PointFirst(k);
+        uint8_t *pOnCurve = pGlyphGeometry -> FlagsFirst((uint16_t)k);
+        POINT *pPoints = pGlyphGeometry -> PointFirst((uint16_t)k);
 
         if ( pOnCurve[0] & FT_CURVE_TAG_ON ) {
             FontManager::pIGraphicElements -> MoveTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);

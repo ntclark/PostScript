@@ -181,7 +181,7 @@
         *pResult = idDelta + charCode;
 
         if ( 0 > *pResult)
-            *pResult += 65536;
+            *pResult += (uint16_t)65536;
 
         return S_OK;
 

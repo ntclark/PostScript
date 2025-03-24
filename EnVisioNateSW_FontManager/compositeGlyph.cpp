@@ -148,7 +148,7 @@
 
         pointCount += ppGlyphGeometrys[k] -> PointCount();
 
-        advanceWidth = max(advanceWidth,ppGlyphGeometrys[k] -> AdvanceWidth());
+        advanceWidth = max(advanceWidth,(int32_t)ppGlyphGeometrys[k] -> AdvanceWidth());
 
     }
 

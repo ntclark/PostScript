@@ -25,7 +25,7 @@
     }
 
     void *object::operator new(size_t theSize) {
-    return ::new BYTE(theSize);
+    return ::new BYTE[theSize];
     }
 
     void *object::operator new(size_t theSize,void *pPtr) {

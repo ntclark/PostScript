@@ -143,7 +143,7 @@
     CHARRANGE chr;
     nativeRichEditHandler(hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
 
-    long charFirst = nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
+    long charFirst = (long)nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
 
     if ( chr.cpMax > charFirst )
         *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF" \\par%s",pNew);
@@ -202,7 +202,7 @@
 
     while ( p ) {
 
-        long countBefore = p - pStart;
+        long countBefore = (long)(p - pStart);
         *p = '\0';
         long countAfter = (DWORD)strlen(p + 1);
 
