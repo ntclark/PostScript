@@ -51,9 +51,9 @@
         long y = gdiXForm.eDy - (long)((startPoint.y + fontDeltaYPoints) * fabsf(gdiXForm.eM22));
 
         MoveToEx(hdcBackground,x,y,NULL);
-        LineTo(hdcBackground,x + fontDeltaXPixels,y);
-        LineTo(hdcBackground,x + fontDeltaXPixels,y + fontDeltaYPixels);
-        LineTo(hdcBackground,x,y + fontDeltaYPixels);
+        LineTo(hdcBackground,x + (long)fontDeltaXPixels,y);
+        LineTo(hdcBackground,x + (long)fontDeltaXPixels,y + (long)fontDeltaYPixels);
+        LineTo(hdcBackground,x,y + (long)fontDeltaYPixels);
         LineTo(hdcBackground,x,y);
 #endif
         pIFont -> RenderGlyph(hdcBackground,(unsigned short)p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&startPoint,&endPoint);
