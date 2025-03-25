@@ -1,6 +1,9 @@
 
 # Understanding the EnVisioNateSW FontManager system with additional help with the EnVisioNateSW Renderer 
 
+>All of my repositories need the [Common](https://github.com/ntclark/Common) repository and there you will find clear 
+build instructions for all of them.
+
 This project will help you see how the FontManager works and how you might utilize it in your own 
 software projects.
 

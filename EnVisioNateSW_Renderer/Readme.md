@@ -1,5 +1,8 @@
 # The EnVisioNateSW Renderer
 
+>All of my repositories need the [Common](https://github.com/ntclark/Common) repository and there you will find clear 
+build instructions for all of them.
+
 This component of the system affects the visual representation of everything in the system that is visual.
 
 In other words, nowhere else is there any code that calls the Windows GDI or Direct2D components to show entities on the screen (or any Device Context).
