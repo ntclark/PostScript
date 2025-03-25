@@ -2,6 +2,7 @@
 # Software quality is my passion
 
 ### Before I get into that, you may be looking for build instructions
+
 ---
 All of my repositories need the [Common](https://github.com/ntclark/Common) repository and there you will find clear 
 build instructions for all my Open Source projects
