@@ -39,8 +39,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Readme.md">
-      <Filter>Source Files</Filter>
-    </None>
+    <None Include="Readme.md" />
   </ItemGroup>
 </Project>
