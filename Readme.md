@@ -3,13 +3,13 @@
 
 >### Before I get into that, you may be looking for build instructions
 >All of my repositories need the [Common](https://github.com/ntclark/Common) repository and there you will find clear 
-build instructions for all my projects
+build instructions for all of them.
 
 I became a PostScript guru back in 1985 or so, that is 40 years ago. My specific dive into the language was to 
 write a T<sub>E</sub>X like markup language in a DEC Vax environment.
 
-I used the PL/I language, in which I was proficient, to read plain text files, containing 
-markup escape sequences defined by my system, and output PostScript language files sent to PostScript printers.
+I used the PL/I language to read plain text files containing markup escape sequences defined by my system, 
+and output PostScript language files sent to PostScript printers.
 
 This was in the US Defense engineering industry where my user base consisted of highly technical engineering and
 mathematics professionals who gravitated to my system and took full advantage of the incredible flexibility and power of it.
@@ -25,7 +25,7 @@ In other words, this software reads *.ps input files, and renders the contents W
 # WHY ?
 
 Yes, there is already an open source solution for this, please know that I am intimately aware of GhostScript. In fact, I know more than 
-I want to know about that software and spent way to much time trying to gain that knowledge.
+I want to know about that software and spent way too much time trying to gain that knowledge.
 
 In some ways, it was working with GhostScript that engendered my desire to re-visit my PostScript passion. This time, however, it is to create 
 a replacement for GhostScript while at the same time forming the foundation upon which I might realize my much more important lifetime passion[^1].
@@ -48,7 +48,7 @@ while extensibility and maintainability are as far away as the moon, and which i
 
 I have "rescued" systems over and over again, where every time, a rewrite from the ground up is the ONLY way to resuscitate it. 
 And, more times than not, I've had to do that on my own time, or at least without the approval of the muckity-mucks - 
-because - those people, who can't get out of their incessant "design" meetings, have no clue how their own system even works - or, for that matter, 
+because - those people, who can't get out of their incessant "design" meetings, have no clue how their own systems even work - or, for that matter, 
 how software development itself actually works. In their world, nothing can be done without some bullshit time estimate that **nobody** can
 accurately predict that backs some sort of "task" created with "feet to the fire" on that estimate.
 
@@ -63,7 +63,7 @@ made some progress in my passion - that of finally doing something to make the a
 (don't get me going on the use of the term "programming") the disciplined engineering endeavor that it should 
 have been from the beginning, but currently is not.
 
-Then, and perhaps only then - *maybe** some of those high-fallutin' software processes might actually work, at least they might have a 
+Then, and perhaps only then - *maybe* some of those high-fallutin' software processes might actually work, at least they would have a 
 foundation to actually stand upon. Until then, however, everyone is literally barking up the wrong tree, and simply dancing 
 around the problem looking like a bunch of fools.
 
@@ -74,19 +74,19 @@ that impacts the state of every single federal roadway in the whole of the Unite
 
 That system had the most insane massive software bug which I, for years, tried to point out to those ostensibly accountable to the government. 
 I was ignored over and over again for years, "Why fix it if it's bringing in all this contract money right?" I tried to explain that bug to 
-an the one individual who hosted and ran the system for the government and described to using the debugger to discover that bug,
-at which point he said to me, "What's the debugger" - this after being, for at least 10 years, the person with the ultimate 
+the one individual who hosted and ran the system for the government and described how I used the debugger to discover that bug.
+At which point he said to me, "What's the debugger?" - this after being, for at least 10 years, the person with the ultimate 
 responsibility of the system.
 
-This bug, impacting results in the trillions of dollars, yes, trillions with a T, first came to lef when a moron manager - with a PhD in computer
+This bug, impacting results in the trillions of dollars, yes, trillions with a T, first came to life when a moron manager - with a PhD in computer
 science, no less, directed the "programmer peon" that "Everywhere the variable ____ appears, make that a call to ____ instead".
 
 That caused a bug to be in that system for years, either because "programmer peon" did not have the technical acumen (typical) to think it 
-through, or didn't care, or the manager moron had no clue how software works ( which was true in this case ), or all three. 
+through, or didn't care, or the manager moron had no clue how software actually works ( which was true in this case ), or all three. 
 When I came upon the system I found this bug within three days.
 
 The commonality of situations like the above is a major factor in the growth of my absolute passion for software quality.
-Over the years I have found that there can be severe ramifications of poorly built software due
+Over the years I have found that there are severe ramifications of poorly built software due
 to a) inattention to every last detail in software development, and b) the real cost of un-informed, un-caring, un-educated (or over-educated) 
 muckety mucks who can't possibly think beyond the top-level of system/software tools. 
 These are the people who can read any white paper and think they know everything when they actually know nothing because white papers say nothing.
@@ -104,18 +104,20 @@ them into new and powerful uses.
 
 My book will outline, using side-by-side comparison, the incredible positive differences that come about thru pristinely written 
 and to the point software that is free from distracting and obnoxious constructs that literally crowd out the true meaning.
-I cannot wait to publish this book, but in the meantime, my repositories contain what I consider to be the prologue to it.
+I cannot wait to publish this book, but in the meantime, my repositories demonstrate what I consider to be the prologue to it.
 
 In as much as I may come across as a jerk in my descriptions here and in the discussions about other peoples' work I will 
 say that I truly hope the reader will understand that my goal is pure - that of truly improving the state of the software 
 development industry by highlighting those things that have prevented that improvement for about 75 years !!
 
 This is not a work of fiction, and no names have been changed to protect the innocent. 
-If a name is mentioned, that individual is probably a part of the problem, and is **not** innocent - sorry.
+If a name is mentioned, that individual is probably a part of the problem, and is **not** innocent.
+I offer no apology for my forthrightness, bad language, and phrases possibly offensive to some. What I believe and say needs to
+be said and if I'm able to do nothing else in my career I will take on the responsibility of getting this said.
 
 ## general organization
 
-I remember in the 80's when file names got the permission to be of length greater than 6. Or for example, variables in FORTRAN 
+I remember in the 80's when file names got the ability to be of length greater than 6. Or for example, variables in FORTRAN 
 (yes FORTRAN) could be greater than 6 letters. WOW ! I went absolutely bananas over this new and exciting realm of possibility!
 
 And here we are 4 decades later - and **STILL** most developers do not leverage this !! Well sure, it's great people figured out 
@@ -128,38 +130,30 @@ And, what's with prepending something on file names to indicate, I don't know, w
 Is there a point to using up space in every file name in the sources for any reason ? 
 Especially when it's apparently some kind of problem to actually name a file for it's relevance ? 
 
-Don't get me started on that incredibly lazy practice of putting "main" at the bottom of a file, just so you don't have to create a 
-header for all the artifacts main might use! That is a glaring indication of not only a lazy individual, but also one who could not 
-care less about understanding structure and organization. I'm going to bet you that this person will repeat 
-a declaration in some other source file when they finally want to expand; then, there we go, the system is 
-falling apart even when only two source files comprise it.
-
-Yes, a hundred times yes, it is best to follow the common sense strategy for **every** situation, 1 file in the system, or 1000 files. 
-There is no excuse for shortcuts, do it right every time and every place.
-
 In the overall culture of Open Source, I see that 1) the growth and enhancement of tools *cannot* be leveraged by the community, 
 and 2) (among others) structure and organization are stagnant. Why ? 
 
 - People have the sources local and changes in the repository can't be immediately seen by them
-    - Too effing bad. The masses need to learn how to use diff engines ( my favorite is Beyond Compare by Scooter Software) - up until 
+    - Too effing bad. The masses need to learn how to use diff engines - up until 
 that time whenever repository technology gets better
-        - The repository technology is **not going** to get better. It is already too difficult and error prone. The masses will have to take 
-responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it
+        - Oops, the repository technology is **not going** to get better. It is already too difficult and error prone. The masses will have to take 
+responsibility for proper merging on their own, and at the same time one and only one owner of the repository must be responsible for it. 
+Where are you original authors ? You gave birth to something, then loose all interest in it
 - The systems are badly structured and/or architected.
     - In the past systems were built without dynamically loaded component parts ('.dlls, etc) so there are usually way more sources 
 a contributor may have to deal with even when only interested in a specific area. 
-because there **AREN'T** any specific area(s)
-    - It is way past time the big Open Source systems need to be re-architected in a big way.It is the job of a single individual 
+Well, probably because there **AREN'T** any specific area(s)
+    - It is way past time the big Open Source systems need to be re-architected in a substantial way.It is the job of a single individual 
 who needs to take the reins and get this done. It *should* be the original author, and I mean the ONE author. I should not have to say this
 but it's true, most "original authors" don't really give a shit about their child, if they did, they'd have already refactored/rearchitected 
-it.
+it - kept it up with the times.
     - Also, don't give me any shit about these system being too big for one person, that's only because they are so sloppy, disorganized, and
-poorly architected that any one person would have a hard time getting their head around it. Too bad, it needs to be done, and by one person.
-In a non-architected system, multi-person teams are bullshit until such time as the system is properly architected. 
+poorly architected so that any one person would have a hard time getting their head around it. Too bad, it needs to be done, and by one person.
+In a non-architected, total chaos system, multi-person teams are bullshit until such time as the system is properly architected. 
 - Any of a plethora of technology aspects that are out pacing the original sources
     - Adapt the sources and do it now
 - The insistence on multi-platform operability is a pipe dream
-    - If the target platform poses significant impacts on the sources - someone fix the effing target platform.
+    - If some target platform poses significant impacts on the sources - someone fix the effing target platform.
         - The needs of the many outweigh the needs of the few
 
 The fact that contemporary technologies weren't implemented in the past SHOULD NEVER hold an Open Source system back. 
