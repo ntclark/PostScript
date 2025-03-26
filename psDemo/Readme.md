@@ -13,4 +13,4 @@ Free of charge, you've got out of the box a content detection tool. Connect it u
 with the CursiVision Print Driver, and you could use this tool for any document
 whatsoever, no matter the "type", or extension.
 
-For more on this possibility, and to obtain a free PostScript print driver suitable for this purpose, go [here](.../PostScriptInterpreter/#Note).
+For more on this possibility, and to obtain a free PostScript print driver suitable for this purpose, go [here](../PostScriptInterpreter/#Note).
