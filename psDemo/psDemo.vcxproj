@@ -140,6 +140,7 @@
     <ResourceCompile Include="psDemo.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Readme.md" />
     <None Include="simple.ps" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

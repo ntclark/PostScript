@@ -33,5 +33,6 @@
     <None Include="simple.ps">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Readme.md" />
   </ItemGroup>
 </Project>
