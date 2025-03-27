@@ -103,7 +103,6 @@
         // essentially after the current postscript transformation has been 
         // applied.
         // The GlyphRenderer will convert this to device (GDI) coordinates
-        //matrix::transformPoints((XFORM *)pPSXform,(GS_POINT *)&initialPoint,1);
         FontManager::pIRenderer -> put_Origin(*pStartPoint);
         FontManager::pIRenderer -> put_DownScale(64.0f);
     }

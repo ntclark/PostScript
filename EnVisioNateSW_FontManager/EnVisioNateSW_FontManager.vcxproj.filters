@@ -60,9 +60,6 @@
     <ClCompile Include="compositeGlyph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IFont_EVNSW_DrawGlyph.cpp">
-      <Filter>Source Files\COM Interfaces</Filter>
-    </ClCompile>
     <ClCompile Include="COM Events\IConnectionPoint.cpp">
       <Filter>Source Files\COM Events</Filter>
     </ClCompile>
@@ -75,8 +72,11 @@
     <ClCompile Include="COM Events\IEnumerateConnections.cpp">
       <Filter>Source Files\COM Events</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\Utils\mathUtils.cpp">
-      <Filter>Source Files\Common</Filter>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Interfaces\IFont_EVNSW_DrawGlyph.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

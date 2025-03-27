@@ -162,12 +162,12 @@
     <ClCompile Include="COM Interfaces\IFontManager.cpp" />
     <ClCompile Include="COM Interfaces\IFontManager_DrawGlyph.cpp" />
     <ClCompile Include="COM Interfaces\IFont_EVNSW.cpp" />
+    <ClCompile Include="COM Interfaces\IFont_EVNSW_DrawGlyph.cpp" />
     <ClCompile Include="COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="compositeGlyph.cpp" />
     <ClCompile Include="font.cpp" />
     <ClCompile Include="FontManager.cpp" />
     <ClCompile Include="font_type42.cpp" />
-    <ClCompile Include="IFont_EVNSW_DrawGlyph.cpp" />
     <ClCompile Include="matrix.cpp" />
     <ClCompile Include="simpleGlyph.cpp" />
   </ItemGroup>
