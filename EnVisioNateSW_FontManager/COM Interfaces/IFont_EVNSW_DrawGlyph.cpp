@@ -126,9 +126,8 @@
             currentPoint.x = pPoints -> x;
             currentPoint.y = pPoints -> y;
         } else {
-            char szX[128];
-            sprintf_s<128>(szX,"Invalid font: A glyph (%x) has a contour whose first point is OFF the contour",bGlyph);
-            //MessageBox(NULL,szX,__FILE__,MB_OK);
+            sprintf(FontManager::szFailureMessage,"Invalid font: A glyph (%x) has a contour whose first point is OFF the contour",bGlyph);
+            FontManager::FireErrorNotification(FontManager::szFailureMessage);
             FontManager::pIGraphicElements -> MoveTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);
             currentPoint.x = pPoints -> x;
             currentPoint.y = pPoints -> y;
