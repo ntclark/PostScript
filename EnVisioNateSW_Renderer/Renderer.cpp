@@ -1,7 +1,7 @@
 
 #define DEFINE_DATA
 
-#include "EnVisioNateSW_Renderer.h"
+#include "Renderer.h"
 
 #include "Renderer_i.c"
 
@@ -9,6 +9,8 @@
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
     D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,&pID2D1Factory1);
+    pIConnectionPointContainer = new _IConnectionPointContainer(this);
+    pIConnectionPoint = new _IConnectionPoint(this);
     return;
     }
 
@@ -16,6 +18,8 @@
     Renderer::~Renderer() {
     pID2D1Factory1 -> Release();
     pID2D1Factory1 = NULL;
+    delete pIConnectionPointContainer;
+    delete pIConnectionPoint;
     return;
     }
 

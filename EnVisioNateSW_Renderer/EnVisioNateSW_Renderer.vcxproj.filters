@@ -19,6 +19,9 @@
     <Filter Include="Source Files\COM Interfaces">
       <UniqueIdentifier>{ca25b3e8-47a2-4b8d-a749-0e7f1a711156}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\COM Events">
+      <UniqueIdentifier>{14d2e170-f6ff-429e-bab6-f2501ca461f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="COM Interfaces\IUnknown.cpp">
@@ -42,11 +45,20 @@
     <ClCompile Include="COM Interfaces\IRenderer.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
+    <ClCompile Include="COM Events\ConnectionPointContainer.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Events\IConnectionPoint.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Events\IEnumConnectionPoints.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="COM Events\IEnumerateConnections.cpp">
+      <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EnVisioNateSW_Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

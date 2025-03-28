@@ -13,7 +13,7 @@ import "ocidl.idl";
 library Renderer { 
 
     [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C81),
-      helpstring("EnVisioNateSW Rendering Interface"),
+      helpstring("EnVisioNateSW Renderer Interface"),
       nonextensible,pointer_default(unique)] 
 
     interface IRenderer : IUnknown {
@@ -33,7 +33,7 @@ library Renderer {
 
     };
 
-    [uuid(7731A10E-25F9-4234-BB4C-188512965193),
+    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C82),
       helpstring("EnVisioNateSW Graphics Primitives Interface"),
       nonextensible,pointer_default(unique)] 
 
@@ -58,7 +58,7 @@ library Renderer {
 
     };
 
-    [uuid(7731A10E-25F9-4234-BB4C-188512965194),
+    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C83),
         helpstring("EnVisioNateSW Graphics Parameters Interface"),
       nonextensible,pointer_default(unique)] 
 
@@ -76,10 +76,21 @@ library Renderer {
 
     };
 
-    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C82),
+    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C84),
+      helpstring("EnVisioNateSW Renderer Notifications Interface"),
+      nonextensible,pointer_default(unique)] 
+
+    interface IRendererNotifications : IUnknown {
+        [helpstring("Please DO NOT free the UINT_PTR, it is statically allocated")]
+        HRESULT ErrorNotification(UINT_PTR errorMessage);
+        HRESULT StatusNotification(UINT_PTR statusMessage);
+    };
+
+    [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C90),
     helpstring("")]
         coclass Renderer{
         [default] interface IUnknown;
+        [source] interface IRendererNotifications;
     };
 
 };

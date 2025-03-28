@@ -1,9 +1,5 @@
 
-#include "EnVisioNateSW_Renderer.h"
-
-#include <list>
-#include <map>
-#include <algorithm>
+#include "Renderer.h"
 
     HRESULT Renderer::put_TransformMatrix(UINT_PTR pXFormToDeviceSpace) {
     memcpy(&pIGraphicElements -> toDeviceSpace,(void *)pXFormToDeviceSpace,sizeof(XFORM));

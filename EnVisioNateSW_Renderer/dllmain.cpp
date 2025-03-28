@@ -1,8 +1,5 @@
 
-#include "EnVisioNateSW_Renderer.h"
-
-#include <shlwapi.h>
-#include <shlobj.h>
+#include "Renderer.h"
 
     extern "C" BOOL WINAPI DllMain(HINSTANCE hI, DWORD dwReason, LPVOID) {
 

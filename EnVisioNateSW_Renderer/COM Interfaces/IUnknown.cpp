@@ -1,5 +1,5 @@
 
-#include "EnVisioNateSW_Renderer.h"
+#include "Renderer.h"
 
     HRESULT Renderer::QueryInterface(REFIID refIID,void **pvResult) {
 
@@ -19,6 +19,12 @@
 
     else if ( IID_IGraphicParameters == refIID )
         return pIGraphicParameters -> QueryInterface(refIID,pvResult);
+
+    else if ( IID_IConnectionPointContainer == refIID ) 
+      return pIConnectionPointContainer -> QueryInterface(refIID,pvResult);
+
+    else if ( IID_IConnectionPoint == refIID ) 
+        return pIConnectionPoint -> QueryInterface(refIID,pvResult);
 
     if ( * pvResult ) {
         AddRef();

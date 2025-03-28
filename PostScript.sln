@@ -16,6 +16,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HostPostscript", "HostPosts
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PostScriptInterpreter", "PostScriptInterpreter\PostScriptInterpreter.vcxproj", "{3F55E01B-7491-42CA-9936-5969C84FB14E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{216C47AD-6C9A-47F2-ADC5-877A3C5BD85D} = {216C47AD-6C9A-47F2-ADC5-877A3C5BD85D}
+		{B3529245-5B1F-4927-B6DD-95DE5F17D08D} = {B3529245-5B1F-4927-B6DD-95DE5F17D08D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "psDemo", "psDemo\psDemo.vcxproj", "{52372572-C133-407E-9406-8AE14D4AA978}"
 	ProjectSection(ProjectDependencies) = postProject

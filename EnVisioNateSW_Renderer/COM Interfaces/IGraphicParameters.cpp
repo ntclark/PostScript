@@ -1,4 +1,4 @@
-#include "EnVisioNateSW_Renderer.h"
+#include "Renderer.h"
 
     FLOAT Renderer::GraphicParameters::defaultLineWidth = 1.0f;
     D2D1_CAP_STYLE Renderer::GraphicParameters::defaultLineCap = D2D1_CAP_STYLE_ROUND;//D2D1_CAP_STYLE_FLAT;
