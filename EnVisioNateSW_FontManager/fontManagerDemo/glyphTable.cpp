@@ -18,19 +18,10 @@
     FLOAT pointSize;
     pIFont -> get_PointSize(&pointSize);
 
-#if 0
-    POINTF minPoint,maxPoint;
-    pIFont -> FontBoundingBox(&minPoint,&maxPoint);
-    FLOAT fontDeltaXPoints = maxPoint.x - minPoint.x;
-    FLOAT fontDeltaYPoints = maxPoint.y - minPoint.y;
-    FLOAT fontDeltaXPixels = fontDeltaXPoints * fabsf(gdiXForm.eM11);
-    FLOAT fontDeltaYPixels = fontDeltaYPoints * fabsf(gdiXForm.eM22);;
-#else
     FLOAT fontDeltaXPoints = pointSize;
     FLOAT fontDeltaYPoints = pointSize;
     FLOAT fontDeltaXPixels = fontDeltaXPoints * fabsf(gdiXForm.eM11);
     FLOAT fontDeltaYPixels = fontDeltaYPoints * fabsf(gdiXForm.eM22);;
-#endif
 
     FLOAT deltaInPagePoints = (FLOAT)cyRenderPane / fabsf(gdiXForm.eM22) - fontDeltaYPoints;
 
@@ -46,7 +37,7 @@
     pIRenderer -> ClearRect(hdcBackground,&rcDrawing,WHITE);
 
     for ( unsigned short p = 0x21; p < 0x4FB; p++ ) {
-#if 1
+
         long x = (long)(startPoint.x * fabsf(gdiXForm.eM11));
         long y = (long)gdiXForm.eDy - (long)((startPoint.y + fontDeltaYPoints) * fabsf(gdiXForm.eM22));
 
@@ -55,7 +46,7 @@
         LineTo(hdcBackground,x + (long)fontDeltaXPixels,y + (long)fontDeltaYPixels);
         LineTo(hdcBackground,x,y + (long)fontDeltaYPixels);
         LineTo(hdcBackground,x,y);
-#endif
+
         pIFont -> RenderGlyph(hdcBackground,(unsigned short)p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&startPoint,&endPoint);
 
         endPoint.y = startPoint.y;
