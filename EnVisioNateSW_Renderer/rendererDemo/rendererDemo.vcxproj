@@ -139,6 +139,7 @@
     <ResourceCompile Include="renderDemo.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Resources\sample.png" />
     <Image Include="Resources\smoking.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

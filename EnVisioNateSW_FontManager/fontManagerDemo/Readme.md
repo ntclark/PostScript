@@ -18,5 +18,6 @@ techniques yourself, if that is important for your application.
 
 Here's the font manager in action, we are looking at the Arial font, size 36 points and it has rendered the given sentence.
 I've clicked the table button to show every glyph defined the font in a grid pattern. 
+
 ![FontManager screenshot](./fontManager.png)
 
