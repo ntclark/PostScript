@@ -6,7 +6,7 @@ This demo is the simplest of Windows applications. For demonstrating the easiest
 windows application using the raw Windows API - the demo will also take the mysteries out of that.
 
 The intent of the demo, though, is to show you how to embed the Renderer Object onto a window 
-and begin drawing graphics on it right away.
+and begin drawing graphics on it right away. "Embed" is not really the right word, you'll see what I mean.
 
 The demo is a simple Overlapped window, which is just a frame, a caption, and a client all rolled into one.
 
@@ -15,12 +15,12 @@ The demo is a simple Overlapped window, which is just a frame, a caption, and a 
 What was that ?? This is not really a visual object ? Well, there's all of stuff in the image below
 that seems to counter that theory !
 
-But let me explain, this object draws on *your** window ! That is an important distinction. In other words
+But let me explain, this object draws on *your* window! That is an important distinction. In other words
 this object does NOT create a surface (window and device context) of it's own. I have written a number
 of COM objects that use the OleObject, etc., family of COM interfaces in order to be used as an "embedded" visual
-object. 
+object, and that can be just too complex to be any fun to use. It has it's place, but not here.
 
-No, that is **not** the case here, that's approach can be way too complicated, and frankly, less powerful. You'll see why I think later on.
+So, OLE/ActiveX, whatever it's called, is **not** the case here.
 
 Indeed, there is no real connection between this object and *any* actual window in your software. The *only* connection is through a 
 device context. And this can be **any** device context from any window in your system, **OR** to a printer, **OR** to a bitmap. yes, 
