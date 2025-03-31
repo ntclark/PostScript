@@ -21,7 +21,7 @@ own system.
 
 The demo is a windows application that hosts this project as a COM component and creates each of the typical graphics 
 primitives in a clean and robust way. You can see immediately how easy, and flexible, this component really is for
-rendering graphics. Which includes all manner of text right away (the demo also shows the use of the 
+rendering graphics, which includes all manner of text, right away (the demo also shows the use of the 
 [Font Manager](../EnVisioNateSW_FontManager/Readme.md) object).
 
 To get started with the demo, please go [here](./rendererDemo/Readme.md).
