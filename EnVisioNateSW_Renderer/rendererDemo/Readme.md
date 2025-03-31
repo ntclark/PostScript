@@ -24,7 +24,8 @@ So, OLE/ActiveX, whatever it's called, is **not** the case here.
 
 Indeed, there is no real connection between this object and *any* actual window in your software. The *only* connection is through a 
 device context. And this can be **any** device context from any window in your system, **OR** to a printer, **OR** to a bitmap. yes, 
-you can use this COM component simply to create bitmaps. Maybe it does not not even need be visual in your system.
+you can use this COM component simply to create bitmaps. Maybe it does not not even need be visual in your system. Maybe your system 
+is a console application - no problem, this component is still 100% useful in this scenario.
 
 Like I've said, this is a simple as possible, yet powerful and hopefully very useful in your projects.
 
@@ -33,7 +34,7 @@ Like I've said, this is a simple as possible, yet powerful and hopefully very us
 >This project actually came about as I was building my [PostScript Interpreter](../../PostScriptInterpreter) project. Font handling in that
 project had been delegated to my [Font Manager](../../EnVisioNateSW_FontManager) and *that* became a valuable product in it's own right.
 >
->But I struggled to find an unerstandable example of rasterizing fonts. I spent a few weeks with freetype, but ultimately I gave up 
+>But I struggled to find an understandable example of rasterizing fonts. I spent a few weeks with freetype, but ultimately I gave up 
 and started looking for either a) a decent explanation and example of rasterizing theory, or b) a *native* implemenation built-in to the 
 Windows API. I have no qualms using something from an Operating System - that is, after all, what Operating Systems are for, the more
 complete of them should expose those technologies that they obviously have within them for all of us to use.
@@ -52,16 +53,16 @@ So Direct2D became the perfect solution to getting excellent rasterization of my
 create a universal graphics rendering engine for **all** graphics primitives. Not only for just font rasterization, but also for ALL
 PostScript drawing commands - of course independent of PostScript itself. Therefore, the EnVisioNatesSW_Renderer was born.
 
-And it became on of the more powerful, and hopefully useful of the three projects in this repository - which include the 
+And it became one of the more powerful, and hopefully useful, of the three projects in this repository - which include the 
 [PostScript Interpreter](../../PostScriptInterpreter) and [Font Manager](../../EnVisioNateSW_FontManager).
 
 The following figure shows the demo in action. 
 
-When you ubild and run this demo, try grabbing the corner of the big window and click and resize.
+When you build and run this demo, try resizing the big window..
 
 Did you notice that the entire figure scales 100% automatically ?
 
-You don't have to have it do this, maybe it's not in a resizable window, but achieving that effect is automatic and requires
+Your not required to have it do this, maybe it's not in a resizable window, but achieving that effect is automatic and requires
 literally zero lines of code to accomplish.
 
 Note one other thing, the window with the graphic on it is **not** owned or created by this COM object. As mentioned in the 
