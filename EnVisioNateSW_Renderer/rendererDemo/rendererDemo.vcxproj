@@ -142,6 +142,9 @@
     <Image Include="Resources\sample.png" />
     <Image Include="Resources\smoking.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Readme.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
