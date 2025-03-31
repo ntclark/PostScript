@@ -33,7 +33,7 @@
 
         void arcto(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
 
-        void curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
+        void curveto(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
         void quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
         static XFORM *ToDeviceSpace() { return &toDeviceSpace; }

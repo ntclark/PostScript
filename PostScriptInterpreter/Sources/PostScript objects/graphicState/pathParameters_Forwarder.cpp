@@ -106,8 +106,8 @@ Beep(2000,200);
     }
 
 
-    void pathParameters::curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
-    pIGraphicElements -> CubicBezier(x1,y1,x2,y2,x3,y3);
+    void pathParameters::curveto(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
+    pIGraphicElements -> CubicBezier(x0,y0,x1,y1,x2,y2,x3,y3);
     return;
     }
 

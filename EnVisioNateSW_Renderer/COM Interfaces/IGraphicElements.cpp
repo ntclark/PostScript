@@ -168,8 +168,8 @@
     delete [] pBitmap;
 
     if ( 0.0f == width || 0.0f == height ) {
-        ptSize.x = sizeBM.cx;
-        ptSize.y = sizeBM.cy;
+        ptSize.x = (FLOAT)sizeBM.cx;
+        ptSize.y = (FLOAT)sizeBM.cy;
         BitBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,SRCCOPY);
     } else
         StretchBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,sizeBM.cx,sizeBM.cy,SRCCOPY);

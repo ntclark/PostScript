@@ -136,19 +136,21 @@
     object *pY1 = pJob -> pop();
     object *pX1 = pJob -> pop();
 
-    GS_POINT points[3] { {pX1 -> OBJECT_POINT_TYPE_VALUE,pY1 -> OBJECT_POINT_TYPE_VALUE},
+    GS_POINT points[] { currentUserSpacePoint,
+                         {pX1 -> OBJECT_POINT_TYPE_VALUE,pY1 -> OBJECT_POINT_TYPE_VALUE},
                          {pX2 -> OBJECT_POINT_TYPE_VALUE,pY2 -> OBJECT_POINT_TYPE_VALUE},
                          {pX3 -> OBJECT_POINT_TYPE_VALUE,pY3 -> OBJECT_POINT_TYPE_VALUE} };
 
-    currentUserSpacePoint = points[2];
+    currentUserSpacePoint = points[3];
 
     transformPoint(points[0].x,points[0].y,&points[0].x,&points[0].y);
     transformPoint(points[1].x,points[1].y,&points[1].x,&points[1].y);
     transformPoint(points[2].x,points[2].y,&points[2].x,&points[2].y);
+    transformPoint(points[3].x,points[3].y,&points[3].x,&points[3].y);
 
-    currentPageSpacePoint = points[2];
+    currentPageSpacePoint = points[3];
 
-    pathParametersStack.top() -> curveto(points[0].x,points[0].y,points[1].x,points[1].y,points[2].x,points[2].y);
+    pathParametersStack.top() -> curveto(points[0].x,points[0].y,points[1].x,points[1].y,points[2].x,points[2].y,points[3].x,points[3].y);
 
     return;
     }
