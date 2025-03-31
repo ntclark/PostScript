@@ -30,19 +30,19 @@ Like I've said, this is a simple as possible, yet powerful and hopefully very us
 
 ### A bit of history, skip if you want
 
-This project actually came about as I was building my [PostScript Interpreter](../../PostScriptInterpreter) project. Font handling in that
+>This project actually came about as I was building my [PostScript Interpreter](../../PostScriptInterpreter) project. Font handling in that
 project had been delegated to my [Font Manager](../../EnVisioNateSW_FontManager) and *that* became a valuable product in it's own right.
 
-BUt I struggled to find an unerstandable example of rasterizing fonts. I spent a few weeks with freetype, but ultimately I gave up 
+>BUt I struggled to find an unerstandable example of rasterizing fonts. I spent a few weeks with freetype, but ultimately I gave up 
 and started looking for either a) a decent explanation and example of rasterizing theory, or b) a *native* implemenation built-in to the 
 Windows API. I have no qualms using something from an Operating System - that is, after all, what Operating Systems are for, the more
 complete of them should expose those technologies that they obviously have within them for all of us to use.
 
-Though it alluded me at first, I discovered that Direct2D can rasterize the fonts glyph contours I was producing perfectly, down to the 
+>Though it alluded me at first, I discovered that Direct2D can rasterize the fonts glyph contours I was producing perfectly, down to the 
 smallest of sizes. Though this seems obvious, the API documentation steered me to DWrite - which I **don't** want. I'd already unraveled 
 the incredibly complex world of fonts and glyph geometries, no way I would throw that away. So I marched onward.
 
-I was getting really horrible rasterizing results at small sizes though for a long time. *Finally* I realized I had to upscale the glyph 
+>I was getting really horrible rasterizing results at small sizes though for a long time. *Finally* I realized I had to upscale the glyph 
 geometries while building up the graphics, and downscale them at rendering time. Presumable because of loss of precision by the use of FLOATs 
 that the Direct2D world uses - a huge mistake in my opinion.
 
