@@ -74,7 +74,7 @@
     memcpy(pszString,(char *)LockResource(hResource),sizeData);
     pszString[sizeData] = '\0';
 
-    pIPostScript -> ParseText(pszString,sizeData,NULL,NULL,NULL,NULL);
+    pIPostScript -> ParseText(pszString,(DWORD)sizeData,NULL,NULL,NULL,NULL);
 
     delete [] pszString;
 

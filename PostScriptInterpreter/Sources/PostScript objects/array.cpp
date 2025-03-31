@@ -35,10 +35,9 @@
         entries[k] = new (pJob -> CurrentObjectHeap()) object(pJob,0L);
 
     if ( ! ( NULL == pszValues ) ) {
-        PdfUtility *pUtility = pJob -> GetPdfUtility();
-        long countValues = pUtility -> ArraySize(pszValues);
+        long countValues = sizeFromString(pszValues);
         for ( long k = 0; k < countValues; k++ )
-            insert(new (pJob -> CurrentObjectHeap()) object(pJob,pUtility -> StringValueFromArray(pszValues,k + 1)));
+            insert(new (pJob -> CurrentObjectHeap()) object(pJob,stringValueFromArray(pszValues,k + 1)));
     }
     return;
     }
@@ -77,4 +76,69 @@
 
     void array::clear() {
     entries.clear();
+    }
+
+
+    long array::sizeFromString(char *pszValue) {
+
+    char *pValue = new char[strlen(pszValue) + 1];
+
+    memset(pValue,0,(strlen(pszValue) + 1) * sizeof(char));
+
+    strcpy(pValue,pszValue);   
+
+    char *p = strtok(pValue,ARRAY_START_DELIMITERS);
+
+    if ( ! p ) {
+        delete [] pValue;
+        return 0;
+    }
+
+    long countItems = 0;
+
+    while ( p ) {
+
+        if ( ']' == *p )
+            break;
+
+        countItems++;
+
+        p = strtok(NULL,ARRAY_ITEM_DELIMITERS);
+
+        if ( ! p || ']' == *p )
+            break;
+
+    }
+
+    delete [] pValue;
+
+    return countItems;
+    }
+
+
+    char *array::stringValueFromArray(char *pszValue,long oneBasedIndex) {
+
+    static char szValue[4096];
+
+    memset(szValue,0,sizeof(szValue));
+
+    strcpy(szValue,pszValue);
+
+    char *p = strtok(szValue,ARRAY_START_DELIMITERS);
+    if ( ! p )
+        return NULL;
+
+    for ( long k = 0; k < oneBasedIndex - 1; k++ ) {
+        p = strtok(NULL,ARRAY_ITEM_DELIMITERS);
+        if ( ! p )
+            return NULL;
+    }
+
+    if ( ! *p )
+        return p;
+
+    if ( ']' == p[strlen(p) - 1] )
+        p[strlen(p) - 1] = '\0';
+
+    return p;
     }

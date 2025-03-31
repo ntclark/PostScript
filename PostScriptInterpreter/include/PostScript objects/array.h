@@ -37,6 +37,10 @@ class job;
 
       long size() { return (long)entries.size(); };
 
+      long sizeFromString(char *pszValues);
+
+      char *stringValueFromArray(char *pszValue,long oneBasedIndex);
+
    protected:
 
       std::map<long,object *> entries;

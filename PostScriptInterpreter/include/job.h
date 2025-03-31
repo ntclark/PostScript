@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "PdfEnabler_i.h"
-#include "pdfEnabler/Page.h"
 #include "PostScriptInterpreter_i.h"
 
 #include "Renderer_i.h"
@@ -43,8 +41,6 @@
         long currentInputFileOffset() { return (long)(currentInput() - pStart); }
         char *currentInput() { ADVANCE_THRU_WHITE_SPACE(pNext); return pNext; }
         void setCurrentInput(char *pInput) { pNext = pInput; }
-
-        PdfUtility *GetPdfUtility() { return pPdfUtility; }
 
         object* top() { 
             if ( 0 == operandStack.size() )
@@ -203,8 +199,6 @@
         HBITMAP hbmSink{NULL};
 
         IPostScriptTakeText *pIPostScriptTakeText{NULL};
-
-        static PdfUtility *pPdfUtility;
 
         static unsigned int __stdcall executeInitialization(void *);
         static unsigned int __stdcall executeThread(void *);

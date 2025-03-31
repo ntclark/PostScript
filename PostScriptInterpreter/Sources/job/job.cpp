@@ -1,8 +1,6 @@
 
 #include "job.h"
 
-    PdfUtility *job::pPdfUtility = NULL;
-
     IRenderer *job::pIRenderer = NULL;;
     IGraphicElements *job::pIGraphicElements_External = NULL;
     IGraphicParameters *job::pIGraphicParameters_External = NULL;
@@ -24,9 +22,6 @@
         hwndSurface(hwndSurf)
 
     {
-
-    if ( NULL == pPdfUtility )
-        pPdfUtility = new PdfUtility();
 
     if ( NULL == pIRenderer ) {
         CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
