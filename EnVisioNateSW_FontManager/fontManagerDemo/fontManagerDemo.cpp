@@ -14,8 +14,6 @@
 
     // This code is a tutorial, it is not production code
 
-    //long cyWindow = 128;
-
     // The following struct is an implementation of the FontManagerNotifications 
     // interface.
     // If this project were a COM object, there would be a lot more
@@ -194,7 +192,7 @@
 
     HDC hdc = GetDC(hwndHost);
 
-    long cyWindowInPoints = (FLOAT)cyWindow * 72.0f / (FLOAT)GetDeviceCaps(hdc,LOGPIXELSX);
+    long cyWindowInPoints = (long)((FLOAT)cyWindow * 72.0f / (FLOAT)GetDeviceCaps(hdc,LOGPIXELSX));
 
     scalePDF = (FLOAT)cyWindow / cyWindowInPoints;
     psXForm = {1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};

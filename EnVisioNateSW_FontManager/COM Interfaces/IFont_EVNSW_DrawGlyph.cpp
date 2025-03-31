@@ -79,10 +79,12 @@
 
     // Transform glyph units to PAGE space
 
-    // Scale Glyph Coordinates to points
+    // Scale Glyph Coordinates to points. Glyphs are typically defined as 2048 units per M
+    // This scale would make the height of an M be 1, scaling by PointSize later
+    // would make the Height of an M be PointSize
     pMatrix -> scale(scaleFUnitsToPoints);
 
-    // If the coordinates are not scaled up by some amount,
+    // If the coordinates are not artifically scaled up by some amount,
     // very poor visual performance in rasterization occurs. It is
     // not clear why, though it probably has to do with
     // roundoff, itself due to lack of precision in FLOAT
@@ -198,7 +200,7 @@ CaptureBezier:
                     endPoint.y = (LONG)((pControl -> y + (pPoints + controlIndices[controlIndex + 1]) -> y) / 2.0f);
                 }
 
-                FontManager::pIGraphicElements -> QuadraticBezierTo((FLOAT)pControl -> x,(FLOAT)pControl -> y,(FLOAT)endPoint.x,(FLOAT)endPoint.y);
+                FontManager::pIGraphicElements -> QuadraticBezier((FLOAT)pControl -> x,(FLOAT)pControl -> y,(FLOAT)endPoint.x,(FLOAT)endPoint.y);
                 currentPoint.x = endPoint.x;
                 currentPoint.y = endPoint.y;
 
@@ -226,8 +228,9 @@ CaptureBezier:
 
     if ( ! ( NULL == pEndPoint ) ) {
         POINTF ptAdvance{pGlyphGeometry -> AdvanceWidth() * scaleFUnitsToPoints * PointSize(),0.0f};
-        pEndPoint -> x = pStartPoint -> x + ptAdvance.x;
-        pEndPoint -> y = pStartPoint -> y + ptAdvance.y;
+        XFORM *px = (XFORM *)pPSXform;
+        pEndPoint -> x = pStartPoint -> x + ptAdvance.x * px -> eM11;
+        pEndPoint -> y = pStartPoint -> y + ptAdvance.y * px -> eM22;
     }
 
     delete pMatrix;

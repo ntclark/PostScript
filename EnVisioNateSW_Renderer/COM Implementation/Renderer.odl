@@ -26,6 +26,8 @@ library Renderer {
         HRESULT Discard();
         HRESULT ClearRect(HDC hdc,RECT *pRect,COLORREF theColor);
 
+        HRESULT WhereAmI(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
+
         HRESULT Reset();
 
         HRESULT GetParametersBundle(UINT_PTR **pptrBundleStorage);
@@ -50,11 +52,18 @@ library Renderer {
         HRESULT LineTo(FLOAT x,FLOAT y);
         HRESULT LineToRelative(FLOAT x,FLOAT y);
 
-        HRESULT ArcTo(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
-        HRESULT CubicBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
-        HRESULT QuadraticBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
+        HRESULT Arc(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT startAngle,FLOAT endAngle);
+        HRESULT Ellipse(FLOAT xCenter,FLOAT yCenter,FLOAT xRadius,FLOAT yRadius);
+        HRESULT Circle(FLOAT xCenter,FLOAT yCenter,FLOAT radius);
+        HRESULT CubicBezier(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
+
+        [helpstring("Call move to before your first QuadraticBezier in a chain to set the startpoint")]
+        HRESULT QuadraticBezier(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
         HRESULT Image(HDC hdc,HBITMAP hBitmap,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+
+        [helpstring("Pass 0.0 for width or height to display in native bitmap width.")]
+        HRESULT NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT displayWidth,FLOAT displayHeight);
 
     };
 
@@ -84,6 +93,7 @@ library Renderer {
         [helpstring("Please DO NOT free the UINT_PTR, it is statically allocated")]
         HRESULT ErrorNotification(UINT_PTR errorMessage);
         HRESULT StatusNotification(UINT_PTR statusMessage);
+        HRESULT Clear();
     };
 
     [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C90),

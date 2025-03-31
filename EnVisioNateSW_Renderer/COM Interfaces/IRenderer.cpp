@@ -3,6 +3,7 @@
 
     HRESULT Renderer::put_TransformMatrix(UINT_PTR pXFormToDeviceSpace) {
     memcpy(&pIGraphicElements -> toDeviceSpace,(void *)pXFormToDeviceSpace,sizeof(XFORM));
+    pIGraphicElements -> calcInverseTransform();
     return S_OK;
     }
 
@@ -54,6 +55,15 @@
             strokePathsMap[p -> hashCode] -> push_back(p);
         }
 
+        if ( ! ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ) &&
+                ! ( GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType ) &&
+                ! ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) ) {
+            sprintf(Renderer::szStatusMessage,"Warning: An unclosed path was encountered. All paths should "
+                                                    "be closed with ClosePath(), StrokePath(), or FillPath(). "
+                                                    "This graphics element will not be appear.");
+            pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
+        }
+
         p = p -> pNext;
     }
 
@@ -69,12 +79,17 @@
 
         for ( GraphicElements::path *p : *pList ) {
 
-if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ) {
-MessageBox(NULL,"stroke path in fill collection","Error",MB_OK);
-continue;
-}
+            if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ||
+                   GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType ) {
+                sprintf(Renderer::szStatusMessage,"Warning: There was a StrokePath(), or ClosePath(), "
+                                                        "command encountered in a path intended to be filled. "
+                                                        "This graphics element will not be appear.");
+                pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
+                continue;
+            }
+
             if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType )
-                GraphicElements::path::pathAction pa = p -> apply(true,NULL);
+                GraphicElements::path::pathAction pa = p -> apply(true);
 
             p -> clear();
 
@@ -107,12 +122,17 @@ continue;
 
         for ( GraphicElements::path *p : *pList ) {
 
-if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) {
-MessageBox(NULL,"fill path in stroke collection","Error",MB_OK);
-continue;
-}
-            if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType  )
-                GraphicElements::path::pathAction pa = p -> apply(false,NULL);
+            if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) {
+                sprintf(Renderer::szStatusMessage,"Warning: There was a FillPath() command encountered in a path "
+                                                        "intended to be Stroked. "
+                                                        "This graphics element will not be appear");
+                pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
+                continue;
+            }
+
+            if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ||
+                    GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType )
+                GraphicElements::path::pathAction pa = p -> apply(false);
 
             p -> clear();
 
@@ -143,12 +163,9 @@ continue;
 
 
     HRESULT Renderer::Discard() {
-
     if ( NULL == pIGraphicElements -> pFirstPath )
         return S_OK;
-
     GraphicElements::path *p = pIGraphicElements -> pFirstPath;
-
     while ( ! ( p == NULL ) ) {
         GraphicElements::path *pNext = p -> pNext;
         delete p;
@@ -162,6 +179,26 @@ continue;
 
     HRESULT Renderer::ClearRect(HDC hdc,RECT *pRect,COLORREF theColor) {
     FillRect(hdc,pRect,CreateSolidBrush(theColor));
+    memset(szStatusMessage,0,1024 * sizeof(char));
+    memset(szErrorMessage,0,1024 * sizeof(char));
+    pIConnectionPointContainer -> fire_Clear();
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::WhereAmI(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY) {
+    if ( ! pX && ! pY )
+        return E_POINTER;
+
+    FLOAT x{(FLOAT)xPixels},y{(FLOAT)yPixels};
+    pIGraphicElements -> unTransformPoint(&x,&y);
+
+    if ( pX ) 
+        *pX = x;
+
+    if ( pY )
+        *pY = y;
+
     return S_OK;
     }
 

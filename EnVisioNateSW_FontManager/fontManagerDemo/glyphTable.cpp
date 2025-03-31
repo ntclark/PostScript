@@ -48,7 +48,7 @@
     for ( unsigned short p = 0x21; p < 0x4FB; p++ ) {
 #if 1
         long x = (long)(startPoint.x * fabsf(gdiXForm.eM11));
-        long y = gdiXForm.eDy - (long)((startPoint.y + fontDeltaYPoints) * fabsf(gdiXForm.eM22));
+        long y = (long)gdiXForm.eDy - (long)((startPoint.y + fontDeltaYPoints) * fabsf(gdiXForm.eM22));
 
         MoveToEx(hdcBackground,x,y,NULL);
         LineTo(hdcBackground,x + (long)fontDeltaXPixels,y);
@@ -121,7 +121,7 @@
 
     DeleteDC(hdcBackground);
 
-    RECT rcHost,rcAdjust{0,0,0,0};
+    RECT rcAdjust{0,0,0,0};
 
     scrollInfo.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
     scrollInfo.nPage = cyRenderPane;

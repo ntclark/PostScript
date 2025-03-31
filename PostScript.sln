@@ -32,6 +32,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fontManagerDemo", "EnVisioN
 		{B3529245-5B1F-4927-B6DD-95DE5F17D08D} = {B3529245-5B1F-4927-B6DD-95DE5F17D08D}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rendererDemo", "EnVisioNateSW_Renderer\rendererDemo\rendererDemo.vcxproj", "{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{216C47AD-6C9A-47F2-ADC5-877A3C5BD85D} = {216C47AD-6C9A-47F2-ADC5-877A3C5BD85D}
+		{B3529245-5B1F-4927-B6DD-95DE5F17D08D} = {B3529245-5B1F-4927-B6DD-95DE5F17D08D}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -88,6 +94,14 @@ Global
 		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|Win32.Build.0 = Release|Win32
 		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|x64.ActiveCfg = Release|x64
 		{4FC9CAF7-D4F8-4BB9-AF86-EBCE1FDADF39}.Release|x64.Build.0 = Release|x64
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Debug|Win32.Build.0 = Debug|Win32
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Debug|x64.ActiveCfg = Debug|x64
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Debug|x64.Build.0 = Debug|x64
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Release|Win32.ActiveCfg = Release|Win32
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Release|Win32.Build.0 = Release|Win32
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Release|x64.ActiveCfg = Release|x64
+		{0F52ECE1-D8F4-4665-B9F2-9E6ECEC695E8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

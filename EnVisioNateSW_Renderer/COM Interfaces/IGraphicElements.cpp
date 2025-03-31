@@ -43,7 +43,7 @@
     if ( ! ( NULL == pCurrentPath -> pLastPrimitive ) ) {
         if ( primitive::type::move == pCurrentPath -> pLastPrimitive -> theType ) {
             // There are two consequetive moves, update the prior move with the new position
-            pCurrentPath -> pLastPrimitive -> vertices[0] = currentPageSpacePoint;
+            pCurrentPath -> pLastPrimitive -> vertex = currentPageSpacePoint;
             return S_OK;
         }
     } 
@@ -71,21 +71,43 @@
     }
 
 
-    HRESULT Renderer::GraphicElements::ArcTo(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2) {
-Beep(2000,200);
-return E_NOTIMPL;
-    }
-
-
-    HRESULT Renderer::GraphicElements::CubicBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
-    currentPageSpacePoint = {x3,y3};
-    D2D1_BEZIER_SEGMENT theSegment{{x1,y1},{x2,y2},{x3,y3}};
-    pCurrentPath -> addPrimitive(new bezierPrimitive(this,&theSegment));
+    HRESULT Renderer::GraphicElements::Arc(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT startAngle,FLOAT endAngle) {
+    FLOAT xStart = xCenter + radius * (FLOAT)cos(startAngle * degToRad);
+    FLOAT yStart = yCenter + radius * (FLOAT)sin(startAngle * degToRad);
+    MoveTo(xStart,yStart);
+    FLOAT xEnd = xCenter + radius * (FLOAT)cos(endAngle * degToRad);
+    FLOAT yEnd = yCenter + radius * (FLOAT)sin(endAngle * degToRad);
+    currentPageSpacePoint = {xEnd,yEnd};
+    D2D1_ARC_SEGMENT theSegment{{xEnd,yEnd},{radius,radius},startAngle,D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,D2D1_ARC_SIZE_SMALL};
+    pCurrentPath -> addPrimitive(new arcPrimitive(this,&theSegment));
     return S_OK;
     }
 
 
-    HRESULT Renderer::GraphicElements::QuadraticBezierTo(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
+    HRESULT Renderer::GraphicElements::Ellipse(FLOAT xCenter,FLOAT yCenter,FLOAT xRadius,FLOAT yRadius) {
+    D2D1_ELLIPSE theSegment{{xCenter,yCenter},xRadius,yRadius};
+    pCurrentPath -> addPrimitive(new ellipsePrimitive(this,&theSegment));
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicElements::Circle(FLOAT xCenter,FLOAT yCenter,FLOAT radius) {
+    Arc(xCenter,yCenter,radius,0.0f,180.0f);
+    Arc(xCenter,yCenter,radius,180.0f,360.0f);
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicElements::CubicBezier(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
+    currentPageSpacePoint = {x3,y3};
+    D2D1_BEZIER_SEGMENT theSegment{{x1,y1},{x2,y2},{x3,y3}};
+    POINTF movePoint{x0,y0};
+    pCurrentPath -> addPrimitive(new bezierPrimitive(this,&movePoint,&theSegment));
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicElements::QuadraticBezier(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
     POINTF priorCurrentPoint = currentPageSpacePoint;
     currentPageSpacePoint = {x2,y2};
     D2D1_QUADRATIC_BEZIER_SEGMENT theSegment{{x1,y1},{x2,y2}};
@@ -123,9 +145,74 @@ return E_NOTIMPL;
     }
 
 
+    HRESULT Renderer::GraphicElements::NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height) {
+
+    POINTF ptDevice{x0,y0};
+    transformPoint(&ptDevice,&ptDevice);
+
+    POINTF ptSize{width,height};
+    scalePoint(&ptSize.x,&ptSize.y);
+
+    HDC hdcSource = CreateCompatibleDC(hdc);
+    SelectObject(hdcSource,hBitmap);
+
+    long cb = GetObject(hBitmap,0,NULL);
+
+    BYTE *pBitmap = new BYTE[cb];
+    GetObject(hBitmap,cb,pBitmap);
+
+    BITMAPINFOHEADER *pHeader = (BITMAPINFOHEADER *)pBitmap;
+
+    SIZE sizeBM{pHeader -> biWidth,pHeader -> biHeight};
+
+    delete [] pBitmap;
+
+    if ( 0.0f == width || 0.0f == height ) {
+        ptSize.x = sizeBM.cx;
+        ptSize.y = sizeBM.cy;
+        BitBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,SRCCOPY);
+    } else
+        StretchBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,sizeBM.cx,sizeBM.cy,SRCCOPY);
+
+    DeleteDC(hdcSource);
+
+    return S_OK;
+    }
+
+
+    void Renderer::GraphicElements::calcInverseTransform() {
+
+    double theMatrix[3][3];
+    double theMatrixInverted[3][3];
+
+    theMatrix[0][0] = (double)toDeviceSpace.eM11;
+    theMatrix[0][1] = (double)toDeviceSpace.eM12;
+    theMatrix[0][2] = (double)toDeviceSpace.eDx;
+    theMatrix[1][0] = (double)toDeviceSpace.eM21;
+    theMatrix[1][1] = (double)toDeviceSpace.eM22;
+    theMatrix[1][2] = (double)toDeviceSpace.eDy;
+
+    theMatrix[2][0] = 0.0;
+    theMatrix[2][1] = 0.0;
+    theMatrix[2][2] = 1.0f;
+
+    Mx3Inverse(&theMatrix[0][0],&theMatrixInverted[0][0]);
+
+    toUserSpace.eM11 = (FLOAT)theMatrixInverted[0][0];
+    toUserSpace.eM12 = (FLOAT)theMatrixInverted[0][1];
+    toUserSpace.eM21 = (FLOAT)theMatrixInverted[1][0];
+    toUserSpace.eM22 = (FLOAT)theMatrixInverted[1][1];
+
+    toUserSpace.eDx = (FLOAT)theMatrixInverted[0][2];
+    toUserSpace.eDy = (FLOAT)theMatrixInverted[1][2];
+
+    return;
+    }
+
+
     void Renderer::GraphicElements::scalePoint(FLOAT *px,FLOAT *py) {
-    FLOAT xResult = toDeviceSpace.eM11 * *px + toDeviceSpace.eM12 * *py;
-    FLOAT yResult = toDeviceSpace.eM21 * *px + toDeviceSpace.eM22 * *py;
+    FLOAT xResult = toDeviceSpace.eM11 * *px + (FLOAT)fabs(toDeviceSpace.eM12) * *py;
+    FLOAT yResult = toDeviceSpace.eM21 * *px + (FLOAT)fabs(toDeviceSpace.eM22) * *py;
     *px = xResult;
     *py = yResult;
     return;
@@ -135,6 +222,15 @@ return E_NOTIMPL;
     void Renderer::GraphicElements::transformPoint(FLOAT *px,FLOAT *py) {
     FLOAT xResult = toDeviceSpace.eM11 * *px + toDeviceSpace.eM12 * *py + toDeviceSpace.eDx;
     FLOAT yResult = toDeviceSpace.eM21 * *px + toDeviceSpace.eM22 * *py + toDeviceSpace.eDy;
+    *px = xResult;
+    *py = yResult;
+    return;
+    }
+
+
+    void Renderer::GraphicElements::unTransformPoint(FLOAT *px,FLOAT *py) {
+    FLOAT xResult = toUserSpace.eM11 * *px + toUserSpace.eM12 * *py + toUserSpace.eDx;
+    FLOAT yResult = toUserSpace.eM21 * *px + toUserSpace.eM22 * *py + toUserSpace.eDy;
     *px = xResult;
     *py = yResult;
     return;

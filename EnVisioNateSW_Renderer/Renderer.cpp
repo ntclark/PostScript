@@ -5,6 +5,9 @@
 
 #include "Renderer_i.c"
 
+    char Renderer::szStatusMessage[1024];
+    char Renderer::szErrorMessage[1024];
+
     Renderer::Renderer(IUnknown *pUnkOuter) {
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
@@ -109,8 +112,12 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
     pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
-    if ( ! ( S_OK == hr ) ) 
+    if ( ! ( S_OK == hr ) ) {
         OutputDebugStringA("THAT ERROR HAPPENED\n");
+        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s",__LINE__,__FUNCTION__);
+        pIConnectionPointContainer -> fire_StatusNotification(Renderer::szErrorMessage);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+    }
 
     return S_OK;
     }
@@ -122,8 +129,12 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
     pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,pIGraphicParameters -> valuesStack.top() -> lineWidth,pID2D1StrokeStyle1);
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
-    if ( ! ( S_OK == hr ) ) 
+    if ( ! ( S_OK == hr ) ) {
         OutputDebugStringA("THAT ERROR HAPPENED\n");
+        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s",__LINE__,__FUNCTION__);
+        pIConnectionPointContainer -> fire_StatusNotification(Renderer::szErrorMessage);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+    }
 
     return S_OK;
     }

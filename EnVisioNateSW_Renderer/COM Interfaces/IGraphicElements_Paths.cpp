@@ -41,6 +41,24 @@
     if ( NULL == pCurrentPath )
         return E_UNEXPECTED;
 
+    primitive *p = pCurrentPath -> pLastPrimitive;
+
+    while ( ! ( p == pCurrentPath -> pFirstPrimitive ) && ! ( p -> theType == primitive::type::move ) )
+        p = p -> pPrior;
+
+    if ( p == pCurrentPath -> pFirstPrimitive ) {
+        sprintf(Renderer::szErrorMessage,"Warning: a ClosePath was issued, however, the current path does not have a MoveTo location");
+        pParent -> pIConnectionPointContainer -> fire_ErrorNotification(szErrorMessage);
+        return E_UNEXPECTED;
+    }
+
+    //if ( ! ( NULL == pCurrentPath -> pLastPrimitive ) ) {
+    //    if ( primitive::type::move == pCurrentPath -> pLastPrimitive -> theType ) {
+
+    POINTF ptLine{p -> vertex.x,p -> vertex.y};
+
+    pCurrentPath -> addPrimitive(new linePrimitive(this,&ptLine));
+
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::closePathMarker));
 
     return S_OK;
@@ -124,9 +142,11 @@
     }
 
 
-    Renderer::GraphicElements::path::pathAction Renderer::GraphicElements::path::apply(boolean doFill,FILE *fDebug) {
+    Renderer::GraphicElements::path::pathAction Renderer::GraphicElements::path::apply(boolean doFill) {
 
     primitive *p = pFirstPrimitive;
+
+    HRESULT hr = S_OK;
 
     while ( ! ( NULL == p ) ) {
 
@@ -138,8 +158,6 @@
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
             pParent -> isFigureStarted = false;
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"newpath\n");
             }
             break;
 
@@ -147,8 +165,6 @@
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
             pParent -> isFigureStarted = false;
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"closepath\n");
             }
             break;
 
@@ -156,52 +172,59 @@
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
             pParent -> isFigureStarted = false;
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"fillpath\n");
             return path::pathAction::fill;
 
         case primitive::type::strokePathMarker:
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_OPEN);
             pParent -> isFigureStarted = false;
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"strokepath\n");
             return path::pathAction::stroke;
 
         case primitive::type::move:
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
-            pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertices[0].x,p -> vertices[0].y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+            pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
             pParent -> isFigureStarted = true;
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"%f  %f  moveto\n",p -> vertices[0].x,p -> vertices[0].y);
             break;
 
         case primitive::type::line:
-            pRenderer -> pID2D1GeometrySink -> AddLine(D2D1::Point2F(p -> vertices[0].x,p -> vertices[0].y));
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"%f  %f  lineto\n",p -> vertices[0].x,p -> vertices[0].y);
+            pRenderer -> pID2D1GeometrySink -> AddLine(D2D1::Point2F(p -> vertex.x,p -> vertex.y));
             break;
 
         case primitive::type::arc:
-MessageBox(NULL,"Not implemented","Error",MB_OK);
+            pRenderer -> pID2D1GeometrySink -> AddArc((D2D1_ARC_SEGMENT *)p -> dataOne());
+            break;
+
+        case primitive::type::ellipse: {
+            ID2D1EllipseGeometry *pEllipseGeometry = NULL;
+            hr = pRenderer -> pID2D1Factory1 -> CreateEllipseGeometry((D2D1_ELLIPSE *)p -> dataOne(),&pEllipseGeometry);
+            specializedSink *pSpecializedSink = new specializedSink(this,pRenderer -> pID2D1GeometrySink);
+            D2D1_MATRIX_3X2_F theMatrix{0};
+            theMatrix.m11 = 1.0f;
+            theMatrix.m22 = 1.0f;
+            hr = pEllipseGeometry -> Simplify(D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES,
+                                                (D2D1_MATRIX_3X2_F *)&theMatrix,
+                                                reinterpret_cast<ID2D1SimplifiedGeometrySink *>(pSpecializedSink));
+            pSpecializedSink -> Release();
+            }
             break;
 
         case primitive::type::cubicBezier:
-            pRenderer -> pID2D1GeometrySink -> AddBezier(&p -> bezierSegment);
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"%f  %f  %f %f %f %f curveto %%cubic\n",
-                                                p -> bezierSegment.point1.x,p -> bezierSegment.point1.y,
-                                                p -> bezierSegment.point2.x,p -> bezierSegment.point2.y,
-                                                p -> bezierSegment.point3.x,p -> bezierSegment.point3.y);
+            if ( pParent -> isFigureStarted )
+                pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
+            pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+            pRenderer -> pID2D1GeometrySink -> AddBezier((D2D1_BEZIER_SEGMENT *)p -> dataOne());
+            pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
+            pParent -> isFigureStarted = false;
             break;
 
         case primitive::type::quadraticBezier:
-            pRenderer -> pID2D1GeometrySink -> AddQuadraticBezier(&p -> quadraticBezierSegment);
-            if ( ! ( NULL == fDebug ) )
-                fprintf(fDebug,"%f  %f  %f %f quadcurveto %%quadratic\n",
-                                                p -> quadraticBezierSegment.point1.x,p -> quadraticBezierSegment.point1.y,
-                                                p -> quadraticBezierSegment.point2.x,p -> quadraticBezierSegment.point2.y);
+            //if ( pParent -> isFigureStarted )
+            //    pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
+            //pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+            pRenderer -> pID2D1GeometrySink -> AddQuadraticBezier((D2D1_QUADRATIC_BEZIER_SEGMENT *)p -> dataOne());
+            //pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
+            //pParent -> isFigureStarted = false;
             break;
 
         default:

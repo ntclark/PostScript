@@ -16,6 +16,8 @@
 #define MY_EVENT_INTERFACE IID_IRendererNotifications
 #define MY_EVENT_CLASS IRendererNotifications
 
+int Mx3Inverse(double *pSource,double *pTarget);
+
     class Renderer : public IRenderer {
     public:
 
@@ -39,6 +41,7 @@
         STDMETHOD(Render)(HDC hdc,RECT *pDrawingRect);
         STDMETHOD(Discard)();
         STDMETHOD(ClearRect)(HDC hdc,RECT *pREct,COLORREF theColor);
+        STDMETHOD(WhereAmI)(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
         STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
         STDMETHOD(GetParametersBundle)(UINT_PTR **pptrBundleStorage);
@@ -68,11 +71,14 @@
             STDMETHOD(MoveToRelative)(FLOAT x,FLOAT y);
             STDMETHOD(LineTo)(FLOAT x,FLOAT y);
             STDMETHOD(LineToRelative)(FLOAT x,FLOAT y);
-            STDMETHOD(ArcTo)(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
-            STDMETHOD(CubicBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
-            STDMETHOD(QuadraticBezierTo)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
+            STDMETHOD(Arc)(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT startAngle,FLOAT endAngle);
+            STDMETHOD(Ellipse)(FLOAT xCenter,FLOAT yCenter,FLOAT xRadius,FLOAT yRadius);
+            STDMETHOD(Circle)(FLOAT xcCenter,FLOAT yCenter,FLOAT radius);
+            STDMETHOD(CubicBezier)(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
+            STDMETHOD(QuadraticBezier)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
             STDMETHOD(Image)(HDC hdc,HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+            STDMETHOD(NonPostScriptImage)(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
 
             struct primitive {
 
@@ -80,11 +86,12 @@
                     move = 0,
                     line = 1,
                     arc = 2,
-                    cubicBezier = 3,
-                    quadraticBezier = 4,
-                    colorSet = 5,
-                    lineStyleSet = 6,
-                    lineWidthSet = 7,
+                    ellipse = 3,
+                    cubicBezier = 4,
+                    quadraticBezier = 5,
+                    colorSet = 6,
+                    lineStyleSet = 7,
+                    lineWidthSet = 8,
                     newPathMarker = 24,
                     closePathMarker = 25,
                     strokePathMarker = 26,
@@ -96,6 +103,8 @@
                 ~primitive() {}
 
                 virtual void transform() {}
+                virtual void *dataOne() { return (void *)&vertex; }
+                virtual void *dataTwo() { return NULL; }
 
                 type theType;
 
@@ -107,48 +116,97 @@
 
                 GraphicElements *pParent{NULL};
 
-                POINTF vertices[3]{{0.0f,0.0f}, {0.0f,0.0f}, {0.0f,0.0f}};
-                D2D1_BEZIER_SEGMENT bezierSegment{{0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f}};
-                D2D1_QUADRATIC_BEZIER_SEGMENT quadraticBezierSegment{{0.0f,0.0f},{0.0f,0.0f}};
+                POINTF vertex{0.0f,0.0f};
 
             };
 
             struct movePrimitive : primitive {
                 movePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::move) {
-                    vertices[0].x = pPoint -> x;
-                    vertices[0].y = pPoint -> y;
+                    vertex.x = pPoint -> x;
+                    vertex.y = pPoint -> y;
                     origin = pParent -> pParent -> origin;
                     downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
-                    vertices[0].x /= downScale;
-                    vertices[0].y /= downScale;
-                    vertices[0].x += origin.x;
-                    vertices[0].y += origin.y;
-                    pParent -> transformPoint(&vertices[0],&vertices[0]);
+                    vertex.x /= downScale;
+                    vertex.y /= downScale;
+                    vertex.x += origin.x;
+                    vertex.y += origin.y;
+                    pParent -> transformPoint(&vertex,&vertex);
                 }
             };
 
             struct linePrimitive : primitive {
                 linePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::line) {
-                    vertices[0].x = pPoint -> x;
-                    vertices[0].y = pPoint -> y;
+                    vertex.x = pPoint -> x;
+                    vertex.y = pPoint -> y;
                     origin = pParent -> pParent -> origin;
                     downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
-                    vertices[0].x /= downScale;
-                    vertices[0].y /= downScale;
-                    vertices[0].x += origin.x;
-                    vertices[0].y += origin.y;
-                    pParent -> transformPoint(&vertices[0],&vertices[0]);
+                    vertex.x /= downScale;
+                    vertex.y /= downScale;
+                    vertex.x += origin.x;
+                    vertex.y += origin.y;
+                    pParent -> transformPoint(&vertex,&vertex);
                  }
             };
 
+            struct arcPrimitive : primitive {
+                arcPrimitive(GraphicElements *pp,D2D1_ARC_SEGMENT *pSegment) : primitive(pp,type::arc) {
+                    arcSegment.point.x = pSegment -> point.x;
+                    arcSegment.point.y = pSegment -> point.y;
+                    arcSegment.size.width = pSegment -> size.width;
+                    arcSegment.size.height = pSegment -> size.height;
+                    arcSegment.rotationAngle = pSegment -> rotationAngle;
+                    arcSegment.sweepDirection = pSegment -> sweepDirection;
+                    arcSegment.arcSize = pSegment -> arcSize;
+                    origin = pParent -> pParent -> origin;
+                    downScale = pParent -> pParent -> downScale;
+                    return;
+                }
+                void transform() {
+                    arcSegment.point.x /= downScale;
+                    arcSegment.point.y /= downScale;
+                    arcSegment.size.width /= downScale;
+                    arcSegment.size.height /= downScale;
+                    pParent -> transformPoint(&arcSegment.point,&arcSegment.point);
+                    pParent -> scalePoint(&arcSegment.size.width,&arcSegment.size.height);
+                    return;
+                }
+                void *dataOne() { return (void *)&arcSegment; }
+                D2D1_ARC_SEGMENT arcSegment{{0.0f,0.0f},{0.0f,0.0f},0.0f,D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,D2D1_ARC_SIZE_SMALL};
+            };
+
+            struct ellipsePrimitive : primitive {
+                ellipsePrimitive(GraphicElements *pp,D2D1_ELLIPSE *pSegment) : primitive(pp,type::ellipse) {
+                    ellipseSegment.point.x = pSegment -> point.x;
+                    ellipseSegment.point.y = pSegment -> point.y;
+                    ellipseSegment.radiusX = pSegment -> radiusX;
+                    ellipseSegment.radiusY = pSegment -> radiusY;
+                    origin = pParent -> pParent -> origin;
+                    downScale = pParent -> pParent -> downScale;
+                    return;
+                }
+                void transform() {
+                    ellipseSegment.point.x /= downScale;
+                    ellipseSegment.point.y /= downScale;
+                    ellipseSegment.radiusX /= downScale;
+                    ellipseSegment.radiusY /= downScale;
+                    pParent -> transformPoint(&ellipseSegment.point,&ellipseSegment.point);
+                    pParent -> scalePoint(&ellipseSegment.radiusX,&ellipseSegment.radiusY);
+                    return;
+                }
+                void *dataOne() { return (void *)&ellipseSegment; }
+                D2D1_ELLIPSE ellipseSegment{{0.0f,0.0f},0.0f,0.0f};
+            };
+
             struct bezierPrimitive : primitive {
-                bezierPrimitive(GraphicElements *pp,D2D1_BEZIER_SEGMENT *pSegment) : primitive(pp,type::cubicBezier) { 
+                bezierPrimitive(GraphicElements *pp,POINTF *pFirstPoint,D2D1_BEZIER_SEGMENT *pSegment) : primitive(pp,type::cubicBezier) { 
+                    vertex.x = pFirstPoint -> x;
+                    vertex.y = pFirstPoint -> y;
                     bezierSegment.point1.x = pSegment -> point1.x;
                     bezierSegment.point1.y = pSegment -> point1.y;
                     bezierSegment.point2.x = pSegment -> point2.x;
@@ -160,31 +218,36 @@
                     return;
                 }
                 void transform() { 
+                    vertex.x /= downScale;
+                    vertex.y /= downScale;
                     bezierSegment.point1.x /= downScale;
                     bezierSegment.point1.y /= downScale;
                     bezierSegment.point2.x /= downScale;
                     bezierSegment.point2.y /= downScale;
                     bezierSegment.point3.x /= downScale;
                     bezierSegment.point3.y /= downScale;
+                    vertex.x += origin.x;
+                    vertex.y += origin.y;
                     bezierSegment.point1.x += origin.x;
                     bezierSegment.point1.y += origin.y;
                     bezierSegment.point2.x += origin.x;
                     bezierSegment.point2.y += origin.y;
                     bezierSegment.point3.x += origin.x;
                     bezierSegment.point3.y += origin.y;
+                    pParent -> transformPoint(&vertex,&vertex);
                     pParent -> transformPoint(&bezierSegment.point1,&bezierSegment.point1);
                     pParent -> transformPoint(&bezierSegment.point2,&bezierSegment.point2);
                     pParent -> transformPoint(&bezierSegment.point3,&bezierSegment.point3);
                     return;
                 }
-
+                void *dataOne() { return (void *)&bezierSegment; }
+                D2D1_BEZIER_SEGMENT bezierSegment{{0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f}};
             };
 
             struct quadraticBezierPrimitive : primitive {
                 quadraticBezierPrimitive(GraphicElements *pp,POINTF *pCurrentPoint,D2D1_QUADRATIC_BEZIER_SEGMENT *pSegment) : primitive(pp,type::quadraticBezier) {
-                    vertices[0].x = pCurrentPoint -> x;
-                    vertices[0].y = pCurrentPoint -> y;
-                    theType = quadraticBezier;
+                    vertex.x = pCurrentPoint -> x;
+                    vertex.y = pCurrentPoint -> y;
                     quadraticBezierSegment.point1.x = pSegment -> point1.x;
                     quadraticBezierSegment.point1.y = pSegment -> point1.y;
                     quadraticBezierSegment.point2.x = pSegment -> point2.x;
@@ -194,6 +257,8 @@
                     return;
                     }
                 void transform() { 
+                    vertex.x /= downScale;
+                    vertex.y /= downScale;
                     quadraticBezierSegment.point1.x /= downScale;
                     quadraticBezierSegment.point1.y /= downScale;
                     quadraticBezierSegment.point2.x /= downScale;
@@ -202,10 +267,13 @@
                     quadraticBezierSegment.point1.y += origin.y;
                     quadraticBezierSegment.point2.x += origin.x;
                     quadraticBezierSegment.point2.y += origin.y;
+                    pParent -> transformPoint(&vertex,&vertex);
                     pParent -> transformPoint(&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
                     pParent -> transformPoint(&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     return;
                 }
+                void *dataOne() { return (void *)&quadraticBezierSegment; }
+                D2D1_QUADRATIC_BEZIER_SEGMENT quadraticBezierSegment{{0.0f,0.0f},{0.0f,0.0f}};
             };
 
             struct path {
@@ -258,7 +326,85 @@
                     fill = 2
                 };
 
-                enum pathAction apply(boolean doFill,FILE *fDebug = NULL);
+                enum pathAction apply(boolean doFill);
+
+                class specializedSink : ID2D1SimplifiedGeometrySink {
+                public:
+                    specializedSink(path *pp,ID2D1GeometrySink *ps) : pParent(pp), pActiveSink(ps), refCount(1) {
+                    pActiveSink -> AddRef();
+                    }
+
+                    ~specializedSink() {
+                        pActiveSink -> Release();
+                    }
+
+                    // IUnknown
+
+                    STDMETHOD_(ULONG, AddRef)() {
+                    return ++refCount;
+                    }
+
+                    STDMETHOD_(ULONG, Release)()  {
+                    if ( 1 == refCount ) {
+                        delete this;
+                        return 0;
+                    }
+                    return --refCount;;
+                    }
+
+                    STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject) {
+                    *ppvObject = NULL;
+
+                    if (IID_IUnknown == riid) 
+                        *ppvObject = static_cast<IUnknown*>(this);
+
+                    else if ( IID_ID2D1SimplifiedGeometrySink == riid )
+                        *ppvObject = static_cast<ID2D1SimplifiedGeometrySink *>(this);
+
+                    if ( NULL == *ppvObject )
+                        return E_NOINTERFACE;
+
+                    AddRef();
+                    return S_OK;
+                    }
+
+                    STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT *pSegment,UINT countItems) {
+                    for ( UINT k = 0; k < countItems; k++ )
+                        pActiveSink -> AddBezier(pSegment + k);
+                    return;
+                    }
+
+                    STDMETHOD_(void, AddLines)(const D2D1_POINT_2F *pPoints, UINT pointsCount) {
+                    for ( UINT k = 0; k < pointsCount; k++ )
+                        pActiveSink -> AddLine(D2D1::Point2F(pPoints[k].x,pPoints[k].y));
+                    return;
+                    }
+
+                    STDMETHOD_(void, BeginFigure)(D2D1_POINT_2F startPoint,D2D1_FIGURE_BEGIN figureBegin) {
+                    pActiveSink -> BeginFigure(D2D1::Point2F(startPoint.x,startPoint.y),figureBegin);
+                    return;
+                    }
+
+                    STDMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd) {
+                    pActiveSink -> EndFigure(figureEnd);
+                    return;
+                    }
+
+                    STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode) { }
+
+                    STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags) { }
+
+                    STDMETHOD(Close)() {
+                    return S_OK;
+                    }
+
+                private:
+
+                    uint32_t refCount{0};
+                    path *pParent{NULL};
+                    ID2D1GeometrySink *pActiveSink{NULL};
+
+                };
 
             };
 
@@ -281,9 +427,13 @@
             boolean isFigureStarted{false};
 
             XFORM toDeviceSpace{6 * 0.0f};
+            XFORM toUserSpace{6 * 0.0f};
+
+            void calcInverseTransform();
 
             void scalePoint(FLOAT *px,FLOAT *py);
             void transformPoint(FLOAT *px,FLOAT *py);
+            void unTransformPoint(float *px,FLOAT *py);
             void transformPoint(POINTF *ptIn,POINTF *ptOut);
             void transformPoint(D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut);
 
@@ -380,6 +530,7 @@
 
         void fire_ErrorNotification(char *pszError);
         void fire_StatusNotification(char *pszError);
+        void fire_Clear();
 
         private:
 
@@ -503,8 +654,11 @@
         boolean doRasterize{false};
         boolean lastRenderWasFilled{false};
 
-        POINTF origin{1.0f,1.0f};
+        POINTF origin{0.0f,0.0f};
         FLOAT downScale{1.0f};
+
+        static char szStatusMessage[1024];
+        static char szErrorMessage[1024];
 
         friend class GraphicElements;
         friend class GraphicParameters;
@@ -517,10 +671,14 @@
     wchar_t wstrModuleName[1024];
     char szModuleName[1024];
 
+    double degToRad = 4.0 * atan(1.0) / 180.0;
+
 #else
 
     extern HMODULE hModule;
     extern wchar_t wstrModuleName[];
     extern char szModuleName[];
+
+    extern double degToRad;
 
 #endif

@@ -22,6 +22,9 @@
     <Filter Include="Source Files\COM Events">
       <UniqueIdentifier>{14d2e170-f6ff-429e-bab6-f2501ca461f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{52be7d1f-e008-45a4-a4fd-6cc300e6e7c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="COM Interfaces\IUnknown.cpp">
@@ -56,6 +59,9 @@
     </ClCompile>
     <ClCompile Include="COM Events\IEnumerateConnections.cpp">
       <Filter>Source Files\COM Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

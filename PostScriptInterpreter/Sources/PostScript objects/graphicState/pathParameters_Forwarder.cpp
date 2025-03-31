@@ -101,18 +101,18 @@ Beep(2000,200);
 
 
     void pathParameters::arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2) {
-    pIGraphicElements -> ArcTo(xCenter,yCenter,radius,angle1,angle2);
+    pIGraphicElements -> Arc(xCenter,yCenter,radius,angle1,angle2);
     return;
     }
 
 
     void pathParameters::curveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
-    pIGraphicElements -> CubicBezierTo(x1,y1,x2,y2,x3,y3);
+    pIGraphicElements -> CubicBezier(x1,y1,x2,y2,x3,y3);
     return;
     }
 
 
     void pathParameters::quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
-    pIGraphicElements -> QuadraticBezierTo(x1,y1,x2,y2);
+    pIGraphicElements -> QuadraticBezier(x1,y1,x2,y2);
     return;
     }
