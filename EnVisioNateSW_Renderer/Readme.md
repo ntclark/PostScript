@@ -26,4 +26,4 @@ rendering graphics. Which includes all manner of text right away (the demo also 
 
 To get started with the demo, please go [here](./rendererDemo/Readme.md).
 
-![Renderer demoe screenshot](./Resources/sample.png)
+![Renderer demo screenshot](./rendererDemo/Resources/sample.png)
