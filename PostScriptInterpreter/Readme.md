@@ -1,7 +1,9 @@
 # PostScriptInterpreter
 
->All of my repositories need the [Common](https://github.com/ntclark/Common) repository and there you will find clear 
+>All of my repositories need the [Common](https://github.com/ntclark/Common) repository. There you will find clear 
 build instructions for all of them.
+>
+>This Open Source software is licensed with the MIT license as found in the LICENSE.txt file
 
 ### This is the heart of this repository, it is the PostScript interpreter
 

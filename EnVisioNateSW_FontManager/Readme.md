@@ -1,7 +1,9 @@
 # The EnVisioNateSW Font Management System
 
->All of my repositories need the [Common](https://github.com/ntclark/Common) repository and there you will find clear 
+>All of my repositories need the [Common](https://github.com/ntclark/Common) repository. There you will find clear 
 build instructions for all of them.
+>
+>This Open Source software is licensed with the MIT license as found in the LICENSE.txt file
 
 As a far more flexible, usable, simpler, and cleaner font rendering system than freetype, this component is intended
 to demonstrate how software **can** be constructed such that it is accessible and easy to understand and to follow how something

@@ -366,6 +366,7 @@ Exit 0</Command>
     <ClCompile Include="Sources\Stacks\psTransformsStack.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="LICENSE.txt" />
     <Text Include="resources\glyphList.txt" />
   </ItemGroup>
   <ItemGroup>

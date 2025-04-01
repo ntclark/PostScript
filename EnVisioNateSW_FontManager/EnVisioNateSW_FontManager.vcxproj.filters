@@ -104,4 +104,7 @@
     </None>
     <None Include="Readme.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="LICENSE.txt" />
+  </ItemGroup>
 </Project>

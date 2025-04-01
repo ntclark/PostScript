@@ -269,6 +269,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\glyphList.txt" />
+    <Text Include="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\PostScript objects\array.h">
