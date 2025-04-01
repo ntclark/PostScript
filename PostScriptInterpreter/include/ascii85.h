@@ -1,6 +1,5 @@
 #pragma once
 
-
 /** @file ascii85.h
  *
  * @brief Ascii85 encoder and decoder
