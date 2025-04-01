@@ -135,7 +135,7 @@
 
     RegisterClass(&gClass);
 
-    hwndFrame = CreateWindowEx(0L,"rendererFrame","Renderer Demo", WS_OVERLAPPEDWINDOW | WS_VISIBLE,256,256,768,1024,NULL,(HMENU)NULL,hInst,NULL);
+    hwndFrame = CreateWindowEx(0L,"rendererFrame","Renderer Demo", WS_OVERLAPPEDWINDOW | WS_VISIBLE,256,256,768,768,NULL,(HMENU)NULL,hInst,NULL);
 
     hwndStatus = CreateWindowEx(0,STATUSCLASSNAME,(PCTSTR) NULL,SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE,0, 0, 0, 0,hwndFrame,(HMENU)NULL,hInst,NULL);
 
