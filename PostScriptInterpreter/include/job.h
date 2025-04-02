@@ -89,10 +89,10 @@ This is the MIT License
         static void *pNextHeap;
         static size_t currentlyAllocatedHeap;
 
+        static IFontManager *pIFontManager;
         static IRenderer *pIRenderer;
-
-        static IGraphicElements *pIGraphicElements_External;
-        static IGraphicParameters *pIGraphicParameters_External;
+        static IGraphicElements *pIGraphicElements;
+        static IGraphicParameters *pIGraphicParameters;
 
    private:
 

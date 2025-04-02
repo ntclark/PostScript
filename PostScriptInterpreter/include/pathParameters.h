@@ -30,7 +30,7 @@ This is the MIT License
 
     public:
 
-        pathParameters();
+        pathParameters() {};
         pathParameters(pathParameters *pRHS);
         ~pathParameters();
 
@@ -73,10 +73,9 @@ This is the MIT License
 
     private:
 
-        IGraphicElements *pIGraphicElements{NULL};
-
-        static IRenderer *pIRenderer_text;
-        static IGraphicElements *pIGraphicElements_text;
+        //IGraphicElements *pIGraphicElements{NULL};
+        //static IRenderer *pIRenderer_text;
+        //static IGraphicElements *pIGraphicElements_text;
 
         static long cxClient;
         static long cyClient;

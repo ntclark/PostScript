@@ -54,7 +54,6 @@ class graphicsState;
 
         static void setFont(font *pFont);
         static font *findFont(job *pJob,char *pszFamily);
-        static void initialize();
         static font *CurrentFont();
 
         static font *makeFont(array *pArray,font *pCopyFrom);
@@ -63,7 +62,7 @@ class graphicsState;
 
         static font *scaleFont(FLOAT scaleFactor,font *pCopyFrom);
 
-        static IFontManager *pIFontManager;
+        //static IFontManager *pIFontManager;
 
     private:
 

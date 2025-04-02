@@ -23,9 +23,10 @@ This is the MIT License
 
 #include "job.h"
 
+    IFontManager *job::pIFontManager = NULL;
     IRenderer *job::pIRenderer = NULL;;
-    IGraphicElements *job::pIGraphicElements_External = NULL;
-    IGraphicParameters *job::pIGraphicParameters_External = NULL;
+    IGraphicElements *job::pIGraphicElements = NULL;
+    IGraphicParameters *job::pIGraphicParameters = NULL;
 
     job::job(char *pszFileName,HWND hwndSurf,IPostScriptTakeText *pIPSTT) :
 
@@ -45,13 +46,12 @@ This is the MIT License
 
     {
 
-    if ( NULL == pIRenderer ) {
-        CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
-        pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_External));
-        pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters_External));
+    if ( NULL == pIFontManager ) {
+        HRESULT rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
+        pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
+        pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
+        pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
     }
-
-    font::initialize();
 
     pLanguageLevel = new (CurrentObjectHeap()) object(this,2L);
 

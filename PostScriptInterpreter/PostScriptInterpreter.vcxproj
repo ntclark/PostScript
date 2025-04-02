@@ -287,7 +287,7 @@ Exit 0</Command>
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp" />
-    <ClCompile Include="Sources\ascii85EncodeDecode.cpp" />
+    <ClCompile Include="ascii85.cpp" />
     <ClCompile Include="Sources\cmdPaneHandler.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPointContainer.cpp" />

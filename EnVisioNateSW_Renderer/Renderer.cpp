@@ -33,7 +33,12 @@ This is the MIT License
     Renderer::Renderer(IUnknown *pUnkOuter) {
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
-    D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,&pID2D1Factory1);
+
+    D2D1_FACTORY_OPTIONS factoryOptions{0};
+    factoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+
+    D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,factoryOptions,&pID2D1Factory1);
+
     pIConnectionPointContainer = new _IConnectionPointContainer(this);
     pIConnectionPoint = new _IConnectionPoint(this);
     return;

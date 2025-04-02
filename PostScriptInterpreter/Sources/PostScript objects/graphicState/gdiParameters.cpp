@@ -28,12 +28,12 @@ This is the MIT License
     // gdiParameters
 
     HRESULT gdiParameters::SaveState() {
-    return job::pIGraphicParameters_External -> SaveState();
+    return job::pIGraphicParameters -> SaveState();
     }
 
 
     HRESULT gdiParameters::RestoreState() {
-    return job::pIGraphicParameters_External -> RestoreState();
+    return job::pIGraphicParameters -> RestoreState();
     }
 
 
@@ -78,33 +78,33 @@ This is the MIT License
 
     void gdiParameters::setRGBColor(COLORREF rgb) {
     pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters_External -> put_RGBColor(rgb);
+    job::pIGraphicParameters -> put_RGBColor(rgb);
     }
 
 
     void gdiParameters::setLineWidth(POINT_TYPE v) { 
     pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters_External -> put_LineWidth(v);
+    job::pIGraphicParameters -> put_LineWidth(v);
     return;
     }
 
 
     void gdiParameters::setLineJoin(long lj) {
     pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters_External -> put_LineJoin(lj);
+    job::pIGraphicParameters -> put_LineJoin(lj);
     return;
     }
 
 
     void gdiParameters::setLineCap(long lc) {
     pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters_External -> put_LineCap(lc);
+    job::pIGraphicParameters -> put_LineCap(lc);
     return;
     }
 
 
     void gdiParameters::setLineDash(FLOAT *pValues,long countValues,POINT_TYPE offset) {
     pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters_External -> put_LineDash(pValues,countValues,offset);
+    job::pIGraphicParameters -> put_LineDash(pValues,countValues,offset);
     return;
     }

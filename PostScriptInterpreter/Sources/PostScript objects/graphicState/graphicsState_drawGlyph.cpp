@@ -135,7 +135,7 @@ This is the MIT License
 
     void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
 
-    font::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
+    job::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
                                         (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
                                             pStartPoint,pEndPoint);

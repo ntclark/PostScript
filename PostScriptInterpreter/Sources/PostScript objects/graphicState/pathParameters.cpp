@@ -31,9 +31,6 @@ This is the MIT License
 
     int Mx3Inverse(double *,double *);
 
-    IRenderer *pathParameters::pIRenderer_text = NULL;
-    IGraphicElements *pathParameters::pIGraphicElements_text = NULL;
-
     FLOAT pathParameters::scalePointsToPixels = 1.0f;
     FLOAT pathParameters::renderingHeight = 0.0f;
 
@@ -46,18 +43,7 @@ This is the MIT License
     long pathParameters::cyWindow = 0L;
 
 
-    pathParameters::pathParameters() {
-    pIGraphicElements = job::pIGraphicElements_External;
-    if ( NULL == pIRenderer_text ) {
-        font::pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer_text));
-        font::pIFontManager -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements_text));
-    }
-    return;
-    }
-
-
     pathParameters::pathParameters(pathParameters *pRHS) {
-    pIGraphicElements = job::pIGraphicElements_External;
     return;
     }
 
@@ -135,7 +121,6 @@ This is the MIT License
     toDeviceSpaceInverse.eDy = (FLOAT)inverse[2][2];
 
     job::pIRenderer -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
-    pIRenderer_text -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
 
     return;
     }
@@ -143,8 +128,7 @@ This is the MIT License
 
     void pathParameters::RenderGeometry() {
     RECT rcDrawing;
-    GetClientRect(pPStoPDF->HwndClient(),&rcDrawing);
+    GetClientRect(pPStoPDF -> HwndClient(),&rcDrawing);
     job::pIRenderer -> Render(pPStoPDF -> GetDC(),&rcDrawing);
-    pIRenderer_text -> Render(pPStoPDF -> GetDC(),&rcDrawing);
     return;
     }

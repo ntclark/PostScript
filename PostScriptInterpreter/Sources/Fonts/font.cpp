@@ -25,7 +25,7 @@ This is the MIT License
 
 #include "FontManager_i.c"
 
-    IFontManager *font::pIFontManager = NULL;
+    //IFontManager *font::pIFontManager = NULL;
 
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
@@ -33,7 +33,7 @@ This is the MIT License
 
     theObjectType = object::objectType::font;
 
-    pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
+    job::pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
 
     loadDictionary();
     return;
@@ -157,7 +157,7 @@ This is the MIT License
     isCIDFont = rhs.isCIDFont;
     dupCount = rhs.dupCount + 1;
     static_cast<dictionary *>(this) -> copyFrom(static_cast<dictionary *>(&rhs));
-    pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
+    job::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
     loadDictionary();
     return;
     }
@@ -168,17 +168,10 @@ This is the MIT License
     }
 
 
-    void font::initialize() {
-    if ( NULL == pIFontManager )
-        CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
-    return;
-    }
-
-
     font *font::findFont(job *pJob,char *pszFamilyName) {
 
     IFont_EVNSW *pIFont;
-    if ( S_OK == pIFontManager -> SeekFont(pszFamilyName,-1L,&pIFont) ) {
+    if ( S_OK == job::pIFontManager -> SeekFont(pszFamilyName,-1L,&pIFont) ) {
         UINT_PTR fontCookie;
         pIFont -> get_FontCookie(&fontCookie);
         return (font *)fontCookie;
@@ -189,14 +182,14 @@ This is the MIT License
 
 
     void font::setFont(font *pFont) {
-    pIFontManager -> put_CurrentFont(pFont -> pIFont);
+    job::pIFontManager -> put_CurrentFont(pFont -> pIFont);
     return;
     }
 
 
     font *font::CurrentFont() {
     IFont_EVNSW *pIFont = NULL;
-    HRESULT hr = pIFontManager -> get_CurrentFont(&pIFont);
+    HRESULT hr = job::pIFontManager -> get_CurrentFont(&pIFont);
     if ( ! ( S_OK == hr ) )
         return NULL;
     UINT_PTR ptrCookie;

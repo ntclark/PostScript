@@ -19,51 +19,51 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/#include "job.h"
+*/
 
+#include "job.h"
 
 #include "pathParameters.h"
 
-
     void pathParameters::redirectType3() {
 
-    UINT_PTR *ptrBundle;
-    job::pIRenderer -> GetParametersBundle(&ptrBundle);
-    pIRenderer_text -> SetParametersBundle(ptrBundle);
+    //UINT_PTR *ptrBundle;
+    //job::pIRenderer -> GetParametersBundle(&ptrBundle);
+    //pIRenderer_text -> SetParametersBundle(ptrBundle);
 
-    CoTaskMemFree((VOID *)ptrBundle);
+    //CoTaskMemFree((VOID *)ptrBundle);
 
-    pIGraphicElements = pIGraphicElements_text;
+    //pIGraphicElements = pIGraphicElements_text;
     return;
     }
 
 
     void pathParameters::unRedirectType3() {
-    pIGraphicElements = job::pIGraphicElements_External;
+    //pIGraphicElements = job::pIGraphicElements_External;
     return;
     }
 
 
     void pathParameters::newpath() {
     pPStoPDF -> BeginPath();
-    pIGraphicElements -> NewPath();
+    job::pIGraphicElements -> NewPath();
     }
 
 
     void pathParameters::stroke() {
-    pIGraphicElements -> StrokePath();
+    job::pIGraphicElements -> StrokePath();
     return;
     }
 
 
     void pathParameters::fillpath() {
-    pIGraphicElements -> FillPath();
+    job::pIGraphicElements -> FillPath();
     return;
     }
 
 
     void pathParameters::closepath() {
-    pIGraphicElements -> ClosePath();
+    job::pIGraphicElements -> ClosePath();
     return;
     }
 
@@ -75,66 +75,66 @@ Beep(2000,200);
 
 
     void pathParameters::moveto(GS_POINT *pPt) {
-    pIGraphicElements -> MoveTo(pPt -> x,pPt -> y);
+    job::pIGraphicElements -> MoveTo(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::moveto(POINT_TYPE x,POINT_TYPE y) {
-    pIGraphicElements -> MoveTo(x,y);
+    job::pIGraphicElements -> MoveTo(x,y);
     return;
     }
 
 
     void pathParameters::rmoveto(GS_POINT *pPt) {
-    pIGraphicElements -> MoveToRelative(pPt -> x,pPt -> y);
+    job::pIGraphicElements -> MoveToRelative(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::rmoveto(POINT_TYPE x,POINT_TYPE y) {
-    pIGraphicElements -> MoveToRelative(x,y);
+    job::pIGraphicElements -> MoveToRelative(x,y);
     return;
     }
 
 
     void pathParameters::lineto(GS_POINT *pPt) {
-    pIGraphicElements -> LineTo(pPt -> x,pPt -> y);
+    job::pIGraphicElements -> LineTo(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::lineto(POINT_TYPE x,POINT_TYPE y) {
-    pIGraphicElements -> LineTo(x,y);
+    job::pIGraphicElements -> LineTo(x,y);
     return;
     }
 
 
     void pathParameters::rlineto(GS_POINT *pPt) {
-    pIGraphicElements -> LineToRelative(pPt -> x,pPt -> y);
+    job::pIGraphicElements -> LineToRelative(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::rlineto(POINT_TYPE x,POINT_TYPE y) {
-    pIGraphicElements -> LineToRelative(x,y);
+    job::pIGraphicElements -> LineToRelative(x,y);
     return;
     }
 
 
     void pathParameters::arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2) {
-    pIGraphicElements -> Arc(xCenter,yCenter,radius,angle1,angle2);
+    job::pIGraphicElements -> Arc(xCenter,yCenter,radius,angle1,angle2);
     return;
     }
 
 
     void pathParameters::curveto(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
-    pIGraphicElements -> CubicBezier(x0,y0,x1,y1,x2,y2,x3,y3);
+    job::pIGraphicElements -> CubicBezier(x0,y0,x1,y1,x2,y2,x3,y3);
     return;
     }
 
 
     void pathParameters::quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
-    pIGraphicElements -> QuadraticBezier(x1,y1,x2,y2);
+    job::pIGraphicElements -> QuadraticBezier(x1,y1,x2,y2);
     return;
     }

@@ -57,11 +57,11 @@
     <ClCompile Include="COM Events\IEnumerateConnections.cpp">
       <Filter>Source Files\COM Events</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\Utils\mathUtils.cpp">
-      <Filter>Source Files\Common</Filter>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files\Common</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

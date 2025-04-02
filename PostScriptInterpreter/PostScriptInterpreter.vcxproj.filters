@@ -207,9 +207,6 @@
     <ClCompile Include="Sources\PostScript objects\filter.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\ascii85EncodeDecode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\operators\operators_AtoL.cpp">
       <Filter>Source Files\operators</Filter>
     </ClCompile>
@@ -259,6 +256,9 @@
       <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ascii85.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

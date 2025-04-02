@@ -60,8 +60,8 @@ This is the MIT License
         return NULL;
 
     if ( 0 == _stricmp(szFilterName,"ASCII85Decode") ) {
-        pbData = new BYTE[*pcbSize * 4];
-        *pcbSize = decode_ascii85(pbSource,(int32_t)*pcbSize, pbData, (int32_t)*pcbSize * 4);
+        pbData = NULL;
+        *pcbSize = decodeASCII85(pbSource,(int32_t)*pcbSize,&pbData);
         reinterpret_cast<file *>(pDataSource) -> releaseData();
         return pbData;
     }
