@@ -57,6 +57,7 @@ library PostScriptInterpreter {
    interface IPostScriptEvents : IUnknown {
        HRESULT RenderChar(POINT *pPoint,char theChar);
        HRESULT RenderString(POINT *pPoint,char *pszString);
+       HRESULT ErrorNotification(UINT_PTR pszError);
    };
 
 

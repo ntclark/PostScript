@@ -63,6 +63,10 @@ This is the MIT License
         pbData = NULL;
         *pcbSize = decodeASCII85(pbSource,(int32_t)*pcbSize,&pbData);
         reinterpret_cast<file *>(pDataSource) -> releaseData();
+        if ( 0 == *pcbSize ) {
+            sprintf_s(PStoPDF::szErrorMessage,1024,"There was an invalid block of data for ASCII85Decode");
+            pPStoPDF -> pIConnectionPointContainer -> fire_ErrorNotification(PStoPDF::szErrorMessage);
+        }
         return pbData;
     }
 

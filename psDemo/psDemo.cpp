@@ -42,6 +42,11 @@
             return S_OK;
         }
 
+        HRESULT __stdcall ErrorNotification(UINT_PTR pszString) {
+            printf("There was an error: %s\n",(char *)pszString);
+            return S_OK;
+        }
+
     } postScriptEvents;
 
 

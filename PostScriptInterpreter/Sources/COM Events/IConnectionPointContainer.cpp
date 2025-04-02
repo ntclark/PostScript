@@ -93,3 +93,18 @@ This is the MIT License
     static_cast<IUnknown*>(pIEnum) -> Release();
     return;
     }
+
+
+    void PStoPDF::_IConnectionPointContainer::fire_ErrorNotification(char *pszString) {
+    IEnumConnections* pIEnum;
+    CONNECTDATA connectData;
+    pParent -> pIConnectionPoint -> EnumConnections(&pIEnum);
+    if ( ! pIEnum ) return;
+    while ( 1 ) {
+        if ( pIEnum -> Next(1, &connectData, NULL) ) break;
+        IPostScriptEvents * pClient = reinterpret_cast<IPostScriptEvents *>(connectData.pUnk);
+        pClient -> ErrorNotification((UINT_PTR)pszString);
+    }
+    static_cast<IUnknown*>(pIEnum) -> Release();
+    return;
+    }

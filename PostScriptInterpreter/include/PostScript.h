@@ -19,7 +19,6 @@
 
 #include "PdfEnabler_i.h"
 #include "pdfEnabler\Page.h"
-//#include "CVPostscriptConverter_i.h"
 
 #ifdef GetWindowID
 #undef GetWindowID
@@ -169,6 +168,7 @@ class job;
 
         void fire_RenderChar(POINT *pPoint,char theCar);
         void fire_RenderString(POINT *pPoint,char *pszString);
+        void fire_ErrorNotification(char *pszErrorString);
 
         private:
 
@@ -275,6 +275,8 @@ class job;
 
         POINTL activePageOrigin{0L,0L};
 
+        static char szErrorMessage[1024];
+
     private:
 
         int initWindows();
@@ -302,8 +304,6 @@ class job;
         std::map<size_t,SIZEL *> pageSizes;
 
         std::function<void(void)> beginPathAction{NULL};
-
-        static char szErrorMessage[1024];
 
         static HWND hwndHost;
         static HWND hwndClient;

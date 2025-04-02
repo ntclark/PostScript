@@ -26,7 +26,6 @@ This is the MIT License
 
 #include "Properties_i.c"
 #include "PostScriptInterpreter_i.c"
-//#include "CVPostscriptConverter_i.c"
 
     CRITICAL_SECTION PStoPDF::theQueueCriticalSection;
 
