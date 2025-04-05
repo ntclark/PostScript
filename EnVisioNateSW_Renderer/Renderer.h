@@ -83,8 +83,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
             //   IUnknown
 
             STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
-            ULONG AddRef() { return pParent -> AddRef(); }
-            ULONG Release() { return pParent -> Release(); }
+            STDMETHOD_(ULONG,AddRef()) { return pParent -> AddRef(); }
+            STDMETHOD_(ULONG,Release()) { return pParent -> Release(); }
 
         private:
 
@@ -115,11 +115,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     ellipse = 3,
                     cubicBezier = 4,
                     quadraticBezier = 5,
-#if 0
-                    colorSet = 6,
-                    lineStyleSet = 7,
-                    lineWidthSet = 8,
-#endif
                     newPathMarker = 24,
                     closePathMarker = 25,
                     strokePathMarker = 26,
@@ -137,17 +132,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
                         return;
                     switch ( theType ) {
-#if 0
-                    case colorSet:
-                        sprintf_s<256>(Renderer::szLogMessage,"SetColor");
-                        break;
-                    case lineStyleSet:
-                        sprintf_s<256>(Renderer::szLogMessage,"LineStyleSet");
-                        break;
-                    case lineWidthSet:
-                        sprintf_s<256>(Renderer::szLogMessage,"LineWidthSet");
-                        break;
-#endif
                     case newPathMarker:
                         sprintf_s<1024>(Renderer::szLogMessage,"NewPath");
                         break;
@@ -592,8 +576,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
             //   IUnknown
 
             STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
-            ULONG AddRef() { return pParent -> AddRef(); }
-            ULONG Release() { return pParent -> Release(); }
+            STDMETHOD_(ULONG,AddRef()) { return pParent -> AddRef(); }
+            STDMETHOD_(ULONG,Release()) { return pParent -> Release(); }
 
             ~GraphicParameters() { }
 
