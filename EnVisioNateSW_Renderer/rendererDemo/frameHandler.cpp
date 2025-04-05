@@ -16,7 +16,7 @@ boolean renderLive = false;
 
 HBITMAP getSampleImage(HDC hdc);
 
-    LRESULT frameHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+    LRESULT CALLBACK frameHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
     switch ( msg ) {
     case WM_CREATE:
         hwndFrame = hwnd;

@@ -112,7 +112,7 @@
     pIFontManager -> ScaleFont(36.0);
 
     DLGTEMPLATE *dt = (DLGTEMPLATE *)LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDD_GET_SENTENCE),RT_DIALOG));
-    CreateDialogIndirect(hInst,dt,hwndFrame,dialogHandler);
+    CreateDialogIndirect(hInst,dt,hwndFrame,(DLGPROC)dialogHandler);
 
     MSG qMessage;
 

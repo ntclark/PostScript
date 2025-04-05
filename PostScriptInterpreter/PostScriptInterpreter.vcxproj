@@ -99,6 +99,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
@@ -200,6 +201,7 @@ Exit 0</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
@@ -251,6 +253,7 @@ Exit 0</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>

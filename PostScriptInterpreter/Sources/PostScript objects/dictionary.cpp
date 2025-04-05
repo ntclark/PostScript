@@ -96,14 +96,14 @@ This is the MIT License
 
 
     object *dictionary::retrieve(long index) {
-    if ( entries.size() < index )
+    if ( (long)entries.size() < index )
         return NULL;
     return entries[index] -> pValue;
     }
 
 
     char *dictionary::retrieveKey(long index) {
-    if ( entries.size() < index )
+    if ( (long)entries.size() < index )
         return NULL;
     return entries[index] -> szName;
     }

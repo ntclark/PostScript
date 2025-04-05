@@ -153,7 +153,7 @@
     hwndStatus = CreateWindowEx(0,STATUSCLASSNAME,(PCTSTR) NULL,SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE,0, 0, 0, 0,hwndFrame,(HMENU)NULL,hInst,NULL);
 
     DLGTEMPLATE *dt = (DLGTEMPLATE *)LoadResource(NULL,FindResource(NULL,MAKEINTRESOURCE(IDD_OPTIONS),RT_DIALOG));
-    CreateDialogIndirect(NULL,dt,hwndFrame,dialogHandler);
+    CreateDialogIndirect(NULL,dt,hwndFrame,(DLGPROC)dialogHandler);
 
     RECT rcDialog;
     GetWindowRect(hwndDialog,&rcDialog);

@@ -330,7 +330,7 @@ This is the MIT License
 
     char *pTarget = (char *)*pAvailableFonts;
 
-    for ( long k = 0; k < pFont -> fontFullNames.size(); k++ ) {
+    for ( long k = 0; k < (long)pFont -> fontFullNames.size(); k++ ) {
 
         strcpy(pTarget,pFont -> fontFullNames[k]);
         long n = (long)strlen(pFont -> fontFullNames[k]);

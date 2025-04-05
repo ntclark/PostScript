@@ -11,7 +11,7 @@
 
 #include "resource.h"
 
-LRESULT frameHandler(HWND,UINT,WPARAM,LPARAM);
+LRESULT CALLBACK frameHandler(HWND,UINT,WPARAM,LPARAM);
 LRESULT dialogHandler(HWND,UINT,WPARAM,LPARAM);
 
 void crossHairs(HDC hdc);

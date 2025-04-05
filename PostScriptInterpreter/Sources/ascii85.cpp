@@ -80,7 +80,7 @@ This is the MIT License
         uint8_t *pbZ = p;
 
         if ( ! ( 'z' == *pbZ ) ) {
-            for ( int32_t k = 0; k < toDelete.size(); k++ )
+            for ( int32_t k = 0; k < (int32_t)toDelete.size(); k++ )
                 delete [] toDelete[k];
             return 0;
         }
@@ -165,7 +165,7 @@ This is the MIT License
 
     memcpy(*ppbResult,pbTemp,outIndex * sizeof(uint8_t));
 
-    for ( int32_t k = 0; k < toDelete.size(); k++ )
+    for ( int32_t k = 0; k < (int32_t)toDelete.size(); k++ )
         delete [] toDelete[k];
 
     toDelete.clear();

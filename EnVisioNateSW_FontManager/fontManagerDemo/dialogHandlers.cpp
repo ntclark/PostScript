@@ -192,7 +192,7 @@
         case IDDI_SHOW_TABLE: {
 
             DLGTEMPLATE *dt = (DLGTEMPLATE *)LoadResource(NULL,FindResource(NULL,MAKEINTRESOURCE(IDD_GLYPH_TABLE),RT_DIALOG));
-            CreateDialogIndirect(NULL,dt,hwndFrame,glyphTableDialogHandler);
+            CreateDialogIndirect(NULL,dt,hwndFrame,(DLGPROC)glyphTableDialogHandler);
 
             if ( NULL == defaultStaticHandler )
                 defaultStaticHandler = (WNDPROC)SetWindowLongPtr(hwndGlyphTableHost,GWLP_WNDPROC,(ULONG_PTR)glyphTableHostHandler);

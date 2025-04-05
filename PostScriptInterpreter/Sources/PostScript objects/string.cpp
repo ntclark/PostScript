@@ -135,7 +135,7 @@ This is the MIT License
 
     }
 
-    if ( index >= length() ) {
+    if ( index >= (long)length() ) {
         char szMessage[128];
         sprintf(szMessage,"rangecheck: attempting to retrieve character %ld past the end of string %s",index,Contents());
         throw rangecheck(szMessage);

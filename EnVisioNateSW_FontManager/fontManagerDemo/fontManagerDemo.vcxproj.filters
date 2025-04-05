@@ -18,11 +18,11 @@
     <ClCompile Include="fontManagerDemo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dialogHandlers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="glyphTable.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogHandlers.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
