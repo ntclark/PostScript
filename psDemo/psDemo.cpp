@@ -10,7 +10,7 @@
 #include "PostScriptInterpreter_i.h"
 #include "PostScriptInterpreter_i.c"
 
-    IPostScript *pIPostScript{NULL};
+    IPostScriptInterpreter *pIPostScript{NULL};
 
     class IPostScriptEventsDemo : public IPostScriptInterpreterEvents {
     public:
@@ -57,10 +57,9 @@
     rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScriptInterpreter,reinterpret_cast<void **>(&pIPostScript));
 
     IConnectionPointContainer *pIConnectionPointContainer = NULL;
+    IConnectionPoint *pIConnectionPoint = NULL;
 
     rc = pIPostScript -> QueryInterface(IID_IConnectionPointContainer,reinterpret_cast<void **>(&pIConnectionPointContainer));
-
-    IConnectionPoint *pIConnectionPoint = NULL;
 
     rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IPostScriptInterpreterEvents,&pIConnectionPoint);
 
@@ -79,13 +78,18 @@
     memcpy(pszString,(char *)LockResource(hResource),sizeData);
     pszString[sizeData] = '\0';
 
-    pIPostScript -> ParseText(pszString,(DWORD)sizeData,NULL,NULL,NULL,NULL);
+    pIPostScript -> ParseText(pszString);
 
     delete [] pszString;
 
     printf("press any key to continue");
 
     pIConnectionPoint -> Unadvise(dwCookie);
+
+    pIConnectionPoint -> Release();
+    pIConnectionPointContainer -> Release();
+
+    pIPostScript -> Release();
 
     _getch();
 
