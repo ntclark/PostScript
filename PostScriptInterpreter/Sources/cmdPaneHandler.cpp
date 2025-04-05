@@ -21,11 +21,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
-    LRESULT CALLBACK PStoPDF::cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+    LRESULT CALLBACK PostScriptInterpreter::cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
-    PStoPDF *p = (PStoPDF *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
+    PostScriptInterpreter *p = (PostScriptInterpreter *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
 
     switch ( msg ) {
     case WM_INITDIALOG: {
@@ -38,6 +38,8 @@ This is the MIT License
         RECT rcLabel;
         GetWindowRect(GetDlgItem(hwnd,IDDI_CMD_PANE_LOG_SHOW),&rcLabel);
         SetWindowPos(GetDlgItem(hwnd,IDDI_CMD_PANE_LOG_SHOW),HWND_TOP,cx - (rcLabel.right - rcLabel.left),8,0,0,SWP_NOSIZE);
+        GetWindowRect(GetDlgItem(hwnd,IDDI_CMD_PANE_RENDERER_LOG_SHOW),&rcLabel);
+        SetWindowPos(GetDlgItem(hwnd,IDDI_CMD_PANE_RENDERER_LOG_SHOW),HWND_TOP,cx - (rcLabel.right - rcLabel.left),32,0,0,SWP_NOSIZE);
         }
         break;
 
@@ -46,13 +48,17 @@ This is the MIT License
         POINT ptMouse{GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam)};
         MapWindowPoints(hwnd,HWND_DESKTOP,&ptMouse,1);
         RECT rcLogLabel{0,0,0,0};
-        GetWindowRect(GetDlgItem(hwnd,IDDI_CMD_PANE_LOG_SHOW),&rcLogLabel);
-        if ( ptMouse.x < rcLogLabel.left || ptMouse.y < rcLogLabel.top || ptMouse.x > rcLogLabel.right || ptMouse.y > rcLogLabel.bottom )
-            break;
-        if ( msg == WM_MOUSEMOVE )
-            SetCursor(LoadCursor(NULL,IDC_HAND));
-        else 
-            p -> toggleLogVisibility();
+        long ids[]{IDDI_CMD_PANE_LOG_SHOW,IDDI_CMD_PANE_RENDERER_LOG_SHOW};
+        for ( long k = 0; k < sizeof(ids)/sizeof(long); k++ ) {
+            GetWindowRect(GetDlgItem(hwnd,ids[k]),&rcLogLabel);
+            if ( ptMouse.x > rcLogLabel.left && ptMouse.y > rcLogLabel.top && ptMouse.x < rcLogLabel.right && ptMouse.y < rcLogLabel.bottom ) {
+                if ( msg == WM_MOUSEMOVE )
+                    SetCursor(LoadCursor(NULL,IDC_HAND));
+                else
+                    p -> toggleLogVisibility(ids[k]);
+                break;
+            }
+        }
         }
         break;
 
@@ -103,18 +109,6 @@ This is the MIT License
             p -> Parse();
             break;
 
-        case IDDI_CMD_PANE_CONVERT_TO_PDF: {
-#if 0
-            if ( NULL == p -> pICVPostscriptConverter )
-                CoCreateInstance(CLSID_CVPostscriptConverter,NULL,CLSCTX_ALL,IID_ICVPostscriptConverter,reinterpret_cast<void **>(&p -> pICVPostscriptConverter));
-
-            char szTemp[MAX_PATH];
-            GetDlgItemText(hwnd,IDDI_CMD_PANE_ACTIVE_FILE,szTemp,MAX_PATH);
-            p -> pICVPostscriptConverter -> ConvertToPDF(szTemp);
-#endif
-            }
-            break;
-
         default:
             break;
         }
@@ -130,8 +124,31 @@ This is the MIT License
     }
 
 
-    void PStoPDF::toggleLogVisibility() {
-    logIsVisible = ! logIsVisible;
+    void PostScriptInterpreter::toggleLogVisibility(long itemId) {
+
+    if ( IDDI_CMD_PANE_LOG_SHOW == itemId ) {
+
+        logIsVisible = ! logIsVisible;
+
+        if ( logIsVisible && logLevel::none == theLogLevel ) {
+            SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,0L);
+            SetWindowText(hwndLogContent,"Note: The logLevel is set to none");
+            SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,0L);
+        }
+
+    } else if ( IDDI_CMD_PANE_RENDERER_LOG_SHOW == itemId ) {
+
+        rendererLogIsVisible = ! rendererLogIsVisible;
+
+        if ( rendererLogIsVisible && logLevel::none == theRendererLogLevel ) {
+            SendMessage(hwndRendererLogContent,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,0L);
+            SetWindowText(hwndRendererLogContent,"Note: The renderer logLevel is set to none");
+            SendMessage(hwndRendererLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,0L);
+        }
+
+    } else
+        return;
+
     PostMessage(hwndClient,WM_REFRESH_CLIENT_WINDOW,0L,0L);
     return;
     }

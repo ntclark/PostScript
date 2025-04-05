@@ -23,7 +23,6 @@ This is the MIT License
 
 #pragma once
 
-
 #include <vector>
 #include <stack>
 #include <list>
@@ -62,7 +61,10 @@ int Mx3Inverse(double *pSource,double *pTarget);
         STDMETHOD(put_DownScale)(FLOAT ds);
         STDMETHOD(put_Origin)(POINTF ptOrigin);
 
+        STDMETHOD(SetRenderLive)(HDC hdc,RECT *pDrawingRect);
+        STDMETHOD(UnSetRenderLive)();
         STDMETHOD(Render)(HDC hdc,RECT *pDrawingRect);
+
         STDMETHOD(Discard)();
         STDMETHOD(ClearRect)(HDC hdc,RECT *pREct,COLORREF theColor);
         STDMETHOD(WhereAmI)(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
@@ -113,9 +115,11 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     ellipse = 3,
                     cubicBezier = 4,
                     quadraticBezier = 5,
+#if 0
                     colorSet = 6,
                     lineStyleSet = 7,
                     lineWidthSet = 8,
+#endif
                     newPathMarker = 24,
                     closePathMarker = 25,
                     strokePathMarker = 26,
@@ -129,11 +133,43 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 virtual void transform() {}
                 virtual void *dataOne() { return (void *)&vertex; }
                 virtual void *dataTwo() { return NULL; }
+                virtual void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    switch ( theType ) {
+#if 0
+                    case colorSet:
+                        sprintf_s<256>(Renderer::szLogMessage,"SetColor");
+                        break;
+                    case lineStyleSet:
+                        sprintf_s<256>(Renderer::szLogMessage,"LineStyleSet");
+                        break;
+                    case lineWidthSet:
+                        sprintf_s<256>(Renderer::szLogMessage,"LineWidthSet");
+                        break;
+#endif
+                    case newPathMarker:
+                        sprintf_s<1024>(Renderer::szLogMessage,"NewPath");
+                        break;
+                    case closePathMarker:
+                        sprintf_s<1024>(Renderer::szLogMessage,"ClosePath");
+                        break;
+                    case strokePathMarker:
+                        sprintf_s<1024>(Renderer::szLogMessage,"StrokePath");
+                        break;
+                    case fillPathMarker:
+                        sprintf_s<1024>(Renderer::szLogMessage,"FillPath");
+                        break;
+                    default:
+                        return;
+                    }
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+                }
 
                 type theType;
 
-                primitive *pNext{NULL};
-                primitive *pPrior{NULL};
+                primitive *pNextPrimitive{NULL};
+                primitive *pPriorPrimitive{NULL};
 
                 FLOAT downScale{1.0f};
                 POINTF origin{0.0f,0.0f};
@@ -159,6 +195,12 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     vertex.y += origin.y;
                     pParent -> transformPoint(&vertex,&vertex);
                 }
+                void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    sprintf_s<1024>(Renderer::szLogMessage,"Move(%5.0f,%5.0f)",vertex.x,vertex.y);
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+                }
             };
 
             struct linePrimitive : primitive {
@@ -176,6 +218,12 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     vertex.y += origin.y;
                     pParent -> transformPoint(&vertex,&vertex);
                  }
+                void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    sprintf_s<1024>(Renderer::szLogMessage,"Line(%5.0f,%5.0f)",vertex.x,vertex.y);
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+                }
             };
 
             struct arcPrimitive : primitive {
@@ -200,6 +248,15 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     pParent -> scalePoint(&arcSegment.size.width,&arcSegment.size.height);
                     return;
                 }
+                void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    sprintf_s<1024>(Renderer::szLogMessage,"Arc  at: %5.0f, %5.0f, size: %5.0f by %5.0f, rotation angle %5.0f, sweep: %s, arc size: %s",
+                                                arcSegment.point.x,arcSegment.point.y,arcSegment.size.width,arcSegment.size.height,
+                                                arcSegment.rotationAngle,arcSegment.sweepDirection == 0 ? "counter clockwise" : "clockwise",
+                                                arcSegment.arcSize == D2D1_ARC_SIZE_SMALL ? "small" : "larget");
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+                }
                 void *dataOne() { return (void *)&arcSegment; }
                 D2D1_ARC_SEGMENT arcSegment{{0.0f,0.0f},{0.0f,0.0f},0.0f,D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,D2D1_ARC_SIZE_SMALL};
             };
@@ -222,6 +279,13 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     pParent -> transformPoint(&ellipseSegment.point,&ellipseSegment.point);
                     pParent -> scalePoint(&ellipseSegment.radiusX,&ellipseSegment.radiusY);
                     return;
+                }
+                void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    sprintf_s<1024>(Renderer::szLogMessage,"Ellipse  at: %5.0f, %5.0f, XRadius: %5.0f, YRadius: %5.0f",
+                                                ellipseSegment.point.x,ellipseSegment.point.y,ellipseSegment.radiusX,ellipseSegment.radiusY);
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
                 }
                 void *dataOne() { return (void *)&ellipseSegment; }
                 D2D1_ELLIPSE ellipseSegment{{0.0f,0.0f},0.0f,0.0f};
@@ -264,6 +328,14 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     pParent -> transformPoint(&bezierSegment.point3,&bezierSegment.point3);
                     return;
                 }
+                void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    sprintf_s<1024>(Renderer::szLogMessage,"Cubic Bezier  at: %5.0f, %5.0f, Control Point1: %5.0f, %5.0f, Control Point2: %5.0f, %5.0f, End Point: %5.0f, %5.0f",
+                                                vertex.x,vertex.y,bezierSegment.point1.x,bezierSegment.point1.y,bezierSegment.point2.x,bezierSegment.point2.y,
+                                                   bezierSegment.point3.x,bezierSegment.point3.y);
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+                }
                 void *dataOne() { return (void *)&bezierSegment; }
                 D2D1_BEZIER_SEGMENT bezierSegment{{0.0f,0.0f},{0.0f,0.0f},{0.0f,0.0f}};
             };
@@ -296,6 +368,14 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     pParent -> transformPoint(&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     return;
                 }
+                void logPrimitive() {
+                    if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
+                        return;
+                    sprintf_s<1024>(Renderer::szLogMessage,"Quadratic Bezier  at: %5.0f, %5.0f, Control Point: %5.0f, %5.0f, End Point: %5.0f, %5.0f",
+                                                vertex.x,vertex.y,quadraticBezierSegment.point1.x,quadraticBezierSegment.point1.y,
+                                                    quadraticBezierSegment.point2.x,quadraticBezierSegment.point2.y);
+                    pParent -> pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+                }
                 void *dataOne() { return (void *)&quadraticBezierSegment; }
                 D2D1_QUADRATIC_BEZIER_SEGMENT quadraticBezierSegment{{0.0f,0.0f},{0.0f,0.0f}};
             };
@@ -316,8 +396,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 long hashCode{0L};
                 char szLineSettings[128]{'\0'};
 
-                path *pNext{NULL};
-                path *pPrior{NULL};
+                path *pNextPath{NULL};
+                path *pPriorPath{NULL};
 
                 long occuranceInFile{-1L};
 
@@ -327,16 +407,27 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         pLastPrimitive = p;
                         return;
                     }
-                    p -> pPrior = pLastPrimitive;
-                    pLastPrimitive -> pNext = p;
+                    p -> pPriorPrimitive = pLastPrimitive;
+                    pLastPrimitive -> pNextPrimitive = p;
                     pLastPrimitive = p;
                     return;
+                }
+
+
+                boolean isClosed() {
+                if ( NULL == pLastPrimitive )
+                    return false;
+                if ( ( GraphicElements::primitive::type::strokePathMarker == pLastPrimitive -> theType ) ||
+                        ( GraphicElements::primitive::type::closePathMarker == pLastPrimitive -> theType ) ||
+                        ( GraphicElements::primitive::type::fillPathMarker == pLastPrimitive -> theType ) ) 
+                    return true;
+                return false;
                 }
 
                 void clear() {
                     primitive *p = pFirstPrimitive;
                     while ( ! ( NULL == p ) ) {
-                        primitive *pNext = p -> pNext;
+                        primitive *pNext = p -> pNextPrimitive;
                         delete p;
                         p = pNext;
                     }
@@ -347,7 +438,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 enum pathAction {
                     none = 0,
                     stroke = 1,
-                    fill = 2
+                    close = 2,
+                    fill = 3
                 };
 
                 enum pathAction apply(boolean doFill);
@@ -436,12 +528,33 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 if ( NULL == pFirstPath ) {
                     pFirstPath = p;
                     pCurrentPath = p;
+                    pCurrentPath -> addPrimitive(new primitive(this,primitive::type::newPathMarker));
                     return;
                 }
-                p -> pPrior = pCurrentPath;
-                pCurrentPath -> pNext = p;
+                p -> pPriorPath = pCurrentPath;
+                pCurrentPath -> pNextPath = p;
                 pCurrentPath = p;
-            return;
+                pCurrentPath -> addPrimitive(new primitive(this,primitive::type::newPathMarker));
+                return;
+            }
+
+            void removePath(path *p) {
+                pCurrentPath = NULL;
+                p -> clear();
+                if ( p == pFirstPath ) {
+                    pFirstPath = NULL;
+                    if ( ! ( NULL == p -> pNextPath ) ) 
+                        p -> pNextPath -> pPriorPath = NULL;
+                } else {
+                    p -> pPriorPath -> pNextPath = p -> pNextPath;
+                    if ( ! ( NULL == p -> pNextPath ) ) {
+                        p -> pNextPath -> pPriorPath = p -> pPriorPath;
+                        pCurrentPath = p -> pNextPath;
+                    } else
+                        pCurrentPath = p -> pPriorPath;
+                }
+                delete p;
+                return;
             }
 
             path *pFirstPath{NULL};
@@ -553,11 +666,13 @@ int Mx3Inverse(double *pSource,double *pTarget);
         STDMETHOD(EnumConnectionPoints)(IEnumConnectionPoints **);
 
         void fire_ErrorNotification(char *pszError);
-        void fire_StatusNotification(char *pszError);
+        void fire_StatusNotification(char *pszStatus);
+        void fire_LogNotification(char *pszLog);
         void fire_Clear();
 
         private:
 
+            uint32_t refCount{0};
             Renderer *pParent{NULL};
 
         } *pIConnectionPointContainer{NULL};
@@ -580,7 +695,9 @@ int Mx3Inverse(double *pSource,double *pTarget);
             STDMETHOD (Unadvise)(DWORD);
             STDMETHOD (EnumConnections)(IEnumConnections **ppEnum);
 
-            IUnknown *AdviseSink() { return adviseSink; };
+            IUnknown *AdviseSink() { return adviseSink; }
+
+            int CountConnections() { return countConnections; }
 
         private:
 
@@ -593,6 +710,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
             int countConnections{0};
             int countLiveConnections{0};
 
+            uint32_t refCount{0};
             CONNECTDATA *connections{NULL};
 
         } *pIConnectionPoint{NULL};
@@ -677,10 +795,12 @@ int Mx3Inverse(double *pSource,double *pTarget);
         ULONG renderCount{0};
         boolean doRasterize{false};
         boolean lastRenderWasFilled{false};
+        boolean renderLive{false};
 
         POINTF origin{0.0f,0.0f};
         FLOAT downScale{1.0f};
 
+        static char szLogMessage[1024];
         static char szStatusMessage[1024];
         static char szErrorMessage[1024];
 

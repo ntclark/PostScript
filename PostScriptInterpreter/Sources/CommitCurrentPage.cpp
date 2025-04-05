@@ -21,10 +21,10 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 #include "PostScript objects/graphicsState.h"
 
-    HDC PStoPDF::GetDC() {
+    HDC PostScriptInterpreter::GetDC() {
 
     if ( ! ( NULL == hdcSurface ) )
         return hdcSurface;
@@ -54,21 +54,21 @@ This is the MIT License
     }
 
 
-    void PStoPDF::BeginPath() {
+    void PostScriptInterpreter::BeginPath() {
     if ( ! ( NULL == beginPathAction ) )
         beginPathAction();
     return;
     }
 
 
-    void PStoPDF::PotentialNewPage() {
+    void PostScriptInterpreter::PotentialNewPage() {
     if ( ! ( NULL == beginPathAction ) )
         beginPathAction();
     return;
     }
 
 
-    void PStoPDF::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
+    void PostScriptInterpreter::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
     if ( NULL == hdcSurface )
         return;

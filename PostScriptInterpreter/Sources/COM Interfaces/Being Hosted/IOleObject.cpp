@@ -24,10 +24,10 @@ This is the MIT License
 #include <windows.h>
 #include <olectl.h>
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 #include "utilities.h"
 
-   long __stdcall PStoPDF::_IOleObject::QueryInterface(REFIID riid,void **ppv) {
+   long __stdcall PostScriptInterpreter::_IOleObject::QueryInterface(REFIID riid,void **ppv) {
  
    if ( IID_IOleObject == riid )
       *ppv = static_cast<IOleObject *>(this); 
@@ -39,16 +39,16 @@ This is the MIT License
    return S_OK; 
    }
  
-   unsigned long __stdcall PStoPDF::_IOleObject::AddRef() {
+   unsigned long __stdcall PostScriptInterpreter::_IOleObject::AddRef() {
    return pParent -> AddRef();
    }
  
-   unsigned long __stdcall PStoPDF::_IOleObject::Release() {
+   unsigned long __stdcall PostScriptInterpreter::_IOleObject::Release() {
    return pParent -> Release();
    }
 
 
-   STDMETHODIMP PStoPDF::_IOleObject::SetClientSite(IOleClientSite *pcs) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::SetClientSite(IOleClientSite *pcs) {
 
    if ( pParent -> pIOleClientSite )
       pParent -> pIOleClientSite -> Release();
@@ -73,29 +73,29 @@ This is the MIT License
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetClientSite(IOleClientSite **pcs) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetClientSite(IOleClientSite **pcs) {
    *pcs = pParent -> pIOleClientSite;
    pParent -> pIOleClientSite -> AddRef();
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::Advise(IAdviseSink *pAdvSink,DWORD *pdwConnection) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::Advise(IAdviseSink *pAdvSink,DWORD *pdwConnection) {
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::Unadvise(DWORD dwConnection) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::Unadvise(DWORD dwConnection) {
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::EnumAdvise(IEnumSTATDATA **ppenum) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::EnumAdvise(IEnumSTATDATA **ppenum) {
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::SetExtent(DWORD dwDrawAspect,SIZEL *pSizel) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::SetExtent(DWORD dwDrawAspect,SIZEL *pSizel) {
    if ( dwDrawAspect != DVASPECT_CONTENT ) 
       return S_OK;
 
@@ -114,7 +114,7 @@ This is the MIT License
  
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetExtent(DWORD dwDrawAspect,SIZEL *pSizel) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetExtent(DWORD dwDrawAspect,SIZEL *pSizel) {
    RECT rcParent;
    GetWindowRect(pParent -> hwndHost,&rcParent);
    pSizel -> cx = rcParent.right - rcParent.left;
@@ -124,7 +124,7 @@ This is the MIT License
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::DoVerb(LONG iVerb, LPMSG ,IOleClientSite *, LONG,HWND hwndParent,LPCRECT lprcPosRect) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::DoVerb(LONG iVerb, LPMSG ,IOleClientSite *, LONG,HWND hwndParent,LPCRECT lprcPosRect) {
 
    switch ( iVerb ) {
  
@@ -162,69 +162,69 @@ This is the MIT License
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::SetHostNames(LPCOLESTR szContainerApp,LPCOLESTR olestrContainerObject) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::SetHostNames(LPCOLESTR szContainerApp,LPCOLESTR olestrContainerObject) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::Close(DWORD dwOptions) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::Close(DWORD dwOptions) {
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::SetMoniker(DWORD dwMonikerNo,IMoniker *pm) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::SetMoniker(DWORD dwMonikerNo,IMoniker *pm) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetMoniker(DWORD dwAssign,DWORD dwMonikerNo,IMoniker **ppm) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetMoniker(DWORD dwAssign,DWORD dwMonikerNo,IMoniker **ppm) {
    if ( ! pParent -> pIOleClientSite ) 
       return E_NOTIMPL;
    return pParent -> pIOleClientSite -> GetMoniker(OLEGETMONIKER_FORCEASSIGN,OLEWHICHMK_OBJFULL,ppm);
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::InitFromData(IDataObject *pdo,BOOL fCreation,DWORD dwReserved) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::InitFromData(IDataObject *pdo,BOOL fCreation,DWORD dwReserved) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetClipboardData(DWORD,IDataObject **ppdo) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetClipboardData(DWORD,IDataObject **ppdo) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::EnumVerbs(IEnumOLEVERB **ppEnumOleVerb) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::EnumVerbs(IEnumOLEVERB **ppEnumOleVerb) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::Update() {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::Update() {
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::IsUpToDate() {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::IsUpToDate() {
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetUserClassID(CLSID *pclsid) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetUserClassID(CLSID *pclsid) {
   *pclsid = CLSID_PostScriptInterpreter;
    return S_OK;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetUserType(DWORD dwTypeOfType,LPOLESTR *pszTypeName) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetUserType(DWORD dwTypeOfType,LPOLESTR *pszTypeName) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::GetMiscStatus(DWORD dwAspect,DWORD *dwStatus) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::GetMiscStatus(DWORD dwAspect,DWORD *dwStatus) {
    return E_NOTIMPL;
    }
  
  
-   STDMETHODIMP PStoPDF::_IOleObject::SetColorScheme(LOGPALETTE *) {
+   STDMETHODIMP PostScriptInterpreter::_IOleObject::SetColorScheme(LOGPALETTE *) {
    return S_OK;
    }

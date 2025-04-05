@@ -54,6 +54,19 @@
             return S_OK;
         }
 
+        HRESULT __stdcall LogNotification(UINT_PTR theStatus) {
+
+            //
+            // Note that output these debug strings really 
+            // takes a major hit on performance. 
+            // It's not the event itself, but writing to the VS output
+            // window. Doing other things here is probably oka
+
+            OutputDebugStringA((char *)theStatus);
+            OutputDebugStringA("\n");
+            return S_OK;
+        }
+
         HRESULT __stdcall Clear() {
             SetWindowText(hwndStatus,(char *)"");
             return S_OK;

@@ -79,7 +79,7 @@ This is the MIT License
 
     void graphicsState::setPageDevice(class dictionary *pDict) {
 
-    if ( NULL == pPStoPDF -> GetDC() )
+    if ( NULL == pPostScriptInterpreter -> GetDC() )
         return;
 
     class array *pPageSizeArray = NULL;
@@ -107,29 +107,19 @@ This is the MIT License
     pageHeightPoints = pPageSizeArray -> getElement(1) -> IntValue();
 
     // Get page number !!!
-    initMatrix(pPStoPDF -> HwndClient(),1);
+    initMatrix(pPostScriptInterpreter -> HwndClient(),1);
 
     return;
     }
 
 
     void graphicsState::setCacheDevice() {
-
     object *pUpperRightY = pJob -> pop();
     object *pUpperRightX = pJob -> pop();
     object *pLowerLeftY = pJob -> pop();
     object *pLowerLeftX = pJob -> pop();
     object *pWidthY = pJob -> pop();
     object *pWidthX = pJob -> pop();
-
-#if 0
-    fontStack.top() -> type3GlyphBoundingBox.lowerLeft.x = pLowerLeftX -> OBJECT_POINT_TYPE_VALUE;
-    fontStack.top() -> type3GlyphBoundingBox.lowerLeft.y = pLowerLeftY -> OBJECT_POINT_TYPE_VALUE;
-    fontStack.top() -> type3GlyphBoundingBox.upperRight.x = pUpperRightX -> OBJECT_POINT_TYPE_VALUE;
-    fontStack.top() -> type3GlyphBoundingBox.upperRight.y = pUpperRightY -> OBJECT_POINT_TYPE_VALUE;
-    fontStack.top() -> type3GlyphBoundingBox.advance.x = pWidthX -> OBJECT_POINT_TYPE_VALUE;
-    fontStack.top() -> type3GlyphBoundingBox.advance.y = pWidthY -> OBJECT_POINT_TYPE_VALUE;
-#endif
     return;
     }
 

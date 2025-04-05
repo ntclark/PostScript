@@ -54,16 +54,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sources\PostScript.cpp">
+    <ClCompile Include="Sources\PostScriptInterpreter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\PostScript_DisplayStack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\PostScript_Log.cpp">
+    <ClCompile Include="Sources\logHandling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp">
@@ -90,7 +87,7 @@
     <ClCompile Include="Sources\COM Interfaces\IUnknown.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\COM Interfaces\IPostScript.cpp">
+    <ClCompile Include="Sources\COM Interfaces\IPostScriptInterpreter.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Fonts\font.cpp">
@@ -147,7 +144,7 @@
     <ClCompile Include="Sources\PostScript objects\save.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\PostScript_initWindows.cpp">
+    <ClCompile Include="Sources\initWindows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\cmdPaneHandler.cpp">
@@ -225,7 +222,7 @@
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_showPage.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\PostScript_CommitCurrentPage.cpp">
+    <ClCompile Include="Sources\CommitCurrentPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_paths.cpp">
@@ -258,7 +255,7 @@
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ascii85.cpp">
+    <ClCompile Include="Sources\ascii85.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -335,10 +332,10 @@
     <ClInclude Include="include\job.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\PostScript.h">
+    <ClInclude Include="include\PostScriptInterpreter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\PostScript_Log.h">
+    <ClInclude Include="include\logHandling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\resourceIdentifiers.h">

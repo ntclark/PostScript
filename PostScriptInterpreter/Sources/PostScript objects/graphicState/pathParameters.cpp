@@ -57,8 +57,15 @@ This is the MIT License
     memset(&toDeviceSpace,0,sizeof(XFORM));
     toDeviceSpace.eM11 = 1.0;
     toDeviceSpace.eM22 = 1.0;
-    displayResolution = GetDeviceCaps(pPStoPDF -> GetDC(),LOGPIXELSX);
+    displayResolution = GetDeviceCaps(pPostScriptInterpreter -> GetDC(),LOGPIXELSX);
     scalePointsToPixels = 1.0;
+
+#if 0
+    RECT rcDrawing;
+    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
+    job::pIRenderer -> SetRenderLive(pPostScriptInterpreter -> GetDC(),&rcDrawing);
+#endif
+
     return;
     }
 
@@ -75,8 +82,8 @@ This is the MIT License
 
         cyWindow = (long)((double)cyClient / ( 0 == pageNumber ? 1.0 : (double)pageNumber) );
 
-        //SetWindowExtEx(pPStoPDF -> GetDC(),cxClient,cyWindow,NULL);
-        //SetViewportExtEx(pPStoPDF -> GetDC(),cxClient,cyWindow,NULL);
+        //SetWindowExtEx(pPostScriptInterpreter -> GetDC(),cxClient,cyWindow,NULL);
+        //SetViewportExtEx(pPostScriptInterpreter -> GetDC(),cxClient,cyWindow,NULL);
 
         /*
         Note: At this point, pageHeightPoints was not set by interpreting PostScript,
@@ -120,7 +127,7 @@ This is the MIT License
     toDeviceSpaceInverse.eDx = (FLOAT)inverse[2][1];
     toDeviceSpaceInverse.eDy = (FLOAT)inverse[2][2];
 
-    job::pIRenderer -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
+    PostScriptInterpreter::pIRenderer -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
 
     return;
     }
@@ -128,7 +135,7 @@ This is the MIT License
 
     void pathParameters::RenderGeometry() {
     RECT rcDrawing;
-    GetClientRect(pPStoPDF -> HwndClient(),&rcDrawing);
-    job::pIRenderer -> Render(pPStoPDF -> GetDC(),&rcDrawing);
+    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
+    PostScriptInterpreter::pIRenderer -> Render(pPostScriptInterpreter -> GetDC(),&rcDrawing);
     return;
     }

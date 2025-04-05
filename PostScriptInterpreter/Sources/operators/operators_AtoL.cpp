@@ -39,9 +39,9 @@ This is the MIT License
     or special characters the same as names composed of alphabetical
 */
     object *top = pop();
-    pPStoPDF -> queueLog("\n");
-    pPStoPDF -> queueLog(top -> Contents());
-    pPStoPDF -> queueLog("\n");
+    pPostScriptInterpreter -> queueLog(true,"\n");
+    pPostScriptInterpreter -> queueLog(true,top -> Contents());
+    pPostScriptInterpreter -> queueLog(true,"\n");
 
     OutputDebugStringA("\n");
     OutputDebugStringA(top -> Contents());
@@ -914,9 +914,9 @@ This is the MIT License
     push(pTrueConstant);
     push(pTrueConstant);
 
-    pPStoPDF -> queueLog("\n");
-    pPStoPDF -> queueLog("NOT IMPLEMENTED: currentscreen");
-    pPStoPDF -> queueLog("\n");
+    pPostScriptInterpreter -> queueLog(true,"\n");
+    pPostScriptInterpreter -> queueLog(true,"NOT IMPLEMENTED: currentscreen");
+    pPostScriptInterpreter -> queueLog(true,"\n");
    
     return;
     }
@@ -1098,7 +1098,7 @@ This is the MIT License
 
     void job::operatorDebuglevel() {
     object *pLevel = pop();
-    pPStoPDF -> LogLevel((logLevel)pLevel -> IntValue());
+    pPostScriptInterpreter -> LogLevel((logLevel)pLevel -> IntValue());
     return;
     }
 

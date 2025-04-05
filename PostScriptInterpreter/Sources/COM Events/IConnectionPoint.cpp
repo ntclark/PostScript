@@ -21,12 +21,13 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
 #define ALLOC_CONNECTIONS  16
 
-    PStoPDF::_IConnectionPoint::_IConnectionPoint(PStoPDF *pp) : 
+    PostScriptInterpreter::_IConnectionPoint::_IConnectionPoint(PostScriptInterpreter *pp,REFIID eventInterfaceId) : 
         pParent(pp), 
+        myEventInterface(eventInterfaceId),
         adviseSink(0),
         nextCookie(400),
         countLiveConnections(0),
@@ -38,7 +39,7 @@ This is the MIT License
     };
 
 
-    PStoPDF::_IConnectionPoint::~_IConnectionPoint() {
+    PostScriptInterpreter::_IConnectionPoint::~_IConnectionPoint() {
     for ( int k = 0; k < countConnections; k++ ) 
         if ( connections[k].pUnk ) connections[k].pUnk -> Release();
     delete [] connections;
@@ -46,7 +47,7 @@ This is the MIT License
     }
 
 
-    HRESULT PStoPDF::_IConnectionPoint::QueryInterface(REFIID riid,void **ppv) {
+    HRESULT PostScriptInterpreter::_IConnectionPoint::QueryInterface(REFIID riid,void **ppv) {
     if ( riid == IID_IConnectionPoint ) {
         *ppv = static_cast<IConnectionPoint *>(this);
         AddRef();
@@ -56,35 +57,41 @@ This is the MIT License
     }
 
 
-    STDMETHODIMP_(ULONG) PStoPDF::_IConnectionPoint::AddRef() {
+    STDMETHODIMP_(ULONG) PostScriptInterpreter::_IConnectionPoint::AddRef() {
     return pParent -> AddRef();
     }
 
-    STDMETHODIMP_(ULONG) PStoPDF::_IConnectionPoint::Release() {
+    STDMETHODIMP_(ULONG) PostScriptInterpreter::_IConnectionPoint::Release() {
     return pParent -> Release();
     }
 
 
-    STDMETHODIMP PStoPDF::_IConnectionPoint::GetConnectionInterface(IID *pIID) {
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPoint::GetConnectionInterface(IID *pIID) {
     if ( pIID == 0 ) return E_POINTER;
     return S_OK;
     }
 
 
-    STDMETHODIMP PStoPDF::_IConnectionPoint::GetConnectionPointContainer(IConnectionPointContainer **ppCPC) {
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPoint::GetConnectionPointContainer(IConnectionPointContainer **ppCPC) {
     return pParent -> QueryInterface(IID_IConnectionPointContainer,(void **)ppCPC);
     }
 
 
-    STDMETHODIMP PStoPDF::_IConnectionPoint::Advise(IUnknown *pUnkSink,DWORD *pdwCookie) {
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPoint::Advise(IUnknown *pUnkSink,DWORD *pdwCookie) {
+
     HRESULT hr;
     IUnknown* pISink = 0;
 
-    hr = pUnkSink -> QueryInterface(IID_IPostScriptEvents,(void **)&pISink);
+    hr = pUnkSink -> QueryInterface(IID_IPostScriptInterpreterEvents,(void **)&pISink);
 
-    if ( hr == E_NOINTERFACE ) return CONNECT_E_NOCONNECTION;
-    if ( ! SUCCEEDED(hr) ) return hr;
-    if ( ! pISink ) return CONNECT_E_CANNOTCONNECT;
+    if ( hr == E_NOINTERFACE ) 
+        return CONNECT_E_NOCONNECTION;
+
+    if ( ! SUCCEEDED(hr) ) 
+        return hr;
+
+    if ( ! pISink ) 
+        return CONNECT_E_CANNOTCONNECT;
 
     int freeSlot;
     *pdwCookie = 0;
@@ -104,7 +111,7 @@ This is the MIT License
     }
 
 
-    STDMETHODIMP PStoPDF::_IConnectionPoint::Unadvise(DWORD dwCookie) {
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPoint::Unadvise(DWORD dwCookie) {
 
     if ( 0 == dwCookie ) return E_INVALIDARG;
 
@@ -112,9 +119,11 @@ This is the MIT License
 
     slot = findSlot(dwCookie);
 
-    if ( slot == -1 ) return CONNECT_E_NOCONNECTION;
+    if ( slot == -1 ) 
+        return CONNECT_E_NOCONNECTION;
 
-    if ( connections[slot].pUnk ) connections[slot].pUnk -> Release();
+    if ( connections[slot].pUnk ) 
+        connections[slot].pUnk -> Release();
 
     connections[slot].dwCookie = 0;
 
@@ -123,7 +132,7 @@ This is the MIT License
     return S_OK;
     }
 
-    STDMETHODIMP PStoPDF::_IConnectionPoint::EnumConnections(IEnumConnections **ppEnum) {
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPoint::EnumConnections(IEnumConnections **ppEnum) {
     CONNECTDATA *tempConnections;
     int i,j;
 
@@ -141,7 +150,7 @@ This is the MIT License
         }
     }
 
-    PStoPDF::_IEnumerateConnections *p = new PStoPDF::_IEnumerateConnections(this,countLiveConnections,tempConnections,0);
+    PostScriptInterpreter::_IEnumerateConnections *p = new PostScriptInterpreter::_IEnumerateConnections(this,countLiveConnections,tempConnections,0);
 
     p -> QueryInterface(IID_IEnumConnections,(void **)ppEnum);
 
@@ -151,7 +160,7 @@ This is the MIT License
     }
 
 
-    int PStoPDF::_IConnectionPoint::getSlot() {
+    int PostScriptInterpreter::_IConnectionPoint::getSlot() {
     CONNECTDATA* moreConnections;
     int i;
     i = findSlot(0);
@@ -166,7 +175,7 @@ This is the MIT License
     }
 
 
-    int PStoPDF::_IConnectionPoint::findSlot(DWORD dwCookie) {
+    int PostScriptInterpreter::_IConnectionPoint::findSlot(DWORD dwCookie) {
     for ( int i = 0; i < countConnections; i++ )
         if ( dwCookie == connections[i].dwCookie ) return i;
     return -1;

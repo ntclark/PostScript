@@ -26,7 +26,6 @@ This is the MIT License
 #include <string>
 
 #include "PostScriptInterpreter_i.h"
-
 #include "Renderer_i.h"
 
 #include "parsing.h"
@@ -42,8 +41,8 @@ This is the MIT License
     class job {
     public:
 
-        job(char *pszFileName,HWND hwndSurface,IPostScriptTakeText *pIPostScriptTakeText);
-        job() : job(NULL,NULL,NULL) {}
+        job(char *pszFileName,HWND hwndSurface);
+        job() : job(NULL,NULL) {}
         ~job();
 
         void *CurrentObjectHeap();
@@ -89,14 +88,11 @@ This is the MIT License
         static void *pNextHeap;
         static size_t currentlyAllocatedHeap;
 
-        static IFontManager *pIFontManager;
-        static IRenderer *pIRenderer;
-        static IGraphicElements *pIGraphicElements;
-        static IGraphicParameters *pIGraphicParameters;
-
    private:
 
         //job();
+
+        static DWORD dwNotificationCookie;
 
         void resolve();
         object *resolve(char *pszObjectName);
@@ -220,14 +216,12 @@ This is the MIT License
 
         HBITMAP hbmSink{NULL};
 
-        IPostScriptTakeText *pIPostScriptTakeText{NULL};
-
         static unsigned int __stdcall executeInitialization(void *);
         static unsigned int __stdcall executeThread(void *);
 
         friend class graphicsState;
         friend class graphicsStateStack;
-        friend class PStoPDF;
+        friend class PostScriptInterpreter;
         friend class dictionary;
         friend class font;
         friend class name;

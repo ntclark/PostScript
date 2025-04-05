@@ -25,7 +25,7 @@ This is the MIT License
 
     long job::parseJob(bool useThread) {
 
-    pPStoPDF -> clearLog();
+    pPostScriptInterpreter -> clearLog(PostScriptInterpreter::hwndLogContent);
 
     if ( useThread ) {
         unsigned int threadAddr;

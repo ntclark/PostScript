@@ -33,7 +33,7 @@ This is the MIT License
 
     theObjectType = object::objectType::font;
 
-    job::pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
+    PostScriptInterpreter::pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
 
     loadDictionary();
     return;
@@ -157,7 +157,7 @@ This is the MIT License
     isCIDFont = rhs.isCIDFont;
     dupCount = rhs.dupCount + 1;
     static_cast<dictionary *>(this) -> copyFrom(static_cast<dictionary *>(&rhs));
-    job::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
+    PostScriptInterpreter::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
     loadDictionary();
     return;
     }
@@ -171,7 +171,7 @@ This is the MIT License
     font *font::findFont(job *pJob,char *pszFamilyName) {
 
     IFont_EVNSW *pIFont;
-    if ( S_OK == job::pIFontManager -> SeekFont(pszFamilyName,-1L,&pIFont) ) {
+    if ( S_OK == PostScriptInterpreter::pIFontManager -> SeekFont(pszFamilyName,-1L,&pIFont) ) {
         UINT_PTR fontCookie;
         pIFont -> get_FontCookie(&fontCookie);
         return (font *)fontCookie;
@@ -182,14 +182,14 @@ This is the MIT License
 
 
     void font::setFont(font *pFont) {
-    job::pIFontManager -> put_CurrentFont(pFont -> pIFont);
+    PostScriptInterpreter::pIFontManager -> put_CurrentFont(pFont -> pIFont);
     return;
     }
 
 
     font *font::CurrentFont() {
     IFont_EVNSW *pIFont = NULL;
-    HRESULT hr = job::pIFontManager -> get_CurrentFont(&pIFont);
+    HRESULT hr = PostScriptInterpreter::pIFontManager -> get_CurrentFont(&pIFont);
     if ( ! ( S_OK == hr ) )
         return NULL;
     UINT_PTR ptrCookie;

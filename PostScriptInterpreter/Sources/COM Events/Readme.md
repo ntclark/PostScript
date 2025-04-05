@@ -18,7 +18,7 @@ You may already be familiar with all of that, though if it helps there will be a
 There is only one event interface defined in the system at this point as follows:
 
 ```
-    IPostScriptEvents interface {
+    IPostScriptInterpreterEvents interface {
         HRESULT RenderChar(POINT *pPoint,char c);
         HRESULT RenderString(POINT *pPoint,char *pszString);
     }
@@ -77,7 +77,7 @@ for an IConnectionPointContainer interface from that interface:
     IPostScript *pIPostScript{NULL};
 
     HRESULT rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,
-                    IID_IPostScript,reinterpret_cast<void **>(&pIPostScript));
+                    IID_IPostScriptInterpreter,reinterpret_cast<void **>(&pIPostScript));
 
     IConnectionPointContainer *pIConnectionPointContainer = NULL;
 
@@ -98,12 +98,12 @@ actually be building the interpreter, you'll have these files availalable anyway
 but I keep forgetting how to do that so won't be describing that strategy here.
 
 So now, you need to ask the interpreter if it has a "connection point" for the specific interface of 
-interest, that being IPostScriptEvents. 
+interest, that being IPostScriptInterpreterEvents. 
 
 ```
     IConnectionPoint *pIConnectionPoint = NULL;
 
-    rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IPostScriptEvents,&pIConnectionPoint);
+    rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IPostScriptInterpreterEvents,&pIConnectionPoint);
 
 ```
 

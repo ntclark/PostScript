@@ -36,25 +36,34 @@ library PostScriptInterpreter {
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6B)] 
 
-   interface IPostScript : IUnknown {
+   interface IPostScriptInterpreter : IUnknown {
 
       HRESULT SetSource(char *pszFileName);
       HRESULT Parse([defaultvalue(NULL)]char *pszFileName);
-      HRESULT ParseText(char *pszText,long length,void *pvIPdfPage,void *pvIPostScriptTakeText,HDC hdc,RECT *prcWindowsClip);
+      HRESULT ParseText(char *pszText);
       HRESULT GetLastError(char **ppszError);
       HRESULT LogLevel(logLevel theLogLevel);
+      HRESULT RendererLogLevel(logLevel theLogLevel);
+
+      [helpstring("There are properties in this object that I'd like to persist, but I don't "
+                            "want to force users to use my Properties COM Object.\n"
+                            "These two methods allow me to save these properties externally.\n"
+                            "If you call Get..., then CoTaskMemFree the memory when your're done with it."
+                            "This object will NOT free the memory passed in Set... and it will not cache it.")]
+      HRESULT GetPeristableProperties(UINT_PTR *pProperties,long *pSize);
+      HRESULT SetPeristableProperties(UINT_PTR pProperties);
 
    };
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6C)] 
 
-   interface IPostScriptTakeText {
+   interface IPostScriptInterpreterTakeText {
       HRESULT TakeText(RECT *pLocationPDF,char *pszText);
    };
 
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6D) ]
-   interface IPostScriptEvents : IUnknown {
+   interface IPostScriptInterpreterEvents : IUnknown {
        HRESULT RenderChar(POINT *pPoint,char theChar);
        HRESULT RenderString(POINT *pPoint,char *pszString);
        HRESULT ErrorNotification(UINT_PTR pszError);
@@ -63,8 +72,8 @@ library PostScriptInterpreter {
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6E)]
    coclass PostScriptInterpreter {
-      [default] interface IPostScript;
-      [source] interface IPostScriptEvents;
+      [default] interface IPostScriptInterpreter;
+      [source] interface IPostScriptInterpreterEvents;
 
    };
 

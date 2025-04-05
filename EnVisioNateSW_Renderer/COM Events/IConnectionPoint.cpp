@@ -52,16 +52,25 @@ This is the MIT License
         AddRef();
         return S_OK;
     }
+    if ( riid == IID_IUnknown ) {
+        *ppv = static_cast<IUnknown *>(this);
+        AddRef();
+        return S_OK;
+    }
     return pParent -> QueryInterface(riid,ppv);
     }
 
 
     STDMETHODIMP_(ULONG) Renderer::_IConnectionPoint::AddRef() {
-    return pParent -> AddRef();
+    return ++refCount;
     }
 
     STDMETHODIMP_(ULONG) Renderer::_IConnectionPoint::Release() {
-    return pParent -> Release();
+    if ( 1 == refCount ) {
+        delete this;
+        return 0;
+    }
+    return --refCount;
     }
 
 
@@ -77,19 +86,21 @@ This is the MIT License
 
 
     STDMETHODIMP Renderer::_IConnectionPoint::Advise(IUnknown *pUnkSink,DWORD *pdwCookie) {
-    HRESULT hr;
+    
     IUnknown* pISink = 0;
 
-    hr = pUnkSink -> QueryInterface(MY_EVENT_INTERFACE,(void **)&pISink);
+    HRESULT hr = pUnkSink -> QueryInterface(MY_EVENT_INTERFACE,(void **)&pISink);
 
-    if ( hr == E_NOINTERFACE ) return CONNECT_E_NOCONNECTION;
-    if ( ! SUCCEEDED(hr) ) return hr;
-    if ( ! pISink ) return CONNECT_E_CANNOTCONNECT;
+    if ( E_NOINTERFACE == hr ) 
+        return CONNECT_E_NOCONNECTION;
 
-    int freeSlot;
-    *pdwCookie = 0;
+    if ( ! SUCCEEDED(hr) ) 
+        return hr;
 
-    freeSlot = getSlot();
+    if ( NULL == pISink ) 
+        return CONNECT_E_CANNOTCONNECT;
+
+    int freeSlot = getSlot();
 
     pISink -> AddRef();
 
@@ -106,15 +117,20 @@ This is the MIT License
 
     STDMETHODIMP Renderer::_IConnectionPoint::Unadvise(DWORD dwCookie) {
 
-    if ( 0 == dwCookie ) return E_INVALIDARG;
+    if ( 0 == dwCookie ) 
+        return E_INVALIDARG;
 
     int slot;
 
     slot = findSlot(dwCookie);
 
-    if ( slot == -1 ) return CONNECT_E_NOCONNECTION;
+    if ( -1 == slot ) 
+        return CONNECT_E_NOCONNECTION;
 
-    if ( connections[slot].pUnk ) connections[slot].pUnk -> Release();
+    if ( ! ( NULL == connections[slot].pUnk ) ) {
+        connections[slot].pUnk -> Release();
+        connections[slot].pUnk = NULL;
+    }
 
     connections[slot].dwCookie = 0;
 
@@ -124,28 +140,28 @@ This is the MIT License
     }
 
     STDMETHODIMP Renderer::_IConnectionPoint::EnumConnections(IEnumConnections **ppEnum) {
-    CONNECTDATA *tempConnections;
-    int i,j;
 
     *ppEnum = NULL;
 
-    if ( countLiveConnections == 0 ) return OLE_E_NOCONNECTION;
+    if ( 0 == countLiveConnections )
+        return OLE_E_NOCONNECTION;
 
-    tempConnections = new CONNECTDATA[countLiveConnections];
+    CONNECTDATA *pTempConnections = new CONNECTDATA[countLiveConnections];
 
-    for ( i = 0, j = 0; i < countConnections && j < countLiveConnections; i++) {
-        if ( 0 != connections[i].dwCookie ) {
-            tempConnections[j].pUnk = (IUnknown *)connections[i].pUnk;
-            tempConnections[j].dwCookie = connections[i].dwCookie;
+    int j = 0;
+    for ( int k = 0, j = 0; k < countConnections && j < countLiveConnections; k++) {
+        if ( ! ( 0 == connections[k].dwCookie ) ) {
+            pTempConnections[j].pUnk = (IUnknown *)connections[k].pUnk;
+            pTempConnections[j].dwCookie = connections[k].dwCookie;
             j++;
         }
     }
 
-    Renderer::_IEnumerateConnections *p = new Renderer::_IEnumerateConnections(this,countLiveConnections,tempConnections,0);
+    Renderer::_IEnumerateConnections *p = new Renderer::_IEnumerateConnections(this,countLiveConnections,pTempConnections,0);
 
     p -> QueryInterface(IID_IEnumConnections,(void **)ppEnum);
 
-    delete [] tempConnections;
+    delete [] pTempConnections;
 
     return S_OK;
     }

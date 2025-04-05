@@ -21,7 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
     uint32_t decodeASCII85(uint8_t *pbInput,uint32_t cbSource,uint8_t **ppbResult) {
 
@@ -113,7 +113,7 @@ This is the MIT License
 
     cbSource = (uint32_t)(pbEnd - pbStart);
 
-    uint32_t padding = ( ( 5 - cbSource % 5 ) % 5 );
+    int32_t padding = ( 5 - cbSource % 5 ) % 5;
 
     for ( long k = 0; k < padding; k++ )
         pbEnd[k] = 'u' - '!';
@@ -127,9 +127,11 @@ This is the MIT License
 
     uint32_t outIndex = 0;
 
+    uint32_t groupValue = 0;
+
     while ( p < pbEnd ) {
 
-        uint32_t groupValue = p[0];
+        groupValue = p[0];
         groupValue *= 85u;
 
         groupValue += p[1];

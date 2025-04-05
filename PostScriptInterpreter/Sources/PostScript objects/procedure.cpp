@@ -85,7 +85,7 @@ This is the MIT License
     } catch ( syntaxerror *pse ) {
         char szMessage[2048];
         sprintf(szMessage,"\n\n%s\n\nThere was a %s exception while executing the procedure(%s):\n%s",pse -> Message(),pse -> ExceptionName(),Name(),Contents());
-        pPStoPDF -> queueLog(szMessage);
+        pPostScriptInterpreter -> queueLog(true,szMessage);
         throw;
     }
 
@@ -107,7 +107,7 @@ This is the MIT License
     } catch ( syntaxerror *pse ) {
         char szMessage[2048];
         sprintf(szMessage,"\n\n%s\n\nThere was a %s while binding the procedure(%s):\n%s",pse -> Message(),pse -> ExceptionName(),Name(),Contents());
-        pPStoPDF -> queueLog(szMessage);
+        pPostScriptInterpreter -> queueLog(true,szMessage);
         throw;
     }
 

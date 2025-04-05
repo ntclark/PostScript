@@ -21,88 +21,92 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
-  PStoPDF::_IEnumConnectionPoints::_IEnumConnectionPoints(PStoPDF *pp,_IConnectionPoint **cp,int connectionPointCount) : 
-   	  cpCount(connectionPointCount),
+    PostScriptInterpreter::_IEnumConnectionPoints::_IEnumConnectionPoints(PostScriptInterpreter *pp,_IConnectionPoint **cp,int connectionPointCount) : 
+   	    cpCount(connectionPointCount),
         pParent(pp) {
- 
-  connectionPoints = new _IConnectionPoint *[cpCount];
-  for ( int k = 0; k < cpCount; k++ ) {
-     connectionPoints[k] = cp[k];
-     connectionPoints[k] -> AddRef();
-  }
 
-  Reset();
+    //connectionPoints = new _IConnectionPoint *[cpCount];
 
-  return;
-  };
+    //for ( int k = 0; k < cpCount; k++ ) {
+    //    connectionPoints[k] = cp[k];
+    //    connectionPoints[k] -> AddRef();
+    //}
 
+    Reset();
 
-  PStoPDF::_IEnumConnectionPoints::~_IEnumConnectionPoints() { 
-  for ( int k = 0; k < cpCount; k++ )
-     connectionPoints[k] -> Release();
-  delete [] connectionPoints;
-  return;
-  };
+    return;
+    };
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::QueryInterface(REFIID riid,void **ppv) {
-  return pParent -> QueryInterface(riid,ppv);
-  }
-  unsigned long __stdcall PStoPDF::_IEnumConnectionPoints::AddRef() {
-  return pParent -> AddRef();
-  }
-  unsigned long __stdcall PStoPDF::_IEnumConnectionPoints::Release() {
-  return pParent -> Release();
-  }
+    PostScriptInterpreter::_IEnumConnectionPoints::~_IEnumConnectionPoints() { 
+    for ( int k = 0; k < cpCount; k++ )
+        connectionPoints[k] -> Release();
+    delete [] connectionPoints;
+    return;
+    };
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Next(ULONG countRequested,IConnectionPoint **rgpcn,ULONG *pcFetched) {
-  ULONG found;
-
-  if ( !rgpcn ) return E_POINTER;
-
-  if ( *rgpcn && enumeratorIndex < cpCount ) {
-     if ( pcFetched ) 
-       *pcFetched = 0L;
-     else
-       if ( countRequested != 1L ) return E_POINTER;
-  }
-  else return S_FALSE;
-
-  for ( found = 0; enumeratorIndex < cpCount && countRequested > 0; enumeratorIndex++, rgpcn++, found++, countRequested-- ) {
-    *rgpcn = connectionPoints[enumeratorIndex];
-    if ( *rgpcn ) (*rgpcn) -> AddRef();
-  }
-
-  if ( pcFetched ) *pcFetched = found;
-
-  return S_OK;
-  }
+    HRESULT PostScriptInterpreter::_IEnumConnectionPoints::QueryInterface(REFIID riid,void **ppv) {
+    return pParent -> QueryInterface(riid,ppv);
+    }
+    unsigned long __stdcall PostScriptInterpreter::_IEnumConnectionPoints::AddRef() {
+    return pParent -> AddRef();
+    }
+    unsigned long __stdcall PostScriptInterpreter::_IEnumConnectionPoints::Release() {
+    return pParent -> Release();
+    }
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Skip(ULONG cSkip) {
-  if ( cpCount < 1 || ((enumeratorIndex + (int)cSkip) < cpCount) ) return S_FALSE;
-  enumeratorIndex += cSkip;
-  return S_OK;
-  }
+    HRESULT PostScriptInterpreter::_IEnumConnectionPoints::Next(ULONG countRequested,IConnectionPoint **rgpcn,ULONG *pcFetched) {
+
+    ULONG found;
+
+    if ( ! rgpcn ) 
+        return E_POINTER;
+
+    if ( *rgpcn && enumeratorIndex < cpCount ) {
+        if ( pcFetched ) 
+            *pcFetched = 0L;
+        else
+            if ( countRequested != 1L ) 
+                return E_POINTER;
+    } else 
+        return S_FALSE;
+
+    for ( found = 0; enumeratorIndex < cpCount && countRequested > 0; enumeratorIndex++, rgpcn++, found++, countRequested-- ) {
+        *rgpcn = connectionPoints[enumeratorIndex];
+        if ( *rgpcn ) 
+            (*rgpcn) -> AddRef();
+    }
+
+    if ( pcFetched ) 
+        *pcFetched = found;
+
+    return S_OK;
+    }
 
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Reset() {
-  enumeratorIndex = 0;
-  return S_OK;
-  }
+    HRESULT PostScriptInterpreter::_IEnumConnectionPoints::Skip(ULONG cSkip) {
+    if ( cpCount < 1 || ((enumeratorIndex + (int)cSkip) < cpCount) ) 
+        return S_FALSE;
+    enumeratorIndex += cSkip;
+    return S_OK;
+    }
 
-  HRESULT PStoPDF::_IEnumConnectionPoints::Clone(IEnumConnectionPoints **ppEnum) {
-  _IEnumConnectionPoints* p;
 
-  *ppEnum = NULL;
+    HRESULT PostScriptInterpreter::_IEnumConnectionPoints::Reset() {
+    enumeratorIndex = 0;
+    return S_OK;
+    }
 
-  p = new _IEnumConnectionPoints(pParent,connectionPoints,cpCount);
-  p -> enumeratorIndex = enumeratorIndex;
-  p -> QueryInterface(IID_IEnumConnectionPoints,(void **)ppEnum);
 
-  return S_OK;
-  }
+    HRESULT PostScriptInterpreter::_IEnumConnectionPoints::Clone(IEnumConnectionPoints **ppEnum) {
+    *ppEnum = NULL;
+    _IEnumConnectionPoints*  p = new _IEnumConnectionPoints(pParent,connectionPoints,cpCount);
+    p -> enumeratorIndex = enumeratorIndex;
+    p -> QueryInterface(IID_IEnumConnectionPoints,(void **)ppEnum);
+    return S_OK;
+    }
 

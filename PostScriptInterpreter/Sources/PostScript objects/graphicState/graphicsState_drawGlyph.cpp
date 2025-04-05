@@ -48,12 +48,12 @@ This is the MIT License
 
     POINT ptStart{(int)startPoint.x,(int)startPoint.y};
 
-    if ( NULL == pPStoPDF -> HwndClient() ) {
+    if ( NULL == pPostScriptInterpreter -> HwndClient() ) {
         ptStart.x = -1;
         ptStart.y = -1;
     }
 
-    pPStoPDF -> pIConnectionPointContainer -> fire_RenderChar(&ptStart,(char)glyphIndex);
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderChar(&ptStart,(char)glyphIndex);
 
     return;
     }
@@ -119,23 +119,22 @@ This is the MIT License
 
     POINT ptStart{(int)currentPageSpacePoint.x,(int)currentPageSpacePoint.y};
 
-    if ( NULL == pPStoPDF -> HwndClient() ) {
+    if ( NULL == pPostScriptInterpreter -> HwndClient() ) {
         ptStart.x = -1;
         ptStart.y = -1;
     }
 
     if ( ! ( NULL == pBinary ) )
-        pPStoPDF -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pBinary -> Contents());
+        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pBinary -> Contents());
     else
-        pPStoPDF -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pString -> Contents());
+        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pString -> Contents());
 
     return;
     }
 
 
     void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
-
-    job::pIFontManager -> RenderGlyph(pPStoPDF -> GetDC(),bGlyph,
+    PostScriptInterpreter::pIFontManager -> RenderGlyph(pPostScriptInterpreter -> GetDC(),bGlyph,
                                         (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
                                             pStartPoint,pEndPoint);
@@ -207,11 +206,7 @@ This is the MIT License
 
     concat(CurrentFont() -> getFontMatrix());
 
-    pathParametersStack.top() -> redirectType3();
-
     pJob -> executeProcedure(pBuildGlyph);
-
-    pathParametersStack.top() -> unRedirectType3();
 
     psXformsStack.gRestore();
 

@@ -77,10 +77,6 @@
         }
         return (LRESULT)TRUE;
 
-    case WM_PARSE_PS:
-        p -> pIPostScript -> Parse((char *)lParam);
-        return (LRESULT)FALSE;
-
     case WM_SYSCOMMAND: {
         if ( wParam == SC_CLOSE ) {
             PostQuitMessage(0);

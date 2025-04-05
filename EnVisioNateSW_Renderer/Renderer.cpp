@@ -27,20 +27,25 @@ This is the MIT License
 
 #include "Renderer_i.c"
 
+    char Renderer::szLogMessage[1024];
     char Renderer::szStatusMessage[1024];
     char Renderer::szErrorMessage[1024];
 
     Renderer::Renderer(IUnknown *pUnkOuter) {
+
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
 
-    D2D1_FACTORY_OPTIONS factoryOptions{0};
-    factoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+    D2D1_FACTORY_OPTIONS factoryOptions{D2D1_DEBUG_LEVEL_INFORMATION};
 
     D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,factoryOptions,&pID2D1Factory1);
 
     pIConnectionPointContainer = new _IConnectionPointContainer(this);
     pIConnectionPoint = new _IConnectionPoint(this);
+
+    pIConnectionPointContainer -> AddRef();
+    pIConnectionPoint -> AddRef();
+
     return;
     }
 
@@ -48,8 +53,8 @@ This is the MIT License
     Renderer::~Renderer() {
     pID2D1Factory1 -> Release();
     pID2D1Factory1 = NULL;
-    delete pIConnectionPointContainer;
-    delete pIConnectionPoint;
+    pIConnectionPointContainer -> Release();
+    pIConnectionPoint -> Release();
     return;
     }
 
@@ -75,21 +80,19 @@ This is the MIT License
 
 
     void Renderer::setupPathAndSink() {
-
     HRESULT hr = pID2D1Factory1 -> CreatePathGeometry(&pID2D1PathGeometry);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return;
-}
-
+    if ( ! ( S_OK == hr ) ) {
+        sprintf_s<1024>(Renderer::szErrorMessage,"ID2D1Factory1::CreatePathGeometry() returned HR 0x%x on Line %d in Function %s\n",hr,__LINE__,__FUNCTION__);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+    }
     hr = pID2D1PathGeometry -> Open(&pID2D1GeometrySink);
-    if ( ! ( S_OK == hr ) )
-{
-MessageBox(NULL,"BAD","BAD",MB_OK);
-        return;
-}
+    if ( ! ( S_OK == hr ) ) {
 
+        sprintf_s<1024>(Renderer::szErrorMessage,"ID2D1PathGeometry::Open() returned HR 0x%x on Line %d in Function %s\n",hr,__LINE__,__FUNCTION__);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+    }
     return;
     }
 
@@ -97,7 +100,12 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
     void Renderer::closeSink() {
     if ( NULL == pID2D1GeometrySink ) 
         return;
-    pID2D1GeometrySink -> Close();
+    HRESULT hr = pID2D1GeometrySink -> Close();
+    if ( ! ( S_OK == hr ) ) {
+        sprintf_s<1024>(Renderer::szErrorMessage,"pID2D1GeometrySink::Close() returned HR 0x%x on Line %d in Function %s\n",hr,__LINE__,__FUNCTION__);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
+    }
     pID2D1GeometrySink -> Release();
     pID2D1GeometrySink = NULL;
     return;
@@ -135,13 +143,18 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
 
     HRESULT Renderer::fillRender() {
 
+    if ( 0 < pIConnectionPoint -> CountConnections() ) {
+        sprintf_s<1024>(Renderer::szLogMessage,"FILL Rendering the content.\n");
+        pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    }
+
     pID2D1DCRenderTarget -> BeginDraw();
     pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
     if ( ! ( S_OK == hr ) ) {
         OutputDebugStringA("THAT ERROR HAPPENED\n");
-        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s",__LINE__,__FUNCTION__);
+        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s\n",__LINE__,__FUNCTION__);
         pIConnectionPointContainer -> fire_StatusNotification(Renderer::szErrorMessage);
         pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
     }
@@ -152,13 +165,18 @@ MessageBox(NULL,"BAD","BAD",MB_OK);
 
     HRESULT Renderer::strokeRender() {
 
+    if ( 0 < pIConnectionPoint -> CountConnections() ) {
+        sprintf_s<1024>(Renderer::szLogMessage,"STROKE Rendering the content.");
+        pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    }
+
     pID2D1DCRenderTarget -> BeginDraw();
     pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,pIGraphicParameters -> valuesStack.top() -> lineWidth,pID2D1StrokeStyle1);
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
     if ( ! ( S_OK == hr ) ) {
         OutputDebugStringA("THAT ERROR HAPPENED\n");
-        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s",__LINE__,__FUNCTION__);
+        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s\n",__LINE__,__FUNCTION__);
         pIConnectionPointContainer -> fire_StatusNotification(Renderer::szErrorMessage);
         pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
     }

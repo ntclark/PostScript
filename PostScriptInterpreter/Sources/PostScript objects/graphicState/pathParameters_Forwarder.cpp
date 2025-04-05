@@ -25,45 +25,27 @@ This is the MIT License
 
 #include "pathParameters.h"
 
-    void pathParameters::redirectType3() {
-
-    //UINT_PTR *ptrBundle;
-    //job::pIRenderer -> GetParametersBundle(&ptrBundle);
-    //pIRenderer_text -> SetParametersBundle(ptrBundle);
-
-    //CoTaskMemFree((VOID *)ptrBundle);
-
-    //pIGraphicElements = pIGraphicElements_text;
-    return;
-    }
-
-
-    void pathParameters::unRedirectType3() {
-    //pIGraphicElements = job::pIGraphicElements_External;
-    return;
-    }
-
 
     void pathParameters::newpath() {
-    pPStoPDF -> BeginPath();
-    job::pIGraphicElements -> NewPath();
+    pPostScriptInterpreter -> BeginPath();
+    PostScriptInterpreter::pIGraphicElements -> NewPath();
     }
 
 
     void pathParameters::stroke() {
-    job::pIGraphicElements -> StrokePath();
+    PostScriptInterpreter::pIGraphicElements -> StrokePath();
     return;
     }
 
 
     void pathParameters::fillpath() {
-    job::pIGraphicElements -> FillPath();
+    PostScriptInterpreter::pIGraphicElements -> FillPath();
     return;
     }
 
 
     void pathParameters::closepath() {
-    job::pIGraphicElements -> ClosePath();
+    PostScriptInterpreter::pIGraphicElements -> ClosePath();
     return;
     }
 
@@ -75,66 +57,66 @@ Beep(2000,200);
 
 
     void pathParameters::moveto(GS_POINT *pPt) {
-    job::pIGraphicElements -> MoveTo(pPt -> x,pPt -> y);
+    PostScriptInterpreter::pIGraphicElements -> MoveTo(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::moveto(POINT_TYPE x,POINT_TYPE y) {
-    job::pIGraphicElements -> MoveTo(x,y);
+    PostScriptInterpreter::pIGraphicElements -> MoveTo(x,y);
     return;
     }
 
 
     void pathParameters::rmoveto(GS_POINT *pPt) {
-    job::pIGraphicElements -> MoveToRelative(pPt -> x,pPt -> y);
+    PostScriptInterpreter::pIGraphicElements -> MoveToRelative(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::rmoveto(POINT_TYPE x,POINT_TYPE y) {
-    job::pIGraphicElements -> MoveToRelative(x,y);
+    PostScriptInterpreter::pIGraphicElements -> MoveToRelative(x,y);
     return;
     }
 
 
     void pathParameters::lineto(GS_POINT *pPt) {
-    job::pIGraphicElements -> LineTo(pPt -> x,pPt -> y);
+    PostScriptInterpreter::pIGraphicElements -> LineTo(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::lineto(POINT_TYPE x,POINT_TYPE y) {
-    job::pIGraphicElements -> LineTo(x,y);
+    PostScriptInterpreter::pIGraphicElements -> LineTo(x,y);
     return;
     }
 
 
     void pathParameters::rlineto(GS_POINT *pPt) {
-    job::pIGraphicElements -> LineToRelative(pPt -> x,pPt -> y);
+    PostScriptInterpreter::pIGraphicElements -> LineToRelative(pPt -> x,pPt -> y);
     return;
     }
 
 
     void pathParameters::rlineto(POINT_TYPE x,POINT_TYPE y) {
-    job::pIGraphicElements -> LineToRelative(x,y);
+    PostScriptInterpreter::pIGraphicElements -> LineToRelative(x,y);
     return;
     }
 
 
     void pathParameters::arcto(POINT_TYPE xCenter,POINT_TYPE yCenter,POINT_TYPE radius,POINT_TYPE angle1,POINT_TYPE angle2) {
-    job::pIGraphicElements -> Arc(xCenter,yCenter,radius,angle1,angle2);
+    PostScriptInterpreter::pIGraphicElements -> Arc(xCenter,yCenter,radius,angle1,angle2);
     return;
     }
 
 
     void pathParameters::curveto(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3) {
-    job::pIGraphicElements -> CubicBezier(x0,y0,x1,y1,x2,y2,x3,y3);
+    PostScriptInterpreter::pIGraphicElements -> CubicBezier(x0,y0,x1,y1,x2,y2,x3,y3);
     return;
     }
 
 
     void pathParameters::quadcurveto(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2) {
-    job::pIGraphicElements -> QuadraticBezier(x1,y1,x2,y2);
+    PostScriptInterpreter::pIGraphicElements -> QuadraticBezier(x1,y1,x2,y2);
     return;
     }

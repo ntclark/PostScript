@@ -22,8 +22,6 @@ This is the MIT License
 */
 
 #include <Windows.h>
-#include <Gdiplus.h>
-#include <gdiplusinit.h>
 #include <iostream>
 #include <streambuf>
 
@@ -31,16 +29,9 @@ This is the MIT License
 
 #include "pathParameters.h"
 
-    Gdiplus::Bitmap *pPadBitmap = NULL;
-    ULONG_PTR gdiplusToken;
-    Gdiplus::GdiplusStartupInput gdiplusStartupInput = 0L;
-
-    HBITMAP SaveBitmapFile(BYTE *pbImage,DWORD cbData);
-    HBITMAP createTemporaryBitmap(long cx,long cy,long bitsPerComponent,BYTE *pbData);
+    HBITMAP createTemporaryBitmap(long cx,long cy,long bitsPerComponent,uint8_t *pbData);
 
     void graphicsState::image() {
-
-    // width height bits/sample matrix datasrc image –
 
     object *pSource = pJob -> pop();
 
@@ -49,7 +40,6 @@ This is the MIT License
         sprintf_s<1024>(szMessage,"Error: Only language level 2 and above is supported for the image operator");
         throw notimplemented(szMessage);
         return;
-
     }
 
     dictionary *pSourceDictionary = reinterpret_cast<dictionary *>(pSource);
@@ -77,7 +67,7 @@ This is the MIT License
 
     pbImage = pFilter -> getBinaryData(&cbData,NULL);
 
-    uint8_t bitsPerComponent = (uint8_t) pBitsPerComponent -> IntValue();
+    uint8_t bitsPerComponent = (uint8_t)pBitsPerComponent -> IntValue();
     uint16_t width = (uint16_t)pWidth -> IntValue();
     uint16_t height = (uint16_t)pHeight -> IntValue();
 
@@ -219,44 +209,30 @@ DeleteDC(hdcx);
 
     } 
 
-    uint8_t TwoNminus1 = (uint8_t)pow(2,pBitsPerComponent -> IntValue()) - 1;
+    uint16_t TwoNminus1 = (uint8_t)pow(2,pBitsPerComponent -> IntValue()) - 1;
 
-#if 0
-    do {
+    for ( long k = 0; k < pColorSpace -> ParameterCount(); k++ ) {
 
-        for ( uint8_t k = 0; k < step; k++ ) {
+        // At some point, I believe I encountered a Decode array
+        // smaller than required. The documentation does not say whether
+        // this is invalid.
+        if ( 2 * k >= pDecodeArray -> size() )
+            break;
 
-        }
-
-        pbNext += step;
-
-    } while ( pbNext < pbLast );
-#endif
-
-#if 1
-
-    for ( long k = 0; k < 3; k++ ) {
-
-if ( 2 * k >= pDecodeArray -> size() )
-break;
-
-        POINT_TYPE dMin = pDecodeArray -> getElement(0 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
-        POINT_TYPE dMax = pDecodeArray -> getElement(1 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
+        FLOAT dMin = pDecodeArray -> getElement(0 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
+        FLOAT dMax = pDecodeArray -> getElement(1 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
 
         if ( 0.0 == dMin && 1.0 == dMax )
             continue;
 
-        POINT_TYPE factor = (POINT_TYPE)(dMax - dMin) / (POINT_TYPE)TwoNminus1;
+        FLOAT factor = (FLOAT)(dMax - dMin) / (FLOAT)TwoNminus1;
         uint8_t *pbNext = pbImage + k;
         uint8_t *pbLast = pbNext + cbData;
         do {
-            *pbNext = (uint8_t)(dMin + ( (POINT_TYPE)*pbNext * factor ) * TwoNminus1);
-            pbNext += 3;
+            *pbNext = (uint8_t)(dMin + ( (FLOAT)*pbNext * factor ) * TwoNminus1);
+            pbNext += pColorSpace -> ParameterCount();
         } while ( pbNext < pbLast );
     }
-#endif
-
-#if 1
 
     if ( 0 == strcmp(csFamily -> Contents(),"DeviceRGB") ) {
         uint8_t *pbNext = pbImage;
@@ -268,8 +244,6 @@ break;
             pbNext += 3;
         } while ( pbNext < pbLast );
     }
-
-#endif
 
     hbmResult = createTemporaryBitmap(pWidth -> IntValue(),pHeight -> IntValue(),pBitsPerComponent -> IntValue(),pbImage);
 
@@ -306,10 +280,13 @@ break;
     } else
         return;
 
+#if 1
+    throw notimplemented("Need a test for colorimate");
+#else
     HBITMAP hbmResult = SaveBitmapFile(pbImage,cbData);
 
     renderImage(hbmResult,pWidth,pHeight);
-
+#endif
     pFilter -> releaseData();
 
     return;
@@ -317,7 +294,7 @@ break;
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
-    job::pIGraphicElements -> Image(pPStoPDF -> GetDC(),hbmResult,
+    PostScriptInterpreter::pIGraphicElements -> Image(pPostScriptInterpreter -> GetDC(),hbmResult,
                                                 (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
     return;
@@ -329,6 +306,7 @@ break;
     return;
     }
 
+#if 0
 
     HBITMAP SaveBitmapFile(BYTE *pbImage,DWORD cbData) {
 
@@ -353,9 +331,10 @@ break;
 
     return hbmResult;
     }
+#endif
 
 
-    HBITMAP createTemporaryBitmap(long cx,long cy,long bitsPerComponent,BYTE *pBits) {
+    HBITMAP createTemporaryBitmap(long cx,long cy,long bitsPerComponent,uint8_t *pBits) {
 
     BITMAPINFO bitMapInfo;
 
@@ -368,11 +347,28 @@ break;
     bitMapInfo.bmiHeader.biBitCount = 3 * (unsigned short)bitsPerComponent;
     bitMapInfo.bmiHeader.biCompression = BI_RGB;
 
+    long widthBytes = 3 * cx;
+    long stride = ((((cx * 24) + 31) & ~31) >> 3);
+    long padding = stride - widthBytes;
+
+    uint8_t *pRGBBits = new uint8_t[stride * cy];
+
+    memset(pRGBBits,0xFF,stride * cy);
+
+    uint8_t *pTarget = pRGBBits;
+    uint8_t *pSource = pBits;
+
+    for ( long k = 0; k < cy; k++ ) {
+        memcpy(pTarget,pSource,stride);
+        pTarget += stride;
+        pSource += widthBytes;
+    }
+
     HBITMAP hBitmap = CreateDIBSection(NULL,&bitMapInfo,DIB_RGB_COLORS,NULL,NULL,0L);
 
-    SetDIBits(NULL,hBitmap,0,cy,pBits,&bitMapInfo,DIB_RGB_COLORS);
+    SetDIBits(NULL,hBitmap,0,cy,pRGBBits,&bitMapInfo,DIB_RGB_COLORS);
 
-//SetBitmapBits(hBitmap,cx * cy * 3 * bitsPerComponent,pBits);
+    delete [] pRGBBits;
 
     return hBitmap;
     }

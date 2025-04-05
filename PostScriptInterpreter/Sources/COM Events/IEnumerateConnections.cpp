@@ -21,101 +21,93 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
-  PStoPDF::_IEnumerateConnections::_IEnumerateConnections(
-            IUnknown* pHostObj,
-            ULONG cConnections,
-            CONNECTDATA* paConnections,
-            ULONG initialIndex) :
-    refCount(0), 
-    pParentUnknown(pHostObj),
-    enumeratorIndex(initialIndex),
-    countConnections(cConnections)
-  {
+    PostScriptInterpreter::_IEnumerateConnections::_IEnumerateConnections(IUnknown* pHostObj,ULONG cConnections,CONNECTDATA* paConnections,ULONG initialIndex) :
+        refCount(0), 
+        pParentUnknown(pHostObj),
+        enumeratorIndex(initialIndex),
+        countConnections(cConnections)
+    {
 
-  connections = new CONNECTDATA[countConnections];
+    connections = new CONNECTDATA[countConnections];
 
-  for ( UINT i = 0; i < countConnections; i++ ) {
-     connections[i] = paConnections[i];
-  }
+    for ( UINT k = 0; k < countConnections; k++ ) 
+        connections[k] = paConnections[k];
 
-  return;
-  }
+    return;
+    }
 
 
-
-  PStoPDF::_IEnumerateConnections::~_IEnumerateConnections() {
-  delete [] connections;
-  return;
-  }
-
-
-  STDMETHODIMP PStoPDF::_IEnumerateConnections::QueryInterface(REFIID riid,void **ppv) {
-  *ppv = NULL;
-  if ( IID_IUnknown != riid && IID_IEnumConnections != riid) return E_NOINTERFACE;
-  *ppv = (LPVOID)this;
-  AddRef();
-  return S_OK;
-  }
+    PostScriptInterpreter::_IEnumerateConnections::~_IEnumerateConnections() {
+    delete [] connections;
+    return;
+    }
 
 
-  STDMETHODIMP_(ULONG) PStoPDF::_IEnumerateConnections::AddRef() {
-  pParentUnknown -> AddRef();
-  return ++refCount;
-  }
+    STDMETHODIMP PostScriptInterpreter::_IEnumerateConnections::QueryInterface(REFIID riid,void **ppv) {
+    *ppv = NULL;
+    if ( IID_IUnknown != riid && IID_IEnumConnections != riid) 
+        return E_NOINTERFACE;
+    *ppv = (LPVOID)this;
+    AddRef();
+    return S_OK;
+    }
+
+
+    STDMETHODIMP_(ULONG) PostScriptInterpreter::_IEnumerateConnections::AddRef() {
+    pParentUnknown -> AddRef();
+    return ++refCount;
+    }
 
 
 
-  STDMETHODIMP_(ULONG) PStoPDF::_IEnumerateConnections::Release() {
-  pParentUnknown -> Release();
-  if ( 0 == --refCount ) {
-    refCount++;
-    delete this;
-    return 0;
-  }
-  return refCount;
-  }
+    STDMETHODIMP_(ULONG) PostScriptInterpreter::_IEnumerateConnections::Release() {
+    pParentUnknown -> Release();
+    if ( 0 == --refCount ) {
+        refCount++;
+        delete this;
+        return 0;
+    }
+    return refCount;
+    }
 
 
 
-  STDMETHODIMP PStoPDF::_IEnumerateConnections::Next(ULONG cReq,CONNECTDATA* paConnections,ULONG* pcEnumerated) {
+    STDMETHODIMP PostScriptInterpreter::_IEnumerateConnections::Next(ULONG cReq,CONNECTDATA* paConnections,ULONG* pcEnumerated) {
 
-  ULONG cRet;
+    ULONG cRet;
 
-  if ( NULL == paConnections ) return E_POINTER;
+    if ( NULL == paConnections ) 
+        return E_POINTER;
 
-  for ( cRet = 0; enumeratorIndex < countConnections && cReq > 0; paConnections++, enumeratorIndex++, cRet++, cReq-- ) {
+    for ( cRet = 0; enumeratorIndex < countConnections && cReq > 0; paConnections++, enumeratorIndex++, cRet++, cReq-- ) 
+        *paConnections = connections[enumeratorIndex];
 
-    *paConnections = connections[enumeratorIndex];
+    if ( NULL != pcEnumerated )
+        *pcEnumerated = cRet;
 
-//    if ( NULL != paConnections -> pUnk ) paConnections -> pUnk -> AddRef();
-
-  }
-
-  if ( NULL != pcEnumerated )
-    *pcEnumerated = cRet;
-
-  return 0 == cRet ? S_FALSE : S_OK;
-  }
+    return 0 == cRet ? S_FALSE : S_OK;
+    }
 
 
-  STDMETHODIMP PStoPDF::_IEnumerateConnections::Skip(ULONG cSkip) {
-  if ( (enumeratorIndex + cSkip) < countConnections ) return S_FALSE;
-  enumeratorIndex += cSkip;
-  return S_OK;
-  }
+    STDMETHODIMP PostScriptInterpreter::_IEnumerateConnections::Skip(ULONG cSkip) {
+    if ( (enumeratorIndex + cSkip) < countConnections ) 
+        return S_FALSE;
+    enumeratorIndex += cSkip;
+    return S_OK;
+    }
 
 
 
-  STDMETHODIMP PStoPDF::_IEnumerateConnections::Reset() {
-  enumeratorIndex = 0;
-  return S_OK;
-  }
+    STDMETHODIMP PostScriptInterpreter::_IEnumerateConnections::Reset() {
+    enumeratorIndex = 0;
+    return S_OK;
+    }
 
 
 
-  STDMETHODIMP PStoPDF::_IEnumerateConnections::Clone(IEnumConnections** ppIEnum) {
-  _IEnumerateConnections* p = new _IEnumerateConnections(pParentUnknown,countConnections,connections,enumeratorIndex);
-  return p -> QueryInterface(IID_IEnumConnections,(void **)ppIEnum);
-  }
+    STDMETHODIMP PostScriptInterpreter::_IEnumerateConnections::Clone(IEnumConnections** ppIEnum) {
+    _IEnumerateConnections* p = new _IEnumerateConnections(pParentUnknown,countConnections,connections,enumeratorIndex);
+    return p -> QueryInterface(IID_IEnumConnections,(void **)ppIEnum);
+    }

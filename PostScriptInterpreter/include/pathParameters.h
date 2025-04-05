@@ -35,10 +35,6 @@ This is the MIT License
         ~pathParameters();
 
         void initialize();
-
-        void redirectType3();
-        void unRedirectType3();
-
         void initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints);
 
         // Graphics primitives

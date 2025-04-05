@@ -33,7 +33,7 @@ This is the MIT License
     then erases the current page and reinitializes ..... !
 */
 
-    pPStoPDF -> CommitCurrentPage(pageWidthPoints,pageHeightPoints);
+    pPostScriptInterpreter -> CommitCurrentPage(pageWidthPoints,pageHeightPoints);
 
     initialize();
 

@@ -12,7 +12,7 @@
 
     IPostScript *pIPostScript{NULL};
 
-    class IPostScriptEventsDemo : public IPostScriptEvents {
+    class IPostScriptEventsDemo : public IPostScriptInterpreterEvents {
     public:
         //   IUnknown
 
@@ -21,8 +21,8 @@
                 return E_POINTER;
             if ( IID_IUnknown == riid )
                 *ppv = static_cast<IUnknown *>(this);
-            else if ( IID_IPostScriptEvents == riid )
-                *ppv = static_cast<IPostScriptEvents *>(this);
+            else if ( IID_IPostScriptInterpreterEvents == riid )
+                *ppv = static_cast<IPostScriptInterpreterEvents *>(this);
             else
                 return E_NOINTERFACE;
             return S_OK;
@@ -30,7 +30,7 @@
         STDMETHOD_ (ULONG, AddRef)() { return 1; }
         STDMETHOD_ (ULONG, Release)() { return 1; }
 
-        // IPostScriptEvents
+        // IPostScriptInterpreterEvents
 
         HRESULT __stdcall RenderChar(POINT *pPoint,char c) {
             printf("Character at %d,%d: %c\n",pPoint -> x,pPoint -> y,c);
@@ -54,7 +54,7 @@
 
     HRESULT rc = CoInitializeEx(NULL,0);
 
-    rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScript,reinterpret_cast<void **>(&pIPostScript));
+    rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScriptInterpreter,reinterpret_cast<void **>(&pIPostScript));
 
     IConnectionPointContainer *pIConnectionPointContainer = NULL;
 
@@ -62,7 +62,7 @@
 
     IConnectionPoint *pIConnectionPoint = NULL;
 
-    rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IPostScriptEvents,&pIConnectionPoint);
+    rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IPostScriptInterpreterEvents,&pIConnectionPoint);
 
     DWORD dwCookie = 0L;
     IUnknown *pIUnknownSink = NULL;

@@ -67,11 +67,10 @@ BEGIN
     PUSHBUTTON "...", IDDI_CMD_PANE_ACTIVE_FILE_GET,    8 + 256 + 4, 18, 24, 16
     PUSHBUTTON "Execute", IDDI_CMD_PANE_EXECUTE,        8, 36, 36, 16, WS_DISABLED
 
-    //PUSHBUTTON "Convert", IDDI_CMD_PANE_CONVERT_TO_PDF, 8 + 36 + 4, 36, 36, 16
-
     LTEXT "", IDDI_CMD_PANE_ERROR,                      8 + 36 + 4 + 36 + 4, 36, 256, 32
 
-    LTEXT "Log >>", IDDI_CMD_PANE_LOG_SHOW,             0,0,24,12
+    LTEXT "PS Log >>", IDDI_CMD_PANE_LOG_SHOW,                  0,  0,  48, 12
+    LTEXT "Renderer Log >>", IDDI_CMD_PANE_RENDERER_LOG_SHOW,   0,  18, 64, 12
 
 END
 
@@ -90,13 +89,22 @@ BEGIN
 
 END
 
+
+IDD_RENDERER_LOG_PANE DIALOGEX 0, 0, 256, 128
+STYLE DS_SETFONT | WS_POPUP
+EXSTYLE WS_EX_CLIENTEDGE
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+
+
+END
+
+
 ID_GLYPH_LIST   256 ".\\resources\glyphList.txt"
-
 ID_GS_PREP      256 ".\\resources\gsPrep.ps"
-
 ID_GS_INIT      256 ".\\resources\from gs\gs_init.ps"
-//ID_GS_RESOURCES 256 ".\\resources\from gs\gs_res.ps"
 
+//ID_GS_RESOURCES 256 ".\\resources\from gs\gs_res.ps"
 //ID_GS_INIT      256 ".\\resources\gs_init_NTC.ps"
 //ID_GS_RESOURCES 256 ".\\resources\gs_res_NTC.ps"
 

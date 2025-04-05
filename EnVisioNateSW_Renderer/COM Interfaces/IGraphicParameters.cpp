@@ -185,7 +185,7 @@ This is the MIT License
     if ( ! ( NULL == pParent -> pID2D1StrokeStyle1 ) )
         pParent -> pID2D1StrokeStyle1 -> Release();
 
-    pParent -> pID2D1Factory1 -> CreateStrokeStyle(
+    HRESULT rc = pParent -> pID2D1Factory1 -> CreateStrokeStyle(
             D2D1::StrokeStyleProperties1(
                 pValues -> lineCap,
                 pValues -> lineCap,
@@ -195,7 +195,7 @@ This is the MIT License
                 pValues -> lineDashStyle,
                 pValues -> lineDashOffset,
                 D2D1_STROKE_TRANSFORM_TYPE_NORMAL ),//D2D1_STROKE_TRANSFORM_TYPE_FIXED),
-                pValues -> lineDashSizes,
+                D2D1_DASH_STYLE_CUSTOM == pValues -> lineDashStyle ? pValues -> lineDashSizes : NULL,
                 pValues -> countDashSizes,
                     &pParent -> pID2D1StrokeStyle1);
 

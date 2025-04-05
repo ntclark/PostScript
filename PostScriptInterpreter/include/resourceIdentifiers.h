@@ -26,8 +26,9 @@ This is the MIT License
 #define ID_GS_INIT          3
 #define ID_GS_RESOURCES     4
 
-#define IDD_CMD_PANE        1
-#define IDD_LOG_PANE        2
+#define IDD_CMD_PANE            1
+#define IDD_LOG_PANE            2
+#define IDD_RENDERER_LOG_PANE   3
 
 #define IDDI_CMD_PANE_ACTIVE_FILE           100
 #define IDDI_CMD_PANE_ACTIVE_FILE_GET       101
@@ -36,6 +37,8 @@ This is the MIT License
 #define IDDI_CMD_PANE_LOG_SHOW              104
 #define IDDI_CMD_PANE_LOG_HIDE              105
 #define IDDI_CMD_PANE_CONVERT_TO_PDF        106
+#define IDDI_CMD_PANE_RENDERER_LOG_SHOW     107
+#define IDDI_CMD_PANE_RENDERER_LOG_HIDE     108
 
 
 #define IDDI_LOG_PANE_OPERAND_STACK_SIZE    200

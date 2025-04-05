@@ -21,58 +21,63 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
-    HRESULT PStoPDF::_IConnectionPointContainer::QueryInterface(REFIID riid,void **ppv) {
+    HRESULT PostScriptInterpreter::_IConnectionPointContainer::QueryInterface(REFIID riid,void **ppv) {
 
     if ( IID_IConnectionPointContainer == riid ) {
         *ppv = static_cast<IConnectionPointContainer *>(this);
         pParent -> AddRef();
         return S_OK;
     }
+    if ( IID_IUnknown == riid ) {
+        *ppv = static_cast<IUnknown *>(this);
+        pParent -> AddRef();
+        return S_OK;
+    }
     return pParent -> QueryInterface(riid,ppv);
     }
 
-    STDMETHODIMP_(ULONG) PStoPDF::_IConnectionPointContainer::AddRef() {
+    STDMETHODIMP_(ULONG) PostScriptInterpreter::_IConnectionPointContainer::AddRef() {
     return pParent -> AddRef();
     }
-    STDMETHODIMP_(ULONG) PStoPDF::_IConnectionPointContainer::Release() {
+    STDMETHODIMP_(ULONG) PostScriptInterpreter::_IConnectionPointContainer::Release() {
     return pParent -> Release();
     }
 
 
-    STDMETHODIMP PStoPDF::_IConnectionPointContainer::EnumConnectionPoints(IEnumConnectionPoints **ppEnum) {
-
-    _IConnectionPoint *pConnectionPoints[1];
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPointContainer::EnumConnectionPoints(IEnumConnectionPoints **ppEnum) {
 
     *ppEnum = NULL;
 
-    if ( pParent -> pIEnumConnectionPoints ) 
-        delete pParent -> pIEnumConnectionPoints;
-
-    pConnectionPoints[0] = pParent -> pIConnectionPoint;
-    pParent -> pIEnumConnectionPoints = new _IEnumConnectionPoints(pParent,pConnectionPoints,1);
+    if ( NULL == pParent -> pIEnumConnectionPoints ) 
+        pParent -> pIEnumConnectionPoints = new _IEnumConnectionPoints(pParent,pParent -> pIConnectionPoints,2);
 
     return pParent -> pIEnumConnectionPoints -> QueryInterface(IID_IEnumConnectionPoints,(void **)ppEnum);
     }
 
 
-    STDMETHODIMP PStoPDF::_IConnectionPointContainer::FindConnectionPoint(REFIID riid,IConnectionPoint **ppCP) {
+    STDMETHODIMP PostScriptInterpreter::_IConnectionPointContainer::FindConnectionPoint(REFIID riid,IConnectionPoint **ppCP) {
     *ppCP = NULL;
-    if ( IID_IPostScriptEvents == riid )
-        return pParent -> pIConnectionPoint -> QueryInterface(IID_IConnectionPoint,(void **)ppCP);
+
+    if ( IID_IPostScriptInterpreterEvents == riid )
+        return pParent -> pIConnectionPoints[0] -> QueryInterface(IID_IConnectionPoint,(void **)ppCP);
+
+    if ( IID_IRendererNotifications == riid )
+        return pParent -> pIConnectionPoints[1] -> QueryInterface(IID_IConnectionPoint,(void **)ppCP);
+
     return CONNECT_E_NOCONNECTION;
     }
 
 
-    void PStoPDF::_IConnectionPointContainer::fire_RenderChar(POINT *pPoint,char theChar) {
+    void PostScriptInterpreter::_IConnectionPointContainer::fire_RenderChar(POINT *pPoint,char theChar) {
     IEnumConnections* pIEnum;
     CONNECTDATA connectData;
-    pParent -> pIConnectionPoint -> EnumConnections(&pIEnum);
+    pParent -> pIConnectionPoints[0] -> EnumConnections(&pIEnum);
     if ( ! pIEnum ) return;
     while ( 1 ) {
         if ( pIEnum -> Next(1, &connectData, NULL) ) break;
-        IPostScriptEvents * pClient = reinterpret_cast<IPostScriptEvents *>(connectData.pUnk);
+        IPostScriptInterpreterEvents * pClient = reinterpret_cast<IPostScriptInterpreterEvents *>(connectData.pUnk);
         pClient -> RenderChar(pPoint,theChar);
     }
     static_cast<IUnknown*>(pIEnum) -> Release();
@@ -80,14 +85,14 @@ This is the MIT License
     }
 
 
-    void PStoPDF::_IConnectionPointContainer::fire_RenderString(POINT *pPoint,char *pszString) {
+    void PostScriptInterpreter::_IConnectionPointContainer::fire_RenderString(POINT *pPoint,char *pszString) {
     IEnumConnections* pIEnum;
     CONNECTDATA connectData;
-    pParent -> pIConnectionPoint -> EnumConnections(&pIEnum);
+    pParent -> pIConnectionPoints[0] -> EnumConnections(&pIEnum);
     if ( ! pIEnum ) return;
     while ( 1 ) {
         if ( pIEnum -> Next(1, &connectData, NULL) ) break;
-        IPostScriptEvents * pClient = reinterpret_cast<IPostScriptEvents *>(connectData.pUnk);
+        IPostScriptInterpreterEvents * pClient = reinterpret_cast<IPostScriptInterpreterEvents *>(connectData.pUnk);
         pClient -> RenderString(pPoint,pszString);
     }
     static_cast<IUnknown*>(pIEnum) -> Release();
@@ -95,14 +100,14 @@ This is the MIT License
     }
 
 
-    void PStoPDF::_IConnectionPointContainer::fire_ErrorNotification(char *pszString) {
+    void PostScriptInterpreter::_IConnectionPointContainer::fire_ErrorNotification(char *pszString) {
     IEnumConnections* pIEnum;
     CONNECTDATA connectData;
-    pParent -> pIConnectionPoint -> EnumConnections(&pIEnum);
+    pParent -> pIConnectionPoints[0] -> EnumConnections(&pIEnum);
     if ( ! pIEnum ) return;
     while ( 1 ) {
         if ( pIEnum -> Next(1, &connectData, NULL) ) break;
-        IPostScriptEvents * pClient = reinterpret_cast<IPostScriptEvents *>(connectData.pUnk);
+        IPostScriptInterpreterEvents * pClient = reinterpret_cast<IPostScriptInterpreterEvents *>(connectData.pUnk);
         pClient -> ErrorNotification((UINT_PTR)pszString);
     }
     static_cast<IUnknown*>(pIEnum) -> Release();

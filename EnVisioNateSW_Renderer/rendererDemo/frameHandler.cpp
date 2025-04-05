@@ -7,6 +7,7 @@ double degToRad = 4.0 * atan(1.0) / 180.0;
 RECT rcDrawing;
 RECT rcEntire;
 RECT rcStatus;
+boolean renderLive = false;
 
 #define MARGIN_LEFT_PIXELS 96
 #define MARGIN_RIGHT_PIXELS 32
@@ -72,6 +73,13 @@ HBITMAP getSampleImage(HDC hdc);
     long cyStatus = rcStatus.bottom - rcStatus.top;
 
     rcDrawing = rcEntire;
+
+    renderLive = (BST_CHECKED == SendMessage(GetDlgItem(hwndDialog,IDDI_RENDER_LIVE),BM_GETCHECK,0L,0L));
+
+    if ( renderLive )
+        pIRenderer -> SetRenderLive(hdc,&rcEntire);
+    else
+        pIRenderer -> UnSetRenderLive();
 
     // The domain should be (0->100) x by (0->100) y
     // The device coordinates are {rcDrawing.left,rcDrawing.top} by {rcDrawing.right,rcDrawing.bottom} pixels
@@ -244,8 +252,9 @@ HBITMAP getSampleImage(HDC hdc);
     pIGraphicElements -> Circle(bezierPoints[2].x,bezierPoints[2].y,0.5);
     pIGraphicElements -> FillPath();
 
-    // Note that with a QuadraticBezier curve, if you want to chain multiple together, 
-    // you should call MoveTo before the first one to start them off
+    // Note that with a QuadraticBezier curve, it starts where the last primitive
+    // left off. Therefore, you need to call MoveTo if you want the curve to start
+    // elsewhere
     pIGraphicElements -> MoveTo(bezierPoints[0].x,bezierPoints[0].y);
     pIGraphicElements -> QuadraticBezier(bezierPoints[1].x,bezierPoints[1].y,bezierPoints[2].x,bezierPoints[2].y);
 
@@ -267,7 +276,8 @@ HBITMAP getSampleImage(HDC hdc);
     // on the relationship been the sub and full rectangles (which is an 
     // effect you may want anyway).
 
-    pIRenderer -> Render(hdc,&rcEntire);
+    if ( ! renderLive )
+        pIRenderer -> Render(hdc,&rcEntire);
 
     return;
     }

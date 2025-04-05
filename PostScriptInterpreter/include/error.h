@@ -28,10 +28,10 @@ This is the MIT License
     class PStoPDFException : public std::exception {
     public:
 
-        PStoPDFException(char *pszErrorMessage) { strcpy(szMessage,pszErrorMessage); };
-        char *Message() { return szMessage; };
+        PStoPDFException(char *pszErrorMessage) { strcpy(szMessage,pszErrorMessage); }
+        char *Message() { return szMessage; }
 
-        virtual char *ExceptionName() { return "PStoPDFException";} ;
+        virtual char *ExceptionName() { return "PStoPDFException";}
 
     private:
         static char szMessage[2048];
@@ -41,8 +41,8 @@ This is the MIT License
 #define errorclass(name)                                                   \
 class name : public PStoPDFException {                                     \
 public:                                                                    \
-      name(char *pszErrorMessage) : PStoPDFException(pszErrorMessage) {};  \
-      char *ExceptionName() { return #name; };                             \
+      name(char *pszErrorMessage) : PStoPDFException(pszErrorMessage) {}   \
+      char *ExceptionName() { return #name; }                              \
 };
 
 errorclass(nonPostscriptException)

@@ -1,3 +1,25 @@
+/*
+Copyright 2025 EnVisioNate LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a 
+copy of this software and associated documentation files (the “Software”), 
+to deal in the Software without restriction, including without limitation 
+the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the 
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included 
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
+A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT 
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+This is the MIT License
+*/
 
 #pragma once
 
@@ -17,15 +39,9 @@
 
 #include "utilities.h"
 
-#include "PdfEnabler_i.h"
-#include "pdfEnabler\Page.h"
-
-#ifdef GetWindowID
-#undef GetWindowID
-#endif
-
-#include "Properties_i.h"
 #include "PostScriptInterpreter_i.h"
+#include "FontManager_i.h"
+#include "Renderer_i.h"
 
 #undef ADVANCE_THRU_EOL
 
@@ -34,7 +50,7 @@
 #define DO_RTF
 
 #define PS_VERSION   3000L
-#define PRODUCT_NAME "EnVisioNateSW PostScript interpreter"
+#define PRODUCT_NAME "EnVisioNateSW PostScript Interpreter"
 
 #define POINTS_TO_PIXELS    2
 #define CMD_PANE_HEIGHT     96
@@ -43,22 +59,16 @@
 
 class job;
 
-// Implementation rules:
-//
-// When parsing - the parsing procedure will be called with the first byte following the delimiter, which could be white space
-//
-    class PStoPDF : public IPostScript {
+    class PostScriptInterpreter : public IPostScriptInterpreter {
 
     public:
 
-        PStoPDF(IUnknown *pUnknownOuter);
-        ~PStoPDF();
+        PostScriptInterpreter(IUnknown *pUnknownOuter);
+        ~PostScriptInterpreter();
 
-        static long queueLog(char *pszOutput,char *pEnd = NULL,bool isError = false);
-        static long clearLog();
-        static long settleLog();
-
-        long displayStack();
+        static long queueLog(boolean isPostScriptLog,char *pszOutput,char *pEnd = NULL,bool isError = false);
+        static long clearLog(HWND);
+        static long settleLog(HWND);
 
         //   IUnknown
 
@@ -66,24 +76,24 @@ class job;
         STDMETHOD_ (ULONG, AddRef)();
         STDMETHOD_ (ULONG, Release)();
 
-        // IPStoPDF
+        // IPostScript
 
         STDMETHOD(SetSource)(char *pszFileName);
-
         STDMETHOD(Parse)(char *pszFileName = NULL);
-
-        STDMETHOD(ParseText)(char *pszPDFText,long length,void *pvIPdfPage,void *pvIPostScriptTakeText,HDC hdc,RECT *prcWindowsClip);
-
+        STDMETHOD(ParseText)(char *pszPDFText);
         STDMETHOD(GetLastError)(char **ppszError);
-
         STDMETHOD(LogLevel)(logLevel theLogLevel);
+        STDMETHOD(RendererLogLevel)(logLevel theLogLevel);
+
+        STDMETHOD(GetPeristableProperties)(UINT_PTR *pProperties,long *pSize);
+        STDMETHOD(SetPeristableProperties)(UINT_PTR pProperties);
 
         // IOleObject 
 
         class _IOleObject : public IOleObject {
         public:
 
-            _IOleObject(PStoPDF *pp) : pParent(pp) {};
+            _IOleObject(PostScriptInterpreter *pp) : pParent(pp) {};
             ~_IOleObject() {};
 
             STDMETHOD(QueryInterface)(REFIID riid,void **ppv);
@@ -116,7 +126,7 @@ class job;
         
             STDMETHOD(SetColorScheme)(LPLOGPALETTE lpLogpal);
    
-            PStoPDF *pParent{NULL};
+            PostScriptInterpreter *pParent{NULL};
 
         } *pIOleObject{NULL};
 
@@ -125,7 +135,7 @@ class job;
         class _IOleInPlaceObject : public IOleInPlaceObject {
         public:
 
-            _IOleInPlaceObject(PStoPDF *pp) : pParent(pp) {};
+            _IOleInPlaceObject(PostScriptInterpreter *pp) : pParent(pp) {};
             ~_IOleInPlaceObject() {};
 
             STDMETHOD(QueryInterface)(REFIID riid,void **ppv);
@@ -147,16 +157,16 @@ class job;
 
         private:
 
-            PStoPDF *pParent{NULL};
+            PostScriptInterpreter *pParent{NULL};
 
         } *pIOleInPlaceObject{NULL};
 
-        //      IConnectionPointContainer
+        // IConnectionPointContainer
 
         struct _IConnectionPointContainer : public IConnectionPointContainer {
         public:
 
-            _IConnectionPointContainer(PStoPDF *pp) : pParent(pp) {};
+            _IConnectionPointContainer(PostScriptInterpreter *pp) : pParent(pp) {};
             ~_IConnectionPointContainer() {};
 
         STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
@@ -172,14 +182,14 @@ class job;
 
         private:
 
-            PStoPDF *pParent{NULL};
+            PostScriptInterpreter *pParent{NULL};
 
         } *pIConnectionPointContainer{NULL};
 
         struct _IConnectionPoint : IConnectionPoint {
         public:
 
-            _IConnectionPoint(PStoPDF *pp);
+            _IConnectionPoint(PostScriptInterpreter *pp,REFIID eventInterfaceId);
             ~_IConnectionPoint();
 
             STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
@@ -199,20 +209,21 @@ class job;
             int getSlot();
             int findSlot(DWORD dwCookie);
 
+            REFIID myEventInterface{IID_NULL};
             IUnknown *adviseSink{NULL};
-            PStoPDF *pParent{NULL};
+            PostScriptInterpreter *pParent{NULL};
             DWORD nextCookie{0L};
             int countConnections{0};
             int countLiveConnections{0};
 
             CONNECTDATA *connections{NULL};
 
-        } *pIConnectionPoint{NULL};
+        } *pIConnectionPoints[2]{NULL,NULL};
 
         struct _IEnumConnectionPoints : IEnumConnectionPoints {
         public:
 
-            _IEnumConnectionPoints(PStoPDF *pp,_IConnectionPoint **cp,int connectionPointCount);
+            _IEnumConnectionPoints(PostScriptInterpreter *pp,_IConnectionPoint **cp,int connectionPointCount);
             ~_IEnumConnectionPoints();
 
             STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
@@ -228,7 +239,7 @@ class job;
 
         int cpCount{0};
         int enumeratorIndex{0};
-        PStoPDF *pParent{NULL};
+        PostScriptInterpreter *pParent{NULL};
         _IConnectionPoint **connectionPoints{NULL};
 
         } *pIEnumConnectionPoints{NULL};
@@ -257,6 +268,71 @@ class job;
 
         } *pIEnumerateConnections{NULL};
 
+        struct _IRendererNotifications : IRendererNotifications {
+        public:
+
+            _IRendererNotifications(PostScriptInterpreter *pp,IRenderer *pIRenderer) : pParent(pp) {
+                HRESULT rc = pIRenderer -> QueryInterface(IID_IConnectionPointContainer,
+                                    reinterpret_cast<void **>(&pIConnectionPointContainer));
+                rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IRendererNotifications,&pIConnectionPoint);
+                rc = pIConnectionPoint -> Advise(static_cast<IUnknown *>(this),&dwConnectionCookie);
+            }
+
+            ~_IRendererNotifications() {
+                pIConnectionPoint -> Unadvise(dwConnectionCookie);
+                pIConnectionPoint -> Release();
+                pIConnectionPointContainer -> Release();
+            }
+
+            //   IUnknown
+
+            STDMETHOD (QueryInterface)(REFIID riid,void **ppv) {
+                if ( ! ppv )
+                    return E_POINTER;
+                if ( IID_IUnknown == riid )
+                    *ppv = static_cast<IUnknown *>(this);
+                else if ( IID_IRendererNotifications == riid )
+                    *ppv = static_cast<IRendererNotifications *>(this);
+                else
+                    return E_NOINTERFACE;
+                return S_OK;
+            }
+            STDMETHOD_ (ULONG, AddRef)() { return 1; }
+            STDMETHOD_ (ULONG, Release)() { return 1; }
+
+            // IRendererNotifications
+
+            HRESULT __stdcall ErrorNotification(UINT_PTR theError) {
+                pParent -> queueLog(false,(char *)theError,NULL,true);
+                return S_OK;
+            }
+
+            HRESULT __stdcall StatusNotification(UINT_PTR theStatus) {
+                //OutputDebugStringA("Renderer Status\n");
+                //OutputDebugStringA((char *)theStatus);
+                //OutputDebugStringA("\n");
+                return S_OK;
+            }
+
+            HRESULT __stdcall LogNotification(UINT_PTR theLogEntry) {
+                pParent -> queueLog(false,(char *)theLogEntry,NULL,false);
+                return S_OK;
+            }
+
+            HRESULT __stdcall Clear() {
+                return S_OK;
+            }
+
+            IConnectionPointContainer *pIConnectionPointContainer{NULL};
+            IConnectionPoint *pIConnectionPoint{NULL};
+            DWORD dwConnectionCookie{0L};
+
+        private:
+
+            PostScriptInterpreter *pParent{NULL};
+
+        } *pIRendererNotifications{NULL};
+
         static CRITICAL_SECTION theQueueCriticalSection;
 
         HWND HwndClient() { return hwndClient; }
@@ -277,24 +353,38 @@ class job;
 
         static char szErrorMessage[1024];
 
+        static IFontManager *pIFontManager;
+        static IRenderer *pIRenderer;
+        static IGraphicElements *pIGraphicElements;
+        static IGraphicParameters *pIGraphicParameters;
+
+        static HWND hwndLogContent;
+        static HWND hwndRendererLogContent;
+
     private:
 
         int initWindows();
 
-        void toggleLogVisibility();
+        void toggleLogVisibility(long itemId);
 
-        IGProperties *pIGProperties{NULL};
         IOleClientSite *pIOleClientSite{NULL};
         IOleInPlaceSite *pIOleInPlaceSite{NULL};
-
-        //ICVPostscriptConverter *pICVPostscriptConverter{NULL};
 
         static job *pJob;
 
         long refCount{0L};
+
+        BYTE persistablePropertiesStart{0x00};
+
         long logPaneWidth{256L};
-        static enum logLevel theLogLevel;
+        long rendererLogPaneWidth{256L};
         boolean logIsVisible{false};
+        boolean rendererLogIsVisible{false};
+
+        BYTE persistablePropertiesEnd{0x00};
+
+        static enum logLevel theLogLevel;
+        static enum logLevel theRendererLogLevel;
 
         char szCurrentPostScriptFile[MAX_PATH];
 
@@ -308,9 +398,12 @@ class job;
         static HWND hwndHost;
         static HWND hwndClient;
         static HWND hwndCmdPane;
+
         static HWND hwndLogPane;
-        static HWND hwndLog;
         static HWND hwndLogSplitter;
+
+        static HWND hwndRendererLogSplitter;
+
         static HWND hwndOperandStackSize;
         static HWND hwndCurrentDictionary;
         static HWND hwndVScroll;
@@ -319,8 +412,9 @@ class job;
 
         static long initialCYClient;
 
-        static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
+        static void setWindowPanes();
 
+        static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
         static LRESULT (__stdcall *nativeRichEditHandler)(HWND,UINT,WPARAM,LPARAM);
 
         static LRESULT CALLBACK handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
@@ -334,75 +428,55 @@ class job;
 
     };
 
+#define WHITE_SPACE "[]<> ()\t\x0A\x0D/"
+
+#define ARRAY_START_DELIMITERS "[ "
+#define ARRAY_ITEM_DELIMITERS "\x0A\x0D "
+#define ARRAY_END_DELIMITERS "\x0A\x0D ]"
+
 #define PIXELS_TO_HIMETRIC(x,ppli)  ( (2540*(x) + ((ppli) >> 1)) / (ppli) )
 #define HIMETRIC_TO_PIXELS(x,ppli)  ( ((ppli)*(x) + 1270) / 2540 )
 
 #define EOL "\x0A\x0D"
 
-#define SYNCHRONOUS_CALL(theWindow,MSG,ARGUMENT) {                      \
-   HANDLE hSemaphore = CreateSemaphore(NULL,0,1,NULL);                  \
-   PostMessage((theWindow),(MSG),(WPARAM)(ARGUMENT),(LPARAM)hSemaphore);\
-   WaitForSingleObject(hSemaphore,INFINITE);                            \
-   CloseHandle(hSemaphore);                                             \
-   }
-
-#define SET_PANES   {                       \
-    RECT rcHost;                            \
-    GetWindowRect(hwndHost,&rcHost);        \
-    long cx = rcHost.right - rcHost.left;   \
-    long cy = rcHost.bottom - rcHost.top;   \
-    long cxClient = cx - (pPStoPDF -> logIsVisible ? pPStoPDF -> logPaneWidth : 0);                     \
-    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClient,cy - CMD_PANE_HEIGHT,0L);               \
-    SetWindowPos(hwndCmdPane,HWND_TOP,rcHost.left,rcHost.top,cxClient,CMD_PANE_HEIGHT,SWP_SHOWWINDOW);  \
-    if ( 0 < pPStoPDF -> logPaneWidth && pPStoPDF -> logIsVisible ) {                                   \
-        SetWindowPos(hwndLog,HWND_TOP,cxClient,LOG_PANE_HEIGHT,pPStoPDF -> logPaneWidth,cy - LOG_PANE_HEIGHT,SWP_SHOWWINDOW);           \
-        SetWindowPos(hwndLogPane,HWND_TOP,rcHost.left + cxClient,rcHost.top,pPStoPDF -> logPaneWidth,LOG_PANE_HEIGHT,SWP_SHOWWINDOW);   \
-        SetWindowPos(hwndLogSplitter,HWND_TOP,cxClient - SPLITTER_WIDTH / 2,0,SPLITTER_WIDTH,cy,SWP_SHOWWINDOW);\
-        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"Log >>");                         \
-    } else {                                                                                            \
-        ShowWindow(hwndLog,SW_HIDE);                                                                    \
-        ShowWindow(hwndLogPane,SW_HIDE);                                                                \
-        ShowWindow(hwndLogSplitter,SW_HIDE);                                                            \
-        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"<< Log");                         \
-    }   \
-    }
-
 #ifdef DEFINE_DATA
 
-   PStoPDF *pPStoPDF = NULL;
+    PostScriptInterpreter *pPostScriptInterpreter = NULL;
 
-   HMODULE hModule = NULL;
-   char szModuleName[MAX_PATH];
-   char szApplicationDataDirectory[MAX_PATH];
-   char szUserDirectory[MAX_PATH];
+    HMODULE hModule = NULL;
+    char szModuleName[MAX_PATH];
+    char szApplicationDataDirectory[MAX_PATH];
+    char szUserDirectory[MAX_PATH];
 
-   EDITSTREAM logStream;
+    EDITSTREAM logStream;
+    EDITSTREAM rendererLogStream;
 
-   char psCollectionDelimiters[][8] = { "[","]","<<",">>","{","}",0};
-   long psCollectionDelimiterLength[] = { 1,  1,   2,   2,  1,  1,0};
+    char psCollectionDelimiters[][8] = { "[","]","<<",">>","{","}",0};
+    long psCollectionDelimiterLength[] = { 1,  1,   2,   2,  1,  1,0};
 
-   char psDelimiters[][8] =   {"%%","%","(","/","<","<~",0};
-   long psDelimiterLength[] = {  2,  1,  1,  1,  1,   2,0};
+    char psDelimiters[][8] =   {"%%","%","(","/","<","<~",0};
+    long psDelimiterLength[] = {  2,  1,  1,  1,  1,   2,0};
 
-   char psOtherDelimiters[][8] = {"]",0};
+    char psOtherDelimiters[][8] = {"]",0};
    char pszDelimiters[] = {"%%%(/<~{"};
 
 #else
 
-   extern PStoPDF *pPStoPDF;
+    extern PostScriptInterpreter *pPostScriptInterpreter;
 
-   extern HMODULE hModule;
-   extern char szModuleName[];
-   extern char szApplicationDataDirectory[];
-   extern char szUserDirectory[];
+    extern HMODULE hModule;
+    extern char szModuleName[];
+    extern char szApplicationDataDirectory[];
+    extern char szUserDirectory[];
 
-   extern EDITSTREAM logStream;
+    extern EDITSTREAM logStream;
+    extern EDITSTREAM rendererLogStream;
 
-   extern char psCollectionDelimiters[][8];
-   extern long psCollectionDelimiterLength[];
-   extern char psDelimiters[][8];
-   extern long psDelimiterLength[];
-   extern char psOtherDelimiters[][8];
-   extern char pszDelimiters[];
+    extern char psCollectionDelimiters[][8];
+    extern long psCollectionDelimiterLength[];
+    extern char psDelimiters[][8];
+    extern long psDelimiterLength[];
+    extern char psOtherDelimiters[][8];
+    extern char pszDelimiters[];
 
 #endif

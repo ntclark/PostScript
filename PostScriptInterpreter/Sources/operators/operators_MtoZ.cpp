@@ -510,19 +510,19 @@ This is the MIT License
     while ( operandStack.size() ) 
         entries.insert(entries.end(),pop());
 
-    pPStoPDF -> queueLog("\n");
+    pPostScriptInterpreter -> queueLog(true,"\n");
 
     for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) {
         push(*it);
-        pPStoPDF -> queueLog("Name:");
-        pPStoPDF -> queueLog(NULL == (*it) -> Name() ? "<unnamed>" : (*it) -> Name());
-        pPStoPDF -> queueLog(", Type:");
-        pPStoPDF -> queueLog((*it) -> TypeName());
-        pPStoPDF -> queueLog(", ValueType:");
-        pPStoPDF -> queueLog((*it) -> ValueTypeName());
-        pPStoPDF -> queueLog(", Contents:");
-        pPStoPDF -> queueLog(NULL == (*it) -> Contents() ? "<empty>" : (*it) -> Contents());
-        pPStoPDF -> queueLog("\n");
+        pPostScriptInterpreter -> queueLog(true,"Name:");
+        pPostScriptInterpreter -> queueLog(true,NULL == (*it) -> Name() ? "<unnamed>" : (*it) -> Name());
+        pPostScriptInterpreter -> queueLog(true,", Type:");
+        pPostScriptInterpreter -> queueLog(true,(*it) -> TypeName());
+        pPostScriptInterpreter -> queueLog(true,", ValueType:");
+        pPostScriptInterpreter -> queueLog(true,(*it) -> ValueTypeName());
+        pPostScriptInterpreter -> queueLog(true,", Contents:");
+        pPostScriptInterpreter -> queueLog(true,NULL == (*it) -> Contents() ? "<empty>" : (*it) -> Contents());
+        pPostScriptInterpreter -> queueLog(true,"\n");
 
         OutputDebugStringA("Name:");
         OutputDebugStringA(NULL == (*it) -> Name() ? "<unnamed>" : (*it) -> Name());

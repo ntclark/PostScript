@@ -9,11 +9,11 @@
 #include <process.h>
 #include <olectl.h>
 
-#include "resource.h"
-
+#if USE_GS_PROPERTIES
 #include "Properties_i.h"
-#include "PostScriptInterpreter_i.h"
+#endif
 
+#include "PostScriptInterpreter_i.h"
 
 class ParsePSHost : public IUnknown {
 public:
@@ -30,7 +30,7 @@ public:
     HWND hwndFrame{NULL};
     HWND hwndPSHost{NULL};
 
-    IPostScript *pIPostScript{NULL};
+    IPostScriptInterpreter *pIPostScript{NULL};
 
 #define EMBEDDED_OBJECT_EMBEDDER_CLASS  ParsePSHost
 
@@ -55,5 +55,3 @@ int pixelsToHiMetric(SIZEL *pPixels,SIZEL *phiMetric);
 int hiMetricToPixels(SIZEL *phiMetric,SIZEL *pPixels);
 
 int GetLocation(HWND hwnd,long key,char *szFolderLocation);
-
-

@@ -20,7 +20,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 This is the MIT License
 */
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
 uint32_t decodeASCII85(uint8_t *pbBytes,uint32_t cbSource,uint8_t **ppResult);
 

@@ -105,7 +105,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;gdiplus.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -158,7 +158,7 @@ Exit 0</Command>
       <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;gdiplus.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -208,7 +208,7 @@ Exit 0</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;gdiplus.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -258,7 +258,7 @@ Exit 0</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <DataExecutionPrevention>true</DataExecutionPrevention>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;gdiplus.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -287,7 +287,7 @@ Exit 0</Command>
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp" />
-    <ClCompile Include="ascii85.cpp" />
+    <ClCompile Include="Sources\ascii85.cpp" />
     <ClCompile Include="Sources\cmdPaneHandler.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPointContainer.cpp" />
@@ -296,7 +296,7 @@ Exit 0</Command>
     <ClCompile Include="Sources\COM Implementation\dllMain.cpp" />
     <ClCompile Include="Sources\COM Interfaces\Being Hosted\IOleInPlaceObject.cpp" />
     <ClCompile Include="Sources\COM Interfaces\Being Hosted\IOleObject.cpp" />
-    <ClCompile Include="Sources\COM Interfaces\IPostScript.cpp" />
+    <ClCompile Include="Sources\COM Interfaces\IPostScriptInterpreter.cpp" />
     <ClCompile Include="Sources\COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="Sources\Fonts\font.cpp" />
     <ClCompile Include="Sources\Fonts\font_transforms.cpp" />
@@ -317,7 +317,12 @@ Exit 0</Command>
     <ClCompile Include="Sources\job\parse.cpp" />
     <ClCompile Include="Sources\job\parseJob.cpp" />
     <ClCompile Include="Sources\job\parseJob_execute.cpp" />
-    <ClCompile Include="Sources\logPaneHandler.cpp" />
+    <ClCompile Include="Sources\logPaneHandler.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Sources\operators\operators_AtoL.cpp" />
     <ClCompile Include="Sources\operators\operators_MtoZ.cpp" />
     <ClCompile Include="Sources\operators\pdfOperators.cpp" />
@@ -354,11 +359,10 @@ Exit 0</Command>
     <ClCompile Include="Sources\PostScript objects\string.cpp" />
     <ClCompile Include="Sources\PostScript objects\constantString.cpp" />
     <ClCompile Include="Sources\PostScript objects\structureSpec.cpp" />
-    <ClCompile Include="Sources\PostScript.cpp" />
-    <ClCompile Include="Sources\PostScript_CommitCurrentPage.cpp" />
-    <ClCompile Include="Sources\PostScript_DisplayStack.cpp" />
-    <ClCompile Include="Sources\PostScript_initWindows.cpp" />
-    <ClCompile Include="Sources\PostScript_Log.cpp" />
+    <ClCompile Include="Sources\PostScriptInterpreter.cpp" />
+    <ClCompile Include="Sources\CommitCurrentPage.cpp" />
+    <ClCompile Include="Sources\initWindows.cpp" />
+    <ClCompile Include="Sources\logHandling.cpp" />
     <ClCompile Include="Sources\runLengthEncodeDecode.cpp" />
     <ClCompile Include="Sources\Stacks\dictionaryStack.cpp" />
     <ClCompile Include="Sources\Stacks\objectStack.cpp" />
@@ -408,8 +412,8 @@ Exit 0</Command>
     <ClInclude Include="include\PostScript objects\string.h" />
     <ClInclude Include="include\PostScript objects\constantString.h" />
     <ClInclude Include="include\PostScript objects\structureSpec.h" />
-    <ClInclude Include="include\PostScript.h" />
-    <ClInclude Include="include\PostScript_Log.h" />
+    <ClInclude Include="include\PostScriptInterpreter.h" />
+    <ClInclude Include="include\logHandling.h" />
     <ClInclude Include="include\resourceIdentifiers.h" />
     <ClInclude Include="include\Stacks\dictionaryStack.h" />
     <ClInclude Include="include\Stacks\fontStack.h" />

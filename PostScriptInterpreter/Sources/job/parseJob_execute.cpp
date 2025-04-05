@@ -39,7 +39,7 @@ This is the MIT License
     pNext = p;
     char *pLogStart = NULL;
 
-    _se_translator_function defaultExtranslator = _set_se_translator(trans_func);
+    _se_translator_function defaultExTranslator = _set_se_translator(trans_func);
 
     quitRequested = false;
 
@@ -54,7 +54,7 @@ This is the MIT License
             pNext = p;
             while ( 0x0A == *pNext || 0x0D == *pNext ) 
                 pNext++;
-            pPStoPDF -> queueLog(p,pNext,false);
+            pPostScriptInterpreter -> queueLog(true,p,pNext,false);
             p = pNext;
             continue;
         }
@@ -67,19 +67,19 @@ This is the MIT License
             pDelimiter = (char *)delimiterPeek(p,&pNext);
             if ( ! ( NULL == pDelimiter ) && COMMENT_DELIMITER[0] == pDelimiter[0] ) {
                 parseComment(pNext,&pNext);
-                pPStoPDF -> queueLog(p,pNext);
+                pPostScriptInterpreter -> queueLog(true,p,pNext);
                 p = pNext;
                 continue;
             }
         }
 
-        pPStoPDF -> queueLog(p,pNext);
+        pPostScriptInterpreter -> queueLog(true,p,pNext);
 
         pLogStart = pNext;
 
         if ( ! ( NULL == pDelimiter ) ) {
             (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext);
-            pPStoPDF -> queueLog(pLogStart,pNext);
+            pPostScriptInterpreter -> queueLog(true,pLogStart,pNext);
             ADVANCE_THRU_WHITE_SPACE(pNext)
             p = pNext;
             continue;
@@ -88,14 +88,14 @@ This is the MIT License
         if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == pCollectionDelimiter[0] ) {
             char *pProcedureEnd = NULL;
             parseProcedureString(pNext,&pProcedureEnd);
-            pPStoPDF -> queueLog(pLogStart,pProcedureEnd);
+            pPostScriptInterpreter -> queueLog(true,pLogStart,pProcedureEnd);
 
             try {
             push(new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd));
             } catch ( PStoPDFException *pe ) {
                 char szMessage[1024];
                 sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
-                pPStoPDF -> queueLog(szMessage,NULL,true);
+                pPostScriptInterpreter -> queueLog(true,szMessage,NULL,true);
             }
 
             ADVANCE_THRU_WHITE_SPACE(pProcedureEnd)
@@ -131,12 +131,12 @@ This is the MIT License
             executeObject();
 
         } catch ( nonPostscriptException *ex ) {
-            pPStoPDF -> queueLog(ex -> Message(),NULL,true);
+            pPostScriptInterpreter -> queueLog(true,ex -> Message(),NULL,true);
         } catch ( PStoPDFException *pe ) {
             char szMessage[1024];
             sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
-            //pPStoPDF -> queueLog(szMessage,NULL,true);
-            //pPStoPDF -> queueLog("\nStack Trace:\n");
+            pPostScriptInterpreter -> queueLog(true,szMessage,NULL,true);
+            //pPostScriptInterpreter -> queueLog("\nStack Trace:\n");
             //operatorPstack();
         }
 
@@ -147,13 +147,13 @@ This is the MIT License
         if ( 0 == strncmp(pNext,"terminate",9) )
             break;
 
-        pPStoPDF -> queueLog(pLogStart,pNext);
+        pPostScriptInterpreter -> queueLog(true,pLogStart,pNext);
 
     } while ( p && ! quitRequested );
 
-    pPStoPDF -> settleLog();
+    pPostScriptInterpreter -> settleLog(PostScriptInterpreter::hwndLogContent);
 
-    _set_se_translator(defaultExtranslator);
+    _set_se_translator(defaultExTranslator);
 
     return 0;
     }

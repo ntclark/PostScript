@@ -44,7 +44,11 @@ library Renderer {
         [propput] HRESULT DownScale(FLOAT downScale);
         [propput] HRESULT Origin(POINTF origin);
 
+        [helpstring("To do live rendering, i.e., draw primitives as they are defined, you must provide the DC and drawing Rect.\nRenderLive is useful for debugging")]
+        HRESULT SetRenderLive(HDC hdc,RECT *pDrawingRect);
+        HRESULT UnSetRenderLive();
         HRESULT Render(HDC hdc,RECT *pDrawingRect);
+
         HRESULT Discard();
         HRESULT ClearRect(HDC hdc,RECT *pRect,COLORREF theColor);
 
@@ -115,6 +119,7 @@ library Renderer {
         [helpstring("Please DO NOT free the UINT_PTR, it is statically allocated")]
         HRESULT ErrorNotification(UINT_PTR errorMessage);
         HRESULT StatusNotification(UINT_PTR statusMessage);
+        HRESULT LogNotification(UINT_PTR logMessage);
         HRESULT Clear();
     };
 

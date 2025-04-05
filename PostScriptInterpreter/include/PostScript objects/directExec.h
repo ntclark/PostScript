@@ -23,7 +23,7 @@ This is the MIT License
 
 #pragma once
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
    class directExec : public object {
    public:

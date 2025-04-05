@@ -1,14 +1,21 @@
 
 #include "HostPostscript.h"
 
-#include "Properties_i.c"
 #include "PostScriptInterpreter_i.c"
 
+#if USE_GS_PROPERTIES
+#include "Properties_i.c"
 IGProperties *pIGProperties = NULL;
+#endif
+
+void adjustToMonitorSize(RECT *);
 
 char szApplicationDataDirectory[MAX_PATH];
 
 RECT rcFrame{512,512,1024,768};
+long cbPostScriptProperties = 0L;
+UINT_PTR pPostScriptProperties = NULL;
+BYTE postScriptPropertiesBlob[512];
 
     int __stdcall WinMain(HINSTANCE hModule,HINSTANCE hInstancePrevious,LPSTR lpCmdLine,int nCmdShow) {
 
@@ -29,16 +36,24 @@ RECT rcFrame{512,512,1024,768};
 
     HRESULT rc = CoInitializeEx(NULL,0);
 
+#if USE_GS_PROPERTIES
+
     char szTemp[MAX_PATH];
 
     GetLocation(NULL,CSIDL_COMMON_APPDATA,szTemp);
 
-    sprintf(szApplicationDataDirectory,"%s\\CursiVision",szTemp);
+    sprintf(szApplicationDataDirectory,"%s\\EnVisioNateSW",szTemp);
 
     CoCreateInstance(CLSID_InnoVisioNateProperties,NULL,CLSCTX_ALL,IID_IGProperties,reinterpret_cast<void **>(&pIGProperties));
 
     pIGProperties -> Add((BSTR)L"window position",NULL);
     pIGProperties -> DirectAccess((BSTR)L"window position",TYPE_BINARY,&rcFrame,sizeof(RECT));
+
+    pIGProperties -> Add((BSTR)L"postscript properties size",NULL);
+    pIGProperties -> DirectAccess((BSTR)L"postscript properties size",TYPE_BINARY,&cbPostScriptProperties,sizeof(long));
+
+    pIGProperties -> Add((BSTR)L"postscript properties",NULL);
+    pIGProperties -> DirectAccess((BSTR)L"postscript properties",TYPE_RAW_BINARY,(void *)postScriptPropertiesBlob,cbPostScriptProperties);
 
     WCHAR szwDataFile[MAX_PATH];
     MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
@@ -49,6 +64,28 @@ RECT rcFrame{512,512,1024,768};
     VARIANT_BOOL bSuccess;
 
     pIGProperties -> LoadFile(&bSuccess);
+
+    if ( FALSE == bSuccess )
+        adjustToMonitorSize(&rcFrame);
+
+    else {
+
+        VARIANT x;
+        x.vt = VT_PTR;
+        IGProperty *pIGProperty = NULL;
+        pIGProperties -> get_Property((wchar_t *)L"postscript properties",&pIGProperty);
+        pIGProperty -> get_value(&x);
+        pIGProperty -> Release();
+
+        memcpy(postScriptPropertiesBlob,x.pbVal,cbPostScriptProperties);
+
+    }
+
+#else
+
+    adjustToMonitorSize(&rcFrame);
+
+#endif
 
     ParsePSHost *pParsePSHost = new ParsePSHost();
 
@@ -86,12 +123,10 @@ RECT rcFrame{512,512,1024,768};
     pParsePSHost -> pIOleClientSite_HTML_Host = new ParsePSHost::_IOleClientSite(pParsePSHost,pParsePSHost -> pIOleInPlaceSite_HTML_Host,pParsePSHost -> pIOleInPlaceFrame_HTML_Host);
     pParsePSHost -> pIOleDocumentSite_HTML_Host = new ParsePSHost::_IOleDocumentSite(pParsePSHost,pParsePSHost -> pIOleClientSite_HTML_Host);
 
-    rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScript,reinterpret_cast<void **>(&pParsePSHost -> pIPostScript));
+    rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScriptInterpreter,reinterpret_cast<void **>(&pParsePSHost -> pIPostScript));
 
     pParsePSHost -> pIPostScript -> QueryInterface(IID_IOleObject,reinterpret_cast<void **>(&pParsePSHost -> pIOleObject_HTML));
-
     rc = pParsePSHost -> pIOleObject_HTML -> QueryInterface(IID_IOleInPlaceObject,reinterpret_cast<void **>(&pParsePSHost -> pIOleInPlaceObject_HTML));
-
     pParsePSHost -> pIOleObject_HTML -> SetClientSite(pParsePSHost -> pIOleClientSite_HTML_Host);
 
     if ( 1 < argc )
@@ -100,6 +135,12 @@ RECT rcFrame{512,512,1024,768};
     //pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
     pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
 
+    pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
+    //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
+
+    if ( 0 < cbPostScriptProperties )
+        pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);
+
     MSG qMessage;
 
     while ( GetMessage(&qMessage,(HWND)NULL,0L,0L) ) { 
@@ -107,16 +148,28 @@ RECT rcFrame{512,512,1024,768};
         DispatchMessage(&qMessage);
     }
 
-    delete pParsePSHost;
-
+#if USE_GS_PROPERTIES
     GetWindowRect(pParsePSHost -> hwndFrame,&rcFrame);
-
+    pParsePSHost -> pIPostScript -> GetPeristableProperties(&pPostScriptProperties,&cbPostScriptProperties);
+    VARIANT x;
+    x.vt = VT_PTR;
+    x.pbVal = (BYTE *)pPostScriptProperties;
+    IGProperty *pIGProperty = NULL;
+    pIGProperties -> get_Property((wchar_t *)L"postscript properties",&pIGProperty);
+    pIGProperty -> put_size(cbPostScriptProperties);
+    pIGProperty -> put_value(x);
+    pIGProperty -> Release();
     pIGProperties -> Save();
+    CoTaskMemFree((void *)pPostScriptProperties);
+#endif
+
+    delete pParsePSHost;
 
     return 0;
     }
 
 
+#if USE_GS_PROPERTIES
     int GetLocation(HWND hwnd,long key,char *szFolderLocation) {
 
     ITEMIDLIST *ppItemIDList;
@@ -166,7 +219,7 @@ RECT rcFrame{512,512,1024,768};
 
     return 0;
     }
-
+#endif
 
     int pixelsToHiMetric(SIZEL *pPixels,SIZEL *phiMetric) {
     HDC hdc = GetDC(0);
@@ -183,17 +236,90 @@ RECT rcFrame{512,512,1024,768};
     }
 
 
-    int hiMetricToPixels(SIZEL *phiMetric,SIZEL *pPixels) {
-    HDC hdc = GetDC(0);
-    int pxlsX,pxlsY;
+    static long monitorIndex = -1L;;
+    static HMONITOR hFoundMonitor = NULL;
+    static long workingAreaHeight = 0L;
 
-    pxlsX = GetDeviceCaps(hdc,LOGPIXELSX);
-    pxlsY = GetDeviceCaps(hdc,LOGPIXELSY);
 
-    ReleaseDC(0,hdc);
-
-    pPixels -> cx = HIMETRIC_TO_PIXELS(phiMetric -> cx,pxlsX);
-    pPixels -> cy = HIMETRIC_TO_PIXELS(phiMetric -> cy,pxlsY);
-
+    BOOL CALLBACK enumFindMonitor(HMONITOR hm,HDC,RECT *,LPARAM lp) {
+    monitorIndex++;
+    if ( -1L == lp ) {
+        MONITORINFO mi{0};
+        mi.cbSize = sizeof(MONITORINFO);
+        GetMonitorInfo(hm,&mi);
+        if ( mi.dwFlags & MONITORINFOF_PRIMARY ) {
+            hFoundMonitor = hm;
+            workingAreaHeight = mi.rcWork.bottom - mi.rcWork.top;
+            return FALSE;
+        }
+    }
+    if ( monitorIndex == lp ) {
+        hFoundMonitor = hm;
+        MONITORINFO mi{0};
+        mi.cbSize = sizeof(MONITORINFO);
+        GetMonitorInfo(hm,&mi);
+        workingAreaHeight = mi.rcWork.bottom - mi.rcWork.top;
+        return FALSE;
+    }
     return TRUE;
+    }
+
+
+    void adjustToMonitorSize(RECT *prcFrame) {
+
+    long monitorCount = GetSystemMetrics(SM_CMONITORS);
+
+    long monitorIndex = -1L;
+    long activeMonitor = -1L;
+
+    EnumDisplayMonitors(NULL,NULL,enumFindMonitor,(LPARAM)activeMonitor);
+
+    RECT rcScreen = {0};
+
+    if ( hFoundMonitor ) {
+        MONITORINFO monitorInfo = {0};
+        monitorInfo.cbSize = sizeof(MONITORINFO);
+        GetMonitorInfo(hFoundMonitor,&monitorInfo);
+        rcScreen = monitorInfo.rcWork;
+        activeMonitor = monitorIndex;
+    } else
+        SystemParametersInfo(SPI_GETWORKAREA,0,&rcScreen,0);
+
+    RECT rectFrame{0,0,0,0};
+
+    rectFrame.top = 16;
+    rectFrame.bottom = rcScreen.bottom - rcScreen.top - rectFrame.top - 16;
+    rectFrame.right = rectFrame.left + (long)(8.5 * (double)(rectFrame.bottom - rectFrame.top) / 11.0);
+
+    long cxScreen = rcScreen.right - rcScreen.left;
+    long cyScreen = rcScreen.bottom - rcScreen.top;
+    double aspectRatio = (double)cxScreen / (double)cyScreen;
+
+    long cx = rectFrame.right - rectFrame.left;
+    long cy = rectFrame.bottom - rectFrame.top;
+
+    if ( rectFrame.top < rcScreen.top )
+        rectFrame.top = rcScreen.top + 8;
+
+    if ( rectFrame.left < rcScreen.left )
+        rectFrame.left = rcScreen.left + 8;
+
+    if ( rectFrame.left - rcScreen.left > cxScreen )
+        rectFrame.left = cxScreen + rcScreen.left;
+
+    double cxChange = (double)cx;
+    while ( (rectFrame.top - rcScreen.top) + cy > cyScreen || (rectFrame.left - rcScreen.left) + cx > cxScreen ) {
+        cy -= 1;
+        cx = (long)((double)cx - aspectRatio);
+    }
+
+    cx = (long)cxChange;
+
+    rectFrame.right = rectFrame.left + cx;
+    rectFrame.bottom = rectFrame.top + cy;
+
+    *prcFrame = rectFrame;
+    //SetWindowPos(hwndFrame,HWND_TOP,rectFrame.left,rectFrame.top,rectFrame.right - rectFrame.left,rectFrame.bottom - rectFrame.top,SWP_SHOWWINDOW);
+
+    return;
     }

@@ -2,7 +2,6 @@
 #include "HostPostscript.h"
 
     ParsePSHost::ParsePSHost() {
-
     }
 
     ParsePSHost::~ParsePSHost() {

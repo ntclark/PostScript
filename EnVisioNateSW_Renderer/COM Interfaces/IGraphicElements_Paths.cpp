@@ -33,14 +33,28 @@ This is the MIT License
     point becomes undefined.
 */
 
-    if ( ! ( NULL == pCurrentPath ) && 0 == pCurrentPath -> hashCode ) 
-        pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,pCurrentPath -> isFillPath);
+    if ( ! ( NULL == pCurrentPath ) ) {
+        if ( ! pCurrentPath -> isClosed() ) {
+            primitive *p = pCurrentPath -> pLastPrimitive;
+            if ( p == pCurrentPath -> pFirstPrimitive -> pNextPrimitive && p -> theType == primitive::type::move ) {
+
+                // This is a newpath - moveto, and no other primitives.
+                // 
+                // I *believe* this happens when there is a move to set the current point
+                // and then a newpath. Example, a Type 3 font drawing procedure for a glyph.
+                // It's first command is newpath, then moveto. So what would the point of
+                // *THIS* moveto which occurs just before draing the glyph ????
+                //
+                // I believe it makes sense. In my implementation of draw type 3 glyph
+                // I set the current translation matrix to move to the current user space point
+
+                removePath(pCurrentPath);
+            } else
+                ClosePath();
+        }
+    }
 
     addPath(new path(pParent,this));
-
-    pCurrentPath -> addPrimitive(new primitive(this,primitive::type::newPathMarker));
-
-    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,pCurrentPath -> isFillPath);
 
     return S_OK;
     }
@@ -66,7 +80,7 @@ This is the MIT License
     primitive *p = pCurrentPath -> pLastPrimitive;
 
     while ( ! ( p == pCurrentPath -> pFirstPrimitive ) && ! ( p -> theType == primitive::type::move ) )
-        p = p -> pPrior;
+        p = p -> pPriorPrimitive;
 
     if ( p == pCurrentPath -> pFirstPrimitive ) {
         sprintf(Renderer::szErrorMessage,"Warning: a ClosePath was issued, however, the current path does not have a MoveTo location");
@@ -74,14 +88,36 @@ This is the MIT License
         return E_UNEXPECTED;
     }
 
-    //if ( ! ( NULL == pCurrentPath -> pLastPrimitive ) ) {
-    //    if ( primitive::type::move == pCurrentPath -> pLastPrimitive -> theType ) {
-
-    POINTF ptLine{p -> vertex.x,p -> vertex.y};
-
-    pCurrentPath -> addPrimitive(new linePrimitive(this,&ptLine));
+    if ( ! ( currentPageSpacePoint.x == p -> vertex.x ) || ! ( currentPageSpacePoint.y == p -> vertex.y ) ) {
+        POINTF ptLine{p -> vertex.x,p -> vertex.y};
+        pCurrentPath -> addPrimitive(new linePrimitive(this,&ptLine));
+    }
 
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::closePathMarker));
+
+    pCurrentPath -> isFillPath = false;
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,false);
+
+    if ( ! pParent -> renderLive )
+        return S_OK;
+
+    if ( NULL == pParent -> pID2D1DCRenderTarget ) {
+        sprintf(Renderer::szErrorMessage,"SetRenderLive has not been called. Call that method first");
+        pParent -> pIConnectionPointContainer -> fire_ErrorNotification(szErrorMessage);
+        return E_UNEXPECTED;
+    }
+
+    pParent -> setupPathAndSink();
+
+    pParent -> pIGraphicParameters -> resetParameters(pCurrentPath -> szLineSettings);
+
+    GraphicElements::path::pathAction pa = pCurrentPath -> apply(false);
+
+    pParent -> closeSink();
+
+    pParent -> strokeRender();
+
+    removePath(pCurrentPath);
 
     return S_OK;
     }
@@ -127,7 +163,26 @@ This is the MIT License
     pCurrentPath -> isFillPath = false;
     pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,false);
 
-    NewPath();
+    if ( ! pParent -> renderLive )
+        return S_OK;
+
+    if ( NULL == pParent -> pID2D1DCRenderTarget ) {
+        sprintf(Renderer::szErrorMessage,"SetRenderLive has not been called. Call this method first");
+        pParent -> pIConnectionPointContainer -> fire_ErrorNotification(szErrorMessage);
+        return E_UNEXPECTED;
+    }
+
+    pParent -> setupPathAndSink();
+
+    pParent -> pIGraphicParameters -> resetParameters(pCurrentPath -> szLineSettings);
+
+    GraphicElements::path::pathAction pa = pCurrentPath -> apply(false);
+
+    pParent -> closeSink();
+
+    pParent -> strokeRender();
+
+    removePath(pCurrentPath);
 
     return S_OK;
     }
@@ -145,9 +200,6 @@ This is the MIT License
     fill implicitly closes any open subpaths of the current path before painting. Any
     previous contents of the filled area are obscured, so an area can be erased by filling
     it with the current color set to white.
-
-    After filling the current path, fill clears it with an implicit newpath operation. To
-    preserve the current path across a fill operation, use the sequence
 */
 
     if ( NULL == pCurrentPath )
@@ -157,6 +209,29 @@ This is the MIT License
 
     pCurrentPath -> isFillPath = true;
     pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,true);
+
+    if ( ! pParent -> renderLive ) {
+        NewPath();
+        return S_OK;
+    }
+
+    if ( NULL == pParent -> pID2D1DCRenderTarget ) {
+        sprintf(Renderer::szErrorMessage,"SetRenderLive has not been called. Call this method first");
+        pParent -> pIConnectionPointContainer -> fire_ErrorNotification(szErrorMessage);
+        return E_UNEXPECTED;
+    }
+
+    pParent -> setupPathAndSink();
+
+    pParent -> pIGraphicParameters -> resetParameters(pCurrentPath -> szLineSettings);
+
+    GraphicElements::path::pathAction pa = pCurrentPath -> apply(true);
+
+    pParent -> closeSink();
+
+    pParent -> fillRender();
+
+    removePath(pCurrentPath);
 
     NewPath();
 
@@ -174,6 +249,8 @@ This is the MIT License
 
         p -> transform();
 
+        p -> logPrimitive();
+
         switch ( p -> theType) {
 
         case primitive::type::newPathMarker: {
@@ -187,6 +264,7 @@ This is the MIT License
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
             pParent -> isFigureStarted = false;
+            //return path::pathAction::close; //<--- causes fuzzy poor resolution !!!
             }
             break;
 
@@ -232,21 +310,19 @@ This is the MIT License
             break;
 
         case primitive::type::cubicBezier:
-            if ( pParent -> isFigureStarted )
-                pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
-            pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+            if ( ! pParent -> isFigureStarted ) {
+                pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+                pParent -> isFigureStarted = true;
+            }
             pRenderer -> pID2D1GeometrySink -> AddBezier((D2D1_BEZIER_SEGMENT *)p -> dataOne());
-            pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
-            pParent -> isFigureStarted = false;
             break;
 
         case primitive::type::quadraticBezier:
-            //if ( pParent -> isFigureStarted )
-            //    pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
-            //pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+            if ( ! pParent -> isFigureStarted ) {
+                pRenderer -> pID2D1GeometrySink -> BeginFigure(D2D1::Point2F(p -> vertex.x,p -> vertex.y),doFill ? D2D1_FIGURE_BEGIN_FILLED : D2D1_FIGURE_BEGIN_HOLLOW );
+                pParent -> isFigureStarted = true;
+            }
             pRenderer -> pID2D1GeometrySink -> AddQuadraticBezier((D2D1_QUADRATIC_BEZIER_SEGMENT *)p -> dataOne());
-            //pRenderer -> pID2D1GeometrySink -> EndFigure(doFill ? D2D1_FIGURE_END_CLOSED : D2D1_FIGURE_END_OPEN);
-            //pParent -> isFigureStarted = false;
             break;
 
         default:
@@ -254,7 +330,7 @@ MessageBox(NULL,"Unknown primitive","Error",MB_OK);
             break;
         }
 
-        p = p -> pNext;
+        p = p -> pNextPrimitive;
 
     }
 

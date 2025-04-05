@@ -40,7 +40,7 @@ This is the MIT License
 
     FontManager::FontManager(IUnknown *pUnkOuter) {
     if ( NULL == pIRenderer ) {
-        CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
+        HRESULT rc = CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
         pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
     }
     pIConnectionPointContainer = new _IConnectionPointContainer(this);
@@ -54,6 +54,8 @@ This is the MIT License
         delete pFont;
     delete pIConnectionPointContainer;
     delete pIConnectionPoint;
+    pIGraphicElements -> Release();
+    pIRenderer -> Release();
     return;
     }
 

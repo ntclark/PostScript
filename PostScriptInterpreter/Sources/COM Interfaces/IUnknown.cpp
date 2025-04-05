@@ -21,11 +21,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
    // IUnknown
 
-   long __stdcall PStoPDF::QueryInterface(REFIID riid,void **ppv) {
+   long __stdcall PostScriptInterpreter::QueryInterface(REFIID riid,void **ppv) {
 
    *ppv = NULL;
 
@@ -33,8 +33,8 @@ This is the MIT License
       *ppv = static_cast<IUnknown *>(this);
    else 
 
-   if ( riid == IID_IPostScript )
-      *ppv = static_cast<IPostScript *>(this);
+   if ( riid == IID_IPostScriptInterpreter )
+      *ppv = static_cast<IPostScriptInterpreter *>(this);
    else
 
    if ( riid == IID_IOleObject )
@@ -45,9 +45,9 @@ This is the MIT License
       return pIConnectionPointContainer -> QueryInterface(riid,ppv);
    else
 
-   if ( IID_IConnectionPoint == riid ) 
-      return pIConnectionPoint -> QueryInterface(riid,ppv);
-   else
+   //if ( IID_IConnectionPoint == riid ) 
+   //   return pIConnectionPoints[0] -> QueryInterface(riid,ppv);
+   //else
 
    if ( IID_IOleObject == riid )
       return pIOleObject -> QueryInterface(riid,ppv);
@@ -64,12 +64,12 @@ This is the MIT License
    return S_OK;
    }
 
-   unsigned long __stdcall PStoPDF::AddRef() {
+   unsigned long __stdcall PostScriptInterpreter::AddRef() {
    refCount++;
    return refCount;
    }
 
-   unsigned long __stdcall PStoPDF::Release() { 
+   unsigned long __stdcall PostScriptInterpreter::Release() { 
    refCount--;
    if ( ! refCount ) {
       delete this;

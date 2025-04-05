@@ -27,19 +27,29 @@ This is the MIT License
 
     if ( IID_IConnectionPointContainer == riid ) {
         *ppv = static_cast<IConnectionPointContainer *>(this);
-        pParent -> AddRef();
+        AddRef();
+        return S_OK;
+    }
+    if ( IID_IUnknown == riid ) {
+        *ppv = static_cast<IUnknown *>(this);
+        AddRef();
         return S_OK;
     }
     return pParent -> QueryInterface(riid,ppv);
     }
 
+
     STDMETHODIMP_(ULONG) Renderer::_IConnectionPointContainer::AddRef() {
-    return pParent -> AddRef();
-    }
-    STDMETHODIMP_(ULONG) Renderer::_IConnectionPointContainer::Release() {
-    return pParent -> Release();
+    return ++refCount;
     }
 
+    STDMETHODIMP_(ULONG) Renderer::_IConnectionPointContainer::Release() {
+    if ( 1 == refCount ) {
+        delete this;
+        return 0;
+    }
+    return --refCount;
+    }
 
     STDMETHODIMP Renderer::_IConnectionPointContainer::EnumConnectionPoints(IEnumConnectionPoints **ppEnum) {
 
@@ -81,7 +91,7 @@ This is the MIT License
     }
 
 
-    void Renderer::_IConnectionPointContainer::fire_StatusNotification(char *pszError) {
+    void Renderer::_IConnectionPointContainer::fire_StatusNotification(char *pszStatus) {
     IEnumConnections* pIEnum;
     CONNECTDATA connectData;
     pParent -> pIConnectionPoint -> EnumConnections(&pIEnum);
@@ -90,7 +100,23 @@ This is the MIT License
         if ( pIEnum -> Next(1, &connectData, NULL) ) 
             break;
         MY_EVENT_CLASS * pClient = reinterpret_cast<MY_EVENT_CLASS *>(connectData.pUnk);
-        pClient -> StatusNotification((UINT_PTR)pszError);
+        pClient -> StatusNotification((UINT_PTR)pszStatus);
+    }
+    static_cast<IUnknown*>(pIEnum) -> Release();
+    return;
+    }
+
+
+    void Renderer::_IConnectionPointContainer::fire_LogNotification(char *pszLog) {
+    IEnumConnections* pIEnum;
+    CONNECTDATA connectData;
+    pParent -> pIConnectionPoint -> EnumConnections(&pIEnum);
+    if ( ! pIEnum ) return;
+    while ( 1 ) {
+        if ( pIEnum -> Next(1, &connectData, NULL) ) 
+            break;
+        MY_EVENT_CLASS * pClient = reinterpret_cast<MY_EVENT_CLASS *>(connectData.pUnk);
+        pClient -> LogNotification((UINT_PTR)pszLog);
     }
     static_cast<IUnknown*>(pIEnum) -> Release();
     return;

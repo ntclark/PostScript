@@ -26,8 +26,8 @@ This is the MIT License
 #include <olectl.h>
 #include <stdio.h>
 
-#define OBJECT_NAME "EnVisioNateSW.PStoPDFGen2"
-#define OBJECT_NAME_V "EnVisioNateSW.PStoPDFGen2.1"
+#define OBJECT_NAME "EnVisioNateSW.PostScriptInterpreter"
+#define OBJECT_NAME_V "EnVisioNateSW.PostScriptInterpreter.1"
 #define OBJECT_VERSION "1.0"
 #define OBJECT_CLSID CLSID_PostScriptInterpreter
 #define OBJECT_LIBID LIBID_PostScriptInterpreter
@@ -36,7 +36,7 @@ This is the MIT License
 
 #include "utilities.h"
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 #include "PostScriptInterpreter_i.c"
 #include "Renderer_i.c"
 
@@ -67,7 +67,7 @@ This is the MIT License
         break;
   
     case DLL_PROCESS_DETACH:
-        DeleteCriticalSection(&PStoPDF::theQueueCriticalSection);
+        DeleteCriticalSection(&PostScriptInterpreter::theQueueCriticalSection);
         object::releaseStorage();
         break;
   
@@ -243,7 +243,7 @@ This is the MIT License
     HRESULT STDMETHODCALLTYPE Factory::CreateInstance(IUnknown *punkOuter, REFIID riid, void **ppv) { 
     HRESULT hres;
     *ppv = NULL; 
-    PStoPDF *pef = new PStoPDF(punkOuter);
+    PostScriptInterpreter *pef = new PostScriptInterpreter(punkOuter);
     hres = pef -> QueryInterface(riid,ppv);
     if ( !*ppv ) delete pef;
     return hres;

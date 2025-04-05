@@ -21,7 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript.h"
+#include "PostScriptInterpreter.h"
 
 #include "job.h"
 
@@ -29,14 +29,16 @@ This is the MIT License
 
     long windowTop = 0L;
 
-    LRESULT CALLBACK PStoPDF::handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+    boolean awaitingClientPaint = false;
 
-    PStoPDF *p = (PStoPDF *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
+    LRESULT CALLBACK PostScriptInterpreter::handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+
+    PostScriptInterpreter *p = (PostScriptInterpreter *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
 
     switch ( msg ) {
     case WM_CREATE: {
         CREATESTRUCT *pc = reinterpret_cast<CREATESTRUCT *>(lParam);
-        p = reinterpret_cast<PStoPDF *>(pc -> lpCreateParams);
+        p = reinterpret_cast<PostScriptInterpreter *>(pc -> lpCreateParams);
         SetWindowLongPtr(hwnd,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(p));
         windowTop = 0L;
         }
@@ -51,10 +53,9 @@ This is the MIT License
         BeginPaint(hwnd,&ps);
         ps.rcPaint.right -= GetSystemMetrics(SM_CXVSCROLL);
         FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_WINDOW + 1));
-
         long y = windowTop;
-        for ( std::pair<size_t,HBITMAP> pPair : pPStoPDF -> pageBitmaps ) {
-            SIZEL *pSizel = pPStoPDF -> pageSizes[pPair.first];
+        for ( std::pair<size_t,HBITMAP> pPair : pPostScriptInterpreter -> pageBitmaps ) {
+            SIZEL *pSizel = pPostScriptInterpreter -> pageSizes[pPair.first];
             HDC hdcSource = CreateCompatibleDC(ps.hdc);
             HGDIOBJ oldObj = SelectObject(hdcSource,pPair.second);
             BitBlt(ps.hdc,0,y,pSizel -> cx,pSizel -> cy,hdcSource,0,0,SRCCOPY);
@@ -62,8 +63,8 @@ This is the MIT License
             DeleteDC(hdcSource);
             y += pSizel -> cy;
         }
-
         EndPaint(hwnd,&ps);
+        awaitingClientPaint = false;
         return (LRESULT)TRUE;
         }
 
@@ -83,13 +84,13 @@ This is the MIT License
         GetClientRect(hwnd,&rcClient);
         if ( 0 == (rcClient.bottom - rcClient.top) ) 
             break;
-        if ( -1L == PStoPDF::initialCYClient )
-            PStoPDF::initialCYClient = rcClient.bottom - rcClient.top;
-        SetWindowPos(hwndVScroll,HWND_TOP,rcClient.right - GetSystemMetrics(SM_CXVSCROLL),0,GetSystemMetrics(SM_CXVSCROLL),PStoPDF::initialCYClient,0L);
+        if ( -1L == PostScriptInterpreter::initialCYClient )
+            PostScriptInterpreter::initialCYClient = rcClient.bottom - rcClient.top;
+        SetWindowPos(hwndVScroll,HWND_TOP,rcClient.right - GetSystemMetrics(SM_CXVSCROLL),0,GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::initialCYClient,0L);
         SCROLLINFO scrollInfo{0};
         scrollInfo.cbSize = sizeof(SCROLLINFO);
         scrollInfo.fMask = SIF_PAGE | SIF_RANGE;
-        scrollInfo.nPage = PStoPDF::initialCYClient;
+        scrollInfo.nPage = PostScriptInterpreter::initialCYClient;
         scrollInfo.nMin = 0;
         scrollInfo.nMax = rcClient.bottom - rcClient.top;
         SetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo,TRUE);
@@ -193,6 +194,11 @@ This is the MIT License
         }
         break;
 
+    case WM_TIMER:
+        awaitingClientPaint = false;
+        KillTimer(hwnd,wParam);
+        break;
+
     case WM_FLUSH_LOG: {
         return 0L;
         }
@@ -210,14 +216,14 @@ This is the MIT License
     static boolean isCaptured = false;
     static TRACKMOUSEEVENT trackMouseEvent;
 
-    LRESULT CALLBACK PStoPDF::splitterHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+    LRESULT CALLBACK PostScriptInterpreter::splitterHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
-    PStoPDF *p = (PStoPDF *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
+    PostScriptInterpreter *p = (PostScriptInterpreter *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
 
     switch ( msg ) {
     case WM_CREATE: {
         CREATESTRUCT *pc = reinterpret_cast<CREATESTRUCT *>(lParam);
-        p = reinterpret_cast<PStoPDF *>(pc -> lpCreateParams);
+        p = reinterpret_cast<PostScriptInterpreter *>(pc -> lpCreateParams);
         SetWindowLongPtr(hwnd,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(p));
         }
         break;
@@ -261,13 +267,26 @@ This is the MIT License
                 SetCapture(hwnd);
                 isCaptured = true;
             }
+
+            if ( awaitingClientPaint )
+                break;
+
             POINT ptNew{GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam)};
             MapWindowPoints(hwnd,hwndClient,&ptNew,1);
+
             long deltaX = ptNew.x - ptDragStart.x;
             ptDragStart = ptNew;
-            pPStoPDF -> logPaneWidth -= deltaX;
 
-            SET_PANES
+            if ( hwnd == hwndLogSplitter )
+                pPostScriptInterpreter -> logPaneWidth -= deltaX;
+            else if ( hwnd == hwndRendererLogSplitter )
+                pPostScriptInterpreter -> rendererLogPaneWidth -= deltaX;
+
+            awaitingClientPaint = true;
+
+            SetTimer(hwndClient,1,500,NULL);
+
+            setWindowPanes();
 
             SetCursor(LoadCursor(NULL,IDC_SIZEWE));
         }
@@ -282,14 +301,13 @@ This is the MIT License
     }
 
 
-    LRESULT CALLBACK PStoPDF::hostFrameHandlerOveride(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+    LRESULT CALLBACK PostScriptInterpreter::hostFrameHandlerOveride(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
     switch ( msg ) {
 
     case WM_SIZE:
-    case WM_MOVE: {
-        SET_PANES
-        }
+    case WM_MOVE: 
+        setWindowPanes();
         break;
 
     default:
@@ -297,5 +315,50 @@ This is the MIT License
 
     }
 
-    return PStoPDF::nativeHostFrameHandler(hwnd,msg,wParam,lParam);
+    return PostScriptInterpreter::nativeHostFrameHandler(hwnd,msg,wParam,lParam);
+    }
+
+
+    void PostScriptInterpreter::setWindowPanes() {
+
+    RECT rcHost;
+    GetWindowRect(hwndHost,&rcHost);
+    long cx = rcHost.right - rcHost.left;
+    long cy = rcHost.bottom - rcHost.top;
+
+    long cxClient = cx - (pPostScriptInterpreter -> logIsVisible ? pPostScriptInterpreter -> logPaneWidth : 0);
+    cxClient -= (pPostScriptInterpreter -> rendererLogIsVisible ? pPostScriptInterpreter -> rendererLogPaneWidth : 0);
+    cxClient -= 8;
+
+    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClient,cy - CMD_PANE_HEIGHT,0L);
+    SetWindowPos(hwndCmdPane,HWND_TOP,rcHost.left,rcHost.top,cxClient,CMD_PANE_HEIGHT,SWP_SHOWWINDOW);
+
+    long cxLogWindow = 0;
+
+    if ( 0 < pPostScriptInterpreter -> logPaneWidth && pPostScriptInterpreter -> logIsVisible ) {
+        cxLogWindow = pPostScriptInterpreter -> logPaneWidth;
+        SetWindowPos(hwndLogContent,HWND_TOP,cxClient,LOG_PANE_HEIGHT,cxLogWindow,cy - LOG_PANE_HEIGHT,SWP_SHOWWINDOW);
+        SetWindowPos(hwndLogPane,HWND_TOP,rcHost.left + cxClient,rcHost.top,pPostScriptInterpreter -> logPaneWidth,LOG_PANE_HEIGHT,SWP_SHOWWINDOW);
+        SetWindowPos(hwndLogSplitter,HWND_TOP,cxClient - SPLITTER_WIDTH / 2,0,SPLITTER_WIDTH,cy,SWP_SHOWWINDOW);
+        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"PS Log >>");
+    } else {
+        cxLogWindow = 0;
+        ShowWindow(hwndLogContent,SW_HIDE);
+        ShowWindow(hwndLogPane,SW_HIDE);
+        ShowWindow(hwndLogSplitter,SW_HIDE);
+        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"<< PS Log");
+    }
+
+    if ( 0 < pPostScriptInterpreter -> rendererLogPaneWidth && pPostScriptInterpreter -> rendererLogIsVisible ) {
+        SetWindowPos(hwndRendererLogContent,HWND_TOP,cxClient + cxLogWindow,0,pPostScriptInterpreter -> rendererLogPaneWidth,cy,SWP_SHOWWINDOW);
+        SetWindowPos(hwndRendererLogSplitter,HWND_TOP,cxClient + cxLogWindow - SPLITTER_WIDTH / 2,0,SPLITTER_WIDTH,cy,SWP_SHOWWINDOW);
+        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_RENDERER_LOG_SHOW),"Renderer Log >>");
+    } else {
+        ShowWindow(hwndRendererLogContent,SW_HIDE);
+        ShowWindow(hwndRendererLogSplitter,SW_HIDE);
+        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_RENDERER_LOG_SHOW),"<< Renderer Log");
+    }
+
+
+    return;
     }

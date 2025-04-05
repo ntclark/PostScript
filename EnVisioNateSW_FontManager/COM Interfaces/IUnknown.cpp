@@ -66,10 +66,6 @@ This is the MIT License
 
     ULONG FontManager::Release() {
     if ( 1 == refCount ) {
-        //if ( ! ( NULL == pIGraphicElements_Type3 ) )
-        //    delete pIGraphicElements_Type3;
-        //if ( ! ( NULL == pTextRenderer ) )
-        //    delete pTextRenderer;
         delete this;
         return 0;
     }

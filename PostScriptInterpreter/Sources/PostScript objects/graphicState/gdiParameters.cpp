@@ -28,17 +28,17 @@ This is the MIT License
     // gdiParameters
 
     HRESULT gdiParameters::SaveState() {
-    return job::pIGraphicParameters -> SaveState();
+    return PostScriptInterpreter::pIGraphicParameters -> SaveState();
     }
 
 
     HRESULT gdiParameters::RestoreState() {
-    return job::pIGraphicParameters -> RestoreState();
+    return PostScriptInterpreter::pIGraphicParameters -> RestoreState();
     }
 
 
     void gdiParameters::setColorSpace(colorSpace *pcs) {
-    pPStoPDF -> PotentialNewPage();
+    pPostScriptInterpreter -> PotentialNewPage();
     pColorSpace = pcs;
     return;
     }
@@ -51,7 +51,7 @@ This is the MIT License
 
     void gdiParameters::setColor(colorSpace *pColorSpace) {
 
-    pPStoPDF -> PotentialNewPage();
+    pPostScriptInterpreter -> PotentialNewPage();
 
     if ( 0 == strcmp(pColorSpace -> Name(),"DeviceGray") ) {
         setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
@@ -77,34 +77,34 @@ This is the MIT License
 
 
     void gdiParameters::setRGBColor(COLORREF rgb) {
-    pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters -> put_RGBColor(rgb);
+    pPostScriptInterpreter -> PotentialNewPage();
+    PostScriptInterpreter::pIGraphicParameters -> put_RGBColor(rgb);
     }
 
 
     void gdiParameters::setLineWidth(POINT_TYPE v) { 
-    pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters -> put_LineWidth(v);
+    pPostScriptInterpreter -> PotentialNewPage();
+    PostScriptInterpreter::pIGraphicParameters -> put_LineWidth(v);
     return;
     }
 
 
     void gdiParameters::setLineJoin(long lj) {
-    pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters -> put_LineJoin(lj);
+    pPostScriptInterpreter -> PotentialNewPage();
+    PostScriptInterpreter::pIGraphicParameters -> put_LineJoin(lj);
     return;
     }
 
 
     void gdiParameters::setLineCap(long lc) {
-    pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters -> put_LineCap(lc);
+    pPostScriptInterpreter -> PotentialNewPage();
+    PostScriptInterpreter::pIGraphicParameters -> put_LineCap(lc);
     return;
     }
 
 
     void gdiParameters::setLineDash(FLOAT *pValues,long countValues,POINT_TYPE offset) {
-    pPStoPDF -> PotentialNewPage();
-    job::pIGraphicParameters -> put_LineDash(pValues,countValues,offset);
+    pPostScriptInterpreter -> PotentialNewPage();
+    PostScriptInterpreter::pIGraphicParameters -> put_LineDash(pValues,countValues,offset);
     return;
     }

@@ -23,17 +23,10 @@ This is the MIT License
 
 #include "job.h"
 
-    IFontManager *job::pIFontManager = NULL;
-    IRenderer *job::pIRenderer = NULL;;
-    IGraphicElements *job::pIGraphicElements = NULL;
-    IGraphicParameters *job::pIGraphicParameters = NULL;
-
-    job::job(char *pszFileName,HWND hwndSurf,IPostScriptTakeText *pIPSTT) :
+    job::job(char *pszFileName,HWND hwndSurf) :
 
         pStorage(NULL),
         pEnd(NULL),
-
-        pIPostScriptTakeText(pIPSTT),
 
         isGlobalVM(true),
         hasExited(false),
@@ -45,13 +38,6 @@ This is the MIT License
         hwndSurface(hwndSurf)
 
     {
-
-    if ( NULL == pIFontManager ) {
-        HRESULT rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
-        pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
-        pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
-        pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
-    }
 
     pLanguageLevel = new (CurrentObjectHeap()) object(this,2L);
 
@@ -311,9 +297,7 @@ This is the MIT License
 
 
     void job::deleteNonContainedObject(object *pObj) {
-
     delete pObj;
-
     return;
     }
 

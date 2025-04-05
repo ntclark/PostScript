@@ -83,6 +83,8 @@ This is the MIT License
 
     HRESULT Renderer::GraphicElements::LineTo(FLOAT x,FLOAT y) {
     currentPageSpacePoint = {x,y};
+    if ( NULL == pCurrentPath )
+        NewPath();
     pCurrentPath -> addPrimitive(new linePrimitive(this,&currentPageSpacePoint));
     return S_OK;
     }
@@ -96,11 +98,13 @@ This is the MIT License
     HRESULT Renderer::GraphicElements::Arc(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT startAngle,FLOAT endAngle) {
     FLOAT xStart = xCenter + radius * (FLOAT)cos(startAngle * degToRad);
     FLOAT yStart = yCenter + radius * (FLOAT)sin(startAngle * degToRad);
-    MoveTo(xStart,yStart);
     FLOAT xEnd = xCenter + radius * (FLOAT)cos(endAngle * degToRad);
     FLOAT yEnd = yCenter + radius * (FLOAT)sin(endAngle * degToRad);
     currentPageSpacePoint = {xEnd,yEnd};
     D2D1_ARC_SEGMENT theSegment{{xEnd,yEnd},{radius,radius},startAngle,D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,D2D1_ARC_SIZE_SMALL};
+    if ( NULL == pCurrentPath )
+        NewPath();
+    MoveTo(xStart,yStart);
     pCurrentPath -> addPrimitive(new arcPrimitive(this,&theSegment));
     return S_OK;
     }
@@ -108,6 +112,8 @@ This is the MIT License
 
     HRESULT Renderer::GraphicElements::Ellipse(FLOAT xCenter,FLOAT yCenter,FLOAT xRadius,FLOAT yRadius) {
     D2D1_ELLIPSE theSegment{{xCenter,yCenter},xRadius,yRadius};
+    if ( NULL == pCurrentPath )
+        NewPath();
     pCurrentPath -> addPrimitive(new ellipsePrimitive(this,&theSegment));
     return S_OK;
     }
@@ -124,6 +130,8 @@ This is the MIT License
     currentPageSpacePoint = {x3,y3};
     D2D1_BEZIER_SEGMENT theSegment{{x1,y1},{x2,y2},{x3,y3}};
     POINTF movePoint{x0,y0};
+    if ( NULL == pCurrentPath )
+        NewPath();
     pCurrentPath -> addPrimitive(new bezierPrimitive(this,&movePoint,&theSegment));
     return S_OK;
     }
@@ -133,6 +141,8 @@ This is the MIT License
     POINTF priorCurrentPoint = currentPageSpacePoint;
     currentPageSpacePoint = {x2,y2};
     D2D1_QUADRATIC_BEZIER_SEGMENT theSegment{{x1,y1},{x2,y2}};
+    if ( NULL == pCurrentPath )
+        NewPath();
     pCurrentPath -> addPrimitive(new quadraticBezierPrimitive(this,&priorCurrentPoint,&theSegment));
     return E_NOTIMPL;
     }
