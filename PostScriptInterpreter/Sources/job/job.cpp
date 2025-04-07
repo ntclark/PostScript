@@ -138,8 +138,6 @@ This is the MIT License
 
 #include "job_operators.cpp"
 
-#include "job_pdfOperators.cpp"
-
     pSystemDict -> put("globaldict",pGlobalDict);
     pSystemDict -> put("systemdict",pSystemDict);
     pSystemDict -> put("statusdict",pStatusDict);

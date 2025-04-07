@@ -60,13 +60,12 @@
     rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
 
     IConnectionPointContainer *pIConnectionPointContainer = NULL;
+    IConnectionPoint *pIConnectionPoint = NULL;
 
     // Ask the COM object for a ConnectionPointContainer, which can be thought of as the thing 
     // that will manage the connection points the COM Object might provide to other clients
 
     rc = pIFontManager -> QueryInterface(IID_IConnectionPointContainer,reinterpret_cast<void **>(&pIConnectionPointContainer));
-
-    IConnectionPoint *pIConnectionPoint = NULL;
 
     // Ask the container whether it supports a connection to a particular interface
     rc = pIConnectionPointContainer -> FindConnectionPoint(IID_IFontManagerNotifications,&pIConnectionPoint);
@@ -80,8 +79,6 @@
     fontManagerNotifications.QueryInterface(IID_IUnknown,reinterpret_cast<void **>(&pIUnknownSink));
 
     rc = pIConnectionPoint -> Advise(pIUnknownSink,&dwCookie);
-
-    pIConnectionPointContainer -> Release();
 
     pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
 
@@ -122,6 +119,9 @@
     }
 
     pIConnectionPoint -> Unadvise(dwCookie);
+
+    pIConnectionPoint -> Release();
+    pIConnectionPointContainer -> Release();
 
     DestroyWindow(hwndFrame);
 

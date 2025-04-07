@@ -27,8 +27,8 @@ This is the MIT License
     class gdiParameters {
     public:
 
-        HRESULT SaveState();
-        HRESULT RestoreState();
+        //HRESULT SaveState();
+        //HRESULT RestoreState();
 
         colorSpace *pColorSpace{NULL};
 

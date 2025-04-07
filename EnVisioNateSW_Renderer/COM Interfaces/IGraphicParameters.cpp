@@ -19,7 +19,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/#include "Renderer.h"
+*/
+
+#include "Renderer.h"
 
 
     FLOAT Renderer::GraphicParameters::defaultLineWidth = 1.0f;
@@ -51,24 +53,12 @@ This is the MIT License
     }
 
 
-    HRESULT Renderer::GraphicParameters::SaveState() {
-    valuesStack.push(new values(*valuesStack.top()));
-    return S_OK;
-    }
-
-
-    HRESULT Renderer::GraphicParameters::RestoreState() {
-    if ( 1 == valuesStack.size() )
-        return E_UNEXPECTED;
-    values *pCurrent = valuesStack.top();
-    valuesStack.pop();
-    delete pCurrent;
-    return S_OK;
-    }
-
-
     HRESULT Renderer::GraphicParameters::put_LineWidth(FLOAT lw) {
-    valuesStack.top() -> lineWidth = lw; 
+    pParent -> graphicsStateManager.parametersStack.top() -> lineWidth = lw; 
+    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+        sprintf_s<1024>(Renderer::szLogMessage,"Set LineWidth: %5.2f",lw);
+        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    }
     return S_OK;
     }
 
@@ -78,21 +68,26 @@ This is the MIT License
     switch ( lj ) {
     default:
     case 0:
-        valuesStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER;
         break;
 
     case 1:
-        valuesStack.top() -> lineJoin = D2D1_LINE_JOIN_BEVEL;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_BEVEL;
         break;
 
     case 2:
-        valuesStack.top() -> lineJoin = D2D1_LINE_JOIN_ROUND;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_ROUND;
         break;
 
     case 3:
-        valuesStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER_OR_BEVEL;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER_OR_BEVEL;
         break;
 
+    }
+
+    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+        sprintf_s<1024>(Renderer::szLogMessage,"Set LineJoin : %d",lj);
+        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
     }
 
     return S_OK;
@@ -104,14 +99,19 @@ This is the MIT License
     switch ( lc ) {
     default:
     case 0:
-        valuesStack.top() -> lineCap = D2D1_CAP_STYLE_FLAT;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineCap = D2D1_CAP_STYLE_FLAT;
         break;
     case 1:
-        valuesStack.top() -> lineCap = D2D1_CAP_STYLE_SQUARE;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineCap = D2D1_CAP_STYLE_SQUARE;
         break;
     case 2:
-        valuesStack.top() -> lineCap = D2D1_CAP_STYLE_ROUND;
+        pParent -> graphicsStateManager.parametersStack.top() -> lineCap = D2D1_CAP_STYLE_ROUND;
         break;
+    }
+
+    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+        sprintf_s<1024>(Renderer::szLogMessage,"Set LineCap : %d",lc);
+        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
     }
 
     return S_OK;
@@ -120,7 +120,7 @@ This is the MIT License
 
     HRESULT Renderer::GraphicParameters::put_LineDash(FLOAT *pDashValues,long countValues,FLOAT passedOffset) {
 
-    values *pValues = valuesStack.top();
+    values *pValues = pParent -> graphicsStateManager.parametersStack.top();
 
     if ( ! ( NULL == pDashValues ) ) {
 
@@ -141,38 +141,73 @@ This is the MIT License
 
     }
 
+    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+        sprintf_s<1024>(Renderer::szLogMessage,"Set LineDash: ");
+        if ( 0 == countValues )
+            strcat(Renderer::szLogMessage," solid line");
+        else {
+            char szVal[32];
+            for ( int32_t k = 0; k < countValues - 1; k++ ) {
+                sprintf_s<32>(szVal,"%5.1f,",pDashValues[k]);
+                strcat(Renderer::szLogMessage,szVal);
+            }
+            sprintf_s<32>(szVal,"%5.1f",pDashValues[countValues - 1]);
+            strcat(Renderer::szLogMessage,szVal);
+        }
+        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    }
+
+
     return S_OK;
     }
 
 
     HRESULT Renderer::GraphicParameters::put_RGBColor(COLORREF color) {
-    valuesStack.top() -> rgbColor = color;
+    pParent -> graphicsStateManager.parametersStack.top() -> rgbColor = color;
+    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+        FLOAT r = (FLOAT)GetRValue(color) / 255.0f;
+        FLOAT g = (FLOAT)GetGValue(color) / 255.0f;
+        FLOAT b = (FLOAT)GetBValue(color) / 255.0f;
+        sprintf_s<1024>(Renderer::szLogMessage,"Set RGBColor : %5.1f, %5.1f, %5.1f",r,g,b);
+        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    }
+
     return S_OK;
     }
 
 
     void Renderer::GraphicParameters::setParameters(char *pszLineSettings,boolean doFill) {
-    values *pValues = valuesStack.top();
+
+    values *pValues = pParent -> graphicsStateManager.parametersStack.top();
     char szLDashes[128]{128 * '\0'};
     long cntPrint = 0;
     for ( int k = 0; k < 16; k++ )
         cntPrint += sprintf(szLDashes + cntPrint,"%05.2f,",pValues -> lineDashSizes[k]);
     szLDashes[cntPrint - 1] = '\0';
-    sprintf_s(pszLineSettings,128,"%05.2f:%01d:%01d:%01d:%01d:%08ld:%c:%s",
-            (FLOAT)valuesStack.top() -> lineWidth,pValues -> lineCap,pValues -> lineJoin,
-                        pValues -> lineDashStyle,pValues -> countDashSizes,pValues -> rgbColor,doFill ? '1' : '0',szLDashes);
+
+    wchar_t szwGUID[64]{0};
+    char szGUID[64];
+    StringFromGUID2(pParent -> graphicsStateManager.parametersStack.top() -> valuesId,szwGUID,64);
+    WideCharToMultiByte(CP_ACP,0,szwGUID,-1,szGUID,64,NULL,NULL);
+
+    sprintf_s(pszLineSettings,256,"%s:%05.2f:%01d:%01d:%01d:%01d:%08ld:%c:%s",
+                    szGUID,(FLOAT)pValues -> lineWidth,pValues -> lineCap,pValues -> lineJoin,
+                            pValues -> lineDashStyle,pValues -> countDashSizes,pValues -> rgbColor,doFill ? '1' : '0',szLDashes);
+
     return;
     }
 
 
     void Renderer::GraphicParameters::resetParameters(char *pszLineSettings) {
 
-    values *pValues = valuesStack.top();
+    values *pValues = pParent -> graphicsStateManager.parametersStack.top();
 
     char doFillChar;
     char szLDashes[128]{128 * '\0'};
 
-    sscanf(pszLineSettings,"%05f:%01d:%01d:%01d:%01d:%08ld:%c:%s",&pValues -> lineWidth ,&pValues -> lineCap,&pValues -> lineJoin,
+    char *pStart = pszLineSettings + GUID_PRINT_LENGTH;
+
+    sscanf(pStart,"%05f:%01d:%01d:%01d:%01d:%08ld:%c:%s",&pValues -> lineWidth ,&pValues -> lineCap,&pValues -> lineJoin,
                         &pValues -> lineDashStyle,&pValues -> countDashSizes,&pValues -> rgbColor,&doFillChar,szLDashes);
 
     char *pszDash = strtok(szLDashes,",");
@@ -212,14 +247,16 @@ This is the MIT License
     }
 
 
-    long Renderer::GraphicParameters::hashCode(char *szLineSettings,boolean doFill) {
-    setParameters(szLineSettings,doFill);
+    long Renderer::GraphicParameters::hashCode(char *pszLineSettings,boolean doFill) {
+
+    setParameters(pszLineSettings,doFill);
+
     long hashCode = 0L;
     long part = 0L;
-    long n = (DWORD)strlen(szLineSettings);
+    long n = (DWORD)strlen(pszLineSettings);
     char *psz = new char[n + 4];
     memset(psz,0,(n + 4) * sizeof(char));
-    strcpy(psz,szLineSettings);
+    strcpy(psz,pszLineSettings);
     char *p = psz;
     for ( long k = 0; k < n; k += 4 ) {
         memcpy(&part,p,4 * sizeof(char));

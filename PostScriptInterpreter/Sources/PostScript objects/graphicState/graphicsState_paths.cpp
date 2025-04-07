@@ -19,37 +19,44 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/#include "job.h"
+*/
 
+#include "job.h"
 
 #include "pathParameters.h"
 
     void graphicsState::newpath() {
-    pathParametersStack.top() -> newpath();
+    thePathParameters.newpath();
     currentUserSpacePoint = POINT_TYPE_NAN_POINT;
     return;
     }
 
 
     void graphicsState::stroke() {
-    pathParametersStack.top() -> stroke();
+    thePathParameters.stroke();
     return;
     }
 
 
     void graphicsState::closepath() {
-    pathParametersStack.top() -> closepath();
+    thePathParameters.closepath();
     return;
     }
 
 
     void graphicsState::fillpath() {
-    pathParametersStack.top() -> fillpath();
+    thePathParameters.fillpath();
     return;
     }
 
 
     void graphicsState::eofillpath() {
-    pathParametersStack.top() -> eofillpath();
+    thePathParameters.eofillpath();
+    return;
+    }
+
+
+    void graphicsState::render() {
+    thePathParameters.RenderGeometry();
     return;
     }

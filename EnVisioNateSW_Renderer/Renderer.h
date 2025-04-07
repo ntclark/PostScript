@@ -39,6 +39,8 @@ This is the MIT License
 #define MY_EVENT_INTERFACE IID_IRendererNotifications
 #define MY_EVENT_CLASS IRendererNotifications
 
+#define GUID_PRINT_LENGTH 40
+
 int Mx3Inverse(double *pSource,double *pTarget);
 
     class Renderer : public IRenderer {
@@ -70,8 +72,11 @@ int Mx3Inverse(double *pSource,double *pTarget);
         STDMETHOD(WhereAmI)(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
         STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
-        STDMETHOD(GetParametersBundle)(UINT_PTR **pptrBundleStorage);
-        STDMETHOD(SetParametersBundle)(UINT_PTR *ptrBundlestorage);
+        //STDMETHOD(GetParametersBundle)(UINT_PTR **pptrBundleStorage);
+        //STDMETHOD(SetParametersBundle)(UINT_PTR *ptrBundlestorage);
+
+        STDMETHOD(SaveState)();
+        STDMETHOD(RestoreState)();
 
         // IGraphicElements
 
@@ -103,7 +108,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
             STDMETHOD(CubicBezier)(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
             STDMETHOD(QuadraticBezier)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-            STDMETHOD(Image)(HDC hdc,HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+            STDMETHOD(PostScriptImage)(HDC hdc,HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
             STDMETHOD(NonPostScriptImage)(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
 
             struct primitive {
@@ -378,7 +383,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 boolean isFillPath{false};
 
                 long hashCode{0L};
-                char szLineSettings[128]{'\0'};
+                char szLineSettings[256]{'\0'};
 
                 path *pNextPath{NULL};
                 path *pPriorPath{NULL};
@@ -397,6 +402,19 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     return;
                 }
 
+                void removePrimitive(primitive *p) {
+                    if ( pFirstPrimitive == p ) {
+                        pFirstPrimitive = p -> pNextPrimitive;
+                        if ( ! ( NULL == p -> pNextPrimitive ) )
+                            p -> pNextPrimitive -> pPriorPrimitive = pFirstPrimitive;
+                    } else {
+                        p -> pPriorPrimitive -> pNextPrimitive = p -> pNextPrimitive;
+                        if ( ! ( NULL == p -> pNextPrimitive ) )
+                            p -> pNextPrimitive -> pPriorPrimitive = p -> pPriorPrimitive;
+                    }
+                    delete p;
+                    return;
+                }
 
                 boolean isClosed() {
                 if ( NULL == pLastPrimitive )
@@ -554,7 +572,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
             void scalePoint(FLOAT *px,FLOAT *py);
             void transformPoint(FLOAT *px,FLOAT *py);
-            void unTransformPoint(float *px,FLOAT *py);
+            void unTransformPoint(FLOAT *px,FLOAT *py);
             void transformPoint(POINTF *ptIn,POINTF *ptOut);
             void transformPoint(D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut);
 
@@ -569,9 +587,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
         class GraphicParameters : public IUnknown {
         public:
 
-            GraphicParameters(Renderer *pp) : pParent(pp) {
-                valuesStack.push(new values());
-            }
+            GraphicParameters(Renderer *pp) : pParent(pp) { }
 
             //   IUnknown
 
@@ -582,9 +598,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
             ~GraphicParameters() { }
 
         private:
-
-            STDMETHOD(SaveState)();
-            STDMETHOD(RestoreState)();
 
             STDMETHOD(put_LineWidth)(FLOAT lw);
             STDMETHOD(put_LineJoin)(long lj);
@@ -607,6 +620,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     rgbColor = rhs.rgbColor;
                     return;
                 }
+                GUID valuesId{GUID_NULL};
                 FLOAT lineWidth{defaultLineWidth};
                 D2D1_CAP_STYLE lineCap{defaultLineCap};
                 D2D1_LINE_JOIN lineJoin{defaultLineJoin};
@@ -622,8 +636,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
             void setParameters(char *pszLineSettings,boolean doFill);
             void resetParameters(char *pszLineSettings);
 
-            std::stack<values *> valuesStack;
-
             static FLOAT defaultLineWidth;
             static D2D1_CAP_STYLE defaultLineCap;
             static D2D1_LINE_JOIN defaultLineJoin;
@@ -631,125 +643,45 @@ int Mx3Inverse(double *pSource,double *pTarget);
             static COLORREF defaultRGBColor;
 
             friend class Renderer;
+            friend class GraphicsStateManager;
 
         } *pIGraphicParameters{NULL};
 
-        // IConnectionPointContainer
+#include "COM Interfaces/Renderer_EventsInterfaces.h"
 
-        struct _IConnectionPointContainer : public IConnectionPointContainer {
+        class GraphicsStateManager {
         public:
 
-            _IConnectionPointContainer(Renderer *pp) : pParent(pp) {};
-            ~_IConnectionPointContainer() {};
+            GraphicsStateManager(Renderer *pp) : pParent(pp) {
+                CoCreateGuid(&initialGUID);
+                parametersStack.push(new Renderer::GraphicParameters::values());
+                parametersStack.top() -> valuesId = initialGUID;
+            }
 
-        STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
-        STDMETHOD_ (ULONG, AddRef)();
-        STDMETHOD_ (ULONG, Release)();
-
-        STDMETHOD(FindConnectionPoint)(REFIID riid,IConnectionPoint **);
-        STDMETHOD(EnumConnectionPoints)(IEnumConnectionPoints **);
-
-        void fire_ErrorNotification(char *pszError);
-        void fire_StatusNotification(char *pszStatus);
-        void fire_LogNotification(char *pszLog);
-        void fire_Clear();
+            HRESULT Save();
+            HRESULT Restore();
 
         private:
 
-            uint32_t refCount{0};
-            Renderer *pParent{NULL};
+            std::stack<GraphicParameters::values *> parametersStack;
 
-        } *pIConnectionPointContainer{NULL};
+            void clear() {
+                while ( 0 < parametersStack.size() ) {
+                    Renderer::GraphicParameters::values *pValues = parametersStack.top();
+                    parametersStack.pop();
+                    delete pValues;
+                }
+                return;
+            }
 
-        // IConnectionPoint
+            Renderer *pParent;
+            GUID initialGUID{GUID_NULL};
 
-        struct _IConnectionPoint : IConnectionPoint {
-        public:
+            friend class Renderer;
+            friend class GraphicElements;
+            friend class GraphicParameters;
 
-            _IConnectionPoint(Renderer *pp);
-            ~_IConnectionPoint();
-
-            STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
-            STDMETHOD_ (ULONG, AddRef)();
-            STDMETHOD_ (ULONG, Release)();
-
-            STDMETHOD (GetConnectionInterface)(IID *);
-            STDMETHOD (GetConnectionPointContainer)(IConnectionPointContainer **ppCPC);
-            STDMETHOD (Advise)(IUnknown *pUnk,DWORD *pdwCookie);
-            STDMETHOD (Unadvise)(DWORD);
-            STDMETHOD (EnumConnections)(IEnumConnections **ppEnum);
-
-            IUnknown *AdviseSink() { return adviseSink; }
-
-            int CountConnections() { return countConnections; }
-
-        private:
-
-            int getSlot();
-            int findSlot(DWORD dwCookie);
-
-            IUnknown *adviseSink{NULL};
-            Renderer *pParent{NULL};
-            DWORD nextCookie{0L};
-            int countConnections{0};
-            int countLiveConnections{0};
-
-            uint32_t refCount{0};
-            CONNECTDATA *connections{NULL};
-
-        } *pIConnectionPoint{NULL};
-
-        // IEnumConnectionPoints
-
-        struct _IEnumConnectionPoints : IEnumConnectionPoints {
-        public:
-
-            _IEnumConnectionPoints(Renderer *pp,_IConnectionPoint **cp,int connectionPointCount);
-            ~_IEnumConnectionPoints();
-
-            STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
-            STDMETHOD_ (ULONG, AddRef)();
-            STDMETHOD_ (ULONG, Release)();
-
-            STDMETHOD (Next)(ULONG cConnections,IConnectionPoint **rgpcn,ULONG *pcFetched);
-            STDMETHOD (Skip)(ULONG cConnections);
-            STDMETHOD (Reset)();
-            STDMETHOD (Clone)(IEnumConnectionPoints **);
-
-        private:
-
-        int cpCount{0};
-        int enumeratorIndex{0};
-        Renderer *pParent{NULL};
-        _IConnectionPoint **connectionPoints{NULL};
-
-        } *pIEnumConnectionPoints{NULL};
-
-        // IEnumerateConnections
-
-        struct _IEnumerateConnections : public IEnumConnections {
-        public:
-
-        _IEnumerateConnections(IUnknown* pParentUnknown,ULONG cConnections,CONNECTDATA* paConnections,ULONG initialIndex);
-        ~_IEnumerateConnections();
-
-            STDMETHODIMP QueryInterface(REFIID, void **);
-            STDMETHODIMP_(ULONG) AddRef();
-            STDMETHODIMP_(ULONG) Release();
-            STDMETHODIMP Next(ULONG, CONNECTDATA*, ULONG*);
-            STDMETHODIMP Skip(ULONG);
-            STDMETHODIMP Reset();
-            STDMETHODIMP Clone(IEnumConnections**);
-
-        private:
-
-        ULONG refCount{0L};
-        IUnknown *pParentUnknown{NULL};
-        ULONG enumeratorIndex{0L};
-        ULONG countConnections{0L};
-        CONNECTDATA *connections{NULL};
-
-        } *pIEnumerateConnections{NULL};
+        } graphicsStateManager;
 
         void setupRenderer(HDC hdc,RECT *pDrawingRect);
         void shutdownRenderer();

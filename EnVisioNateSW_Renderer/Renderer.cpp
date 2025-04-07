@@ -31,7 +31,7 @@ This is the MIT License
     char Renderer::szStatusMessage[1024];
     char Renderer::szErrorMessage[1024];
 
-    Renderer::Renderer(IUnknown *pUnkOuter) {
+    Renderer::Renderer(IUnknown *pUnkOuter) : graphicsStateManager(this) {
 
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
@@ -55,6 +55,7 @@ This is the MIT License
     pID2D1Factory1 = NULL;
     pIConnectionPointContainer -> Release();
     pIConnectionPoint -> Release();
+    graphicsStateManager.clear();
     return;
     }
 
@@ -171,7 +172,7 @@ This is the MIT License
     }
 
     pID2D1DCRenderTarget -> BeginDraw();
-    pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,pIGraphicParameters -> valuesStack.top() -> lineWidth,pID2D1StrokeStyle1);
+    pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,graphicsStateManager.parametersStack.top() -> lineWidth,pID2D1StrokeStyle1);
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
     if ( ! ( S_OK == hr ) ) {

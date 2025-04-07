@@ -69,10 +69,6 @@ This is the MIT License
 
     private:
 
-        //IGraphicElements *pIGraphicElements{NULL};
-        //static IRenderer *pIRenderer_text;
-        //static IGraphicElements *pIGraphicElements_text;
-
         static long cxClient;
         static long cyClient;
         static long cyWindow;

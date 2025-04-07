@@ -56,8 +56,11 @@ library Renderer {
 
         HRESULT Reset();
 
-        HRESULT GetParametersBundle(UINT_PTR **pptrBundleStorage);
-        HRESULT SetParametersBundle(UINT_PTR *ptrBundleStorage);
+        HRESULT SaveState();
+        HRESULT RestoreState();
+
+        //HRESULT GetParametersBundle(UINT_PTR **pptrBundleStorage);
+        //HRESULT SetParametersBundle(UINT_PTR *ptrBundleStorage);
 
     };
 
@@ -86,7 +89,7 @@ library Renderer {
         [helpstring("Call move to before your first QuadraticBezier in a chain to set the startpoint")]
         HRESULT QuadraticBezier(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-        HRESULT Image(HDC hdc,HBITMAP hBitmap,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+        HRESULT PostScriptImage(HDC hdc,HBITMAP hBitmap,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
 
         [helpstring("Pass 0.0 for width or height to display in native bitmap width.")]
         HRESULT NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT displayWidth,FLOAT displayHeight);
@@ -98,9 +101,6 @@ library Renderer {
       nonextensible,pointer_default(unique)] 
 
     interface IGraphicParameters : IUnknown {
-
-        HRESULT SaveState();
-        HRESULT RestoreState();
 
         [propput] HRESULT LineWidth(FLOAT lw);
         [propput] HRESULT LineJoin(long lj);

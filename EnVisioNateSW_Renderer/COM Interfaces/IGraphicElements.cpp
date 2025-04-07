@@ -148,7 +148,7 @@ This is the MIT License
     }
 
 
-    HRESULT Renderer::GraphicElements::Image(HDC hdc,HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
+    HRESULT Renderer::GraphicElements::PostScriptImage(HDC hdc,HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
 
     FLOAT widthUserSpace = 1.0f;
     FLOAT heightUserSpace = 1.0f;

@@ -193,7 +193,7 @@ This is the MIT License
 #if 0
 HDC hdcx = CreateCompatibleDC(NULL);
 SelectObject(hdcx,hbmResult);
-BitBlt(GetDC(HWND_DESKTOP),0,0,width,height,hdcx,0,0,SRCCOPY);
+BitBlt(GetDC(HWND_DESKTOP),0,0,stride,height,hdcx,0,0,SRCCOPY);
 DeleteDC(hdcx);
 #endif
 
@@ -281,7 +281,7 @@ DeleteDC(hdcx);
         return;
 
 #if 1
-    throw notimplemented("Need a test for colorimate");
+    throw notimplemented("Need a test for colorimage");
 #else
     HBITMAP hbmResult = SaveBitmapFile(pbImage,cbData);
 
@@ -294,7 +294,7 @@ DeleteDC(hdcx);
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
-    PostScriptInterpreter::pIGraphicElements -> Image(pPostScriptInterpreter -> GetDC(),hbmResult,
+    PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),hbmResult,
                                                 (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
     return;
@@ -305,33 +305,6 @@ DeleteDC(hdcx);
     renderImage(hbmResult,(uint16_t)pWidth -> IntValue(),(uint16_t)pHeight -> IntValue());
     return;
     }
-
-#if 0
-
-    HBITMAP SaveBitmapFile(BYTE *pbImage,DWORD cbData) {
-
-    WCHAR szwTempName[MAX_PATH];
-    wcscpy(szwTempName,_wtempnam(NULL,NULL));
-
-    FILE *fbmp = _wfopen(szwTempName,L"wb");
-    fwrite(pbImage,1,cbData,fbmp);
-    fclose(fbmp);
-
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-    HBITMAP hbmResult = NULL;
-
-    Gdiplus::Bitmap *pBitmap = Gdiplus::Bitmap::FromFile(szwTempName, false);
-
-    pBitmap -> GetHBITMAP(RGB(255, 255, 255), &hbmResult);
-
-    DeleteFileW(szwTempName);
-
-    Gdiplus::GdiplusShutdown(gdiplusToken);
-
-    return hbmResult;
-    }
-#endif
 
 
     HBITMAP createTemporaryBitmap(long cx,long cy,long bitsPerComponent,uint8_t *pBits) {
@@ -351,9 +324,11 @@ DeleteDC(hdcx);
     long stride = ((((cx * 24) + 31) & ~31) >> 3);
     long padding = stride - widthBytes;
 
-    uint8_t *pRGBBits = new uint8_t[stride * cy];
+long cbBits = stride * cy;
 
-    memset(pRGBBits,0xFF,stride * cy);
+    uint8_t *pRGBBits = new uint8_t[cbBits];
+
+    memset(pRGBBits,0xFF,cbBits);
 
     uint8_t *pTarget = pRGBBits;
     uint8_t *pSource = pBits;

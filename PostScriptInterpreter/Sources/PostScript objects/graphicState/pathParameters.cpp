@@ -63,7 +63,7 @@ This is the MIT License
 #if 0
     RECT rcDrawing;
     GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
-    job::pIRenderer -> SetRenderLive(pPostScriptInterpreter -> GetDC(),&rcDrawing);
+    PostScriptInterpreter::pIRenderer -> SetRenderLive(pPostScriptInterpreter -> GetDC(),&rcDrawing);
 #endif
 
     return;

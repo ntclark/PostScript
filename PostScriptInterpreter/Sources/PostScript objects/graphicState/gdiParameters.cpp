@@ -27,15 +27,6 @@ This is the MIT License
 
     // gdiParameters
 
-    HRESULT gdiParameters::SaveState() {
-    return PostScriptInterpreter::pIGraphicParameters -> SaveState();
-    }
-
-
-    HRESULT gdiParameters::RestoreState() {
-    return PostScriptInterpreter::pIGraphicParameters -> RestoreState();
-    }
-
 
     void gdiParameters::setColorSpace(colorSpace *pcs) {
     pPostScriptInterpreter -> PotentialNewPage();

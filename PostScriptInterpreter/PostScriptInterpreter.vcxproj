@@ -311,12 +311,6 @@ Exit 0</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Sources\job\job_pdfOperators.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Sources\job\parse.cpp" />
     <ClCompile Include="Sources\job\parseJob.cpp" />
     <ClCompile Include="Sources\job\parseJob_execute.cpp" />
@@ -328,7 +322,6 @@ Exit 0</Command>
     </ClCompile>
     <ClCompile Include="Sources\operators\operators_AtoL.cpp" />
     <ClCompile Include="Sources\operators\operators_MtoZ.cpp" />
-    <ClCompile Include="Sources\operators\pdfOperators.cpp" />
     <ClCompile Include="Sources\PostScript objects\array.cpp" />
     <ClCompile Include="Sources\PostScript objects\binaryString.cpp" />
     <ClCompile Include="Sources\PostScript objects\booleanObject.cpp" />
@@ -344,7 +337,6 @@ Exit 0</Command>
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_drawGlyph.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_movesLines.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_paths.cpp" />
-    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_initialize.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_saveRestore.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_showPage.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_transforms.cpp" />
@@ -369,7 +361,6 @@ Exit 0</Command>
     <ClCompile Include="Sources\runLengthEncodeDecode.cpp" />
     <ClCompile Include="Sources\Stacks\dictionaryStack.cpp" />
     <ClCompile Include="Sources\Stacks\objectStack.cpp" />
-    <ClCompile Include="Sources\Stacks\pathParametersStack.cpp" />
     <ClCompile Include="Sources\Stacks\psTransformsStack.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -421,7 +412,6 @@ Exit 0</Command>
     <ClInclude Include="include\Stacks\dictionaryStack.h" />
     <ClInclude Include="include\Stacks\fontStack.h" />
     <ClInclude Include="include\Stacks\objectStack.h" />
-    <ClInclude Include="include\Stacks\pathParametersStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
   </ItemGroup>
   <ItemGroup>

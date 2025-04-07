@@ -127,6 +127,7 @@ This is the MIT License
         void operatorRectclip();
         void operatorRectfill();
         void operatorRectstroke();
+        void operatorRender();
         void operatorRepeat();
         void operatorRestore();
         void operatorRlineto();

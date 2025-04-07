@@ -174,9 +174,6 @@
     <ClCompile Include="Sources\job\job_operators.cpp">
       <Filter>Source Files\job</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\job\job_pdfOperators.cpp">
-      <Filter>Source Files\job</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_fonts.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
@@ -207,9 +204,6 @@
     <ClCompile Include="Sources\operators\operators_AtoL.cpp">
       <Filter>Source Files\operators</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\operators\pdfOperators.cpp">
-      <Filter>Source Files\operators</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\operators\operators_MtoZ.cpp">
       <Filter>Source Files\operators</Filter>
     </ClCompile>
@@ -232,12 +226,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\graphicState\gdiParameters.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Stacks\pathParametersStack.cpp">
-      <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_initialize.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters.cpp">
@@ -370,9 +358,6 @@
     </ClInclude>
     <ClInclude Include="include\gdiParameters.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Stacks\pathParametersStack.h">
-      <Filter>Header Files\Stacks</Filter>
     </ClInclude>
     <ClInclude Include="include\pathParameters.h">
       <Filter>Header Files</Filter>

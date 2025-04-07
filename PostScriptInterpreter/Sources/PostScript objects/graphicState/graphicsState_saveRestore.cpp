@@ -23,13 +23,10 @@ This is the MIT License
 
 #include "job.h"
 
-#include "pathParameters.h"
 #include "gdiParameters.h"
 
-
     void graphicsState::gSave() {
-    theGDIParameters.SaveState();
-    pathParametersStack.gSave();
+    PostScriptInterpreter::pIRenderer -> SaveState();
     psXformsStack.gSave();
     CurrentFont() -> gSave();
     return;
@@ -37,8 +34,7 @@ This is the MIT License
 
 
     void graphicsState::gRestore() {
-    theGDIParameters.RestoreState();
-    pathParametersStack.gRestore();
+    PostScriptInterpreter::pIRenderer -> RestoreState();
     psXformsStack.gRestore();
     CurrentFont() -> gRestore();
     return;

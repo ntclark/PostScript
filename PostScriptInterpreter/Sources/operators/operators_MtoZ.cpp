@@ -914,6 +914,19 @@ This is the MIT License
    return;
    }
 
+
+   void job::operatorRender() {
+/*
+    render -
+
+    I made this one up, tell the renderer to kick out what is currently
+    waiting to render
+*/
+    currentGS() -> render();
+    return;
+    }
+
+
     void job::operatorRepeat() {
 /*
     repeat 

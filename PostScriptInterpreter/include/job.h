@@ -81,7 +81,7 @@ This is the MIT License
 
 #include "job_operators.h"
 
-#include "job_pdfOperators.h"
+//#include "job_pdfOperators.h"
 
         static void *pHeap;
         static void *pCurrentHeap;

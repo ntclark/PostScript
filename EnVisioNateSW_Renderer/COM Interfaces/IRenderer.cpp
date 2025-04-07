@@ -79,7 +79,7 @@ This is the MIT License
 
     GraphicElements::path *p = pIGraphicElements -> pFirstPath;
 
-    while ( ! ( p == NULL ) ) {
+    while ( ! ( NULL == p ) ) {
 
         //
         // This happens when there are no primitives in the path at all
@@ -88,6 +88,21 @@ This is the MIT License
         // path from any fendering
         //
         if ( p -> pFirstPrimitive == p -> pLastPrimitive ) {
+            p = p -> pNextPath;
+            continue;
+        }
+
+        if ( ! p -> isClosed() ) {
+            //
+            // This DOES happen, I notice when there's a newpath, a moveto, followed by the next newpath
+            // that is, an orphaned path
+            //
+            // Whether this is okay is still under scrutiny
+            //
+            sprintf(Renderer::szStatusMessage,"Warning: An unclosed path was encountered. All paths should "
+                                                    "be closed with ClosePath(), StrokePath(), or FillPath(). "
+                                                    "This graphics element will not appear.");
+            pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
             p = p -> pNextPath;
             continue;
         }
@@ -108,15 +123,6 @@ This is the MIT License
             strokePathsMap[p -> hashCode] -> push_back(p);
         }
 
-        if ( ! p -> isClosed() ) {
-            //
-            // This DOES happen, I notice when there's a newpath, a moveto, followed by the next newpath
-            // that is, an orphaned path
-            sprintf(Renderer::szStatusMessage,"Warning: An unclosed path was encountered. All paths should "
-                                                    "be closed with ClosePath(), StrokePath(), or FillPath(). "
-                                                    "This graphics element will not appear.\n");
-            pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
-        }
 
         p = p -> pNextPath;
     }
@@ -152,7 +158,7 @@ This is the MIT License
                    GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType ) {
                 sprintf(Renderer::szStatusMessage,"Warning: There was a StrokePath(), or ClosePath(), "
                                                         "command encountered in a path intended to be filled. "
-                                                        "This graphics element will not appear.\n");
+                                                        "This graphics element will not appear.");
                 pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
                 continue;
             }
@@ -199,7 +205,7 @@ This is the MIT License
             if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) {
                 sprintf(Renderer::szStatusMessage,"Warning: There was a FillPath() command encountered in a path "
                                                         "intended to be Stroked. "
-                                                        "This graphics element will not be appear\n");
+                                                        "This graphics element will not appear");
                 pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
                 continue;
             }
@@ -278,17 +284,17 @@ This is the MIT License
     }
 
 
-    HRESULT Renderer::GetParametersBundle(UINT_PTR **pptrBundleSpace) {
-    *pptrBundleSpace = (UINT_PTR *)CoTaskMemAlloc(sizeof(GraphicParameters::values));
-    memcpy((void *)*pptrBundleSpace,pIGraphicParameters -> valuesStack.top(),sizeof(GraphicParameters::values));
-    return S_OK;
-    }
+    //HRESULT Renderer::GetParametersBundle(UINT_PTR **pptrBundleSpace) {
+    //*pptrBundleSpace = (UINT_PTR *)CoTaskMemAlloc(sizeof(GraphicParameters::values));
+    //memcpy((void *)*pptrBundleSpace,graphicsStateManager.parametersStack.top(),sizeof(GraphicParameters::values));
+    //return S_OK;
+    //}
 
 
-    HRESULT Renderer::SetParametersBundle(UINT_PTR *ptrBundleSpace) {
-    memcpy(pIGraphicParameters -> valuesStack.top(),(void *)ptrBundleSpace,sizeof(GraphicParameters::values));
-    return S_OK;
-    }
+    //HRESULT Renderer::SetParametersBundle(UINT_PTR *ptrBundleSpace) {
+    //memcpy(graphicsStateManager.parametersStack.top(),(void *)ptrBundleSpace,sizeof(GraphicParameters::values));
+    //return S_OK;
+    //}
 
 
     HBITMAP createTemporaryBitmap(long cx,long cy,long pitch,long bitsPerComponent,BYTE *pBits) {

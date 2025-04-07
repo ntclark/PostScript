@@ -43,11 +43,12 @@ This is the MIT License
                 // I *believe* this happens when there is a move to set the current point
                 // and then a newpath. Example, a Type 3 font drawing procedure for a glyph.
                 // It's first command is newpath, then moveto. So what would the point of
-                // *THIS* moveto which occurs just before draing the glyph ????
+                // *THIS* moveto which occurs just before drawing the glyph ????
                 //
                 // I believe it makes sense. In my implementation of draw type 3 glyph
                 // I set the current translation matrix to move to the current user space point
-
+                // and in the sample '.ps document I see this happening
+                //
                 removePath(pCurrentPath);
             } else
                 ClosePath();
@@ -204,6 +205,9 @@ This is the MIT License
 
     if ( NULL == pCurrentPath )
         return E_UNEXPECTED;
+
+    //if ( pCurrentPath -> pLastPrimitive -> theType == primitive::type::closePathMarker ) 
+    //    pCurrentPath -> removePrimitive(pCurrentPath -> pLastPrimitive);
 
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::fillPathMarker));
 

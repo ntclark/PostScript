@@ -90,28 +90,6 @@ This is the MIT License
         pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
     }
 
-
-#if 0
-    CoCreateInstance(CLSID_InnoVisioNateProperties,NULL,CLSCTX_ALL,IID_IGProperties,reinterpret_cast<void **>(&pIGProperties));
-
-    pIGProperties -> Add(L"log visible",NULL);
-    pIGProperties -> DirectAccess(L"log visible",TYPE_BINARY,&logIsVisible,sizeof(logIsVisible));
-
-    pIGProperties -> Add(L"log pane width",NULL);
-    pIGProperties -> DirectAccess(L"log pane width",TYPE_BINARY,&logPaneWidth,sizeof(logPaneWidth));
-
-    WCHAR szwDataFile[MAX_PATH];
-    MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
-    wcscat(szwDataFile,L"\\PostScriptInterpreter.settings");
-
-    pIGProperties -> put_FileName(szwDataFile);
-
-    VARIANT_BOOL bSuccess;
-
-    pIGProperties -> LoadFile(&bSuccess);
-
-#endif
-
     return;
     }
 
@@ -142,11 +120,6 @@ This is the MIT License
     pIRenderer -> Release();
     pIGraphicElements -> Release();
     pIGraphicParameters -> Release();
-
-#if 0
-    pIGProperties -> Save();
-    pIGProperties -> Release();
-#endif
 
     if ( ! ( NULL == PostScriptInterpreter::nativeHostFrameHandler ) )
         SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::nativeHostFrameHandler);

@@ -63,9 +63,15 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="COM Interfaces\IRenderer_SaveRestore.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="COM Interfaces\Renderer_EventsInterfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

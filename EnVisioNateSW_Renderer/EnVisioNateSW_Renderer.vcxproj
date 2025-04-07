@@ -170,11 +170,13 @@
     <ClCompile Include="COM Interfaces\IGraphicElements.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicElements_Paths.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicParameters.cpp" />
+    <ClCompile Include="COM Interfaces\IRenderer_SaveRestore.cpp" />
     <ClCompile Include="COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="COM Interfaces\Renderer_EventsInterfaces.h" />
     <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <ItemGroup>

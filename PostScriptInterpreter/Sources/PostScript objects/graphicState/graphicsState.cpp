@@ -31,11 +31,11 @@ This is the MIT License
     long graphicsState::pageHeightPoints = 792;
     long graphicsState::pageWidthPoints = 612;
 
-    POINT_TYPE graphicsState::piOver2 = 2.0f * atan(1.0f);
-    POINT_TYPE graphicsState::degToRad = piOver2 / 90.0f;
+    FLOAT graphicsState::piOver2 = 2.0f * atan(1.0f);
+    FLOAT graphicsState::degToRad = piOver2 / 90.0f;
 
     gdiParameters graphicsState::theGDIParameters;
-    pathParametersStack graphicsState::pathParametersStack;
+    pathParameters graphicsState::thePathParameters;
     psTransformsStack graphicsState::psXformsStack;
 
     GS_POINT::GS_POINT(GS_POINT *pPointd) {
@@ -51,9 +51,6 @@ This is the MIT License
     if ( ! psXformsStack.isInitialized() )
         psXformsStack.initialize(pJob);
 
-    if ( ! pathParametersStack.isInitialized() )
-        pathParametersStack.initialize();
-
     SetSurface(pJob -> hwndSurface,0);
 
     return;
@@ -65,9 +62,15 @@ This is the MIT License
     }
 
 
+    void graphicsState::initialize() {
+    psXformsStack.initialize(pJob);
+    return;
+    }
+
+
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
-    pathParametersStack.top() -> initialize();
     initMatrix(hwndSurface,pageNumber);
+    thePathParameters.initialize();
     return;
     }
 
@@ -152,13 +155,13 @@ Beep(2000,200);
     }
     
 
-    void graphicsState::setRGBColor(POINT_TYPE r,POINT_TYPE g,POINT_TYPE b) {
+    void graphicsState::setRGBColor(FLOAT r,FLOAT g,FLOAT b) {
     theGDIParameters.setRGBColor(r,g,b);
     return;
     }
 
 
-    void graphicsState::setLineWidth(POINT_TYPE lw) { 
+    void graphicsState::setLineWidth(FLOAT lw) { 
 
     /*
     When stroking a path, stroke paints all points whose perpendicular 
@@ -192,7 +195,7 @@ Beep(2000,200);
     }
 
 
-    void graphicsState::setLineDash(array *pArray,POINT_TYPE offset) {
+    void graphicsState::setLineDash(array *pArray,FLOAT offset) {
 
     if ( NULL == pArray ) {
         theGDIParameters.setLineDash(NULL,0,offset);

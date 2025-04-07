@@ -28,7 +28,6 @@ This is the MIT License
 #define GLYPH_BMP_PIXELS    128
 
 #include "gdiParameters.h"
-#include "Stacks/pathParametersStack.h"
 #include "Stacks/psTransformsStack.h"
 #include "Stacks/fontStack.h"
 #include "pathParameters.h"
@@ -85,6 +84,7 @@ This is the MIT License
         void closepath();
         void fillpath();
         void eofillpath();
+        void render();
 
         // ALL transformations are from USER space to PAGE space
         // USER space is that in which all numeric x,y values are in
@@ -184,7 +184,7 @@ This is the MIT License
         GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;
 
         static gdiParameters theGDIParameters;
-        static pathParametersStack pathParametersStack;
+        static pathParameters thePathParameters;
         static psTransformsStack psXformsStack;
 
         static long pageHeightPoints;

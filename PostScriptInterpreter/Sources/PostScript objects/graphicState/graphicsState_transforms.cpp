@@ -19,7 +19,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/#include "job.h"
+*/
+
+#include "job.h"
 
 
 #include "pathParameters.h"
@@ -27,7 +29,7 @@ This is the MIT License
 
 
     void graphicsState::initMatrix(HWND hwndClient,long pageNumber) {
-    pathParametersStack.top() -> initMatrix(hwndClient,pageNumber,pageHeightPoints);
+    thePathParameters.initMatrix(hwndClient,pageNumber,pageHeightPoints);
     return;
     }
 

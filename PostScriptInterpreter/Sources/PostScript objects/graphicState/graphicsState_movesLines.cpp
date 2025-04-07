@@ -58,7 +58,7 @@ This is the MIT License
     void graphicsState::moveto(FLOAT x,FLOAT y) {
     currentUserSpacePoint = {x,y};
     transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
-    pathParametersStack.top() -> moveto(&currentPageSpacePoint);
+    thePathParameters.moveto(&currentPageSpacePoint);
     return;
     }
 
@@ -86,8 +86,7 @@ This is the MIT License
     void graphicsState::rmoveto(FLOAT x,FLOAT y) {
     currentUserSpacePoint.x += x;
     currentUserSpacePoint.y += y;
-    transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
-    pathParametersStack.top() -> moveto(&currentPageSpacePoint);
+    moveto(currentUserSpacePoint.x,currentUserSpacePoint.y);
     return;
     }
 
@@ -115,7 +114,7 @@ This is the MIT License
     void graphicsState::lineto(FLOAT x,FLOAT y) {
     currentUserSpacePoint = {x,y};
     transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
-    pathParametersStack.top() -> lineto(&currentPageSpacePoint);
+    thePathParameters.lineto(&currentPageSpacePoint);
     return;
     }
 
@@ -137,8 +136,7 @@ This is the MIT License
     void graphicsState::rlineto(FLOAT x,FLOAT y) {
     currentUserSpacePoint.x += x;
     currentUserSpacePoint.y += y;
-    transformPoint(&currentUserSpacePoint,&currentPageSpacePoint);
-    pathParametersStack.top() -> lineto(&currentPageSpacePoint);
+    lineto(currentUserSpacePoint.x,currentUserSpacePoint.y);
     return;
     }
 
@@ -172,7 +170,7 @@ This is the MIT License
 
     currentPageSpacePoint = points[3];
 
-    pathParametersStack.top() -> curveto(points[0].x,points[0].y,points[1].x,points[1].y,points[2].x,points[2].y,points[3].x,points[3].y);
+    thePathParameters.curveto(points[0].x,points[0].y,points[1].x,points[1].y,points[2].x,points[2].y,points[3].x,points[3].y);
 
     return;
     }
@@ -195,7 +193,7 @@ This is the MIT License
 
     currentPageSpacePoint = points[1];
 
-    pathParametersStack.top() -> quadcurveto(points[0].x,points[0].y,points[1].x,points[1].y);
+    thePathParameters.quadcurveto(points[0].x,points[0].y,points[1].x,points[1].y);
 
     return;
     }
@@ -206,7 +204,7 @@ This is the MIT License
     GS_POINT r{0.0,radius};
     transformPoint(0.0f,radius,&r.x,&r.y);
     radius = sqrt(r.x*r.x + r.y*r.y);
-    pathParametersStack.top() -> arcto(xCenter,yCenter,radius,angle1,angle2);
+    thePathParameters.arcto(xCenter,yCenter,radius,angle1,angle2);
     return;
     }
 

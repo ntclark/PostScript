@@ -185,12 +185,11 @@ This is the MIT License
         n = bufferSize;
     }
 
-    CHARRANGE chr;
-    nativeRichEditHandler(hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
+    //CHARRANGE chr;
+    //nativeRichEditHandler(hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
+    //long charFirst = (long)nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
 
-    long charFirst = (long)nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
-
-    *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s\\line",pNew);
+    *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s\\line\r",pNew);
 
     if ( ! ( pNew == p ) )
         delete [] pNew;

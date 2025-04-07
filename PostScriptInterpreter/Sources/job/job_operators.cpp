@@ -122,6 +122,7 @@ This is the MIT License
     pSystemDict -> put("rectclip",&job::operatorRectclip);
     pSystemDict -> put("rectfill",&job::operatorRectfill);
     pSystemDict -> put("rectstroke",&job::operatorRectstroke);
+    pSystemDict -> put("render",&job::operatorRender);
     pSystemDict -> put("repeat",&job::operatorRepeat);
     pSystemDict -> put("restore",&job::operatorRestore);
     pSystemDict -> put("rlineto",&job::operatorRlineto);

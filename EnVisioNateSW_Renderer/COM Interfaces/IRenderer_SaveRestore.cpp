@@ -21,44 +21,34 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "job.h"
+#include "Renderer.h"
 
-#include "pathParameters.h"
 
-    pathParametersStack::pathParametersStack() {
-    return;
+    HRESULT Renderer::SaveState() {
+    return graphicsStateManager.Save();
     }
 
 
-    pathParametersStack::~pathParametersStack() {
-    while ( 0 < size() ) {
-        delete top();
-        pop();
-    }
-    return;
+    HRESULT Renderer::RestoreState() {
+    return graphicsStateManager.Restore();
     }
 
 
-    void pathParametersStack::initialize() {
-    push(new pathParameters());
-    top() -> initialize();
-    return;
+    HRESULT Renderer::GraphicsStateManager::Save() {
+    parametersStack.push(new Renderer::GraphicParameters::values(*parametersStack.top()));
+    CoCreateGuid(&parametersStack.top() -> valuesId);
+    return S_OK;
     }
 
 
-    void pathParametersStack::gSave() {
-    push(new pathParameters(top()));
-    return;
+    HRESULT Renderer::GraphicsStateManager::Restore() {
+    if ( 1 == parametersStack.size() ) {
+        sprintf_s<1024>(Renderer::szErrorMessage,"Error: There was an underflow in the GraphicsState Save/Restore. More Restores were made than Saves");
+        pParent -> pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szLogMessage);
+        return E_FAIL;
     }
-
-
-    void pathParametersStack::gRestore() {
-    if ( 1 == size() )
-{
-Beep(2000,200);
-        return;
-}
-    delete top();
-    pop();
-    return;
+    Renderer::GraphicParameters::values *pValues = parametersStack.top();
+    parametersStack.pop();
+    delete pValues;
+    return S_OK;
     }
