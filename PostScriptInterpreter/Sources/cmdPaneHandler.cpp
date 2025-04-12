@@ -150,5 +150,6 @@ This is the MIT License
         return;
 
     PostMessage(hwndClient,WM_REFRESH_CLIENT_WINDOW,0L,0L);
+
     return;
     }

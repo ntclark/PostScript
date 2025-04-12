@@ -29,7 +29,7 @@ This is the MIT License
 
 
     void graphicsState::initMatrix(HWND hwndClient,long pageNumber) {
-    thePathParameters.initMatrix(hwndClient,pageNumber,pageHeightPoints);
+    thePathParameters.initMatrix(hwndClient,pageNumber,pageHeightPoints,pageWidthPoints);
     return;
     }
 

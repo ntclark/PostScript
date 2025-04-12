@@ -39,10 +39,10 @@ This is the MIT License
     }
 
     dictionary::dictionary(job *pj,char *pszName) :
-        dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE) {}
+        dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE) { }
 
     dictionary::dictionary(job *pj,long initialSize) :
-        dictionary(pj,NULL,initialSize) {}
+        dictionary(pj,NULL,initialSize) { }
 
     dictionary::~dictionary() {
 

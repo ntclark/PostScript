@@ -23,6 +23,8 @@ This is the MIT License
 
 #include "job.h"
 
+#include "PostScriptInterpreter.h"
+
 #include "pathParameters.h"
 
 #include <d2d1.h>
@@ -42,17 +44,6 @@ This is the MIT License
     long pathParameters::cyClient = 0L;
     long pathParameters::cyWindow = 0L;
 
-
-    pathParameters::pathParameters(pathParameters *pRHS) {
-    return;
-    }
-
-
-    pathParameters::~pathParameters() {
-    return;
-    }
-
-
     void pathParameters::initialize() {
     memset(&toDeviceSpace,0,sizeof(XFORM));
     toDeviceSpace.eM11 = 1.0;
@@ -70,7 +61,7 @@ This is the MIT License
     }
 
 
-    void pathParameters::initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints) {
+    void pathParameters::initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints,long pageWidthPoints) {
 
     if ( ! ( NULL == hwndClient ) ) {
 
@@ -82,15 +73,18 @@ This is the MIT License
 
         cyWindow = (long)((double)cyClient / ( 0 == pageNumber ? 1.0 : (double)pageNumber) );
 
-        //SetWindowExtEx(pPostScriptInterpreter -> GetDC(),cxClient,cyWindow,NULL);
-        //SetViewportExtEx(pPostScriptInterpreter -> GetDC(),cxClient,cyWindow,NULL);
-
-        /*
-        Note: At this point, pageHeightPoints was not set by interpreting PostScript,
-        it is a static value and PS is not being parsed yet. Move this portion
-        of transform setup until after PS specifies the page dimensions
-        */
         scalePointsToPixels = (FLOAT)cyWindow / (FLOAT)pageHeightPoints;
+
+        HDC hdc = ::GetDC(hwndClient);
+
+        rcClient.left += PostScriptInterpreter::SideGutter();
+        rcClient.top += PostScriptInterpreter::TopGutter();
+        rcClient.right = rcClient.left + pageWidthPoints * scalePointsToPixels - PostScriptInterpreter::SideGutter();
+        rcClient.bottom = rcClient.top + cyWindow - 2 * PostScriptInterpreter::TopGutter();
+
+        PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&rcClient,RGB(255,255,255));
+
+        ReleaseDC(hwndClient,hdc);
 
     }
 

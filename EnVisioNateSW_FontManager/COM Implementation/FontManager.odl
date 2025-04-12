@@ -67,7 +67,7 @@ library FontManager {
                                     long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
                                     UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
-        HRESULT RenderGlyph(HDC hdc,unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+        HRESULT RenderGlyph(unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
 
         HRESULT SaveState();
@@ -86,7 +86,7 @@ library FontManager {
 
         HRESULT ChooseFont(HDC hdc,IFont_EVNSW **ppIFont);
 
-        HRESULT RenderGlyph(HDC hdc,unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+        HRESULT RenderGlyph(unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
 
         HRESULT ScaleFont(FLOAT scaleFactor);

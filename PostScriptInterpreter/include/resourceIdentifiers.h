@@ -36,7 +36,7 @@ This is the MIT License
 #define IDDI_CMD_PANE_ERROR                 103
 #define IDDI_CMD_PANE_LOG_SHOW              104
 #define IDDI_CMD_PANE_LOG_HIDE              105
-#define IDDI_CMD_PANE_CONVERT_TO_PDF        106
+
 #define IDDI_CMD_PANE_RENDERER_LOG_SHOW     107
 #define IDDI_CMD_PANE_RENDERER_LOG_HIDE     108
 

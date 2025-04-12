@@ -4,8 +4,8 @@
 #include "fontManagerDemo.h"
 
 /*
-    fontManagerDemo is a very simple windows application to show how the 
-    EnVisioNateSW FontManager and Renderer work so you can learn
+    fontManagerDemo is a simple windows application to show how the 
+    EnVisioNateSW FontManager and Renderer work so you can see
     how to use these together easily in any of your own software.
 */
 
@@ -100,11 +100,11 @@
 
     RegisterClass(&gClass);
 
-    hwndFrame = CreateWindowEx(WS_EX_CONTROLPARENT,"fontManagerFrame","Font Manager Demo", WS_OVERLAPPEDWINDOW | WS_VISIBLE,64,256,0,0,NULL,(HMENU)NULL,hInst,NULL);
+    hwndFrame = CreateWindowEx(0L,"fontManagerFrame","Font Manager Demo", WS_OVERLAPPEDWINDOW | WS_VISIBLE,64,256,0,0,NULL,(HMENU)NULL,hInst,NULL);
 
     SetWindowPos(hwndFrame,HWND_TOP,0,0,128,128,SWP_NOMOVE);
 
-    pIFontManager -> LoadFont((char *)"Arial",0,&pIFont);
+    pIFontManager -> LoadFont((char *)"Times New Roman",0,&pIFont);
 
     pIFontManager -> ScaleFont(36.0);
 

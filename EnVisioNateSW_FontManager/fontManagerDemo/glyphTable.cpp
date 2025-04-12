@@ -18,8 +18,13 @@
     FLOAT pointSize;
     pIFont -> get_PointSize(&pointSize);
 
-    FLOAT fontDeltaXPoints = pointSize;
-    FLOAT fontDeltaYPoints = pointSize;
+
+    FLOAT extraWidthPoints = (FLOAT)GLYPH_INNERMARGIN_LEFT  / fabsf(gdiXForm.eM11);
+    FLOAT extraHeightPoints = (FLOAT)GLYPH_INNERMARGIN_BOTTOM / fabsf(gdiXForm.eM22);
+
+    FLOAT fontDeltaXPoints = pointSize + extraWidthPoints;
+    FLOAT fontDeltaYPoints = pointSize + extraHeightPoints;
+
     FLOAT fontDeltaXPixels = fontDeltaXPoints * fabsf(gdiXForm.eM11);
     FLOAT fontDeltaYPixels = fontDeltaYPoints * fabsf(gdiXForm.eM22);;
 
@@ -36,6 +41,9 @@
     HGDIOBJ oldObj = SelectObject(hdcBackground,hbmPage);
     pIRenderer -> ClearRect(hdcBackground,&rcDrawing,WHITE);
 
+    HFONT hGUIFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+    HGDIOBJ oldFont = SelectObject(hdcBackground,hGUIFont);
+
     for ( unsigned short p = 0x21; p < 0x4FB; p++ ) {
 
         long x = (long)(startPoint.x * fabsf(gdiXForm.eM11));
@@ -47,13 +55,21 @@
         LineTo(hdcBackground,x,y + (long)fontDeltaYPixels);
         LineTo(hdcBackground,x,y);
 
-        pIFont -> RenderGlyph(hdcBackground,(unsigned short)p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&startPoint,&endPoint);
+        char szGlyph[16];
+        sprintf_s<16>(szGlyph,"0x%04x",p);
+        RECT rcText{x + 2,y + (long)fontDeltaYPixels - 16,x + (long)fontDeltaXPixels - 2,y + (long)fontDeltaYPixels};
+
+        DrawTextEx(hdcBackground,szGlyph,-1,&rcText,DT_CENTER,0L);
+
+        POINTF centerPoint{startPoint.x + extraWidthPoints,startPoint.y + extraHeightPoints};
+
+        pIFont -> RenderGlyph((unsigned short)p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&centerPoint,&endPoint);
 
         endPoint.y = startPoint.y;
         endPoint.x = startPoint.x + fontDeltaXPoints;
 
         if ( 0 == ( ( p - 0x21 + 1 ) % GLYPH_TABLE_COLUMN_COUNT ) ) {
-            endPoint.y -= pointSize;
+            endPoint.y -= fontDeltaYPoints;
             endPoint.x = 0.0f;
         }
 

@@ -16,6 +16,9 @@
 #define GLYPH_TABLE_MARGIN_TOP 32
 #define GLYPH_TABLE_MARGIN_BOTTOM 64
 
+#define GLYPH_INNERMARGIN_LEFT 32
+#define GLYPH_INNERMARGIN_BOTTOM 32
+
     LRESULT CALLBACK frameHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
     LRESULT CALLBACK dialogHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
     LRESULT CALLBACK glyphTableDialogHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);

@@ -96,6 +96,12 @@ This is the MIT License
     }
 
 
+    void array::copyFrom(array *pSource) {
+    for ( long k = 0; k < pSource -> size(); k++ )
+        putElement(k,pSource -> getElement(k));
+    }
+
+
     void array::clear() {
     entries.clear();
     }

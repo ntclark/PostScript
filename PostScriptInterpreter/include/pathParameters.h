@@ -31,11 +31,9 @@ This is the MIT License
     public:
 
         pathParameters() {};
-        pathParameters(pathParameters *pRHS);
-        ~pathParameters();
 
         void initialize();
-        void initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints);
+        void initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints,long pageWidthPoints);
 
         // Graphics primitives
 

@@ -31,52 +31,18 @@ This is the MIT License
 
     hdcSurface = ::GetDC(hwndClient);
 
-    if ( 0 < activePageOrigin.y ) {
-
-        beginPathAction = [this]() { 
-
-            beginPathAction = NULL;
-
-            RECT rcClient;
-            GetWindowRect(hwndClient,&rcClient);
-            SetWindowPos(hwndClient,HWND_TOP,0,0,rcClient.right - rcClient.left,activePageOrigin.y + initialCYClient,SWP_NOMOVE);
-            SendMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
-            GetClientRect(hwndClient,&rcClient);
-            rcClient.right -= GetSystemMetrics(SM_CXVSCROLL);
-            FillRect(hdcSurface,&rcClient,(HBRUSH)(COLOR_WINDOW + 1));
-
-            graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
-        };
-
-    }
-
     return hdcSurface;
-    }
-
-
-    void PostScriptInterpreter::BeginPath() {
-    if ( ! ( NULL == beginPathAction ) )
-        beginPathAction();
-    return;
-    }
-
-
-    void PostScriptInterpreter::PotentialNewPage() {
-    if ( ! ( NULL == beginPathAction ) )
-        beginPathAction();
-    return;
     }
 
 
     void PostScriptInterpreter::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
-    if ( NULL == hdcSurface )
-        return;
+    if ( ! ( NULL == beginPathAction ) )
+        beginPathAction();
 
     graphicsState::RenderGeometry();
 
     ReleaseDC(hwndClient,hdcSurface);
-
     hdcSurface = ::GetDC(hwndClient);
 
     HDC hdcTarget = CreateCompatibleDC(hdcSurface);
@@ -103,6 +69,25 @@ This is the MIT License
     ReleaseDC(hwndClient,hdcSurface);
 
     hdcSurface = NULL;
+
+    beginPathAction = [this]() { 
+
+        beginPathAction = NULL;
+
+        if ( NULL == hdcSurface )
+            hdcSurface = ::GetDC(hwndClient);
+
+        RECT rcClient;
+        GetWindowRect(hwndClient,&rcClient);
+        SetWindowPos(hwndClient,HWND_TOP,0,0,rcClient.right - rcClient.left,activePageOrigin.y + initialCYClient,SWP_NOMOVE);
+        SendMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
+        GetClientRect(hwndClient,&rcClient);
+        rcClient.right -= GetSystemMetrics(SM_CXVSCROLL);
+        FillRect(hdcSurface,&rcClient,(HBRUSH)(COLOR_WINDOW + 1));
+
+        graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
+
+    };
 
     return;
     }

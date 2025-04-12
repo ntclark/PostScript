@@ -27,7 +27,6 @@ This is the MIT License
 
 
     void pathParameters::newpath() {
-    pPostScriptInterpreter -> BeginPath();
     PostScriptInterpreter::pIGraphicElements -> NewPath();
     }
 

@@ -134,7 +134,7 @@ This is the MIT License
 
 
     void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
-    PostScriptInterpreter::pIFontManager -> RenderGlyph(pPostScriptInterpreter -> GetDC(),bGlyph,
+    PostScriptInterpreter::pIFontManager -> RenderGlyph(bGlyph,
                                         (UINT_PTR)psXformsStack.top() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
                                             pStartPoint,pEndPoint);

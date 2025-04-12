@@ -54,6 +54,8 @@ class job;
 
       virtual void setValue(long index,POINT_TYPE v);
 
+      void copyFrom(array *pSource);
+
       void clear();
 
       bool find(long index) { return entries.find(index) != entries.end() ; };

@@ -57,7 +57,7 @@
     <ClCompile Include="Sources\PostScriptInterpreter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\handler.cpp">
+    <ClCompile Include="Sources\clientWindowHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\logHandling.cpp">
@@ -89,9 +89,6 @@
     </ClCompile>
     <ClCompile Include="Sources\COM Interfaces\IPostScriptInterpreter.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\Fonts\font.cpp">
-      <Filter>Source Files\Fonts</Filter>
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\array.cpp">
       <Filter>Source Files\PostScript objects</Filter>
@@ -240,11 +237,14 @@
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
-    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\ascii85.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Fonts\font.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -373,6 +373,15 @@
     </ClInclude>
     <ClInclude Include="include\Stacks\psTransformsStack.h">
       <Filter>Header Files\Stacks</Filter>
+    </ClInclude>
+    <ClInclude Include="include\StandardEncoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISOLatin1Encoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CentralEuropeanEncoding.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

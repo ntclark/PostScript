@@ -77,18 +77,20 @@ This is the MIT License
     Errors: invalidfont, rangecheck, stackunderflow, typecheck, VMerror
 */
     object *pObj = pop();
+    object *pFontObject = pop();
     font *pFont = NULL;
 
     switch ( pObj -> theObjectType ) {
     case object::objectType::objTypeArray: {
         array *pArray = reinterpret_cast<array *>(pObj);
-        pFont = currentGS() -> makeFont(pArray,reinterpret_cast<font *>(pop()));
+        font *pFontToCopy = reinterpret_cast<font *>(pFontObject);
+        pFont = currentGS() -> makeFont(pArray,pFontToCopy);
         }
         break;
 
     case object::objectType::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pObj);
-        pFont = currentGS() -> makeFont(pMatrix,reinterpret_cast<font *>(pop()));
+        pFont = currentGS() -> makeFont(pMatrix,reinterpret_cast<font *>(pFontObject));
         }
         break;
 
@@ -97,6 +99,8 @@ This is the MIT License
     }
 
     pFontDirectory -> put(pFont -> fontName(),pFont);
+
+    pFont -> loadDictionary();
 
     push(pFont);
 
@@ -1609,6 +1613,8 @@ This is the MIT License
     }
 
     currentGS() -> setFont(pFont);
+
+    pFont -> loadDictionary();
 
     return;
     }

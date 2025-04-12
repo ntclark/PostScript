@@ -31,7 +31,7 @@ This is the MIT License
 
     boolean awaitingClientPaint = false;
 
-    LRESULT CALLBACK PostScriptInterpreter::handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+    LRESULT CALLBACK PostScriptInterpreter::clientWindowHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
     PostScriptInterpreter *p = (PostScriptInterpreter *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
 
@@ -52,7 +52,7 @@ This is the MIT License
         PAINTSTRUCT ps;
         BeginPaint(hwnd,&ps);
         ps.rcPaint.right -= GetSystemMetrics(SM_CXVSCROLL);
-        FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_WINDOW + 1));
+        FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_APPWORKSPACE + 1));
         long y = windowTop;
         for ( std::pair<size_t,HBITMAP> pPair : pPostScriptInterpreter -> pageBitmaps ) {
             SIZEL *pSizel = pPostScriptInterpreter -> pageSizes[pPair.first];
@@ -103,16 +103,16 @@ This is the MIT License
     case WM_KEYDOWN: {
         switch ( (char)wParam ) {
         case VK_PRIOR:
-            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_PAGEUP,0L),0L);
+            clientWindowHandler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_PAGEUP,0L),0L);
             break;
         case VK_NEXT:
-            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
+            clientWindowHandler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
             break;
         case VK_UP:
-            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0L),0L);
+            clientWindowHandler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0L),0L);
             break;
         case VK_DOWN:
-            handler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_LINEDOWN,0L),0L);
+            clientWindowHandler(hwnd,WM_VSCROLL,MAKEWPARAM(SB_LINEDOWN,0L),0L);
             break;
         default:
             break;

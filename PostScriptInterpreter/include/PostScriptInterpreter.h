@@ -341,15 +341,14 @@ class job;
 
         void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
 
-        void BeginPath();
-
-        void PotentialNewPage();
-
         long InitialCYClient() { return initialCYClient; }
 
         job *currentJob() { return pJob; }
 
         POINTL activePageOrigin{0L,0L};
+
+        static long SideGutter() { return sideGutter; }
+        static long TopGutter() { return topGutter; }
 
         static char szErrorMessage[1024];
 
@@ -357,6 +356,8 @@ class job;
         static IRenderer *pIRenderer;
         static IGraphicElements *pIGraphicElements;
         static IGraphicParameters *pIGraphicParameters;
+
+        static std::function<void(void)> beginPathAction;
 
         static HWND hwndLogContent;
         static HWND hwndRendererLogContent;
@@ -393,8 +394,6 @@ class job;
         std::map<size_t,HBITMAP> pageBitmaps;
         std::map<size_t,SIZEL *> pageSizes;
 
-        std::function<void(void)> beginPathAction{NULL};
-
         static HWND hwndHost;
         static HWND hwndClient;
         static HWND hwndCmdPane;
@@ -408,6 +407,9 @@ class job;
         static HWND hwndCurrentDictionary;
         static HWND hwndVScroll;
 
+        static long sideGutter;
+        static long topGutter;
+
         static HDC hdcSurface;
 
         static long initialCYClient;
@@ -417,7 +419,7 @@ class job;
         static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
         static LRESULT (__stdcall *nativeRichEditHandler)(HWND,UINT,WPARAM,LPARAM);
 
-        static LRESULT CALLBACK handler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+        static LRESULT CALLBACK clientWindowHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK logPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK splitterHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);

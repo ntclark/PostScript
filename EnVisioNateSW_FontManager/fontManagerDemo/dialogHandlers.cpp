@@ -4,6 +4,7 @@
     boolean isInitialized = false;
 
     long resizeCount = 0L;
+    boolean hoverReady = false;
 
     WNDPROC defaultStaticHandler = NULL;
 
@@ -121,7 +122,7 @@
         pIRenderer -> ClearRect(hdc,&rcFrame,WHITE);
 
         while ( *p ) {
-            pIFont -> RenderGlyph(hdc,(unsigned short)*p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&startPoint,&endPoint);
+            pIFont -> RenderGlyph((unsigned short)*p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&startPoint,&endPoint);
             startPoint = endPoint;
             p++;
         }
@@ -200,11 +201,14 @@
             FLOAT pointSize;
             pIFont -> get_PointSize(&pointSize);
 
+            pointSize += (FLOAT)GLYPH_INNERMARGIN_LEFT / gdiXForm.eM11;
+
             long cx = GLYPH_TABLE_MARGIN_LEFT + (long)((FLOAT)GLYPH_TABLE_COLUMN_COUNT * (pointSize + 2) * gdiXForm.eM11) + GLYPH_TABLE_MARGIN_RIGHT;
             long cy = GLYPH_TABLE_MARGIN_TOP  + (long)((FLOAT)GLYPH_TABLE_ROW_COUNT * (pointSize + 2) * gdiXForm.eM11) + GLYPH_TABLE_MARGIN_BOTTOM;
 
-            SetWindowPos(hwndGlyphTableDialog,HWND_TOP,128,128,cx,cy,0*SWP_NOMOVE);
+            SetWindowPos(hwndGlyphTableDialog,HWND_TOP,128,128,cx,cy,0L);
             ShowWindow(hwndGlyphTableDialog,SW_SHOW);
+
             }
             break;
 
@@ -222,6 +226,7 @@
 
 
     LRESULT CALLBACK glyphTableHostHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
+
     switch ( msg ) {
 
     case WM_PAINT: {
@@ -247,7 +252,7 @@
     LRESULT CALLBACK glyphTableDialogHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
     switch ( msg ) {
-    case WM_INITDIALOG:
+    case WM_INITDIALOG: {
         hwndGlyphTableDialog = hwnd;
         hwndGlyphTableHost = GetDlgItem(hwnd,IDDI_GLYPH_PANE_HOST);
         char szTitle[128];
@@ -256,6 +261,7 @@
         sprintf_s<128>(szTitle,"Glyph table for font: %s",szFontName);
         SetWindowText(hwnd,szTitle);
         SetTimer(hwnd,1,500,NULL);
+        }
         return (LRESULT)0;
 
     case WM_TIMER: 

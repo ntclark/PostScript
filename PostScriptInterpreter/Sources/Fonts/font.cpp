@@ -25,22 +25,28 @@ This is the MIT License
 
 #include "FontManager_i.c"
 
-    //IFontManager *font::pIFontManager = NULL;
-
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
     {
-
     theObjectType = object::objectType::font;
-
     PostScriptInterpreter::pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
+    createDictionary();
+    return;
+    }
 
+
+    font::font(job *pj,dictionary *pDict,char *pszFontName) : dictionary(pj,pszFontName,DEFAULT_DICTIONARY_SIZE) {
+    theObjectType = object::objectType::font;
+    PostScriptInterpreter::pIFontManager -> LoadFont(pszFontName,(UINT_PTR)(void *)this,&pIFont);
+    static_cast<dictionary *>(this) -> copyFrom(pDict);
+    pCharStrings = reinterpret_cast<dictionary *>(retrieve("CharStrings"));
+    pEncoding = reinterpret_cast<array *>(retrieve("Encoding"));
     loadDictionary();
     return;
     }
 
 
-    void font::loadDictionary() {
+    void font::createDictionary() {
 
     if ( ! exists(pJob -> pFontTypeLiteral -> Name()) ) {
         char szType[16];
@@ -65,90 +71,92 @@ This is the MIT License
         put(pJob -> pFontBoundingBoxLiteral -> Name(),pArray);
     }
 
-    pCharStrings = NULL;
-
+#if 1
     if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
-
         pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
+        put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
+    }
+#endif
+#if 0
         put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
         for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
             char szCharCode[8];
             sprintf_s<8>(szCharCode,"%ld",charCode);
-            uint16_t glyphId;
-            pIFont -> get_GlyphIndex(charCode,&glyphId);
-            pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,(long)glyphId));
+            pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,charCode));
         }
-
-    } else
-
-        pCharStrings = (dictionary *)retrieve(pJob -> pCharStringsLiteral -> Name());
-
-    DWORD cb = 0;
-    for ( long k = 0; k < pCharStrings -> size(); k++ ) {
-        if ( object::objectType::number == pCharStrings -> retrieve(k) -> ObjectType() )
-            cb += 8 + 2 + (DWORD)strlen(pCharStrings -> retrieveKey(k));
-    }
-    char *pszCharStrings = (char *)CoTaskMemAlloc(cb + 1);
-    memset(pszCharStrings,0,(cb + 1) * sizeof(char));
-    char *pszEnd = pszCharStrings + cb;
-    cb = 0L;
-    for ( long k = 0; k < pCharStrings -> size(); k++ ) {
-        if ( object::objectType::number == pCharStrings -> retrieve(k) -> ObjectType() ) {
-            cb += sprintf(pszCharStrings + cb,"%s;%08d",pCharStrings -> retrieveKey(k),pCharStrings -> retrieve(k) -> IntValue());
-            cb++;
-        }
-    }
-
-    pIFont -> SetCharStrings((UINT_PTR)pszCharStrings);
-
-    CoTaskMemFree(pszCharStrings);
-
-    pEncoding = NULL;
+    } 
+#endif
 
     if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
-
-        pEncoding = new (pJob -> CurrentObjectHeap()) class array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
+        pEncoding = new (pJob -> CurrentObjectHeap()) array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
+        pEncoding -> copyFrom(pJob -> pStandardEncoding);
         put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
-
-        for ( long k = 0; k < 256; k++ )
-            pEncoding -> putElement(k,pJob -> pNotdefLiteral);
-
-        dictionary *pCharStrings = reinterpret_cast<dictionary *>(retrieve(pJob -> pCharStringsLiteral -> Name()));
-
-        for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
-            char szCharCode[8];
-            sprintf_s<8>(szCharCode,"%ld",charCode);
-            pEncoding -> putElement(charCode,pCharStrings -> retrieveKey(szCharCode));
-        }
-
-    } else
-
-        pEncoding = (array *)retrieve(pJob -> pEncodingArrayLiteral -> Name());
-
-    cb = 0;
-    for ( long k = 0; k < pEncoding -> size(); k++ )
-        cb += 4 + 2 + (DWORD)strlen(pEncoding -> getElement(k) -> Contents());
-    char *pszEncoding = (char *)CoTaskMemAlloc(cb + 1);
-    memset(pszEncoding,0,(cb + 1) * sizeof(char));
-    pszEnd = pszEncoding + cb;
-    cb = 0L;
-    for ( long k = 0; k < pEncoding -> size(); k++ ) {
-        cb += sprintf(pszEncoding + cb,"%04ld;%s",k,pEncoding -> getElement(k) -> Contents());
-        cb++;
     }
-
-    pIFont -> SetEncoding((UINT_PTR)pszEncoding);
-
-    CoTaskMemFree(pszEncoding);
 
     return;
     }
 
 
-    font::font(job *pj,dictionary *pDict,char *pszFontName) :
-        font(pj,pszFontName) 
-    {
-    static_cast<dictionary *>(this) -> copyFrom(pDict);
+    void font::loadDictionary() {
+
+#if 0
+    if ( NULL == pCharStrings ) {
+        pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
+        put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
+        for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
+            char szCharCode[8];
+            sprintf_s<8>(szCharCode,"%ld",charCode);
+            pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,charCode));
+        }
+    }
+#endif
+
+    if ( ! ( NULL == pCharStrings ) ) {
+        DWORD cb = 0;
+        for ( long k = 0; k < pCharStrings -> size(); k++ ) 
+            cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
+
+        char *pszCharStrings = (char *)CoTaskMemAlloc(cb + 1);
+
+        memset(pszCharStrings,0,(cb + 1) * sizeof(char));
+        char *pszEnd = pszCharStrings + cb;
+        cb = 0L;
+        for ( long k = 0; k < pCharStrings -> size(); k++ ) {
+            cb += sprintf(pszCharStrings + cb,"%s;%s",pCharStrings -> retrieveKey(k),pCharStrings -> retrieve(k) -> Contents());
+            cb++;
+        }
+
+        pIFont -> SetCharStrings((UINT_PTR)pszCharStrings);
+
+        CoTaskMemFree(pszCharStrings);
+    }
+
+#if 0
+    if ( NULL == pEncoding ) {
+        pEncoding = new (pJob -> CurrentObjectHeap()) array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
+        pEncoding -> copyFrom(pJob -> pStandardEncoding);
+        put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
+    }
+#endif
+
+    if ( ! ( NULL == pEncoding ) ) {
+        DWORD cb = 0;
+        for ( long k = 0; k < pEncoding -> size(); k++ )
+            cb += 4 + 2 + (DWORD)strlen(pEncoding -> getElement(k) -> Contents());
+        char *pszEncoding = (char *)CoTaskMemAlloc(cb + 1);
+        memset(pszEncoding,0,(cb + 1) * sizeof(char));
+        cb = 0L;
+        for ( long k = 0; k < pEncoding -> size(); k++ ) {
+            cb += sprintf(pszEncoding + cb,"%04ld;%s",k,pEncoding -> getElement(k) -> Contents());
+            cb++;
+        }
+
+        pIFont -> SetEncoding((UINT_PTR)pszEncoding);
+
+        CoTaskMemFree(pszEncoding);
+
+    }
+
     return;
     }
 

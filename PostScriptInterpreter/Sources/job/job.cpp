@@ -23,6 +23,8 @@ This is the MIT License
 
 #include "job.h"
 
+#include "StandardEncoding.h"
+
     job::job(char *pszFileName,HWND hwndSurf) :
 
         pStorage(NULL),
@@ -55,7 +57,7 @@ This is the MIT License
     pStandardEncoding = new (CurrentObjectHeap()) array(this,"StandardEncoding");
 
     for ( long k = 0; k < 256; k++ )
-        pStandardEncoding -> putElement(k,new (CurrentObjectHeap()) object(this,k));
+        pStandardEncoding -> putElement(k,new (CurrentObjectHeap()) object(this,StandardEncoding[k]));
 
     pISOLatin1Encoding = new (CurrentObjectHeap()) array(this,"ISOLatin1Encoding");
 

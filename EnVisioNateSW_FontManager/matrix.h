@@ -23,7 +23,6 @@ This is the MIT License
 
 #pragma once
 
-
 #include "pointType.h"
 
 #define A 0

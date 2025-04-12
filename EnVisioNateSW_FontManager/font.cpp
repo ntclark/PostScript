@@ -22,6 +22,7 @@ This is the MIT License
 */
 
 #include "font.h"
+#include "adobeGlyphList.h"
 
     font::font(char *pszClientName) {
 
@@ -61,6 +62,17 @@ This is the MIT License
 
     if ( ftype42 == fontType )
         type42Load(pbFontData);
+
+    for ( std::pair<uint32_t,char *> pPair : rhs.encodingTable ) 
+        //
+        // Note that this is using a pointer to char as the held
+        // (mapped) value. This means that fonts with a dupCount > 0
+        // should not delete these values when it clears this map
+        //
+        encodingTable[pPair.first] = pPair.second;
+
+    for ( std::pair<uint32_t,char *> pPair : rhs.charStringsTable )
+        charStringsTable[pPair.first] = pPair.second;
 
     return;
     }
@@ -110,20 +122,24 @@ This is the MIT License
     if ( 0 == pHeadTable -> indexToLocFormat ) {
         uint16_t *pGlyphOffset = (uint16_t *)pLocaTable + glyphID;
         uint16_t *pNextOffset = (uint16_t *)pLocaTable + glyphID + 1;
-        if ( *pGlyphOffset == *pNextOffset ) 
+        uint16_t glyphOffset;
+        uint16_t nextOffset;
+        BE_TO_LE_16(pGlyphOffset,glyphOffset)
+        BE_TO_LE_16(pNextOffset,nextOffset)
+        if ( glyphOffset == nextOffset )
             return NULL;
-        uint16_t offsetInGlyphTable = 0;
-        BE_TO_LE_U16(pGlyphOffset,offsetInGlyphTable)
-        return (uint8_t *)pGlyfTable + 2 * offsetInGlyphTable;
+        return (uint8_t *)pGlyfTable + 2 * glyphOffset;
     }
 
     uint32_t *pGlyphOffset = (uint32_t *)pLocaTable + glyphID;
     uint32_t *pNextOffset = (uint32_t *)pLocaTable + glyphID + 1;
-    if ( *pGlyphOffset == *pNextOffset ) 
+    uint32_t glyphOffset;
+    uint32_t nextOffset;
+    BE_TO_LE_32(pGlyphOffset,glyphOffset)
+    BE_TO_LE_32(pNextOffset,nextOffset)
+    if ( glyphOffset == nextOffset )
         return NULL;
-    uint32_t offsetInGlyphTable = 0;
-    BE_TO_LE_U32(pGlyphOffset,offsetInGlyphTable)
-    return (uint8_t *)pGlyfTable + offsetInGlyphTable;
+    return (uint8_t *)pGlyfTable + glyphOffset;
     }
 
 

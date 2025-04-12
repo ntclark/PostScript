@@ -23,7 +23,6 @@ This is the MIT License
 
 #pragma once
 
-
 #include <list>
 
 #include "Renderer_i.h"
@@ -53,7 +52,7 @@ class font;
 
         STDMETHOD(ChooseFont)(HDC hdc,IFont_EVNSW **ppIFont);
 
-        STDMETHOD(RenderGlyph)(HDC hdc,unsigned short bGlyph,
+        STDMETHOD(RenderGlyph)(unsigned short bGlyph,
                                 UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pEndPoint);
 

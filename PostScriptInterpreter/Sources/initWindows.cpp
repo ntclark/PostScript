@@ -28,7 +28,7 @@ This is the MIT License
 
     //
     // Do not forget that hwndHost is *external*, our client window will be embedded in the
-    // windows application that is hosting this object
+    // windows application that is hosting this object.
     // 
     // It is also true in this case, that this host is NOT the client of the main frame window.
     // It is an additional simple window that is created to mimic the client *area* of the frame
@@ -36,7 +36,7 @@ This is the MIT License
     // 
     // In 30 years of windows development, I have never been able to actually get the handle
     // of this area *as a window handle*, which is to me an obvious thing to need
-    // on so many occassions
+    // on so many occassions.
     // 
     // This object also subclasses that host window so that these windows stay consistent
     // with it on move or size. Something in the IOleInPlaceObject and that flavor of
@@ -51,7 +51,7 @@ This is the MIT License
     memset(&gClass,0,sizeof(WNDCLASS));
 
     gClass.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
-    gClass.lpfnWndProc = PostScriptInterpreter::handler;
+    gClass.lpfnWndProc = PostScriptInterpreter::clientWindowHandler;
     gClass.cbClsExtra = 32;
     gClass.cbWndExtra = 32;
     gClass.hInstance = hModule;

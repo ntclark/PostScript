@@ -25,24 +25,24 @@ This is the MIT License
 
 #define FT_CURVE_TAG_ON 0x01
 
-    HRESULT font::RenderGlyph(HDC hdc,unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     if ( font::fontType::ftype3 == fontType ) 
-        return drawType3Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
+        return drawType3Glyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
 
     if ( ! ( font::fontType::ftype42 == fontType ) )
         return E_UNEXPECTED;
 
-    return drawType42Glyph(hdc,bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
+    return drawType42Glyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
     }
 
 
-    HRESULT font::drawType3Glyph(HDC,unsigned short,UINT_PTR,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::drawType3Glyph(unsigned short,UINT_PTR,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
     return E_NOTIMPL;
     }
 
 
-    HRESULT font::drawType42Glyph(HDC hdc,unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::drawType42Glyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     BYTE *pbGlyphData = NULL;
 
@@ -57,14 +57,31 @@ This is the MIT License
     then loca[n] = loca[n+1].
     */
 
+    uint16_t glyph = bGlyph;
+
+    if ( 0 < encodingTable.size() ) {
+        if ( ! ( encodingTable.end() == encodingTable.find((uint32_t)glyph) ) ) {
+            char *pszCharTableIndex = encodingTable[(uint32_t)glyph];
+            std::map<uint32_t,char *> *pCharStrings = &charStringsTable;
+            if ( 0 == pCharStrings -> size() )
+                pCharStrings = &font::adobeGlyphList;
+            for ( std::pair<uint32_t,char *> pPair : *pCharStrings ) {
+                if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
+                    glyph = pPair.first;
+                    break;
+                }
+            }
+        }
+    }
+
     uint16_t glyphIndex;
 
-    get_GlyphIndex(bGlyph,&glyphIndex);
+    get_GlyphIndex(glyph,&glyphIndex);
 
     pbGlyphData = getGlyphData(glyphIndex);
 
     if ( NULL == pbGlyphData ) {
-        if ( (long)bGlyph <= countGlyphs ) {
+        if ( (long)glyph <= countGlyphs ) {
             otLongHorizontalMetric pMetric =  pHorizontalMetricsTable -> pHorizontalMetrics[glyphIndex];
             if ( ! ( NULL == pEndPoint ) ) {
                 pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * scaleFUnitsToPoints * PointSize();
@@ -150,7 +167,7 @@ This is the MIT License
             currentPoint.x = pPoints -> x;
             currentPoint.y = pPoints -> y;
         } else {
-            sprintf(FontManager::szFailureMessage,"Invalid font: A glyph (%x) has a contour whose first point is OFF the contour",bGlyph);
+            sprintf(FontManager::szFailureMessage,"Invalid font: A glyph (%x) has a contour whose first point is OFF the contour",glyph);
             FontManager::FireErrorNotification(FontManager::szFailureMessage);
             FontManager::pIGraphicElements -> MoveTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);
             currentPoint.x = pPoints -> x;

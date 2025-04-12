@@ -190,13 +190,6 @@ This is the MIT License
 
         hbmResult = createTemporaryBitmap(width,height,8,pbRGBImage);
 
-#if 0
-HDC hdcx = CreateCompatibleDC(NULL);
-SelectObject(hdcx,hbmResult);
-BitBlt(GetDC(HWND_DESKTOP),0,0,stride,height,hdcx,0,0,SRCCOPY);
-DeleteDC(hdcx);
-#endif
-
         renderImage(hbmResult,width,height);
 
         DeleteObject(hbmResult);
@@ -216,6 +209,7 @@ DeleteDC(hdcx);
         // At some point, I believe I encountered a Decode array
         // smaller than required. The documentation does not say whether
         // this is invalid.
+        // (or it might have been for an indexed colorspace, where it would be 2 entries)
         if ( 2 * k >= pDecodeArray -> size() )
             break;
 
@@ -294,6 +288,8 @@ DeleteDC(hdcx);
 
 
     void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
+    if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
+        PostScriptInterpreter::beginPathAction();
     PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),hbmResult,
                                                 (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
@@ -320,11 +316,18 @@ DeleteDC(hdcx);
     bitMapInfo.bmiHeader.biBitCount = 3 * (unsigned short)bitsPerComponent;
     bitMapInfo.bmiHeader.biCompression = BI_RGB;
 
+    HBITMAP hBitmap = CreateDIBSection(NULL,&bitMapInfo,DIB_RGB_COLORS,NULL,NULL,0L);
+
     long widthBytes = 3 * cx;
     long stride = ((((cx * 24) + 31) & ~31) >> 3);
     long padding = stride - widthBytes;
 
-long cbBits = stride * cy;
+    if ( 0 == padding ) {
+        SetDIBits(NULL,hBitmap,0,cy,pBits,&bitMapInfo,DIB_RGB_COLORS);
+        return hBitmap;
+    }
+
+    long cbBits = stride * cy;
 
     uint8_t *pRGBBits = new uint8_t[cbBits];
 
@@ -338,8 +341,6 @@ long cbBits = stride * cy;
         pTarget += stride;
         pSource += widthBytes;
     }
-
-    HBITMAP hBitmap = CreateDIBSection(NULL,&bitMapInfo,DIB_RGB_COLORS,NULL,NULL,0L);
 
     SetDIBits(NULL,hBitmap,0,cy,pRGBBits,&bitMapInfo,DIB_RGB_COLORS);
 

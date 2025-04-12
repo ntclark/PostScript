@@ -27,9 +27,7 @@ This is the MIT License
 
     // gdiParameters
 
-
     void gdiParameters::setColorSpace(colorSpace *pcs) {
-    pPostScriptInterpreter -> PotentialNewPage();
     pColorSpace = pcs;
     return;
     }
@@ -41,8 +39,6 @@ This is the MIT License
 
 
     void gdiParameters::setColor(colorSpace *pColorSpace) {
-
-    pPostScriptInterpreter -> PotentialNewPage();
 
     if ( 0 == strcmp(pColorSpace -> Name(),"DeviceGray") ) {
         setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
@@ -68,34 +64,29 @@ This is the MIT License
 
 
     void gdiParameters::setRGBColor(COLORREF rgb) {
-    pPostScriptInterpreter -> PotentialNewPage();
     PostScriptInterpreter::pIGraphicParameters -> put_RGBColor(rgb);
     }
 
 
     void gdiParameters::setLineWidth(POINT_TYPE v) { 
-    pPostScriptInterpreter -> PotentialNewPage();
     PostScriptInterpreter::pIGraphicParameters -> put_LineWidth(v);
     return;
     }
 
 
     void gdiParameters::setLineJoin(long lj) {
-    pPostScriptInterpreter -> PotentialNewPage();
     PostScriptInterpreter::pIGraphicParameters -> put_LineJoin(lj);
     return;
     }
 
 
     void gdiParameters::setLineCap(long lc) {
-    pPostScriptInterpreter -> PotentialNewPage();
     PostScriptInterpreter::pIGraphicParameters -> put_LineCap(lc);
     return;
     }
 
 
     void gdiParameters::setLineDash(FLOAT *pValues,long countValues,POINT_TYPE offset) {
-    pPostScriptInterpreter -> PotentialNewPage();
     PostScriptInterpreter::pIGraphicParameters -> put_LineDash(pValues,countValues,offset);
     return;
     }

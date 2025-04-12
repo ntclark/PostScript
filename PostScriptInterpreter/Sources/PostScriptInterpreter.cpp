@@ -29,6 +29,8 @@ This is the MIT License
     IGraphicElements *PostScriptInterpreter::pIGraphicElements = NULL;
     IGraphicParameters *PostScriptInterpreter::pIGraphicParameters = NULL;
 
+    std::function<void(void)> PostScriptInterpreter::beginPathAction;
+
     CRITICAL_SECTION PostScriptInterpreter::theQueueCriticalSection;
 
     LRESULT (__stdcall *PostScriptInterpreter::nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
@@ -45,6 +47,9 @@ This is the MIT License
     HWND PostScriptInterpreter::hwndOperandStackSize = NULL;
     HWND PostScriptInterpreter::hwndCurrentDictionary = NULL;
     HWND PostScriptInterpreter::hwndVScroll = NULL;
+
+    long PostScriptInterpreter::sideGutter = 16L;
+    long PostScriptInterpreter::topGutter = 16L;
 
     HDC PostScriptInterpreter::hdcSurface = NULL;
 

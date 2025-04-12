@@ -1064,7 +1064,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
                                         long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
                                         UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
-        STDMETHOD(RenderGlyph)(HDC hdc,unsigned short bGlyph,
+        STDMETHOD(RenderGlyph)(unsigned short bGlyph,
                                 UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,
                                 POINTF *pStartPoint,POINTF *pEndPoint);
 
@@ -1083,8 +1083,8 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
     private:
 
-        HRESULT drawType3Glyph(HDC,unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
-        HRESULT drawType42Glyph(HDC,unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType3Glyph(unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType42Glyph(unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
 
         void load(long countGlyphs);
         void type3load();
@@ -1166,8 +1166,8 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
         DWORD cbFontData{0L};
 
-        std::map<uint32_t,uint32_t> encodingTable;
-        std::map<uint32_t,uint32_t> charStringsTable;
+        std::map<uint32_t,char *> encodingTable;
+        std::map<uint32_t,char *> charStringsTable;
 
         long dupCount{0L};
         UINT_PTR cookie{NULL};
@@ -1188,6 +1188,8 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         std::vector<char *> fontStyleNames;
         std::vector<char *> fontScriptNames;
         std::vector<int> fontWeights;
+
+        static std::map<uint32_t,char *> adobeGlyphList;
 
         friend class FontManager;
         friend class otSimpleGlyph;

@@ -303,7 +303,7 @@ Exit 0</Command>
     <ClCompile Include="Sources\COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="Sources\Fonts\font.cpp" />
     <ClCompile Include="Sources\Fonts\font_transforms.cpp" />
-    <ClCompile Include="Sources\handler.cpp" />
+    <ClCompile Include="Sources\clientWindowHandler.cpp" />
     <ClCompile Include="Sources\job\job.cpp" />
     <ClCompile Include="Sources\job\job_operators.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -375,9 +375,11 @@ Exit 0</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ascii85.h" />
+    <ClInclude Include="include\CentralEuropeanEncoding.h" />
     <ClInclude Include="include\comment.h" />
     <ClInclude Include="include\error.h" />
     <ClInclude Include="include\gdiParameters.h" />
+    <ClInclude Include="include\ISOLatin1Encoding.h" />
     <ClInclude Include="include\job.h" />
     <ClInclude Include="include\job_operators.h" />
     <ClInclude Include="include\job_pdfOperators.h" />
@@ -413,6 +415,7 @@ Exit 0</Command>
     <ClInclude Include="include\Stacks\fontStack.h" />
     <ClInclude Include="include\Stacks\objectStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
+    <ClInclude Include="include\StandardEncoding.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />

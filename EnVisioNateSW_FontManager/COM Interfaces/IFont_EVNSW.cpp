@@ -178,7 +178,17 @@ This is the MIT License
     uint16_t startCode = pCmapSubtableFormat4 -> pStartCode[endCodeIndex];
 
     if ( charCode < startCode )
+{
+//OutputDebugStringA("wtf\n");
+//for ( uint16_t k = 0; 1; k++ ) {
+//char szX[32];
+//sprintf_s<32>(szX,"%d,%d\n", pCmapSubtableFormat4 -> pStartCode[k],pCmapSubtableFormat4 -> pEndCode[k]);
+//OutputDebugStringA(szX);
+//if ( 0xFFFF == pCmapSubtableFormat4 -> pEndCode[k] )
+//break;
+//}
         return S_OK;
+    }
 
     uint16_t idRangeOffset = pCmapSubtableFormat4 -> pIdRangeOffsets[endCodeIndex];
     uint16_t idDelta = pCmapSubtableFormat4 -> pIdDelta[endCodeIndex];
@@ -242,20 +252,21 @@ This is the MIT License
     }
 
 
-    HRESULT font::SetEncoding(UINT_PTR ptrEncoding) {
+    HRESULT font::SetEncoding(UINT_PTR ptrData) {
 
     encodingTable.clear();
 
-    char *pszEncoding = (char *)ptrEncoding;
+    char *pszEncoding = (char *)ptrData;
 
     char *p = pszEncoding;
     while ( *p ) {
         *(p + 4) = '\0';
         uint32_t index = atol(p);
         p += 5;
-        char szEntry[128];
-        strcpy(szEntry,p);
-        encodingTable[index] = hashCode(szEntry);
+        uint16_t n = (uint16_t)strlen(p);
+        char *psz = new char[n];
+        strcpy(psz,p);
+        encodingTable[index] = psz;
         p += strlen(p) + 1;
     }
 
@@ -263,11 +274,11 @@ This is the MIT License
     }
 
 
-    HRESULT font::SetCharStrings(UINT_PTR ptrCharStrings) {
+    HRESULT font::SetCharStrings(UINT_PTR ptrData) {
 
     charStringsTable.clear();
 
-    char *pszCharStrings = (char *)ptrCharStrings;
+    char *pszCharStrings = (char *)ptrData;
 
     char *p = pszCharStrings;
     while ( *p ) {
@@ -275,9 +286,12 @@ This is the MIT License
         while ( ! ( ';' == *p ) )
             p++;
         *p = '\0';
-        uint32_t index = hashCode(pStart);
+        uint16_t n = (uint16_t)(p - pStart);
+        char *psz = new char[n];
         p++;
-        charStringsTable[index] = atol(p);
+        uint32_t index = atol(p);
+        p++;
+        charStringsTable[index] = psz;
         p += strlen(p) + 1;
     }
 

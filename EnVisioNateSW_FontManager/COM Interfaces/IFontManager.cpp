@@ -218,6 +218,12 @@ Type42Font:
     }
 
 
+    HRESULT FontManager::RenderGlyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    font *pFont = static_cast<font *>(pIFont_Current);
+    return pFont -> RenderGlyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
+    }
+
+
     HRESULT FontManager::ScaleFont(FLOAT scaleFactor) {
     pIFont_Current -> Scale(scaleFactor,scaleFactor);
     return S_OK;

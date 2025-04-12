@@ -70,7 +70,6 @@ This is the MIT License
 
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
     initMatrix(hwndSurface,pageNumber);
-    thePathParameters.initialize();
     return;
     }
 

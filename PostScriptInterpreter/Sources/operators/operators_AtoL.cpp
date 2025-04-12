@@ -1219,6 +1219,8 @@ isNew = true;
     if ( isNew )
         pFontDirectory -> put(pFont -> fontName(),pFont);
 
+    pFont -> loadDictionary();
+
     push(pFont);
 
     return;
@@ -2226,48 +2228,6 @@ printf("wtf");
 
     return;
     }
-
-#if 0
-
-    glyphshow name glyphshow –
-    cid glyphshow –
-
-    shows the glyph for a single character from the current font or CIDFont; the character 
-    is identified by name if a base font or by CID if a CIDFont. If the current
-    font is a composite (Type 0) font, an invalidfont error occurs.
-
-    Unlike all other show variants, glyphshow bypasses the current font’s Encoding 
-    array; it can access any character in the font, whether or not that character’s 
-    name is present in the font’s encoding vector. glyphshow is the only show 
-    variant that works directly with a CIDFont.
-
-    For a base font, the behavior of glyphshow depends on the current font’s
-    FontType value. For fonts that contain a CharStrings dictionary, such as Type 1
-    fonts, glyphshow looks up name there to obtain a glyph description to execute. If
-    name is not present in the CharStrings dictionary, glyphshow substitutes the
-    .notdef entry, which must be present.
-
-    For Type 3 fonts, if the font dictionary contains a BuildGlyph procedure,
-    glyphshow pushes the current font dictionary and name on the operand stack and
-    then invokes BuildGlyph in the usual way (see Section 5.7, “Type 3 Fonts”). If
-    there is no BuildGlyph procedure, but only a BuildChar procedure, glyphshow
-    searches the font’s Encoding array for an occurrence of name. If it finds one, it
-    pushes the font dictionary and the array index on the operand stack, then invokes
-    BuildChar in the usual way. If name is not present in the encoding, glyphshow
-    substitutes the name .notdef and repeats the search. If .notdef is not present either,
-    an invalidfont error occurs.
-
-    For a CIDFont, glyphshow proceeds as show would for a CID-keyed font whose
-    mapping algorithm yields this CIDFont with cid as the character selector. A
-    rangecheck error occurs if cid is outside the valid range of CIDs (see Appendix B).
-    Except for the means of selecting the character to be shown, glyphshow behaves
-    the same as show. Like show, glyphshow can access glyphs that are already in the
-    font cache; glyphshow does not always need to execute the character’s glyph description.
-
-    Errors: invalidaccess, invalidfont, nocurrentpoint, stackunderflow, typecheck
-    See Also: show
-
-#endif
 
     void job::operatorGrestore() {
 /*

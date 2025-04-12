@@ -52,6 +52,8 @@ class graphicsState;
         void gSave() { pIFont -> SaveState(); }
         void gRestore() { pIFont -> RestoreState(); }
 
+        void loadDictionary();
+
         static void setFont(font *pFont);
         static font *findFont(job *pJob,char *pszFamily);
         static font *CurrentFont();
@@ -62,11 +64,9 @@ class graphicsState;
 
         static font *scaleFont(FLOAT scaleFactor,font *pCopyFrom);
 
-        //static IFontManager *pIFontManager;
-
     private:
 
-        void loadDictionary();
+        void createDictionary();
 
         IFont_EVNSW *pIFont{NULL};
 
