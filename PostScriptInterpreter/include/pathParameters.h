@@ -69,15 +69,17 @@ This is the MIT License
 
         static long cxClient;
         static long cyClient;
-        static long cyWindow;
         static long displayResolution;
 
+        static RECT rcPage;
+        static RECT rcClient;
+
         static FLOAT scalePointsToPixels;
-        static FLOAT renderingHeight;
 
         static XFORM toDeviceSpace;
         static XFORM toDeviceSpaceInverse;
 
         friend class graphicsState;
+        friend class PostScriptInterpreter;
 
     };

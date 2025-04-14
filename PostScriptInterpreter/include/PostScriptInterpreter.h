@@ -341,7 +341,7 @@ class job;
 
         void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
 
-        long InitialCYClient() { return initialCYClient; }
+        static long ClientWindowHeight() { return cyClientWindow; }
 
         job *currentJob() { return pJob; }
 
@@ -407,12 +407,15 @@ class job;
         static HWND hwndCurrentDictionary;
         static HWND hwndVScroll;
 
+        static HANDLE hsemSized;
+
         static long sideGutter;
         static long topGutter;
 
         static HDC hdcSurface;
 
-        static long initialCYClient;
+        static long cyClientWindow;
+        static long cxClientWindow;
 
         static void setWindowPanes();
 
@@ -460,7 +463,7 @@ class job;
     long psDelimiterLength[] = {  2,  1,  1,  1,  1,   2,0};
 
     char psOtherDelimiters[][8] = {"]",0};
-   char pszDelimiters[] = {"%%%(/<~{"};
+    char pszDelimiters[] = {"%%%(/<~{"};
 
 #else
 

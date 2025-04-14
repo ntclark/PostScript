@@ -46,3 +46,4 @@ This is the MIT License
 
 #define WM_FLUSH_LOG                    (WM_USER + 1)
 #define WM_REFRESH_CLIENT_WINDOW        (WM_USER + 2)
+

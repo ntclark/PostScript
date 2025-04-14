@@ -37,55 +37,47 @@ This is the MIT License
 
     void PostScriptInterpreter::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
-    if ( ! ( NULL == beginPathAction ) )
+    if ( ! ( NULL == beginPathAction ) ) 
         beginPathAction();
 
     graphicsState::RenderGeometry();
 
-    ReleaseDC(hwndClient,hdcSurface);
-    hdcSurface = ::GetDC(hwndClient);
-
     HDC hdcTarget = CreateCompatibleDC(hdcSurface);
 
-    long cxClient = (long)((double)(pageWidthPoints * initialCYClient) / (double)pageHeightPoints);
-
     SIZEL *pSizel = new SIZEL;
-    pSizel -> cx = cxClient;
-    pSizel -> cy = initialCYClient;
+    pSizel -> cx = cxClientWindow;
+    pSizel -> cy = cyClientWindow;
 
-    HBITMAP hbmPage = CreateCompatibleBitmap(hdcSurface,cxClient,initialCYClient);
+    HBITMAP hbmPage = CreateCompatibleBitmap(hdcSurface,pSizel -> cx,pSizel -> cy);
 
     SelectObject(hdcTarget,hbmPage);
 
-    BitBlt(hdcTarget,0,0,cxClient,initialCYClient,hdcSurface,0,0,SRCCOPY);
+    BitBlt(hdcTarget,0,0,pSizel -> cx,pSizel -> cy,hdcSurface,0,0,SRCCOPY);
 
     pageBitmaps[pageBitmaps.size() + 1] = hbmPage;
     pageSizes[pageBitmaps.size()] = pSizel;
 
     DeleteDC(hdcTarget);
 
-    activePageOrigin.y += initialCYClient;
-
-    ReleaseDC(hwndClient,hdcSurface);
-
-    hdcSurface = NULL;
+    activePageOrigin.y += cyClientWindow;
 
     beginPathAction = [this]() { 
 
         beginPathAction = NULL;
 
-        if ( NULL == hdcSurface )
-            hdcSurface = ::GetDC(hwndClient);
+        if ( INVALID_HANDLE_VALUE == hsemSized )
+            hsemSized = CreateSemaphore(NULL,0,1,NULL);
 
-        RECT rcClient;
-        GetWindowRect(hwndClient,&rcClient);
-        SetWindowPos(hwndClient,HWND_TOP,0,0,rcClient.right - rcClient.left,activePageOrigin.y + initialCYClient,SWP_NOMOVE);
-        SendMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
-        GetClientRect(hwndClient,&rcClient);
-        rcClient.right -= GetSystemMetrics(SM_CXVSCROLL);
-        FillRect(hdcSurface,&rcClient,(HBRUSH)(COLOR_WINDOW + 1));
+        SetWindowPos(hwndClient,HWND_TOP,0,0,cxClientWindow,activePageOrigin.y + cyClientWindow,SWP_NOMOVE);
+        PostMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
+
+        WaitForSingleObject(hsemSized,INFINITE);
+        CloseHandle(hsemSized);
+        hsemSized = INVALID_HANDLE_VALUE;
 
         graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
+
+        pIRenderer -> ClearRect(hdcSurface,&pathParameters::rcPage,RGB(255,255,255));
 
     };
 

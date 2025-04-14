@@ -135,8 +135,8 @@ BYTE postScriptPropertiesBlob[512];
     //pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
     //pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
 
-    pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
-    //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
+    //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
+    pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
 
     if ( 0 < cbPostScriptProperties )
         pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);

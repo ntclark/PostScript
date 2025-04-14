@@ -48,8 +48,10 @@ This is the MIT License
     HWND PostScriptInterpreter::hwndCurrentDictionary = NULL;
     HWND PostScriptInterpreter::hwndVScroll = NULL;
 
-    long PostScriptInterpreter::sideGutter = 16L;
-    long PostScriptInterpreter::topGutter = 16L;
+    HANDLE PostScriptInterpreter::hsemSized = INVALID_HANDLE_VALUE;
+
+    long PostScriptInterpreter::sideGutter = 32;
+    long PostScriptInterpreter::topGutter = 32;
 
     HDC PostScriptInterpreter::hdcSurface = NULL;
 
@@ -57,7 +59,8 @@ This is the MIT License
     enum logLevel PostScriptInterpreter::theLogLevel = none;
     enum logLevel PostScriptInterpreter::theRendererLogLevel = none;
 
-    long PostScriptInterpreter::initialCYClient = -1L;
+    long PostScriptInterpreter::cyClientWindow = -1L;
+    long PostScriptInterpreter::cxClientWindow = -1L;
 
     char PostScriptInterpreter::szErrorMessage[1024];
 

@@ -34,7 +34,6 @@ This is the MIT License
     int Mx3Inverse(double *,double *);
 
     FLOAT pathParameters::scalePointsToPixels = 1.0f;
-    FLOAT pathParameters::renderingHeight = 0.0f;
 
     XFORM pathParameters::toDeviceSpace{1.0,0.0,0.0,1.0,0.0,0.0};
     XFORM pathParameters::toDeviceSpaceInverse{6 * 0.0};
@@ -42,7 +41,9 @@ This is the MIT License
     long pathParameters::displayResolution = 0L;
     long pathParameters::cxClient = 0L;
     long pathParameters::cyClient = 0L;
-    long pathParameters::cyWindow = 0L;
+
+    RECT pathParameters::rcPage{-1L,-1L,-1L,-1L};
+    RECT pathParameters::rcClient{-1L,-1L,-1L,-1L};
 
     void pathParameters::initialize() {
     memset(&toDeviceSpace,0,sizeof(XFORM));
@@ -61,41 +62,39 @@ This is the MIT License
     }
 
 
-    void pathParameters::initMatrix(HWND hwndClient,long pageNumber,long pageHeightPoints,long pageWidthPoints) {
+    void pathParameters::initMatrix(HWND hwndSurface,long pageNumber,long pageHeightPoints,long pageWidthPoints) {
 
-    if ( ! ( NULL == hwndClient ) ) {
+    if ( ! ( NULL == hwndSurface ) ) {
 
-        RECT rcClient;
-        GetClientRect(hwndClient,&rcClient);
+        scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - 2 * PostScriptInterpreter::TopGutter()) 
+                                            / (FLOAT)pageHeightPoints;
 
-        cxClient = (rcClient.right - rcClient.left);
-        cyClient = (rcClient.bottom - rcClient.top);
+        if ( -1L == rcPage.left ) {
 
-        cyWindow = (long)((double)cyClient / ( 0 == pageNumber ? 1.0 : (double)pageNumber) );
+            rcPage.left = PostScriptInterpreter::SideGutter();
+            rcPage.top = PostScriptInterpreter::TopGutter();
 
-        scalePointsToPixels = (FLOAT)cyWindow / (FLOAT)pageHeightPoints;
+            rcPage.right = rcPage.left + (long)(pageWidthPoints * scalePointsToPixels);
+            rcPage.bottom = rcPage.top + (long)(pageHeightPoints * scalePointsToPixels);
 
-        HDC hdc = ::GetDC(hwndClient);
+            rcClient.left = 0;
+            rcClient.top = 0;
+            rcClient.right = rcPage.right - rcPage.left;
+            rcClient.bottom = (rcPage.bottom - rcPage.top);
 
-        rcClient.left += PostScriptInterpreter::SideGutter();
-        rcClient.top += PostScriptInterpreter::TopGutter();
-        rcClient.right = rcClient.left + pageWidthPoints * scalePointsToPixels - PostScriptInterpreter::SideGutter();
-        rcClient.bottom = rcClient.top + cyWindow - 2 * PostScriptInterpreter::TopGutter();
-
-        PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&rcClient,RGB(255,255,255));
-
-        ReleaseDC(hwndClient,hdc);
+            HDC hdc = GetDC(hwndSurface);
+            PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&pathParameters::rcPage,RGB(255,255,255));
+            ReleaseDC(hwndSurface,hdc);
+        }
 
     }
-
-    renderingHeight = (FLOAT)cyWindow;
 
     toDeviceSpace.eM11 = scalePointsToPixels;
     toDeviceSpace.eM12 = 0.0;
     toDeviceSpace.eM21 = 0.0;
     toDeviceSpace.eM22 = -scalePointsToPixels;
-    toDeviceSpace.eDx = 0.0;
-    toDeviceSpace.eDy = (FLOAT)cyWindow;
+    toDeviceSpace.eDx = (FLOAT)rcPage.left;
+    toDeviceSpace.eDy = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - rcPage.top);
 
     double inverse[3][3]{9 * 0.0};
     double theMatrix[3][3]{9 * 0.0};

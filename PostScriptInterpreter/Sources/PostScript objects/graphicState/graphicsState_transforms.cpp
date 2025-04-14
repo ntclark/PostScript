@@ -28,8 +28,8 @@ This is the MIT License
 #include "gdiParameters.h"
 
 
-    void graphicsState::initMatrix(HWND hwndClient,long pageNumber) {
-    thePathParameters.initMatrix(hwndClient,pageNumber,pageHeightPoints,pageWidthPoints);
+    void graphicsState::initMatrix(HWND hwndSurface,long pageNumber) {
+    thePathParameters.initMatrix(hwndSurface,pageNumber,pageHeightPoints,pageWidthPoints);
     return;
     }
 

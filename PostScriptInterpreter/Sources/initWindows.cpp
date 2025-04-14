@@ -27,7 +27,7 @@ This is the MIT License
     int PostScriptInterpreter::initWindows() {
 
     //
-    // Do not forget that hwndHost is *external*, our client window will be embedded in the
+    // Please note that hwndHost is *external*, our client window will be embedded in the
     // windows application that is hosting this object.
     // 
     // It is also true in this case, that this host is NOT the client of the main frame window.
@@ -73,7 +73,7 @@ This is the MIT License
 
     PostScriptInterpreter::nativeHostFrameHandler = (WNDPROC)SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::hostFrameHandlerOveride);
 
-    hwndClient = CreateWindowEx(WS_EX_CLIENTEDGE,"psInterpreterCanvas","",WS_CHILD | WS_VISIBLE,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
+    hwndClient = CreateWindowEx(0L,"psInterpreterCanvas","",WS_CHILD | WS_VISIBLE,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
 
     hwndVScroll = CreateWindowEx(0L,"SCROLLBAR","",WS_CHILD | WS_VISIBLE | SBS_VERT,0,0,GetSystemMetrics(SM_CXVSCROLL),CW_USEDEFAULT,hwndClient,NULL,NULL,NULL);
 
