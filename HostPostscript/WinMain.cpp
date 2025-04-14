@@ -17,6 +17,8 @@ long cbPostScriptProperties = 0L;
 UINT_PTR pPostScriptProperties = NULL;
 BYTE postScriptPropertiesBlob[512];
 
+boolean useGSProperties = true;
+
     int __stdcall WinMain(HINSTANCE hModule,HINSTANCE hInstancePrevious,LPSTR lpCmdLine,int nCmdShow) {
 
     char *pCommandLine = GetCommandLine();
@@ -44,28 +46,51 @@ BYTE postScriptPropertiesBlob[512];
 
     sprintf(szApplicationDataDirectory,"%s\\EnVisioNateSW",szTemp);
 
-    CoCreateInstance(CLSID_InnoVisioNateProperties,NULL,CLSCTX_ALL,IID_IGProperties,reinterpret_cast<void **>(&pIGProperties));
+    rc = CoCreateInstance(CLSID_InnoVisioNateProperties,NULL,CLSCTX_ALL,IID_IGProperties,reinterpret_cast<void **>(&pIGProperties));
 
-    pIGProperties -> Add((BSTR)L"window position",NULL);
-    pIGProperties -> DirectAccess((BSTR)L"window position",TYPE_BINARY,&rcFrame,sizeof(RECT));
+    VARIANT_BOOL bSuccess = FALSE;
 
-    pIGProperties -> Add((BSTR)L"postscript properties size",NULL);
-    pIGProperties -> DirectAccess((BSTR)L"postscript properties size",TYPE_BINARY,&cbPostScriptProperties,sizeof(long));
+    if (  ( S_OK == rc ) ) {
+        char szMessage[1024];
+        sprintf_s<1024>(szMessage,
+            "Note that this project uses the Properties "
+            "componenent developed by EnVisioNateSW\n"
+            "The component is open source, however, to\n"
+            "simplify your use of this project the binary\n"
+            "for that component is included in the \n"
+            "Common Repository.\n"
+            "The component, however, needs to be registered.\n"
+            "To register it, in a DOS  prompt with\n"
+            "administrative privileges, CD to the folder \n"
+            "\"\%cGSYSTEM_HOME%c\\Common\\Artifacts\\<Configuration>\\<Platform>\"\n"
+            "and issue the command \"regsvr32 Properties.ocx\"\n\n"
+            "Alternatively, build this project with USE_GS_PROPERTIES= 0",'%','%');
+        MessageBox(NULL,szMessage,"Note!",MB_ICONEXCLAMATION);
+        useGSProperties = false;
 
-    pIGProperties -> Add((BSTR)L"postscript properties",NULL);
-    pIGProperties -> DirectAccess((BSTR)L"postscript properties",TYPE_RAW_BINARY,(void *)postScriptPropertiesBlob,cbPostScriptProperties);
+    } else {
 
-    WCHAR szwDataFile[MAX_PATH];
-    MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
-    wcscat(szwDataFile,L"\\HostPostscript.settings");
+        pIGProperties -> Add((BSTR)L"window position",NULL);
+        pIGProperties -> DirectAccess((BSTR)L"window position",TYPE_BINARY,&rcFrame,sizeof(RECT));
 
-    pIGProperties -> put_FileName(szwDataFile);
+        pIGProperties -> Add((BSTR)L"postscript properties size",NULL);
+        pIGProperties -> DirectAccess((BSTR)L"postscript properties size",TYPE_BINARY,&cbPostScriptProperties,sizeof(long));
 
-    VARIANT_BOOL bSuccess;
+        pIGProperties -> Add((BSTR)L"postscript properties",NULL);
+        pIGProperties -> DirectAccess((BSTR)L"postscript properties",TYPE_RAW_BINARY,(void *)postScriptPropertiesBlob,cbPostScriptProperties);
 
-    pIGProperties -> LoadFile(&bSuccess);
+        WCHAR szwDataFile[MAX_PATH];
+        MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
+        wcscat(szwDataFile,L"\\HostPostscript.settings");
+
+        pIGProperties -> put_FileName(szwDataFile);
+
+        pIGProperties -> LoadFile(&bSuccess);
+
+    }
 
     if ( FALSE == bSuccess )
+
         adjustToMonitorSize(&rcFrame);
 
     else {
@@ -149,18 +174,20 @@ BYTE postScriptPropertiesBlob[512];
     }
 
 #if USE_GS_PROPERTIES
-    GetWindowRect(pParsePSHost -> hwndFrame,&rcFrame);
-    pParsePSHost -> pIPostScript -> GetPeristableProperties(&pPostScriptProperties,&cbPostScriptProperties);
-    VARIANT x;
-    x.vt = VT_PTR;
-    x.pbVal = (BYTE *)pPostScriptProperties;
-    IGProperty *pIGProperty = NULL;
-    pIGProperties -> get_Property((wchar_t *)L"postscript properties",&pIGProperty);
-    pIGProperty -> put_size(cbPostScriptProperties);
-    pIGProperty -> put_value(x);
-    pIGProperty -> Release();
-    pIGProperties -> Save();
-    CoTaskMemFree((void *)pPostScriptProperties);
+    if ( useGSProperties ) {
+        GetWindowRect(pParsePSHost -> hwndFrame,&rcFrame);
+        pParsePSHost -> pIPostScript -> GetPeristableProperties(&pPostScriptProperties,&cbPostScriptProperties);
+        VARIANT x;
+        x.vt = VT_PTR;
+        x.pbVal = (BYTE *)pPostScriptProperties;
+        IGProperty *pIGProperty = NULL;
+        pIGProperties -> get_Property((wchar_t *)L"postscript properties",&pIGProperty);
+        pIGProperty -> put_size(cbPostScriptProperties);
+        pIGProperty -> put_value(x);
+        pIGProperty -> Release();
+        pIGProperties -> Save();
+        CoTaskMemFree((void *)pPostScriptProperties);
+    }
 #endif
 
     delete pParsePSHost;
