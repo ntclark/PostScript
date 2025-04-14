@@ -50,7 +50,7 @@ boolean useGSProperties = true;
 
     VARIANT_BOOL bSuccess = FALSE;
 
-    if (  ( S_OK == rc ) ) {
+    if (  ! ( S_OK == rc ) ) {
         char szMessage[1024];
         sprintf_s<1024>(szMessage,
             "Note that this project uses the Properties "
