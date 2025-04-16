@@ -240,11 +240,14 @@
     <ClCompile Include="Sources\ascii85.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\Fonts\font.cpp">
-      <Filter>Source Files\COM Interfaces</Filter>
-    </ClCompile>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
       <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\COM Interfaces\IDropTarget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Fonts\font.cpp">
+      <Filter>Source Files\Fonts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

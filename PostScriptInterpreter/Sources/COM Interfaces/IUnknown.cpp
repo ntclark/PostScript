@@ -45,10 +45,6 @@ This is the MIT License
       return pIConnectionPointContainer -> QueryInterface(riid,ppv);
    else
 
-   //if ( IID_IConnectionPoint == riid ) 
-   //   return pIConnectionPoints[0] -> QueryInterface(riid,ppv);
-   //else
-
    if ( IID_IOleObject == riid )
       return pIOleObject -> QueryInterface(riid,ppv);
    else
@@ -57,6 +53,13 @@ This is the MIT License
       return pIOleInPlaceObject -> QueryInterface(riid,ppv);
    else
 
+      if ( IID_IDropTarget == riid ) {
+         if ( NULL == pIDropTarget )
+            pIDropTarget = new _IDropTarget(this);
+         return pIDropTarget -> QueryInterface(riid,ppv);
+      }
+
+   if ( NULL == *ppv )
       return E_NOINTERFACE;
 
    AddRef();

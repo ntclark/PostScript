@@ -36,8 +36,14 @@ boolean useGSProperties = true;
         WideCharToMultiByte(CP_ACP,0,pArgs[k],-1,argv[k],(DWORD)wcslen(pArgs[k]),0,0);
     }
 
+    // 
+    // This is apparantly an undocumented hack to allow
+    // Drag/Drop in a multi-threaded COM environment
+    //
+    if ( S_OK == OleInitialize(0) )
+        CoUninitialize();
 
-    HRESULT rc = CoInitializeEx(NULL,0);
+    HRESULT rc = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
 #if USE_GS_PROPERTIES
 
@@ -85,7 +91,7 @@ boolean useGSProperties = true;
             "The component, however, needs to be registered.\n\n"
             "To register it, in a DOS  prompt with\n"
             "administrative privileges, CD to the folder \n"
-            "\"\%s\\\"\n"
+            "\"%s\\\"\n"
             "and issue the command \"regsvr32 Properties.ocx\"\n\n"
             "Alternatively, build this project with USE_GS_PROPERTIES= 0\n"
             "to remove this warning",szEnv);

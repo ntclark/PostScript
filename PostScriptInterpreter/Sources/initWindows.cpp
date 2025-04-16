@@ -155,5 +155,9 @@ This is the MIT License
     rendererLogStream.dwCookie = (DWORD_PTR)hwndRendererLogContent;
     rendererLogStream.pfnCallback = processLog;
 
+    IDropTarget *pIDropTarget = NULL;
+    QueryInterface(IID_IDropTarget,reinterpret_cast<void **>(&pIDropTarget));
+    HRESULT rcdd = RegisterDragDrop(hwndClient,pIDropTarget);
+
     return 0;
     }

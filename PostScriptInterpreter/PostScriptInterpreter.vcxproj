@@ -227,6 +227,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\COM Implementation\dllMain.cpp" />
     <ClCompile Include="Sources\COM Interfaces\Being Hosted\IOleInPlaceObject.cpp" />
     <ClCompile Include="Sources\COM Interfaces\Being Hosted\IOleObject.cpp" />
+    <ClCompile Include="Sources\COM Interfaces\IDropTarget.cpp" />
     <ClCompile Include="Sources\COM Interfaces\IPostScriptInterpreter.cpp" />
     <ClCompile Include="Sources\COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="Sources\Fonts\font.cpp" />

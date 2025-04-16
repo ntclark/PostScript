@@ -333,6 +333,32 @@ class job;
 
         } *pIRendererNotifications{NULL};
 
+        // IDropTarget
+
+        class _IDropTarget : IDropTarget {
+        public:
+
+            _IDropTarget(PostScriptInterpreter *pp) : pParent(pp) {}
+
+            // IUnknown 
+
+            STDMETHOD(QueryInterface)(REFIID riid,void **ppv);
+            STDMETHOD_ (ULONG, AddRef)() { return 1UL; }
+            STDMETHOD_ (ULONG, Release)() { return 1UL; }
+
+            // IDropTarget
+
+            STDMETHOD(DragEnter)(IDataObject *pDataObj,DWORD  grfKeyState,POINTL pt,DWORD *pdwEffect);
+            STDMETHOD(DragLeave)();
+            STDMETHOD(DragOver)(DWORD  grfKeyState,POINTL pt,DWORD  *pdwEffect);
+            STDMETHOD(Drop)(IDataObject *pDataObj,DWORD grfKeyState,POINTL pt,DWORD *pdwEffect);
+
+        private:
+    
+            PostScriptInterpreter *pParent{NULL};
+
+        } *pIDropTarget{NULL};;
+
         static CRITICAL_SECTION theQueueCriticalSection;
 
         HWND HwndClient() { return hwndClient; }

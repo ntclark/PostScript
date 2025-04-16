@@ -124,10 +124,14 @@ This is the MIT License
 
     delete pIRendererNotifications;
 
+    if ( ! ( NULL == pIDropTarget ) )
+        delete pIDropTarget;
+
     pIFontManager -> Release();
     pIRenderer -> Release();
     pIGraphicElements -> Release();
     pIGraphicParameters -> Release();
+
 
     if ( ! ( NULL == PostScriptInterpreter::nativeHostFrameHandler ) )
         SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::nativeHostFrameHandler);
