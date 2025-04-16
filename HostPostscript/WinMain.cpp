@@ -53,13 +53,6 @@ boolean useGSProperties = true;
 
     if ( ! ( S_OK == rc ) ) {
 
-        boolean isAdministrator = false;
-        SID_IDENTIFIER_AUTHORITY ntAuthority{SECURITY_NT_AUTHORITY};
-        PSID administratorsGroup; 
-
-        isAdministrator = AllocateAndInitializeSid(&ntAuthority,2,
-                SECURITY_BUILTIN_DOMAIN_RID,DOMAIN_ALIAS_RID_ADMINS,0, 0, 0, 0, 0, 0,&administratorsGroup) ? true : false; 
-
         char szMessage[1024];
         char szEnv[64];
 
@@ -97,7 +90,7 @@ boolean useGSProperties = true;
             "Alternatively, build this project with USE_GS_PROPERTIES= 0\n"
             "to remove this warning",szEnv);
 
-        if ( isAdministrator ) {
+        if ( IsUserAnAdmin() ) {
 
             strcat(szMessage,"\n\nYou are running as administrator. Would you like "
                                 "to register the component from here?");
