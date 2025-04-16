@@ -94,9 +94,9 @@ This is the MIT License
         scrollInfo.nPage = PostScriptInterpreter::cyClientWindow;
         scrollInfo.nMin = 0;
         if ( 0 == pPostScriptInterpreter -> pageBitmaps.size() )
-            scrollInfo.nMax = HIWORD(lParam);
+            scrollInfo.nMax = scrollInfo.nPage;
         else
-            scrollInfo.nMax = pPostScriptInterpreter -> pageBitmaps.size() * PostScriptInterpreter::cyClientWindow;
+            scrollInfo.nMax = HIWORD(lParam);
         SetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo,TRUE);
         }
         break;

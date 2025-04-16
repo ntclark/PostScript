@@ -96,6 +96,7 @@ This is the MIT License
  
  
    STDMETHODIMP PostScriptInterpreter::_IOleObject::SetExtent(DWORD dwDrawAspect,SIZEL *pSizel) {
+
    if ( dwDrawAspect != DVASPECT_CONTENT ) 
       return S_OK;
 

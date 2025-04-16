@@ -112,7 +112,7 @@ This is the MIT License
 
     HRESULT Renderer::GraphicElements::Ellipse(FLOAT xCenter,FLOAT yCenter,FLOAT xRadius,FLOAT yRadius) {
     D2D1_ELLIPSE theSegment{{xCenter,yCenter},xRadius,yRadius};
-    if ( NULL == pCurrentPath )
+    //if ( NULL == pCurrentPath )
         NewPath();
     pCurrentPath -> addPrimitive(new ellipsePrimitive(this,&theSegment));
     return S_OK;

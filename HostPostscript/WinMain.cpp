@@ -36,6 +36,7 @@ boolean useGSProperties = true;
         WideCharToMultiByte(CP_ACP,0,pArgs[k],-1,argv[k],(DWORD)wcslen(pArgs[k]),0,0);
     }
 
+
     HRESULT rc = CoInitializeEx(NULL,0);
 
 #if USE_GS_PROPERTIES
@@ -50,23 +51,95 @@ boolean useGSProperties = true;
 
     VARIANT_BOOL bSuccess = FALSE;
 
-    if (  ! ( S_OK == rc ) ) {
+    if ( ! ( S_OK == rc ) ) {
+
+        boolean isAdministrator = false;
+        SID_IDENTIFIER_AUTHORITY ntAuthority{SECURITY_NT_AUTHORITY};
+        PSID administratorsGroup; 
+
+        isAdministrator = AllocateAndInitializeSid(&ntAuthority,2,
+                SECURITY_BUILTIN_DOMAIN_RID,DOMAIN_ALIAS_RID_ADMINS,0, 0, 0, 0, 0, 0,&administratorsGroup) ? true : false; 
+
         char szMessage[1024];
+        char szEnv[64];
+
+        if ( ! ( NULL == getenv("GSYSTEM_HOME") ) )
+            strcpy(szEnv,getenv("GSYSTEM_HOME"));
+        else
+            sprintf_s<64>(szEnv,"%cGSYSTEM_HOME%c",'%','%');
+
+        strcat(szEnv,"\\Common\\Artifacts\\");
+
+#if _DEBUG
+        strcat(szEnv,"Debug\\");
+#else
+        strcat(szEnv,"Release\\");
+#endif
+
+#ifdef _WIN64
+        strcat(szEnv,"x64\\");
+#else
+        strcat(szEnv,"Win32\\");
+#endif
+
         sprintf_s<1024>(szMessage,
             "Note that this project uses the Properties "
-            "componenent developed by EnVisioNateSW\n"
+            "component developed by EnVisioNateSW.\n\n"
             "The component is open source, however, to\n"
             "simplify your use of this project the binary\n"
             "for that component is included in the \n"
-            "Common Repository.\n"
-            "The component, however, needs to be registered.\n"
+            "Common Repository.\n\n"
+            "The component, however, needs to be registered.\n\n"
             "To register it, in a DOS  prompt with\n"
             "administrative privileges, CD to the folder \n"
-            "\"\%cGSYSTEM_HOME%c\\Common\\Artifacts\\<Configuration>\\<Platform>\"\n"
+            "\"\%s\\\"\n"
             "and issue the command \"regsvr32 Properties.ocx\"\n\n"
-            "Alternatively, build this project with USE_GS_PROPERTIES= 0",'%','%');
-        MessageBox(NULL,szMessage,"Note!",MB_ICONEXCLAMATION);
-        useGSProperties = false;
+            "Alternatively, build this project with USE_GS_PROPERTIES= 0\n"
+            "to remove this warning",szEnv);
+
+        if ( isAdministrator ) {
+
+            strcat(szMessage,"\n\nYou are running as administrator. Would you like "
+                                "to register the component from here?");
+
+            HRESULT idAsk = MessageBox(NULL,szMessage,"Note!",MB_ICONEXCLAMATION | MB_YESNO | MB_DEFBUTTON1);
+
+            if ( IDYES == idAsk ) {
+                char szDLL[MAX_PATH];
+                sprintf_s<MAX_PATH>(szDLL,"%sProperties.ocx",szEnv);
+                HMODULE hModule = LoadLibrary(szDLL);
+                HRESULT (__stdcall *dllRegisterServer)() = NULL;
+                HRESULT rc = E_FAIL;
+
+                if ( ! ( NULL == hModule )) {
+                    dllRegisterServer = (HRESULT (__stdcall *)())GetProcAddress(hModule,"DllRegisterServer");
+                    if ( ! ( NULL == dllRegisterServer ) )
+                        rc = dllRegisterServer();
+                }
+                if ( ! ( S_OK == rc ) || NULL == hModule || NULL == dllRegisterServer ) {
+                    sprintf_s<1024>(szMessage,"Self registration of the Properties component failed.\n"
+                                            "Please ensure the file Properties.ocx is in\n\n"
+                                            "%s\n\nOr perhaps reclone the Common repository",szEnv);
+                    useGSProperties = false;
+                } else {
+
+                    sprintf_s<1024>(szMessage,"\"%s\"",argv[1]);
+                    switch ( argc ) {
+                    case 1:
+                        _spawnl(_P_NOWAIT,argv[0],szMessage,NULL);
+                        break;
+                    default:
+                        _spawnl(_P_NOWAIT,argv[0],szMessage,szMessage,NULL);
+                        break;
+                    }
+                    exit(0);
+                }
+            }
+            useGSProperties = false;
+        } else {
+            MessageBox(NULL,szMessage,"Note!",MB_ICONEXCLAMATION);
+            useGSProperties = false;
+        }
 
     } else {
 
