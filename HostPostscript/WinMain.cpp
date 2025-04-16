@@ -123,7 +123,10 @@ boolean useGSProperties = true;
                     useGSProperties = false;
                 } else {
 
-                    sprintf_s<1024>(szMessage,"\"%s\"",argv[1]);
+                    if ( 1 < argc )
+                        sprintf_s<1024>(szMessage,"\"%s\"",argv[1]);
+                    else 
+                        szMessage[0] = '\0';
                     switch ( argc ) {
                     case 1:
                         _spawnl(_P_NOWAIT,argv[0],szMessage,NULL);
