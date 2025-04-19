@@ -62,7 +62,7 @@ This is the MIT License
     }
 
     char szMessage[1024];
-    sprintf_s<1024>(szMessage,"Error: Setting the color for ColorSpace family %s is not implemented",pColorSpace -> pFamilyName);
+    sprintf_s<1024>(szMessage,"Error: Setting the color for ColorSpace family %s is not implemented",pColorSpace -> pFamilyName -> Contents());
     throw notimplemented(szMessage);
     return;
     }
