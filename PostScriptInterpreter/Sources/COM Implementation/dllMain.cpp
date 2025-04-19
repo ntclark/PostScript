@@ -60,8 +60,6 @@ This is the MIT License
 
         CreateDirectory(szApplicationDataDirectory,NULL);
 
-        object::initializeStorage();
-
         }
 
         break;

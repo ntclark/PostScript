@@ -21,7 +21,6 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-
     pSystemDict -> put("=",&job::operatorStdout);
 
     pSystemDict -> put("add",&job::operatorAdd);

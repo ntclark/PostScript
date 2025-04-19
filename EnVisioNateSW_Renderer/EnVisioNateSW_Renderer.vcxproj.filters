@@ -57,14 +57,17 @@
     <ClCompile Include="COM Events\IEnumerateConnections.cpp">
       <Filter>Source Files\COM Events</Filter>
     </ClCompile>
-    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="COM Interfaces\IRenderer_SaveRestore.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\Utils\getHBITMAPFromPixels.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -40,7 +40,7 @@ This is the MIT License
         return pIRenderer -> QueryInterface(refIID,pvResult);
 
     else if ( IID_IConnectionPointContainer == refIID ) 
-      return pIConnectionPointContainer -> QueryInterface(refIID,pvResult);
+        return pIConnectionPointContainer -> QueryInterface(refIID,pvResult);
 
     else if ( IID_IConnectionPoint == refIID ) 
         return pIConnectionPoint -> QueryInterface(refIID,pvResult);

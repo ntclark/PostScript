@@ -68,6 +68,13 @@ This is the MIT License
     }
 
 
+    void graphicsState::uninitialize() {
+    while ( 0 < psXformsStack.size() )
+        psXformsStack.pop();
+    return;
+    }
+
+
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
     initMatrix(hwndSurface,pageNumber);
     return;

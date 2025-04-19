@@ -38,6 +38,7 @@ This is the MIT License
     char *p = pStart;
     pNext = p;
     char *pLogStart = NULL;
+    long lineNumber = 0L;
 
     _se_translator_function defaultExTranslator = _set_se_translator(trans_func);
 
@@ -45,17 +46,19 @@ This is the MIT License
 
     do {
 
-        //ADVANCE_THRU_WHITE_SPACE(p)
-
         if ( '\0' == *p )
             break;
 
         if ( 0x0A == p[0] || 0x0D == p[0] ) {
             pNext = p;
-            while ( 0x0A == *pNext || 0x0D == *pNext ) 
+            long count[]{0,0};
+            while ( 0x0A == *pNext || 0x0D == *pNext ) {
+                count[0x0A == *pNext ? 0 : 1]++;
                 pNext++;
+            }
             pPostScriptInterpreter -> queueLog(true,p,pNext,false);
             p = pNext;
+            lineNumber += max(count[0],count[1]);
             continue;
         }
 
@@ -66,7 +69,7 @@ This is the MIT License
         if ( NULL == pCollectionDelimiter ) {
             pDelimiter = (char *)delimiterPeek(p,&pNext);
             if ( ! ( NULL == pDelimiter ) && COMMENT_DELIMITER[0] == pDelimiter[0] ) {
-                parseComment(pNext,&pNext);
+                parseComment(pNext,&pNext,&lineNumber);
                 pPostScriptInterpreter -> queueLog(true,p,pNext);
                 p = pNext;
                 continue;
@@ -78,7 +81,7 @@ This is the MIT License
         pLogStart = pNext;
 
         if ( ! ( NULL == pDelimiter ) ) {
-            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext);
+            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext,&lineNumber);
             pPostScriptInterpreter -> queueLog(true,pLogStart,pNext);
             ADVANCE_THRU_WHITE_SPACE(pNext)
             p = pNext;
@@ -87,11 +90,11 @@ This is the MIT License
 
         if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == pCollectionDelimiter[0] ) {
             char *pProcedureEnd = NULL;
-            parseProcedureString(pNext,&pProcedureEnd);
+            parseProcedureString(pNext,&pProcedureEnd,&lineNumber);
             pPostScriptInterpreter -> queueLog(true,pLogStart,pProcedureEnd);
 
             try {
-            push(new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd));
+            push(new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd,&lineNumber));
             } catch ( PStoPDFException *pe ) {
                 char szMessage[1024];
                 sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
@@ -159,7 +162,7 @@ This is the MIT License
     }
 
 
-    void job::parseProcedure(procedure *pProcedure,char *pStart,char **ppEnd) {
+    void job::parseProcedure(procedure *pProcedure,char *pStart,char **ppEnd,long *pLineNumber) {
 
     char *p = pStart;
     char *pNext = p;
@@ -179,7 +182,7 @@ This is the MIT License
             pDelimiter = (char *)delimiterPeek(p,&pNext);
 
         if ( ! ( NULL == pDelimiter ) ) {
-            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext);
+            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext,pLineNumber);
             if ( ! ( DSC_DELIMITER[0] == *pDelimiter ) && ! ( COMMENT_DELIMITER[0] == *pDelimiter ) )
                 pProcedure -> insert(pop());
             p = pNext;
@@ -188,8 +191,8 @@ This is the MIT License
 
         if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == *pCollectionDelimiter ) {
             char *pProcedureEnd = NULL;
-            parseProcedureString(pNext,&pProcedureEnd);
-            procedure *pInnerProcedure = new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd);
+            parseProcedureString(pNext,&pProcedureEnd,pLineNumber);
+            procedure *pInnerProcedure = new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd,pLineNumber);
             pInnerProcedure -> pContainingProcedure = pProcedure;
             pProcedure -> insert(pInnerProcedure);
             pNext = pProcedureEnd;

@@ -50,7 +50,7 @@ This is the MIT License
 
 
     void pathParameters::eofillpath() {
-Beep(2000,200);
+PostScriptInterpreter::pIGraphicElements -> FillPath();
     return;
     }
 

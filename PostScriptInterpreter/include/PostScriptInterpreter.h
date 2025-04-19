@@ -364,12 +364,16 @@ class job;
         HWND HwndClient() { return hwndClient; }
 
         HDC GetDC();
+        void ReleaseDC();
 
         void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
 
         static long ClientWindowHeight() { return cyClientWindow; }
 
         job *currentJob() { return pJob; }
+
+        HRESULT ConnectServices() { return connectServices(); }
+        void Cycle() { cycle(); }
 
         POINTL activePageOrigin{0L,0L};
 
@@ -394,6 +398,9 @@ class job;
 
         void toggleLogVisibility(long itemId);
 
+        HRESULT connectServices();
+        void cycle();
+
         IOleClientSite *pIOleClientSite{NULL};
         IOleInPlaceSite *pIOleInPlaceSite{NULL};
 
@@ -408,12 +415,12 @@ class job;
         boolean logIsVisible{false};
         boolean rendererLogIsVisible{false};
 
+        char szCurrentPostScriptFile[MAX_PATH];
+
         BYTE persistablePropertiesEnd{0x00};
 
         static enum logLevel theLogLevel;
         static enum logLevel theRendererLogLevel;
-
-        char szCurrentPostScriptFile[MAX_PATH];
 
         long pageNumber{0};
 

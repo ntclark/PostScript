@@ -90,19 +90,18 @@ This is the MIT License
 
     HRESULT rc = CoInitialize(NULL);
 
-    if ( NULL == pIFontManager ) {
-        HRESULT rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
-        pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
-        pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
-        pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
-        pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
-    }
+    //connectServices();
 
     return;
     }
 
 
     PostScriptInterpreter::~PostScriptInterpreter() {
+
+    if ( ! ( NULL == pIRendererNotifications ) )
+        delete pIRendererNotifications;
+
+    pIRendererNotifications = NULL;
 
     delete pIOleObject;
     delete pIOleInPlaceObject;
@@ -122,16 +121,10 @@ This is the MIT License
     if ( pIEnumerateConnections )
         pIEnumerateConnections -> Release();
 
-    delete pIRendererNotifications;
-
     if ( ! ( NULL == pIDropTarget ) )
         delete pIDropTarget;
 
-    pIFontManager -> Release();
-    pIRenderer -> Release();
-    pIGraphicElements -> Release();
-    pIGraphicParameters -> Release();
-
+    cycle();
 
     if ( ! ( NULL == PostScriptInterpreter::nativeHostFrameHandler ) )
         SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::nativeHostFrameHandler);
@@ -145,8 +138,53 @@ This is the MIT License
 
     DestroyWindow(hwndRendererLogContent);
     DestroyWindow(hwndRendererLogSplitter);
-    //DestroyWindow(hwndLogPane);
-    //DestroyWindow(hwndLogSplitter);
+
+    return;
+    }
+
+
+    HRESULT PostScriptInterpreter::connectServices() {
+
+    if ( ! ( NULL == pIFontManager ) )
+        return S_OK;
+
+    HRESULT rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
+    pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
+    pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
+    pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
+    pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
+
+    return rc;
+    }
+
+
+    void PostScriptInterpreter::cycle() {
+
+    if ( ! ( NULL == pIFontManager ) ) {
+        pIFontManager -> Release();
+        pIRenderer -> Release();
+        pIGraphicElements -> Release();
+        pIGraphicParameters -> Release();
+    }
+
+    pIFontManager = NULL;
+    pIRenderer = NULL;
+    pIGraphicElements = NULL;
+    pIGraphicParameters = NULL;
+
+    ReleaseDC();
+
+    for ( std::pair<size_t,HBITMAP> pPair : pageBitmaps )
+        DeleteObject(pPair.second);
+
+    pageBitmaps.clear();
+
+    for ( std::pair<size_t,SIZEL *> pPair : pageSizes )
+        delete [] pPair.second;
+
+    pageSizes.clear();
+
+    setWindowPanes();
 
     return;
     }

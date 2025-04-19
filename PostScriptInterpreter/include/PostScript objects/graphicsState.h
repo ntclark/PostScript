@@ -131,6 +131,7 @@ This is the MIT License
         void setCacheDevice();
 
         void initialize();
+        void uninitialize();
 
         void gSave();
         void gRestore();
@@ -179,6 +180,8 @@ This is the MIT License
         font *CurrentFont() { return font::CurrentFont(); }
 
         boolean strokeAdjustmentParameter{true};
+
+        uint8_t *getBitmapBits(uint8_t *pbImage,uint32_t cbData,uint16_t width,uint16_t height,uint8_t bitsPerComponent,array *pDecodeArray);
 
         GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
         GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;

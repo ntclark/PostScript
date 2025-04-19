@@ -100,9 +100,15 @@ This is the MIT License
 
             if ( NULL == pObject || ! ( object::executableAttribute::executable == pObject -> theExecutableAttribute ) ) {
                 if ( ! ( NULL == pObject ) ) {
+if ( top() -> pszContents && 0 == strcmp(top() -> pszContents,"fM") )
+printf("hello world");
                     pop();
                     push(pObject);
                 }
+else {
+if ( top() -> pszContents && 0 == strcmp(top() -> pszContents,"fM") )
+printf("hello world");
+}
                 return 0;
             }
 
@@ -168,6 +174,9 @@ This is the MIT License
     long job::executeProcedure(procedure *pProcedure) {
 
     for ( object *pObj : pProcedure -> entries ) {
+
+if ( pObj -> pszContents && 0 == strcmp(pObj -> pszContents,"fM") )
+printf("hello world");
 
         push(pObj);
 
@@ -341,7 +350,7 @@ This is the MIT License
     }
 
 
-    void job::parseLiteralName(char *pStart,char **pEnd) {
+    void job::parseLiteralName(char *pStart,char **pEnd,long *pLineNumber) {
     char *p = pStart;
     ADVANCE_THRU_WHITE_SPACE(p)
     char *pBegin = p;
@@ -373,7 +382,7 @@ This is the MIT License
     }
 
 
-    void job::parseProcedureString(char *pStart,char **ppEnd) {
+    void job::parseProcedureString(char *pStart,char **ppEnd,long *pLineNumber) {
 
     char *p = pStart;
     char *pNext = p;
@@ -414,30 +423,32 @@ This is the MIT License
     }
 
 
-    void job::parseStructureSpec(char *pStart,char **ppEnd) {
+    void job::parseStructureSpec(char *pStart,char **ppEnd,long *pLineNumber) {
     char *p = pStart;
     ADVANCE_THRU_END_OF_LINE(p)
     *ppEnd = p;
     structureSpecs.insert(structureSpecs.end(),new (CurrentObjectHeap()) structureSpec(this,pStart,*ppEnd));
+    *pLineNumber++;
     return;
     }
 
 
-    void job::parseComment(char *pStart,char **ppEnd) {
+    void job::parseComment(char *pStart,char **ppEnd,long *pLineNumber) {
     char *p = pStart;
     ADVANCE_THRU_END_OF_LINE(p)
     *ppEnd = p;
     commentStack.insert(commentStack.end(),new comment(pStart,*ppEnd));
+    *pLineNumber++;
     return;
     }
 
 
-    void job::parseString(char *pStart,char **ppEnd) {
+    void job::parseString(char *pStart,char **ppEnd,long *pLineNumber) {
 
     char *p = pStart;
     *ppEnd = NULL;
 
-    parse(STRING_DELIMITER_BEGIN,STRING_DELIMITER_END,p,ppEnd);
+    parse(STRING_DELIMITER_BEGIN,STRING_DELIMITER_END,p,ppEnd,pLineNumber);
 
     if ( *ppEnd ) {
         push(new (CurrentObjectHeap()) constantString(this,p,*ppEnd));
@@ -448,11 +459,11 @@ This is the MIT License
     }
 
 
-    void job::parseHexString(char *pStart,char **ppEnd) {
+    void job::parseHexString(char *pStart,char **ppEnd,long *pLineNumber) {
     char *p = pStart;
     *ppEnd = NULL;
 
-    parse(HEX_STRING_DELIMITER_BEGIN,HEX_STRING_DELIMITER_END,p,ppEnd);
+    parse(HEX_STRING_DELIMITER_BEGIN,HEX_STRING_DELIMITER_END,p,ppEnd,pLineNumber);
 
     if ( *ppEnd ) {
 
@@ -499,46 +510,7 @@ This is the MIT License
     }
 
 
-    void job::parseHex85String(char *pStart,char **pEnd) {
+    void job::parseHex85String(char *pStart,char **pEnd,long *pLineNumber) {
 MessageBox(NULL,"Not implemented","Not implemented",MB_OK);
     return;
     }
-
-
-    HBITMAP job::parsePage(long pageNumber) {
-
-//
-// NTC: 04-03-2024: This is ONLY just beginning and is not working at all right now
-// The idea is to parse a '.ps file page by page and create a bitmap to draw all 
-// graphics operations into while parsing the postscript
-//
-    char szPage[32];
-    sprintf_s<32>(szPage,"%%Page: %ld ",pageNumber);
-
-    char *pPageStart = strstr(pStorage,szPage);
-
-    if ( NULL == pPageStart ) 
-        return NULL;
-
-    char *pPageLast = strstr(pPageStart,"%%PageTrailer");
-    *pPageLast = '\0';
-
-    char *p = strstr(pPageStart,"%%PageBoundingBox");
-
-    RECT rcBoundingBox{0,0,0,0};
-    if ( ! ( NULL == hbmSink ) )
-        DeleteObject(hbmSink);
-
-    if ( ! ( NULL == p ) ) {
-        p = strchr(p,' ');
-        sscanf(p,"%ld %ld %ld %ld",&rcBoundingBox.left,&rcBoundingBox.bottom,&rcBoundingBox.right,&rcBoundingBox.top);
-        hbmSink = CreateCompatibleBitmap(NULL,POINTS_TO_PIXELS * (rcBoundingBox.right - rcBoundingBox.left),POINTS_TO_PIXELS * (rcBoundingBox.top - rcBoundingBox.bottom));
-    }
-
-    char *pPageEnd = NULL;
-    parseString(pPageStart,&pPageEnd);
-
-    *pPageLast = '%';
-
-    return NULL;
-}

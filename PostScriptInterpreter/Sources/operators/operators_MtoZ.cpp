@@ -385,27 +385,28 @@ This is the MIT License
    return;
    }
 
-   void job::operatorNe() {
+    void job::operatorNe() {
 /*
-   ne 
-      any1 any2 ne bool
+    ne 
+        any1 any2 ne bool
 
-   pops two objects from the operand stack and pushes false if they are equal, or true
-   if not. What it means for objects to be equal is presented in the description of the
-   eq operator.
+    pops two objects from the operand stack and pushes false if they are equal, or true
+    if not. What it means for objects to be equal is presented in the description of the
+    eq operator.
 
-   Errors: invalidaccess, stackunderflow
-   See Also: eq, ge, gt, le, lt
+    Errors: invalidaccess, stackunderflow
+    See Also: eq, ge, gt, le, lt
 */
 
-   operatorEq();
-   if ( pop() == pFalseConstant )
-      push(pTrueConstant);
-   else
-      push(pFalseConstant);
+    operatorEq();
 
-   return;
-   }
+    if ( pop() == pFalseConstant )
+        push(pTrueConstant);
+    else
+        push(pFalseConstant);
+
+    return;
+    }
 
    void job::operatorNeg() {
 /*
@@ -603,14 +604,19 @@ This is the MIT License
         break;
 #endif
 
-    case object::string: {
-        string *pString = static_cast<string *>(pTarget);
-        if ( NULL == pValue -> Contents() ) {
-            char szMessage[256];
-            sprintf_s<256>(szMessage,"%s: Line: %ld. The value may not have been initialized",__FUNCTION__,__LINE__);
-            throw new syntaxerror(szMessage);
-        }
-        pString -> put(pIndex -> IntValue(),(BYTE)pValue -> Contents()[0]);
+    case object::atom:
+        if ( object::string == pTarget -> ValueType() ) {
+            string *pString = reinterpret_cast<string *>(pTarget);
+            if ( NULL == pValue -> Contents() ) {
+                char szMessage[256];
+                sprintf_s<256>(szMessage,"%s: Line: %ld. The value may not have been initialized",__FUNCTION__,__LINE__);
+                throw new syntaxerror(szMessage);
+            }
+if ( pTarget -> pszContents && 0 == strcmp(pTarget -> pszContents,"fM") )
+printf("hello world");
+else
+            pString -> put((long)pIndex -> IntValue(),(BYTE)(pValue -> Contents()[0]));
+            break;
         }
 
     default: {
@@ -2159,7 +2165,7 @@ This is the MIT License
    object *pCount = pop();
 
    char *pszString = new char[pCount -> IntValue() + 1];
-   memset(pszString,0,(pCount -> IntValue() + 1) * sizeof(char));
+   memset(pszString,'0',(pCount -> IntValue() + 1) * sizeof(char));
    
    push(new (CurrentObjectHeap()) object(this,pszString,(pszString + pCount -> IntValue())));
 

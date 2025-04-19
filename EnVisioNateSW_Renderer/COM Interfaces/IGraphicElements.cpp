@@ -23,6 +23,8 @@ This is the MIT License
 
 #include "Renderer.h"
 
+    HBITMAP getHBITMAPFromPixels(long cx,long cy,long bitsPerComponent,uint8_t *pBits);
+
     HRESULT Renderer::GraphicElements::QueryInterface(REFIID refIID,void **pvResult) {
 
     if ( ! pvResult )
@@ -150,6 +152,9 @@ This is the MIT License
 
     HRESULT Renderer::GraphicElements::PostScriptImage(HDC hdc,HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
 
+    if ( NULL == hbmImage )
+        return E_INVALIDARG;
+
     FLOAT widthUserSpace = 1.0f;
     FLOAT heightUserSpace = 1.0f;
 
@@ -177,7 +182,77 @@ This is the MIT License
     }
 
 
+    uint8_t *getPixelsFromJpeg(uint8_t *pJPEGData,long dataSize,long width,long height) {
+
+    IWICImagingFactory *pIWICImagingFactory = NULL;
+    IWICBitmapDecoder *pIWICBitmapDecoder = NULL;
+    IWICStream *pIWICStream = NULL;
+
+    HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory,NULL,CLSCTX_INPROC_SERVER,IID_IWICImagingFactory,(LPVOID*) &pIWICImagingFactory);
+
+    hr = pIWICImagingFactory -> CreateStream(&pIWICStream);
+
+    hr = pIWICStream -> InitializeFromMemory((WICInProcPointer)pJPEGData,(DWORD)dataSize);
+
+    hr = pIWICImagingFactory -> CreateDecoder(GUID_ContainerFormatJpeg, NULL, &pIWICBitmapDecoder);
+
+    hr = pIWICBitmapDecoder -> Initialize(pIWICStream,WICDecodeMetadataCacheOnDemand);
+
+    IWICBitmapFrameDecode *pIWICBitmapFrameDecode = NULL;
+
+    hr = pIWICBitmapDecoder -> GetFrame(0,&pIWICBitmapFrameDecode);
+
+    IWICBitmap *pIBitmap = NULL;
+    IWICBitmapLock *pILock = NULL;
+
+    WICRect rcLock = { 0, 0, (int)width, (int)height};
+
+    hr = pIWICImagingFactory -> CreateBitmapFromSource(pIWICBitmapFrameDecode,WICBitmapCacheOnDemand,&pIBitmap);
+
+    hr = pIBitmap -> Lock(&rcLock, WICBitmapLockRead, &pILock);
+
+    UINT cbBufferSize = 0;
+    uint8_t *pv = NULL;
+
+    hr = pILock -> GetDataPointer(&cbBufferSize, &pv);
+
+    uint8_t *pbPixels = new uint8_t[cbBufferSize];
+
+    memcpy(pbPixels,pv,cbBufferSize);
+
+    pILock -> Release();
+    pIBitmap -> Release();
+    pIWICBitmapDecoder -> Release();
+    pIWICBitmapFrameDecode -> Release();
+    pIWICImagingFactory -> Release();
+
+    return pbPixels;
+    }
+
+
+    HRESULT Renderer::GraphicElements::PostScriptJpegImage(HDC hdc,UINT_PTR pJPEGData,long dataSize,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
+
+    if ( NULL == pJPEGData )
+        return E_INVALIDARG;
+
+    uint8_t *pbImage = getPixelsFromJpeg((uint8_t *)pJPEGData,dataSize,(long)width,(long)height);
+
+    HBITMAP hbmImage = getHBITMAPFromPixels((long)width,(long)-height,8,pbImage);
+
+    HRESULT rc = PostScriptImage(hdc,hbmImage,pPSCurrentCTM,width,height);
+
+    DeleteObject(hbmImage);
+
+    delete [] pbImage;
+
+    return rc;
+    }
+
+
     HRESULT Renderer::GraphicElements::NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height) {
+
+    if ( NULL == hBitmap )
+        return E_INVALIDARG;
 
     POINTF ptDevice{x0,y0};
     transformPoint(&ptDevice,&ptDevice);
@@ -207,6 +282,25 @@ This is the MIT License
         StretchBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,sizeBM.cx,sizeBM.cy,SRCCOPY);
 
     DeleteDC(hdcSource);
+
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicElements::NonPostScriptJpegImage(HDC hdc,UINT_PTR pJpegData,long dataSize,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height) {
+
+    if ( NULL == pJpegData )
+        return E_INVALIDARG;
+
+    uint8_t *pbImage = getPixelsFromJpeg((uint8_t *)pJpegData,dataSize,(long)width,(long)height);
+
+    HBITMAP hbmImage = getHBITMAPFromPixels((long)width,(long)-height,8,pbImage);
+
+    HRESULT rc = NonPostScriptImage(hdc,hbmImage,x0,y0,width,height);
+
+    DeleteObject(hbmImage);
+
+    delete [] pbImage;
 
     return S_OK;
     }

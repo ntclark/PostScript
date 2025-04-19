@@ -55,7 +55,7 @@ This is the MIT License
     void psTransformsStack::gRestore() {
     if ( 1 == size() )
 {
-Beep(2000,200);
+        OutputDebugStringA("There has been a gRestore underflow\n");//Beep(2000,200);
         return;
 }
     //delete top();

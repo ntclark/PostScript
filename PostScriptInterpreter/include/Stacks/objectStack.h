@@ -27,13 +27,13 @@ This is the MIT License
 
 #include "PostScript objects\object.h"
 
-   class objectStack : public std::stack<object *> {
-   public:
+    class objectStack : public std::stack<object *> {
+    public:
 
-      object *top();
-      object *pop();
-      void push(object *);
-  
-   private:
+        object *top();
+        object *pop();
+        void push(object *);
 
-   };
+    private:
+
+    };

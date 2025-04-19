@@ -26,7 +26,7 @@ This is the MIT License
 //
 // On entry, pStart is positioned just past the beginning delimiter
 //
-    void job::parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd) {
+    void job::parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd,long *pLineNumber) {
 
     long n = 0;
     char *p = pStart;
@@ -47,14 +47,14 @@ This is the MIT License
                     break;
                 if ( '%' == *p && '%' == *(p + 1) ) {
                     pClear[clearCount] = p;
-                    parseStructureSpec(p + 2,&p);
+                    parseStructureSpec(p + 2,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
                     clearCount++;
                     continue;
                 }
                 if ( '%' == *p ) {
                     pClear[clearCount] = p;
-                    parseComment(p + 1,&p);
+                    parseComment(p + 1,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
                     clearCount++;
                     continue;
@@ -76,20 +76,24 @@ This is the MIT License
         while ( *p && ( n || ! ( *p == pszEndDelimiter[0] ) ) ) {
 
             if ( 0x0A == *p || 0x0D == *p ) {
-                while ( *p && ( 0x0A == *p || 0x0D == *p ) )
+                long count[]{0,0};
+                while ( *p && ( 0x0A == *p || 0x0D == *p ) ) {
+                    count[0x0A == *p ? 0 : 1]++;
                     p++;
+                }
+                *pLineNumber += max(count[0],count[1]);
                 if ( '\0' == *p )
                     break;
                 if ( '%' == *p && '%' == *(p + 1) ) {
                     pClear[clearCount] = p;
-                    parseStructureSpec(p + 2,&p);
+                    parseStructureSpec(p + 2,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
                     clearCount++;
                     continue;
                 }
                 if ( '%' == *p ) {
                     pClear[clearCount] = p;
-                    parseComment(p + 1,&p);
+                    parseComment(p + 1,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
                     clearCount++;
                     continue;
@@ -155,7 +159,6 @@ This is the MIT License
     void job::parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd) {
 
     char *p = pStart;
-    char *pBegin = pStart;
     bool twoCharDelimiter = ! ('\0' == pszEndDelimiter[1]);
 
     if ( twoCharDelimiter )

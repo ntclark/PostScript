@@ -19,8 +19,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/#include <stdio.h>
+*/
 
+#include <stdio.h>
 
 #include "job.h"
 #include "PostScript objects\binaryString.h"
@@ -30,7 +31,6 @@ This is the MIT License
     binaryString::binaryString(job *pJob,char *pszContents,BYTE *pBinary,long theLength) : 
         dwLength(theLength),
         string(pJob,pszContents,object::valueType::binaryString) { 
-
     pbData = new BYTE[dwLength];
     memcpy(pbData,pBinary,dwLength);
     return;

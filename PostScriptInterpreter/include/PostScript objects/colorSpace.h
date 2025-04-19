@@ -50,4 +50,6 @@ This is the MIT License
 
         long parameterCount;
 
+        friend class gdiParameters;
+
     };

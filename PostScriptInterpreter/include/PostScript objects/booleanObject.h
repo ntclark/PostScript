@@ -29,6 +29,8 @@ This is the MIT License
       booleanObject(job *pJob,char *pszName);
       ~booleanObject();
 
+      boolean is() { return value; }
+
    private:
 
       boolean value;

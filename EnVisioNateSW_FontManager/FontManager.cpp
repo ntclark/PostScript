@@ -50,12 +50,36 @@ This is the MIT License
 
 
     FontManager::~FontManager() {
+
     for ( font *pFont : managedFonts)
         delete pFont;
+
+    managedFonts.clear();
+
+    pIFont_Current = NULL;
+
     delete pIConnectionPointContainer;
     delete pIConnectionPoint;
+
+    pIConnectionPointContainer = NULL;
+    pIConnectionPoint = NULL;
+
+    if ( ! ( NULL == pIEnumConnectionPoints ) )
+        delete pIEnumConnectionPoints;
+
+    pIEnumConnectionPoints = NULL;
+
+    if ( ! ( NULL == pIEnumerateConnections ) )
+        delete pIEnumerateConnections;
+
+    pIEnumerateConnections = NULL;
+
     pIGraphicElements -> Release();
     pIRenderer -> Release();
+
+    pIGraphicElements = NULL;
+    pIRenderer = NULL;
+
     return;
     }
 

@@ -34,14 +34,16 @@ This is the MIT License
     pFamilyName = po -> getElement(0);
     putElement(0,pFamilyName);
     if ( 0 == strcmp(pFamilyName -> Contents(),"Indexed") ) {
-        array *pArray = reinterpret_cast<array *>(po -> getElement(1));
-        if ( strcmp(pArray -> getElement(0) -> Name(),"Indexed") )
-            pBaseName = pArray -> getElement(0);
+        colorSpace *pFromColorSpace = reinterpret_cast<colorSpace *>(po -> getElement(1));
+        if ( ! ( 0 == strcmp(pFromColorSpace -> pFamilyName -> Name(),"Indexed") ) )
+            pBaseName = pFromColorSpace -> getElement(0);
         else
-            pBaseName = pArray -> getElement(1);
+            pBaseName = pFromColorSpace -> pBaseName;
         hiVal = (uint16_t)po -> getElement(2) -> IntValue();
         pLookup = po -> getElement(3);
         putElement(1,pBaseName);
+        putElement(2,po -> getElement(2));
+        putElement(3,po -> getElement(3));
     }
     parameterCount = size() - 1;
     return;

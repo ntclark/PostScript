@@ -249,6 +249,9 @@
     <ClCompile Include="Sources\Fonts\font.cpp">
       <Filter>Source Files\Fonts</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Common\Utils\getHBITMAPFromPixels.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PostScript.rc">

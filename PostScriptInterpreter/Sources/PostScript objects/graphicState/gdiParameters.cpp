@@ -40,18 +40,29 @@ This is the MIT License
 
     void gdiParameters::setColor(colorSpace *pColorSpace) {
 
-    if ( 0 == strcmp(pColorSpace -> Name(),"DeviceGray") ) {
+    if ( 0 == strcmp(pColorSpace -> pFamilyName -> Contents(),"DeviceGray") ) {
         setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
         return;
     }
 
-    if ( 0 == strcmp(pColorSpace -> Name(),"DeviceRGB") )  {
+    if ( 0 == strcmp(pColorSpace -> pFamilyName -> Name(),"DeviceRGB") )  {
         setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(2) -> IntValue() * 255,pColorSpace -> getElement(3) -> IntValue() * 255));
         return;
     }
 
+    if ( 0 == strcmp(pColorSpace -> pFamilyName -> Name(),"Indexed") )  {
+        if ( 0 == strcmp(pColorSpace -> pBaseName -> Contents(),"DeviceGray") ) {
+            setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
+            return;
+        }
+        if ( 0 == strcmp(pColorSpace -> pBaseName -> Name(),"DeviceRGB") ) {
+            setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(2) -> IntValue() * 255,pColorSpace -> getElement(3) -> IntValue() * 255));
+            return;
+        }
+    }
+
     char szMessage[1024];
-    sprintf_s<1024>(szMessage,"Error: Setting the color for ColorSpace family %s is not implemented",pColorSpace -> Name());
+    sprintf_s<1024>(szMessage,"Error: Setting the color for ColorSpace family %s is not implemented",pColorSpace -> pFamilyName);
     throw notimplemented(szMessage);
     return;
     }

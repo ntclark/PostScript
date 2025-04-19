@@ -96,7 +96,7 @@ This is the MIT License
 
 
     void graphicsState::currentMatrix() {
-    matrix *pMatrix = reinterpret_cast<matrix *>(pPostScriptInterpreter -> currentJob() -> pop());
+    matrix *pMatrix = reinterpret_cast<matrix *>(pJob -> pop());
     pMatrix -> a(psXformsStack.top() -> a());
     pMatrix -> b(psXformsStack.top() -> b());
     pMatrix -> c(psXformsStack.top() -> c());

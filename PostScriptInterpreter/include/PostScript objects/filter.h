@@ -36,9 +36,12 @@ This is the MIT License
 
         virtual uint8_t *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
 
+        boolean IsDCTDecode() { return isDCTDecode; }
+
     private:
 
         object *pDataSource{NULL};
         char szSourceEndDelimiter[8];
         char szFilterName[64];
+        boolean isDCTDecode{false};
     };

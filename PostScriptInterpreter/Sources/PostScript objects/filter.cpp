@@ -71,6 +71,7 @@ This is the MIT License
     }
 
     if ( 0 == _stricmp(szFilterName,"DCTDecode") ) {
+        isDCTDecode = true;
         return pbSource;
     }
 
@@ -83,3 +84,73 @@ This is the MIT License
 
     return NULL;
     }
+
+#if 0
+
+    // zlib decompression if I ever need to use it.
+
+#include "zlib.h"
+#define DEFLATOR_CHUNK_SIZE 65536
+
+    uint32_t inflate(uint8_t *pInitialSource,uint32_t initialSize,uint8_t **ppResult) {
+
+    uint8_t *pDeflatorOutput = new uint8_t[DEFLATOR_CHUNK_SIZE];
+
+    memset(pDeflatorOutput,0,DEFLATOR_CHUNK_SIZE * sizeof(uint8_t));
+
+    uint32_t outputSize = DEFLATOR_CHUNK_SIZE;
+
+    z_stream stream = {0};
+
+    inflateInit(&stream);
+
+    stream.next_in = pInitialSource;
+    stream.avail_in = initialSize;
+
+    FILE *fOverFlow = NULL;
+    long totalSize = 0;
+    char szOverFlowName[MAX_PATH];
+
+    do { 
+
+        stream.next_out = pDeflatorOutput;
+        stream.avail_out = DEFLATOR_CHUNK_SIZE;
+
+        if ( Z_STREAM_END == ::inflate(&stream,Z_NO_FLUSH) )
+            break;
+
+        if ( 0 == stream.avail_out ) {
+         
+            totalSize += DEFLATOR_CHUNK_SIZE;
+
+            if ( ! fOverFlow ) {
+            sprintf(szOverFlowName,_tempnam(NULL,NULL));
+            fOverFlow = fopen(szOverFlowName,"wb");
+            }
+
+            fwrite(pDeflatorOutput,DEFLATOR_CHUNK_SIZE,1,fOverFlow);
+
+        }
+
+    } while ( 0 == stream.avail_out );
+
+    outputSize = DEFLATOR_CHUNK_SIZE - stream.avail_out;
+
+    if ( fOverFlow ) {
+        totalSize += outputSize;
+        fwrite(pDeflatorOutput,1,outputSize,fOverFlow);
+        fclose(fOverFlow);
+        delete [] pDeflatorOutput;
+        pDeflatorOutput = new BYTE[totalSize];
+        fOverFlow = fopen(szOverFlowName,"rb");
+        fread(pDeflatorOutput,totalSize,1,fOverFlow);
+        fclose(fOverFlow);
+        DeleteFile(szOverFlowName);
+        outputSize = totalSize;
+    }
+
+    *ppResult = pDeflatorOutput;
+
+    return outputSize;
+    }
+#endif

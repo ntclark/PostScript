@@ -102,7 +102,8 @@ This is the MIT License
 
     HRESULT PostScriptInterpreter::GetPeristableProperties(UINT_PTR *pProperties,long *pSize) {
 
-    long cbProperties = (long)(offsetof(PostScriptInterpreter,persistablePropertiesEnd) - offsetof(PostScriptInterpreter,persistablePropertiesStart));
+    long cbProperties = (long)(offsetof(PostScriptInterpreter,persistablePropertiesEnd) - 
+                                offsetof(PostScriptInterpreter,persistablePropertiesStart));
 
     uint8_t *pProps = (uint8_t *)CoTaskMemAlloc(cbProperties);
     *pProperties = (UINT_PTR)pProps;
@@ -126,7 +127,11 @@ This is the MIT License
 
     memcpy(pProps,&logIsVisible,sizeof(logIsVisible));
     pProps += sizeof(logIsVisible);
+
     memcpy(pProps,&rendererLogIsVisible,sizeof(rendererLogIsVisible));
+    pProps += sizeof(rendererLogIsVisible);
+
+    memcpy(pProps,szCurrentPostScriptFile,sizeof(szCurrentPostScriptFile));
 
     return S_OK;
     }
@@ -152,6 +157,8 @@ This is the MIT License
     }
 
     memcpy(&rendererLogIsVisible,pProps,sizeof(rendererLogIsVisible));
+    pProps += sizeof(rendererLogIsVisible);
+
     if ( rendererLogIsVisible ) {
         rendererLogIsVisible = false;
         toggleLogVisibility(IDDI_CMD_PANE_RENDERER_LOG_SHOW);
@@ -160,6 +167,13 @@ This is the MIT License
 
     if ( logIsVisible || rendererLogIsVisible )
         setWindowPanes();
+
+    if ( '\0' == szCurrentPostScriptFile[0] ) {
+        memcpy(szCurrentPostScriptFile,pProps,sizeof(szCurrentPostScriptFile));
+        if ( ! ( '\0' == szCurrentPostScriptFile[0] ) )
+            if ( ! ( S_OK == SetSource(szCurrentPostScriptFile) ) )
+                memset(szCurrentPostScriptFile,0,sizeof(szCurrentPostScriptFile));
+    }
 
     return S_OK;
     }

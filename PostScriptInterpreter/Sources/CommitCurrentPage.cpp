@@ -35,6 +35,18 @@ This is the MIT License
     }
 
 
+    void PostScriptInterpreter::ReleaseDC() {
+
+    if ( NULL == hdcSurface )
+        return;
+
+    ::ReleaseDC(hwndClient,hdcSurface);
+
+    hdcSurface = NULL;
+    return;
+    }
+
+
     void PostScriptInterpreter::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
     if ( ! ( NULL == beginPathAction ) ) 

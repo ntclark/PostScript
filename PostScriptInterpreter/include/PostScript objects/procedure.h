@@ -32,8 +32,9 @@ class job;
    class procedure : public object {
    public:
 
-      procedure(job *p,char *pStart,char *pEnd);
-      procedure(job *p,char *pStart,char **ppEnd);
+      procedure(job *p,char *pStart,char *pEnd,long *pLineNumber);
+      procedure(job *p,char *pStart,char **ppEnd,long *pLineNumber);
+      procedure(job *p,long *pLineNumber);
       procedure(job *p);
 
       virtual ~procedure();
@@ -54,7 +55,7 @@ class job;
 
    private:
 
-      procedure(job *pj,char *pStart,char *pEnd,char **ppEnd);
+      procedure(job *pj,char *pStart,char *pEnd,char **ppEnd,long *pLineNumber);
 
       bool isBound{false};
       std::vector<object *> entries;

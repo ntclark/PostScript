@@ -218,6 +218,7 @@ regsvr32 /s "$(TargetPath)"
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp" />
+    <ClCompile Include="..\..\Common\Utils\getHBITMAPFromPixels.cpp" />
     <ClCompile Include="Sources\ascii85.cpp" />
     <ClCompile Include="Sources\cmdPaneHandler.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />

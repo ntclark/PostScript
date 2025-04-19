@@ -37,6 +37,7 @@ This is the MIT License
 
     font::font(job *pj,dictionary *pDict,char *pszFontName) : dictionary(pj,pszFontName,DEFAULT_DICTIONARY_SIZE) {
     theObjectType = object::objectType::font;
+
     PostScriptInterpreter::pIFontManager -> LoadFont(pszFontName,(UINT_PTR)(void *)this,&pIFont);
     static_cast<dictionary *>(this) -> copyFrom(pDict);
     pCharStrings = reinterpret_cast<dictionary *>(retrieve("CharStrings"));
@@ -71,21 +72,10 @@ This is the MIT License
         put(pJob -> pFontBoundingBoxLiteral -> Name(),pArray);
     }
 
-#if 1
     if ( ! exists(pJob -> pCharStringsLiteral -> Name() ) ) {
         pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
         put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
     }
-#endif
-#if 0
-        put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
-        for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
-            char szCharCode[8];
-            sprintf_s<8>(szCharCode,"%ld",charCode);
-            pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,charCode));
-        }
-    } 
-#endif
 
     if ( ! exists(pJob -> pEncodingArrayLiteral -> Name() ) ) {
         pEncoding = new (pJob -> CurrentObjectHeap()) array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
@@ -98,18 +88,6 @@ This is the MIT License
 
 
     void font::loadDictionary() {
-
-#if 0
-    if ( NULL == pCharStrings ) {
-        pCharStrings = new (pJob -> CurrentObjectHeap()) dictionary(pJob,pJob -> pCharStringsLiteral -> Name());
-        put(pJob -> pCharStringsLiteral -> Name(),pCharStrings);
-        for ( uint16_t charCode = 0; charCode < 256; charCode++ ) {
-            char szCharCode[8];
-            sprintf_s<8>(szCharCode,"%ld",charCode);
-            pCharStrings -> put(szCharCode,new (pJob -> CurrentObjectHeap()) object(pJob,charCode));
-        }
-    }
-#endif
 
     if ( ! ( NULL == pCharStrings ) ) {
         DWORD cb = 0;
@@ -130,14 +108,6 @@ This is the MIT License
 
         CoTaskMemFree(pszCharStrings);
     }
-
-#if 0
-    if ( NULL == pEncoding ) {
-        pEncoding = new (pJob -> CurrentObjectHeap()) array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
-        pEncoding -> copyFrom(pJob -> pStandardEncoding);
-        put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
-    }
-#endif
 
     if ( ! ( NULL == pEncoding ) ) {
         DWORD cb = 0;
@@ -172,16 +142,19 @@ This is the MIT License
 
 
     font::~font() {
+    if ( ! ( NULL == pIFont ) )
+        pIFont -> Release();
     return;
     }
 
 
     font *font::findFont(job *pJob,char *pszFamilyName) {
 
-    IFont_EVNSW *pIFont;
-    if ( S_OK == PostScriptInterpreter::pIFontManager -> SeekFont(pszFamilyName,-1L,&pIFont) ) {
+    IFont_EVNSW *pIFontInstance;
+
+    if ( S_OK == PostScriptInterpreter::pIFontManager -> SeekFont(pszFamilyName,-1L,&pIFontInstance) ) {
         UINT_PTR fontCookie;
-        pIFont -> get_FontCookie(&fontCookie);
+        pIFontInstance -> get_FontCookie(&fontCookie);
         return (font *)fontCookie;
     }
 

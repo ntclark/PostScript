@@ -439,34 +439,29 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     void object::put(long,BYTE) {
     throw new notimplemented("put is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    _endthread();
     return;
     }
 
 
     BYTE object::get(long index) {
     throw new notimplemented("get is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    _endthread();
     return NULL;
     }
 
     void object::putElement(long index,object *) {
     throw new notimplemented("putElement is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    _endthread();
     return;
     }
 
 
     object *object::getElement(long index) {
     throw new notimplemented("getElement is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    _endthread();
     return NULL;
     }
 
 
     void object::execute() {
     throw new notimplemented("execute is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    _endthread();
     return;
     }
 

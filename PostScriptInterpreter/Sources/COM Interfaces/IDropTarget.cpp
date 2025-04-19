@@ -44,7 +44,7 @@ This is the MIT License
     pIDataObject -> EnumFormatEtc(DATADIR_GET,&pIEnumFORMATETC);
     FORMATETC format;
     while ( S_OK == pIEnumFORMATETC -> Next(1,&format,NULL) ) {
-        if ( format.cfFormat == CF_HDROP ) {
+        if ( CF_HDROP == format.cfFormat ) {
             *pdwEffect = DROPEFFECT_COPY;
             pIEnumFORMATETC -> Release();
             return S_OK;
@@ -90,9 +90,7 @@ This is the MIT License
 
     DragQueryFile(handleDrop,0,pszFileName,cb);
 
-    pParent -> SetSource(pszFileName);
-
-    pParent -> Parse();
+    pParent -> Parse(pszFileName);
 
     delete [] pszFileName;
 

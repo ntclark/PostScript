@@ -24,6 +24,7 @@ This is the MIT License
 #include "job.h"
 
 #include "StandardEncoding.h"
+#include "ISOLatin1Encoding.h"
 
     job::job(char *pszFileName,HWND hwndSurf) :
 
@@ -40,6 +41,10 @@ This is the MIT License
         hwndSurface(hwndSurf)
 
     {
+
+    object::initializeStorage();
+
+    pPostScriptInterpreter -> ConnectServices();
 
     pLanguageLevel = new (CurrentObjectHeap()) object(this,2L);
 
@@ -62,7 +67,7 @@ This is the MIT License
     pISOLatin1Encoding = new (CurrentObjectHeap()) array(this,"ISOLatin1Encoding");
 
     for ( long k = 0; k < 256; k++ )
-        pISOLatin1Encoding -> putElement(k,new (CurrentObjectHeap()) object(this,k));
+        pISOLatin1Encoding -> putElement(k,new (CurrentObjectHeap()) object(this,ISOLatin1Encoding[k]));
 
 // move to graphicsState (really gdiParameters) ?
     pDefaultColorSpace = new (CurrentObjectHeap()) colorSpace(this,"DeviceGray");
@@ -72,6 +77,7 @@ This is the MIT License
     pPostScriptSourceFile = NULL;;
 
     pStringType = new (CurrentObjectHeap()) name(this,"stringtype");
+    pBinaryStringType = new (CurrentObjectHeap()) name(this,"stringtype");
     pArrayType = new (CurrentObjectHeap()) name(this,"arraytype");
     pPackedArrayType = new (CurrentObjectHeap()) name(this,"packedarraytype");
     pIntegerType = new (CurrentObjectHeap()) name(this,"integertype");
@@ -94,6 +100,7 @@ This is the MIT License
     nameTypeMap[object::atom][object::integer] = pIntegerType;
     nameTypeMap[object::atom][object::radix] = pIntegerType;
     nameTypeMap[object::atom][object::real] = pRealType;
+    nameTypeMap[object::atom][object::binaryString] = pBinaryStringType;
 
     nameTypeMap[object::literal][object::string] = pStringType;
     nameTypeMap[object::procedure][object::string] = pStringType;
@@ -229,13 +236,19 @@ This is the MIT License
 
     job::~job() {
 
-    if ( pStorage )
-        delete [] pStorage;
-
-    for ( comment *pComment : commentStack) 
+    for ( comment *pComment : commentStack ) 
         delete pComment;
 
     commentStack.clear();
+
+    if ( pStorage )
+        delete [] pStorage;
+
+    pGraphicsState -> uninitialize();
+
+    object::releaseStorage();
+
+    pPostScriptInterpreter -> Cycle();
 
     return;
     }

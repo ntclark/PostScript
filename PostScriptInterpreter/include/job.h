@@ -53,9 +53,9 @@ This is the MIT License
         long executeObject();
         long executeProcedure(procedure *);
 
-        void parseProcedure(procedure *,char *pStart,char **ppEnd);
+        void parseProcedure(procedure *,char *pStart,char **ppEnd,long *pLineNumber);
         void bindProcedure(procedure *pProcedure);
-        void parseProcedureString(char *pStart,char **ppEnd);
+        void parseProcedureString(char *pStart,char **ppEnd,long *pLineNumber);
 
         void RequestQuit() { quitRequested = true; }
 
@@ -102,25 +102,23 @@ This is the MIT License
 
         long getPageCount(char *pszFileName);
 
-        void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd);
+        void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd,long *pLineNumber);
         void parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd);
         char *parseObject(char *pStart,char **pEnd);
 
         void parseFile(char *pszFileName);
 
-        void parseStructureSpec(char *pStart,char **ppEnd);
-        void parseComment(char *pStart,char **ppEnd);
-        void parseString(char *pStart,char **ppEnd);
-        void parseHexString(char *pStart,char **ppEnd);
-        void parseHex85String(char *pStart,char **ppEnd);
-        void parseLiteralName(char *apStart,char **ppEnd);
-
-        HBITMAP parsePage(long pageNumber);
+        void parseStructureSpec(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseComment(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseString(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseHexString(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseHex85String(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseLiteralName(char *apStart,char **ppEnd,long *pLineNumber);
 
         char *pStart{NULL};
         char *pNext{NULL};
 
-        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
+        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd,long *pLineNumber)> tokenProcedures;
         std::map<size_t,char *> antiDelimiters;
         std::map<size_t,name *> validNames;
 
@@ -172,6 +170,7 @@ This is the MIT License
         object *pBuildCharLiteral{NULL};
 
         name *pStringType{NULL};
+        name *pBinaryStringType{NULL};
         name *pArrayType{NULL};
         name *pPackedArrayType{NULL};
         name *pIntegerType{NULL};

@@ -13,9 +13,9 @@ void adjustToMonitorSize(RECT *);
 char szApplicationDataDirectory[MAX_PATH];
 
 RECT rcFrame{512,512,1024,768};
-long cbPostScriptProperties = 0L;
-UINT_PTR pPostScriptProperties = NULL;
+
 BYTE postScriptPropertiesBlob[512];
+long cbPostScriptProperties = 512;
 
 boolean useGSProperties = true;
 
@@ -152,7 +152,7 @@ boolean useGSProperties = true;
         pIGProperties -> DirectAccess((BSTR)L"postscript properties size",TYPE_BINARY,&cbPostScriptProperties,sizeof(long));
 
         pIGProperties -> Add((BSTR)L"postscript properties",NULL);
-        pIGProperties -> DirectAccess((BSTR)L"postscript properties",TYPE_RAW_BINARY,(void *)postScriptPropertiesBlob,cbPostScriptProperties);
+        pIGProperties -> DirectAccess((BSTR)L"postscript properties",TYPE_BINARY,(void *)postScriptPropertiesBlob,512);
 
         WCHAR szwDataFile[MAX_PATH];
         MultiByteToWideChar(CP_ACP,0,szApplicationDataDirectory,-1,szwDataFile,MAX_PATH);
@@ -165,21 +165,7 @@ boolean useGSProperties = true;
     }
 
     if ( FALSE == bSuccess )
-
         adjustToMonitorSize(&rcFrame);
-
-    else {
-
-        VARIANT x;
-        x.vt = VT_PTR;
-        IGProperty *pIGProperty = NULL;
-        pIGProperties -> get_Property((wchar_t *)L"postscript properties",&pIGProperty);
-        pIGProperty -> get_value(&x);
-        pIGProperty -> Release();
-
-        memcpy(postScriptPropertiesBlob,x.pbVal,cbPostScriptProperties);
-
-    }
 
 #else
 
@@ -190,7 +176,7 @@ boolean useGSProperties = true;
     ParsePSHost *pParsePSHost = new ParsePSHost();
 
     WNDCLASS gClass;
-   
+
     memset(&gClass,0,sizeof(WNDCLASS));
     gClass.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
     gClass.lpfnWndProc = ParsePSHost::frameHandler;
@@ -236,7 +222,7 @@ boolean useGSProperties = true;
     //pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
 
     //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
-    pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
+    //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
 
     if ( 0 < cbPostScriptProperties )
         pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);
@@ -251,15 +237,9 @@ boolean useGSProperties = true;
 #if USE_GS_PROPERTIES
     if ( useGSProperties ) {
         GetWindowRect(pParsePSHost -> hwndFrame,&rcFrame);
+        UINT_PTR pPostScriptProperties = NULL;
         pParsePSHost -> pIPostScript -> GetPeristableProperties(&pPostScriptProperties,&cbPostScriptProperties);
-        VARIANT x;
-        x.vt = VT_PTR;
-        x.pbVal = (BYTE *)pPostScriptProperties;
-        IGProperty *pIGProperty = NULL;
-        pIGProperties -> get_Property((wchar_t *)L"postscript properties",&pIGProperty);
-        pIGProperty -> put_size(cbPostScriptProperties);
-        pIGProperty -> put_value(x);
-        pIGProperty -> Release();
+        memcpy(postScriptPropertiesBlob,(BYTE *)pPostScriptProperties,cbPostScriptProperties);
         pIGProperties -> Save();
         CoTaskMemFree((void *)pPostScriptProperties);
     }

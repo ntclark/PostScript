@@ -33,6 +33,7 @@ This is the MIT License
 #include <olectl.h>
 #include <shlwapi.h>
 #include <shlobj.h>
+#include <wincodec.h>
 
 #include "Renderer_i.h"
 
@@ -72,9 +73,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
         STDMETHOD(WhereAmI)(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
         STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
-        //STDMETHOD(GetParametersBundle)(UINT_PTR **pptrBundleStorage);
-        //STDMETHOD(SetParametersBundle)(UINT_PTR *ptrBundlestorage);
-
         STDMETHOD(SaveState)();
         STDMETHOD(RestoreState)();
 
@@ -109,7 +107,10 @@ int Mx3Inverse(double *pSource,double *pTarget);
             STDMETHOD(QuadraticBezier)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
             STDMETHOD(PostScriptImage)(HDC hdc,HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+            STDMETHOD(PostScriptJpegImage)(HDC hdc,UINT_PTR pJpegData,long dataSize,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+
             STDMETHOD(NonPostScriptImage)(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
+            STDMETHOD(NonPostScriptJpegImage)(HDC hdc,UINT_PTR pJpegData,long dataSize,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
 
             struct primitive {
 

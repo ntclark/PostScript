@@ -673,6 +673,7 @@ This is the MIT License
     object *pSourceObject = pop();
 
     dictionary *pTarget = NULL;
+    array *pTargetArray = NULL;
 
     switch ( pTargetObject -> ObjectType() ) {
     case object::dictionary:
@@ -683,12 +684,17 @@ This is the MIT License
         pTarget = static_cast<dictionary *>(reinterpret_cast<font *>(pTargetObject));
         break;
 
+    case object::objTypeArray:
+        pTargetArray = reinterpret_cast<array *>(pTargetObject);
+        break;
+
     default:
         __debugbreak();
         return;
     }
 
     dictionary *pSource = NULL;
+    procedure *pSourceProcedure = NULL;
 
     switch ( pSourceObject -> ObjectType() ) {
     case object::dictionary:
@@ -699,7 +705,24 @@ This is the MIT License
         pSource = static_cast<dictionary *>(reinterpret_cast<font *>(pSourceObject));
         break;
 
+    case object::procedure:
+        pSourceProcedure = reinterpret_cast<procedure *>(pSourceObject);
+        break;
+
     default:
+        __debugbreak();
+        return;
+    }
+
+    if ( ! ( NULL == pTargetArray ) && ! ( NULL == pSourceProcedure ) ) {
+        //for ( object *pEntry : pSourceProcedure -> entries )
+        //    pTargetArray -> putElement(pTargetArray -> size(),pEntry);
+        pTargetArray -> putElement(pTargetArray -> size(),pSourceProcedure);
+        push(pTargetArray);
+        return;
+    }
+
+    if ( ! ( NULL == pTargetArray || ! ( NULL == pSourceProcedure ) ) ) {
         __debugbreak();
         return;
     }
@@ -1191,6 +1214,11 @@ This is the MIT License
         object *pName = pDictionary -> retrieve("FontName");
         if ( NULL == pName )
             pName = pKey;
+        if ( NULL == pName -> pszContents ) {
+            char szMessage[1024];
+            sprintf(szMessage,"operator font: key is not a string or name object",po -> Name());
+            throw new typecheck(szMessage);
+        }
         pFont = reinterpret_cast<font *>(pFontDirectory -> retrieve(pName -> pszContents));
         if ( NULL == pFont ) {
             pFont = new (CurrentObjectHeap()) font(this,pDictionary,pName -> Contents());
@@ -1205,7 +1233,7 @@ isNew = true;
 
     default: {
         char szMessage[1024];
-        sprintf(szMessage,"operator aload: object %s is not an dictionary or font",po -> Name());
+        sprintf(szMessage,"operator font: object %s is not a dictionary or font",po -> Name());
         throw new typecheck(szMessage);
         return;
         }
@@ -2192,6 +2220,10 @@ printf("wtf");
         push(reinterpret_cast<array *>(pTarget) -> getElement(pIndex -> IntValue()));
         return;
 
+    case object::objTypeMatrix:
+        push(reinterpret_cast<matrix *>(pTarget) -> getElement(pIndex -> IntValue()));
+        return;
+
     case object::packedarray: {
         __debugbreak();
         }
@@ -2213,16 +2245,15 @@ printf("wtf");
         }
 
         push(pObject);
-        break;
         }
+        break;
 
     case object::binaryString:
     case object::constantString:
     case object::hexString:
-    case object::string: {
+    case object::string:
         push(new (CurrentObjectHeap()) object(this,(long)pTarget -> get(pIndex -> IntValue())));
         break;
-        }
 
     }
 
