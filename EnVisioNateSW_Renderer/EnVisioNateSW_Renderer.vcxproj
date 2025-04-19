@@ -162,7 +162,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp" />
-    <ClCompile Include="..\..\Common\Utils\getHBITMAPFromPixels.cpp" />
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\getHBITMAPFromPixels.cpp" />
     <ClCompile Include="COM Events\ConnectionPointContainer.cpp" />
     <ClCompile Include="COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
