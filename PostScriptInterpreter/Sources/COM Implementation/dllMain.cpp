@@ -66,7 +66,6 @@ This is the MIT License
   
     case DLL_PROCESS_DETACH:
         DeleteCriticalSection(&PostScriptInterpreter::theQueueCriticalSection);
-        object::releaseStorage();
         break;
   
     }

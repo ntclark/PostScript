@@ -24,6 +24,7 @@ This is the MIT License
 #include "job.h"
 
 #include "FontManager_i.c"
+#include "PostScript objects/font.h"
 
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
@@ -37,7 +38,6 @@ This is the MIT License
 
     font::font(job *pj,dictionary *pDict,char *pszFontName) : dictionary(pj,pszFontName,DEFAULT_DICTIONARY_SIZE) {
     theObjectType = object::objectType::font;
-
     PostScriptInterpreter::pIFontManager -> LoadFont(pszFontName,(UINT_PTR)(void *)this,&pIFont);
     static_cast<dictionary *>(this) -> copyFrom(pDict);
     pCharStrings = reinterpret_cast<dictionary *>(retrieve("CharStrings"));
@@ -131,19 +131,16 @@ This is the MIT License
     }
 
 
-    font::font(font &rhs) : dictionary(rhs) {
+    font::font(font &rhs) { 
+    theObjectType = object::objectType::font;
+    pJob = rhs.pJob;
+    Name(rhs.Name());
+    Contents(rhs.Contents());
     isCIDFont = rhs.isCIDFont;
     dupCount = rhs.dupCount + 1;
     static_cast<dictionary *>(this) -> copyFrom(static_cast<dictionary *>(&rhs));
     PostScriptInterpreter::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
     loadDictionary();
-    return;
-    }
-
-
-    font::~font() {
-    if ( ! ( NULL == pIFont ) )
-        pIFont -> Release();
     return;
     }
 

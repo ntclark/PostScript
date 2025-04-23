@@ -79,7 +79,7 @@ class job;
         // IPostScript
 
         STDMETHOD(SetSource)(char *pszFileName);
-        STDMETHOD(Parse)(char *pszFileName = NULL);
+        STDMETHOD(Parse)(char *pszFileName = NULL,BOOL autoStart = TRUE);
         STDMETHOD(ParseText)(char *pszPDFText);
         STDMETHOD(GetLastError)(char **ppszError);
         STDMETHOD(LogLevel)(logLevel theLogLevel);

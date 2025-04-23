@@ -31,8 +31,6 @@ This is the MIT License
     strcpy(szFileName,pszName);
     }
 
-    file::~file() {}
-
 
     uint8_t *file::getBinaryData(DWORD *pcbData,char *pszEndDelimiter) {
 
@@ -44,7 +42,7 @@ This is the MIT License
 
     long cbData = (long)(ppEnd - pStart);
 
-    uint8_t *pbTemp = new uint8_t[cbData];
+    uint8_t *pbTemp = ::new uint8_t[cbData];
 
     memcpy(pbTemp,pStart,cbData);
 

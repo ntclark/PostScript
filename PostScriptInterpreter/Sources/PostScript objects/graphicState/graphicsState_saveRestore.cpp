@@ -27,7 +27,7 @@ This is the MIT License
 
     void graphicsState::gSave() {
     PostScriptInterpreter::pIRenderer -> SaveState();
-    psXformsStack.gSave();
+    pPSXformsStack -> gSave();
     CurrentFont() -> gSave();
     return;
     }
@@ -35,7 +35,7 @@ This is the MIT License
 
     void graphicsState::gRestore() {
     PostScriptInterpreter::pIRenderer -> RestoreState();
-    psXformsStack.gRestore();
+    pPSXformsStack -> gRestore();
     CurrentFont() -> gRestore();
     return;
     }

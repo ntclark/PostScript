@@ -26,23 +26,15 @@ This is the MIT License
 #include "StandardEncoding.h"
 #include "ISOLatin1Encoding.h"
 
-    job::job(char *pszFileName,HWND hwndSurf) :
+    void *job::pHeap = NULL;
+    void *job::pCurrentHeap = NULL;
+    void *job::pNextHeap = NULL;
+    size_t job::currentlyAllocatedHeap = 0L;
 
-        pStorage(NULL),
-        pEnd(NULL),
 
-        isGlobalVM(true),
-        hasExited(false),
+    job::job(char *pszFileName,HWND hwndSurf) : hwndSurface(hwndSurf) {
 
-        saveCount(0L),
-        inputLineNumber(1L),
-        procedureDefinitionLevel(0L),
-
-        hwndSurface(hwndSurf)
-
-    {
-
-    object::initializeStorage();
+    initializeHeap();
 
     pPostScriptInterpreter -> ConnectServices();
 
@@ -69,12 +61,11 @@ This is the MIT License
     for ( long k = 0; k < 256; k++ )
         pISOLatin1Encoding -> putElement(k,new (CurrentObjectHeap()) object(this,ISOLatin1Encoding[k]));
 
-// move to graphicsState (really gdiParameters) ?
     pDefaultColorSpace = new (CurrentObjectHeap()) colorSpace(this,"DeviceGray");
 
-    memset(szPostScriptSourceFile,0,MAX_PATH * sizeof(char));
+    memset(szPostScriptSourceFile,0,sizeof(szPostScriptSourceFile));
 
-    pPostScriptSourceFile = NULL;;
+    pPostScriptSourceFile = NULL;
 
     pStringType = new (CurrentObjectHeap()) name(this,"stringtype");
     pBinaryStringType = new (CurrentObjectHeap()) name(this,"stringtype");
@@ -94,30 +85,31 @@ This is the MIT License
     // Resource names
     new (CurrentObjectHeap()) name(this,"Font");
 
-    nameTypeMap[object::atom][object::container] = pArrayType;
-    nameTypeMap[object::atom][object::string] = pStringType;
-    nameTypeMap[object::atom][object::character] = pStringType;
-    nameTypeMap[object::atom][object::integer] = pIntegerType;
-    nameTypeMap[object::atom][object::radix] = pIntegerType;
-    nameTypeMap[object::atom][object::real] = pRealType;
-    nameTypeMap[object::atom][object::binaryString] = pBinaryStringType;
+    nameTypeMap[object::objectType::atom][object::valueType::container] = pArrayType;
+    nameTypeMap[object::objectType::atom][object::valueType::string] = pStringType;
+	nameTypeMap[object::objectType::atom][object::valueType::constantString] = pStringType;
+    nameTypeMap[object::objectType::atom][object::valueType::character] = pStringType;
+    nameTypeMap[object::objectType::atom][object::valueType::integer] = pIntegerType;
+    nameTypeMap[object::objectType::atom][object::valueType::radix] = pIntegerType;
+    nameTypeMap[object::objectType::atom][object::valueType::real] = pRealType;
+    nameTypeMap[object::objectType::atom][object::valueType::binaryString] = pBinaryStringType;
 
-    nameTypeMap[object::literal][object::string] = pStringType;
-    nameTypeMap[object::procedure][object::string] = pStringType;
-    nameTypeMap[object::procedure][object::executableProcedure] = pPackedArrayType;
-    nameTypeMap[object::objTypeMatrix][object::container] = pArrayType;
-    nameTypeMap[object::dictionary][object::string] = pDictType;
-    nameTypeMap[object::objTypeArray][object::container] = pArrayType;
-    nameTypeMap[object::number][object::integer] = pIntegerType;
-    nameTypeMap[object::number][object::radix] = pIntegerType;
-    nameTypeMap[object::number][object::real] = pRealType;
-    nameTypeMap[object::logical][object::string] = pBooleanType;
-    nameTypeMap[object::mark][object::valueTypeUnspecified] = pMarkType;
-    nameTypeMap[object::null][object::valueTypeUnspecified] = pNullType;
-    nameTypeMap[object::objTypeSave][object::valueTypeUnspecified] = pSaveType;
-    nameTypeMap[object::font][object::valueTypeUnspecified] = pFontType;
-    nameTypeMap[object::directExecutable][object::valueTypeUnspecified] = pOperatorType;
-    nameTypeMap[object::name][object::valueTypeUnspecified] = pNameType;
+    nameTypeMap[object::objectType::literal][object::valueType::string] = pStringType;
+    nameTypeMap[object::objectType::procedure][object::valueType::string] = pStringType;
+    nameTypeMap[object::objectType::procedure][object::valueType::executableProcedure] = pPackedArrayType;
+    nameTypeMap[object::objectType::objTypeMatrix][object::valueType::container] = pArrayType;
+    nameTypeMap[object::objectType::dictionaryObject][object::valueType::string] = pDictType;
+    nameTypeMap[object::objectType::objTypeArray][object::valueType::container] = pArrayType;
+    nameTypeMap[object::objectType::number][object::valueType::integer] = pIntegerType;
+    nameTypeMap[object::objectType::number][object::valueType::radix] = pIntegerType;
+    nameTypeMap[object::objectType::number][object::valueType::real] = pRealType;
+    nameTypeMap[object::objectType::logical][object::valueType::string] = pBooleanType;
+    nameTypeMap[object::objectType::mark][object::valueType::valueTypeUnspecified] = pMarkType;
+    nameTypeMap[object::objectType::null][object::valueType::valueTypeUnspecified] = pNullType;
+    nameTypeMap[object::objectType::objTypeSave][object::valueType::valueTypeUnspecified] = pSaveType;
+    nameTypeMap[object::objectType::font][object::valueType::valueTypeUnspecified] = pFontType;
+    nameTypeMap[object::objectType::directExecutable][object::valueType::valueTypeUnspecified] = pOperatorType;
+    nameTypeMap[object::objectType::name][object::valueType::valueTypeUnspecified] = pNameType;
 
     tokenProcedures[std::hash<std::string>()(DSC_DELIMITER)] = &job::parseStructureSpec;
     tokenProcedures[std::hash<std::string>()(COMMENT_DELIMITER)] = &job::parseComment;
@@ -193,7 +185,7 @@ This is the MIT License
     dictionaryStack.setCurrent(pUserDict);
     dictionaryStack.setCurrent(pSystemDict);
 
-    pGraphicsState = new (CurrentObjectHeap()) graphicsState(this);
+    pGraphicsState = new graphicsState(this);
 
     if ( pszFileName ) {
         FILE *f = fopen(pszFileName,"rb");
@@ -221,6 +213,60 @@ This is the MIT License
     }
 
 
+    job::~job() {
+
+    for ( comment *pComment : commentStack ) 
+        delete pComment;
+
+    commentStack.clear();
+
+    for ( structureSpec *pStructure : structureStack )
+        delete pStructure;
+
+    structureStack.clear();
+
+    while ( 0 < operandStack.size() )
+        operandStack.pop();
+
+    while ( 0 < dictionaryStack.size() )
+        dictionaryStack.pop();
+
+    nameTypeMap.clear();
+
+    tokenProcedures.clear();
+
+    antiDelimiters.clear();
+
+    if ( pStorage )
+        delete [] pStorage;
+
+    delete pGraphicsState;
+
+    releaseHeap();
+
+    pPostScriptInterpreter -> Cycle();
+
+    return;
+    }
+
+
+    void job::initializeHeap() {
+    pHeap = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT,OBJECT_HEAP_SIZE);
+    pCurrentHeap = (BYTE *)pHeap;
+    pNextHeap = (BYTE *)pCurrentHeap;
+    currentlyAllocatedHeap = OBJECT_HEAP_SIZE;
+    }
+
+
+    void job::releaseHeap() {
+    GlobalFree(pHeap);
+    pHeap = NULL;
+    pCurrentHeap = NULL;
+    pNextHeap = NULL;
+    currentlyAllocatedHeap = 0L;
+    }
+
+
     /*
         Don't use CurrentObjectHeap with anything that is NOT derived
         from object.
@@ -230,36 +276,14 @@ This is the MIT License
         to the first one.
     */
     void *job::CurrentObjectHeap() {
-    return object::pCurrentHeap;
+    return pCurrentHeap;
     }
-
-
-    job::~job() {
-
-    for ( comment *pComment : commentStack ) 
-        delete pComment;
-
-    commentStack.clear();
-
-    if ( pStorage )
-        delete [] pStorage;
-
-    pGraphicsState -> uninitialize();
-
-    object::releaseStorage();
-
-    pPostScriptInterpreter -> Cycle();
-
-    return;
-    }
-
-
     void job::resolve() {
 
     object *pTop = top();
 
     switch ( pTop -> ObjectType() ) {
-    case object::number:
+    case object::objectType::number:
         return;
 
     default:
@@ -295,24 +319,24 @@ This is the MIT License
     }
 
 
-    boolean job::deleteObject(object *pObj) {
+    //boolean job::deleteObject(object *pObj) {
 
-    if ( NULL == pObj )
-        return false;
+    //if ( NULL == pObj )
+    //    return false;
 
-    if ( ! ( NULL == pObj -> pContainingDictionary ) ) 
-        return false;
+    //if ( ! ( NULL == pObj -> pContainingDictionary ) ) 
+    //    return false;
 
-    delete pObj;
+    //delete pObj;
 
-    return true;
-    }
+    //return true;
+    //}
 
 
-    void job::deleteNonContainedObject(object *pObj) {
-    delete pObj;
-    return;
-    }
+    //void job::deleteNonContainedObject(object *pObj) {
+    //delete pObj;
+    //return;
+    //}
 
 
     long job::getPageCount(char *pszFileName) {

@@ -256,7 +256,9 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\PostScript objects\binaryString.cpp" />
     <ClCompile Include="Sources\PostScript objects\booleanObject.cpp" />
     <ClCompile Include="Sources\PostScript objects\colorSpace.cpp" />
+    <ClCompile Include="Sources\PostScript objects\constantString.cpp" />
     <ClCompile Include="Sources\PostScript objects\dictionary.cpp" />
+    <ClCompile Include="Sources\PostScript objects\dictionaryEntry.cpp" />
     <ClCompile Include="Sources\PostScript objects\file.cpp" />
     <ClCompile Include="Sources\PostScript objects\filter.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\gdiParameters.cpp" />
@@ -282,8 +284,6 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\PostScript objects\resource.cpp" />
     <ClCompile Include="Sources\PostScript objects\save.cpp" />
     <ClCompile Include="Sources\PostScript objects\string.cpp" />
-    <ClCompile Include="Sources\PostScript objects\constantString.cpp" />
-    <ClCompile Include="Sources\PostScript objects\structureSpec.cpp" />
     <ClCompile Include="Sources\PostScriptInterpreter.cpp" />
     <ClCompile Include="Sources\CommitCurrentPage.cpp" />
     <ClCompile Include="Sources\initWindows.cpp" />
@@ -312,15 +312,17 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\ISOLatin1Encoding.h" />
     <ClInclude Include="include\job.h" />
     <ClInclude Include="include\job_operators.h" />
-    <ClInclude Include="include\job_pdfOperators.h" />
     <ClInclude Include="include\pathParameters.h" />
     <ClInclude Include="include\pointType.h" />
     <ClInclude Include="include\PostScript objects.h" />
     <ClInclude Include="include\PostScript objects\array.h" />
     <ClInclude Include="include\PostScript objects\binaryString.h" />
+    <ClInclude Include="include\PostScript objects\constantString.h" />
     <ClInclude Include="include\PostScript objects\booleanObject.h" />
     <ClInclude Include="include\PostScript objects\colorSpace.h" />
+    <ClInclude Include="include\PostScript objects\containerAllocator.h" />
     <ClInclude Include="include\PostScript objects\dictionary.h" />
+    <ClInclude Include="include\PostScript objects\dictionaryEntry.h" />
     <ClInclude Include="include\PostScript objects\directExec.h" />
     <ClInclude Include="include\PostScript objects\file.h" />
     <ClInclude Include="include\PostScript objects\filter.h" />
@@ -336,8 +338,6 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\PostScript objects\resource.h" />
     <ClInclude Include="include\PostScript objects\save.h" />
     <ClInclude Include="include\PostScript objects\string.h" />
-    <ClInclude Include="include\PostScript objects\constantString.h" />
-    <ClInclude Include="include\PostScript objects\structureSpec.h" />
     <ClInclude Include="include\PostScriptInterpreter.h" />
     <ClInclude Include="include\logHandling.h" />
     <ClInclude Include="include\resourceIdentifiers.h" />
@@ -346,6 +346,7 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\Stacks\objectStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
     <ClInclude Include="include\StandardEncoding.h" />
+    <ClInclude Include="include\structureSpec.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />

@@ -100,7 +100,7 @@ This is the MIT License
     default:
         char szMessage[1024];
         sprintf(szMessage,"operator aload: object %s is not an array or procedure",pTop -> Name());
-        //throw typecheck(szMessage);
+        throw typecheck(szMessage);
         return;
     }
 
@@ -131,10 +131,10 @@ This is the MIT License
         See Also: or, xor, not, true, false
 */
 
-   object *p1 = pop();
+    object *p1 = pop();
     object *p2 = pop();
 
-    if ( object::logical == p1 -> ObjectType() && object::logical == p2 -> ObjectType() ) {
+    if ( object::objectType::logical == p1 -> ObjectType() && object::objectType::logical == p2 -> ObjectType() ) {
 
         if ( p1 == pTrueConstant && p2 == pTrueConstant )
             push(pTrueConstant);
@@ -143,7 +143,7 @@ This is the MIT License
 
     } else {
 
-        if ( object::integer == p1 -> ObjectType() && object::integer == p2 -> ObjectType() ) {
+        if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() ) {
 
             long v = p1 -> IntValue() & p2 -> IntValue();
 
@@ -238,46 +238,89 @@ This is the MIT License
     return;
     }
 
-   void job::operatorArray() {
+    void job::operatorArray() {
 /*
-   array 
-      int array array
+    array 
+        int array array
 
-   creates an array of length int, each of whose elements is initialized with a null object,
-   and pushes this array on the operand stack. The int operand must be a nonnegative
-   integer not greater than the maximum allowable array length (see
-   Appendix B). The array is allocated in local or global VM according to the current
-   VM allocation mode (see Section 3.7.2, “Local and Global VM” ).
+    creates an array of length int, each of whose elements is initialized with a null object,
+    and pushes this array on the operand stack. The int operand must be a nonnegative
+    integer not greater than the maximum allowable array length (see
+    Appendix B). The array is allocated in local or global VM according to the current
+    VM allocation mode (see Section 3.7.2, “Local and Global VM” ).
 
-   Example
-      3 array => [null null null]
+    Example
+        3 array => [null null null]
 */
 
-   long count = pop() -> IntValue();
-   array *pArray = new (CurrentObjectHeap()) array(this,"unnamed",count);
-   push(pArray);
-   return;
-   }
+    long count = pop() -> IntValue();
+    push(new (CurrentObjectHeap()) array(this,"unnamed",count));
+    return;
+    }
 
-   void job::operatorAshow() {
+    void job::operatorAshow() {
 /*
-      ashow 
-         ax ay string ashow –
+        ashow 
+            ax ay string ashow –
 
-   paints glyphs for the characters of string in a manner similar to show; however,
-   while doing so, ashow adjusts the width of each glyph shown by adding ax to the
-   glyph’s x width and ay to its y width, thus modifying the spacing between glyphs.
-   The numbers ax and ay are x and y displacements in the user coordinate system,
-   not in the glyph coordinate system.
-   This operator enables fitting a string of text to a specific width by adjusting all the
-   spacing between glyphs by a uniform amount. For a discussion of glyph widths,
-   see Section 5.4, “Glyph Metric Information.”
+    paints glyphs for the characters of string in a manner similar to show; however,
+    while doing so, ashow adjusts the width of each glyph shown by adding ax to the
+    glyph’s x width and ay to its y width, thus modifying the spacing between glyphs.
+    The numbers ax and ay are x and y displacements in the user coordinate system,
+    not in the glyph coordinate system.
+    This operator enables fitting a string of text to a specific width by adjusting all the
+    spacing between glyphs by a uniform amount. For a discussion of glyph widths,
+    see Section 5.4, “Glyph Metric Information.”
 */
-   pop();
-   pop();
-   pop();
-   return;
-   }
+
+    //
+    // I don't believe this operator has ever been tested.
+    //
+
+    object *pOutput = pop();
+    object *pDeltaY = pop();
+    object *pDeltaX = pop();
+
+    binaryString *pBinary = NULL;
+    string *pString = NULL;
+
+    if ( object::valueType::binaryString == pOutput -> ValueType() )
+        pBinary = reinterpret_cast<binaryString *>(pOutput);
+    else
+        pString = reinterpret_cast<string *>(pOutput);
+
+    push(pOutput);
+
+    operatorLength();
+
+    long strSize = pop() -> IntValue();
+
+    POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
+
+    for ( long k = 0; k < strSize; k += 2 ) {
+
+        BYTE glyphIndex;
+        if ( ! ( NULL == pBinary ) )
+            glyphIndex = pBinary -> get(k);
+        else
+            glyphIndex = pString -> get(k);
+
+        //
+        // This is not quite right. I need to add the width adjustments
+        // to the call to draw the glyph in the FontManager
+        // Until then, the glyphs won't be centered in the wider (higher)
+        // box intendended. Also applies to awidthshow
+
+        currentGS() -> drawTextChar(glyphIndex);
+
+        currentPoint.x += pDeltaX -> FloatValue();
+        currentPoint.y += pDeltaY -> FloatValue();
+
+        currentGS() -> moveto(currentPoint.x,currentPoint.y);
+    }
+
+    return;
+    }
 
     void job::operatorAstore() {
 /*
@@ -333,31 +376,70 @@ This is the MIT License
     }
 
 
-   void job::operatorAwidthshow() {
-/*
-   awidthshow 
-      cx cy char ax ay string awidthshow –
+    void job::operatorAwidthshow() {
 
-   paints glyphs for the characters of string in a manner similar to show, but combines
-   the special effects of ashow and widthshow. awidthshow adjusts the width
-   of each glyph shown by adding ax to its x width and ay to its y width, thus modifying
-   the spacing between glyphs. Furthermore, awidthshow modifies the width of
-   each occurrence of the glyph for the character char by an additional amount
-   (cx , cy). The interpretation of char is as described for the widthshow operator.
-   This operator enables fitting a string of text to a specific width by adjusting the
-   spacing between all glyphs by a uniform amount, while independently controlling
-   the width of the glyph for a specific character, such as the space character. For a
-   discussion of glyph widths, see Section 5.4, “Glyph Metric Information.”
+/*
+    awidthshow 
+        cx cy char ax ay string awidthshow –
+
+    paints glyphs for the characters of string in a manner similar to show, but combines
+    the special effects of ashow and widthshow. awidthshow adjusts the width
+    of each glyph shown by adding ax to its x width and ay to its y width, thus modifying
+    the spacing between glyphs. Furthermore, awidthshow modifies the width of
+    each occurrence of the glyph for the character char by an additional amount
+    (cx , cy). The interpretation of char is as described for the widthshow operator.
+    This operator enables fitting a string of text to a specific width by adjusting the
+    spacing between all glyphs by a uniform amount, while independently controlling
+    the width of the glyph for a specific character, such as the space character. For a
+    discussion of glyph widths, see Section 5.4, “Glyph Metric Information.”
 */
 
-   pop();
-   pop();
-   pop();
-   pop();
-   pop();
-   pop();
-   return;
-   }
+    object *pOutput = pop();
+    object *pDeltaY = pop();
+    object *pDeltaX = pop();
+    object *pChar = pop();
+    object *pDeltaYChar = pop();
+    object *pDeltaXChar = pop();
+
+    binaryString *pBinary = NULL;
+    string *pString = NULL;
+
+    if ( object::valueType::binaryString == pOutput -> ValueType() )
+        pBinary = reinterpret_cast<binaryString *>(pOutput);
+    else
+        pString = reinterpret_cast<string *>(pOutput);
+
+    push(pOutput);
+
+    operatorLength();
+
+    long strSize = pop() -> IntValue();
+
+    POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
+
+    for ( long k = 0; k < strSize; k += 2 ) {
+
+        BYTE glyphIndex;
+        if ( ! ( NULL == pBinary ) )
+            glyphIndex = pBinary -> get(k);
+        else
+            glyphIndex = pString -> get(k);
+
+        currentGS() -> drawTextChar(glyphIndex);
+
+        currentPoint.x += pDeltaX -> FloatValue();
+        currentPoint.y += pDeltaY -> FloatValue();
+
+        if ( pChar -> Contents()[0] == (char) glyphIndex ) {
+            currentPoint.x += pDeltaXChar -> FloatValue();
+            currentPoint.y += pDeltaYChar -> FloatValue();
+        }
+
+        currentGS() -> moveto(currentPoint.x,currentPoint.y);
+    }
+
+    return;
+    }
 
 
     void job::operatorBegin() {
@@ -375,7 +457,7 @@ This is the MIT License
 
     object *pObj = pop();
 
-    if ( ! ( object::dictionary == pObj -> ObjectType() ) && ! ( object::font == pObj -> ObjectType() ) ) {
+    if ( ! ( object::objectType::dictionaryObject == pObj -> ObjectType() ) && ! ( object::objectType::font == pObj -> ObjectType() ) ) {
         char szMessage[1024];
         sprintf(szMessage,"%s Line: %d: object %s is not a dictionary",__FUNCTION__,__LINE__,pObj -> Name());
         throw new typecheck(szMessage);
@@ -438,7 +520,7 @@ This is the MIT License
     pops entries from the operand stack repeatedly until it encounters a mark, which
     it also pops from the stack. obj1 through objn are any objects other than marks.
 */
-    while ( ! ( object::mark == top() -> ObjectType() ) ) {
+    while ( ! ( object::objectType::mark == top() -> ObjectType() ) ) {
         pop();
     }
     pop();
@@ -567,6 +649,7 @@ This is the MIT License
     (see Section 4.3, “Coordinate Systems and Transformations”).
 */
     object *pMatrixOrArray = pop();
+
     switch ( pMatrixOrArray -> ObjectType() ) {
     case object::objectType::objTypeMatrix:
         currentGS() -> concat(reinterpret_cast<matrix *>(pMatrixOrArray));
@@ -646,13 +729,13 @@ This is the MIT License
 
     object *pTop = top();
 
-    if ( object::number == pTop -> ObjectType() && object::integer == pTop -> ValueType() && pTop -> IntValue() >= 0 ) {
+    if ( object::objectType::number == pTop -> ObjectType() && object::valueType::integer == pTop -> ValueType() && -1 < pTop -> IntValue() ) {
 
-        pTop = pop();
+        pop();
 
         long n = pTop -> IntValue();
 
-        std::list<object *> entries;
+        std::list<object *,containerAllocator<object *>> entries;
 
         for ( long k = 0; k < n; k++ )
             entries.insert(entries.end(),pop());
@@ -672,63 +755,99 @@ This is the MIT License
     object *pTargetObject = pop();
     object *pSourceObject = pop();
 
-    dictionary *pTarget = NULL;
+    dictionary *pTargetDictionary = NULL;
     array *pTargetArray = NULL;
 
     switch ( pTargetObject -> ObjectType() ) {
-    case object::dictionary:
-        pTarget = reinterpret_cast<dictionary *>(pTargetObject);
+    case object::objectType::dictionaryObject:
+        pTargetDictionary = reinterpret_cast<dictionary *>(pTargetObject);
         break;
 
-    case object::font:
-        pTarget = static_cast<dictionary *>(reinterpret_cast<font *>(pTargetObject));
+    case object::objectType::font:
+        pTargetDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pTargetObject));
         break;
 
-    case object::objTypeArray:
+    case object::objectType::objTypeArray:
         pTargetArray = reinterpret_cast<array *>(pTargetObject);
         break;
 
-    default:
+    case object::objectType::objTypeMatrix:
+        pTargetArray = static_cast<array *>(reinterpret_cast<matrix *>(pTargetObject));
+        break;
+
+    default: {
+        char szMessage[1024];
+        sprintf(szMessage,"operator copy: target object %s is not a dictionary, font, or array",pTargetObject -> Name());
+        throw new typecheck(szMessage);
         __debugbreak();
+        }
         return;
     }
 
-    dictionary *pSource = NULL;
+    dictionary *pSourceDictionary = NULL;
     procedure *pSourceProcedure = NULL;
+    array *pSourceArray = NULL;
 
     switch ( pSourceObject -> ObjectType() ) {
-    case object::dictionary:
-        pSource = reinterpret_cast<dictionary *>(pSourceObject);
+    case object::objectType::dictionaryObject:
+        pSourceDictionary = reinterpret_cast<dictionary *>(pSourceObject);
         break;
 
-    case object::font:
-        pSource = static_cast<dictionary *>(reinterpret_cast<font *>(pSourceObject));
+    case object::objectType::font:
+        pSourceDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pSourceObject));
         break;
 
-    case object::procedure:
+    case object::objectType::procedure:
         pSourceProcedure = reinterpret_cast<procedure *>(pSourceObject);
         break;
 
-    default:
+    case object::objectType::objTypeArray:
+        pSourceArray = reinterpret_cast<array *>(pSourceObject);
+        break;
+
+    default: {
+        char szMessage[1024];
+        sprintf(szMessage,"operator copy: source object %s is not a dictionary, font, or array",pSourceObject -> Name());
+        throw new typecheck(szMessage);
         __debugbreak();
+        }
         return;
     }
 
     if ( ! ( NULL == pTargetArray ) && ! ( NULL == pSourceProcedure ) ) {
-        //for ( object *pEntry : pSourceProcedure -> entries )
-        //    pTargetArray -> putElement(pTargetArray -> size(),pEntry);
+        //
+        // I am pretty sure that the procedure entries are copied
+        // into the elements of the array, rather than the
+        // procedure added to the array.
+        // But I don't know why I had the latter in practice until now
+        // 
+#if 1
+        for ( object *pEntry : pSourceProcedure -> entries )
+            pTargetArray -> putElement(pTargetArray -> size(),pEntry);
+#else
         pTargetArray -> putElement(pTargetArray -> size(),pSourceProcedure);
+#endif
+        push(pTargetArray);
+        return;
+    }
+
+    if ( ! ( NULL == pTargetArray ) && ! ( NULL == pSourceArray ) ) {
+        pTargetArray -> copyFrom(pSourceArray);
         push(pTargetArray);
         return;
     }
 
     if ( ! ( NULL == pTargetArray || ! ( NULL == pSourceProcedure ) ) ) {
+        //
+        // If logic is here, it means that an invalid pairing was specified
+        // I'll leave it in place to see if I encounter it.
+        //
         __debugbreak();
         return;
     }
 
-    pTarget -> copyFrom(pSource);
-    push(pTarget);
+    pTargetDictionary -> copyFrom(pSourceDictionary);
+    push(pTargetDictionary);
 
     return;
     }
@@ -745,8 +864,7 @@ This is the MIT License
     See Also: atan, sin
 
 */
-    object *pCos = new (CurrentObjectHeap()) object(this,cos(graphicsState::degToRad * pop() -> OBJECT_POINT_TYPE_VALUE));
-    push(pCos);
+    push(new (CurrentObjectHeap()) object(this,cos(graphicsState::degToRad * pop() -> OBJECT_POINT_TYPE_VALUE)));
     return;
     }
 
@@ -774,13 +892,12 @@ This is the MIT License
     through objn are any objects other than marks.
 */
 
-    std::list<object *> entries;
+    std::list<object *,containerAllocator<object *>> entries;
 
     long count = 0;
 
     // for gs compatibility until gs is history
-    //while ( ! ( top() -> ObjectType() == object::mark ) ) {
-    while ( ! ( top() -> ObjectType() == object::mark ) && ! ( 0 == strcmp(top() -> Contents(),"mark") ) ) {
+    while ( ! ( object::objectType::mark == top() -> ObjectType() ) && ! ( 0 == strcmp(top() -> Contents(),"mark") ) ) {
         count++;
         entries.insert(entries.end(),pop());
     }
@@ -880,6 +997,12 @@ This is the MIT License
     Errors: stackoverflow
     See Also: rootfont, selectfont, setfont
 */
+
+    // !?!?! Didn't have this implemented (?!)
+
+__debugbreak();
+    push(currentGS() -> CurrentFont());
+
     return;
     }
 
@@ -979,8 +1102,8 @@ This is the MIT License
 
     currentGS() -> curveto();
 
-   return;
-   }
+    return;
+    }
 
     void job::operatorCvi() {
 /*
@@ -999,14 +1122,9 @@ This is the MIT License
     remove fractional parts without performing type conversion.)
 */
 
-//
-//NTC: 1-6-2011: It is not clear why "version" is getting converted to a number like "2016" or 2017"
-//If it is (originally) a real number, this may mean that it's value is something like 2.016 (?) or 20.16 ?
-//But typically real -> integer conversion would end up with 2 or 20 in this case.
-//
     object *pTop = pop();
-    if ( object::number == pTop -> ObjectType() ) {
-        if ( object::integer == pTop -> ValueType() || object::radix == pTop -> ValueType() )
+    if ( object::objectType::number == pTop -> ObjectType() ) {
+        if ( object::valueType::integer == pTop -> ValueType() || object::valueType::radix == pTop -> ValueType() )
             push(new (CurrentObjectHeap()) object(this,pTop -> IntValue()));
         else
             push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
@@ -1057,7 +1175,7 @@ This is the MIT License
 */
 
     object *pTop = pop();
-    if ( object::number == pTop -> ObjectType() )
+    if ( object::objectType::number == pTop -> ObjectType() )
         push(new (CurrentObjectHeap()) object(this,pTop -> OBJECT_POINT_TYPE_VALUE));
     else
         push(new (CurrentObjectHeap()) object(this,atof(pTop -> Contents())));
@@ -1087,7 +1205,7 @@ This is the MIT License
 
     object *pTop = pop();
 
-    if ( object::number == pTop -> ObjectType() ) {
+    if ( object::objectType::number == pTop -> ObjectType() ) {
         char szNumber[64];
         if ( object::valueType::real == pTop -> ValueType() )
             sprintf_s<64>(szNumber,"%g",pTop -> OBJECT_POINT_TYPE_VALUE);
@@ -1120,8 +1238,7 @@ This is the MIT License
     }
 
     void job::operatorDebuglevel() {
-    object *pLevel = pop();
-    pPostScriptInterpreter -> LogLevel((logLevel)pLevel -> IntValue());
+    pPostScriptInterpreter -> LogLevel((logLevel)pop() -> IntValue());
     return;
     }
 
@@ -1204,19 +1321,18 @@ This is the MIT License
 
     switch ( po -> ObjectType() ) {
     case object::objectType::font:
-
         pFont = reinterpret_cast<font *>(po);
         pDictionary = static_cast<dictionary *>(pFont);
         break;
 
-    case object::objectType::dictionary: {
+    case object::objectType::dictionaryObject: {
         pDictionary = reinterpret_cast<dictionary *>(po);
         object *pName = pDictionary -> retrieve("FontName");
         if ( NULL == pName )
             pName = pKey;
         if ( NULL == pName -> pszContents ) {
             char szMessage[1024];
-            sprintf(szMessage,"operator font: key is not a string or name object",po -> Name());
+            sprintf(szMessage,"operator definefont: key %s is not a string or name object",po -> Name());
             throw new typecheck(szMessage);
         }
         pFont = reinterpret_cast<font *>(pFontDirectory -> retrieve(pName -> pszContents));
@@ -1353,9 +1469,7 @@ isNew = true;
 
     object *pCount = pop();
 
-    dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,pCount -> IntValue());
-
-    push(pDict);
+    push(new (CurrentObjectHeap()) dictionary(this,pCount -> IntValue()));
 
     return;
     }
@@ -1399,25 +1513,45 @@ isNew = true;
     useful for determining how distances map from user space to device space.
 */
 
+    FLOAT x,y;
+    object *pTopObject = pop();
 
+    switch ( pTopObject -> ObjectType() ) {
+    case object::objectType::objTypeMatrix: {
+        matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
+        y = pop() -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
+        currentGS() -> transformPointInPlace(pMatrix,x,y,&x,&y);
+        }
+        break;
+
+    default: {
+        y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
+        x = pop() -> OBJECT_POINT_TYPE_VALUE;
+        currentGS() -> transformPointInPlace(x,y,&x,&y);
+        }
     }
 
-   void job::operatorDup() {
-/*
-   dup 
-      any dup any any
+    push(new (CurrentObjectHeap()) object(this,x));
+    push(new (CurrentObjectHeap()) object(this,y));
 
-   duplicates the top element on the operand stack. dup copies only the object; the
-   value of a composite object is not copied but is shared. See Section 3.3, “Data
-   Types and Objects.”
+    return;
+    }
+
+    void job::operatorDup() {
+/*
+    dup 
+        any dup any any
+
+    duplicates the top element on the operand stack. dup copies only the object; the
+    value of a composite object is not copied but is shared. See Section 3.3, “Data
+    Types and Objects.”
 */
 
-//   resolve();
+    push(top());
 
-   push(top());
-
-   return;
-   }
+    return;
+    }
 
 
     void job::operatorEnd() {
@@ -1437,9 +1571,6 @@ isNew = true;
     }
 
     dictionary *pDictionary = dictionaryStack.pop();
-
-    //if ( dictionaryStack.pUserDict == pDictionary || dictionaryStack.pSystemDict == pDictionary ) 
-    //    dictionaryStack.setBottom(pDictionary);
 
     return;
     }
@@ -1508,21 +1639,16 @@ isNew = true;
         return;
     }
 
-   //if ( ! ( pAny2 -> ObjectType() == pAny1 -> ObjectType() ) ) {
-   //   push(pFalseConstant);
-   //   return;
-   //}
-
     switch ( pAny1 -> ObjectType() ) {
 
-    case object::number:
+    case object::objectType::number:
         if ( pAny1 -> Value() == pAny2 -> Value() )
             push(pTrueConstant);
         else
             push(pFalseConstant);
         return;
 
-    case object::atom:
+    case object::objectType::atom:
         if ( ! ( strlen(pAny1 -> Contents()) == strlen(pAny2 -> Contents()) ) ) {
             push(pFalseConstant);
             return;
@@ -1535,89 +1661,77 @@ isNew = true;
 
         return;
 
-    case object::name:
-    case object::literal:
+    case object::objectType::name:
+    case object::objectType::literal:
         if ( 0 == strcmp(pAny1 -> Name(),pAny2 -> Name()) && strlen(pAny1 -> Name()) == strlen(pAny2 -> Name()) )
             push(pTrueConstant);
         else
             push(pFalseConstant);
         return;
-#if 0
-    case object::matrix: {
 
-        if ( object::matrix != pAny2 -> ObjectType() ) {
-            push(pFalseConstant);
-            return;
-        }
+    case object::objectType::font:
+    case object::objectType::dictionaryObject: {
 
-        // ?? got an instance of a matrix testing is equal to an integer ???
-        // don't know if that is valid, 
-        push(pTrueConstant);
-        return;
-        }
-#endif
-
-    case object::dictionary: {
-
-        if ( object::dictionary != pAny2 -> ObjectType() ) {
+        if ( ! ( object::objectType::dictionaryObject == pAny2 -> ObjectType() ) &&
+                ! ( object::objectType::font == pAny2 -> ObjectType() ) ) {
             push(pFalseConstant);
             return;
         }
 
         dictionary *pDict1 = reinterpret_cast<dictionary *>(pAny1);
+        if ( object::objectType::font == pAny1 -> ObjectType() )
+            pDict1 = static_cast<dictionary *>(reinterpret_cast<font *>(pAny1));
+
         dictionary *pDict2 = reinterpret_cast<dictionary *>(pAny2);
+        if ( object::objectType::font == pAny2 -> ObjectType() )
+            pDict2 = static_cast<dictionary *>(reinterpret_cast<font *>(pAny2));
+
         if ( ! ( pDict1 -> size() == pDict2 -> size() ) ) {
             push(pFalseConstant);
             return;
         }
 
-        // ?!?!?!?
-        // Is this right (!?)
-
-        if ( pDict1 -> hasSameEntries(pDict2) ) {
+        if ( ! pDict1 -> hasSameEntries(pDict2) ) {
             push(pFalseConstant);
             return;
         }
-#if 0
-      long n = pDict1 -> size();
-      for ( long k = 0; k < n; k++ ) {
-         push(pDict1 -> retrieve(pDict1 -> getKey(k)));
-         push(pDict2 -> retrieve(pDict2 -> getKey(k)));
-         operatorEq();
-         if ( pFalseConstant == pop() ) {
-            push(pFalseConstant);
-            return;
-         }
-      }
-#endif
+
         push(pTrueConstant);
         }
         return;
 
-    case object::objTypeMatrix:
-printf("wtf");
-    case object::objTypeArray: {
+    case object::objectType::objTypeMatrix:
+    case object::objectType::objTypeArray: {
 
-        if ( ! ( object::objTypeArray == pAny2 -> ObjectType() ) && ! ( object::objTypeMatrix == pAny2 -> ObjectType() ) ) {
+        if ( ! ( object::objectType::objTypeArray == pAny2 -> ObjectType() ) && 
+                ! ( object::objectType::objTypeMatrix == pAny2 -> ObjectType() ) ) {
             push(pFalseConstant);
             return;
         }
-        array *pDict1 = reinterpret_cast<array *>(pAny1);
-        array *pDict2 = reinterpret_cast<array *>(pAny2);
-        if ( pDict1 -> size() != pDict2 -> size() ) {
+        array *pArray1 = reinterpret_cast<array *>(pAny1);
+        if ( object::objectType::objTypeMatrix == pAny1 -> ObjectType() )
+            pArray1 = static_cast<array *>(reinterpret_cast<matrix *>(pAny1));
+
+        array *pArray2 = reinterpret_cast<array *>(pAny2);
+        if ( object::objectType::objTypeMatrix == pAny1 -> ObjectType() )
+            pArray1 = static_cast<array *>(reinterpret_cast<matrix *>(pAny2));
+
+        if ( ! ( pArray1 -> size() == pArray2 -> size() ) ) {
             push(pFalseConstant);
             return;
         }
-        long n = pDict1 -> size();
+
+        long n = pArray1 -> size();
         for ( long k = 0; k < n; k++ ) {
-            push(pDict1 -> getElement(k));
-            push(pDict2 -> getElement(k));
+            push(pArray1 -> getElement(k));
+            push(pArray2 -> getElement(k));
             operatorEq();
             if ( pFalseConstant == pop() ) {
-            push(pFalseConstant);
-            return;
+                push(pFalseConstant);
+                return;
             }
         }
+
         push(pTrueConstant);
         }
         return;
@@ -1707,7 +1821,7 @@ printf("wtf");
 
     for ( long k = 0; k < 2; k++ ) {
 
-        if ( object::procedure == pObject -> ObjectType() ) {
+        if ( object::objectType::procedure == pObject -> ObjectType() ) {
             pop();
             reinterpret_cast<procedure *>(pObject) -> execute();
             return;
@@ -1866,17 +1980,17 @@ printf("wtf");
     }
 
 
-   void job::operatorFlush() {
+    void job::operatorFlush() {
 /*
-   flush 
-      – flush –
+    flush 
+        – flush –
 
-   causes any buffered characters for the standard output file to be delivered immediately.
-   In general, a program requiring output to be sent immediately, such as
-   during real-time, two-way interactions, should call flush after generating that output.
+    causes any buffered characters for the standard output file to be delivered immediately.
+    In general, a program requiring output to be sent immediately, such as
+    during real-time, two-way interactions, should call flush after generating that output.
 */
-   return;
-   }
+    return;
+    }
 
     void job::operatorFindfont() {
 /*
@@ -2111,7 +2225,7 @@ printf("wtf");
     object *pSource = pop();
 
     switch ( pSource -> ObjectType() ) {
-    case object::objTypeArray: {
+    case object::objectType::objTypeArray: {
         array *pArray = reinterpret_cast<array *>(pSource);
         long n = pArray -> size();
         for ( long k = 0; k < n; k++ ) {
@@ -2122,15 +2236,15 @@ printf("wtf");
         }
         break;
 
-    case object::font:
+    case object::objectType::font:
         static_cast<dictionary *>(reinterpret_cast<font *>(pSource)) -> forAll(pProc);
         break;
 
-    case object::dictionary: 
+    case object::objectType::dictionaryObject: 
         reinterpret_cast<dictionary *>(pSource) -> forAll(pProc);
         break;
 
-    case object::string: {
+    case object::valueType::string: {
         __debugbreak();
         }
         break;
@@ -2146,48 +2260,52 @@ printf("wtf");
     return;
     }
 
-   void job::operatorGe() {
+    void job::operatorGe() {
 /*
-   ge 
-      num1 num2 ge bool
-      string1 string2 ge bool
+    ge 
+        num1 num2 ge bool
+        string1 string2 ge bool
 
-   pops two objects from the operand stack and pushes true if the first operand is
-   greater than or equal to the second, or false otherwise. If both operands are numbers,
-   ge compares their mathematical values. If both operands are strings, ge
-   compares them element by element, treating the elements as integers in the range
-   0 to 255, to determine whether the first string is lexically greater than or equal to
-   the second. If the operands are of other types or one is a string and the other is a
-   number, a typecheck error occurs.
+    pops two objects from the operand stack and pushes true if the first operand is
+    greater than or equal to the second, or false otherwise. If both operands are numbers,
+    ge compares their mathematical values. If both operands are strings, ge
+    compares them element by element, treating the elements as integers in the range
+    0 to 255, to determine whether the first string is lexically greater than or equal to
+    the second. If the operands are of other types or one is a string and the other is a
+    number, a typecheck error occurs.
 */
-   object *p2 = pop();
-   object *p1 = pop();
+    object *p2 = pop();
+    object *p1 = pop();
 
-   if ( object::number == p1 -> ObjectType() && object::number == p2 -> ObjectType() ) {
-      double v1 = 0.0;
-      if ( object::real == p1 -> ValueType() )
-         v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
-      else
-         v1 = (double) p1 -> IntValue();
-      double v2 = 0.0;
-      if ( object::real == p2 -> ValueType() )
-         v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
-      else
-         v2 = (double) p2 -> IntValue();
-      if ( v1 >= v2 )
-         push(pTrueConstant);
-      else 
-         push(pFalseConstant);
-      return;
-   }
+    if ( object::objectType::number == p1 -> ObjectType() && object::objectType::number == p2 -> ObjectType() ) {
+        double v1 = 0.0;
+        double v2 = 0.0;
+        if ( object::valueType::real == p1 -> ValueType() )
+            v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
+        else
+            v1 = (double)p1 -> IntValue();
+        if ( object::valueType::real == p2 -> ValueType() )
+            v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
+        else
+            v2 = (double)p2 -> IntValue();
+        if ( v1 >= v2 )
+            push(pTrueConstant);
+        else 
+            push(pFalseConstant);
+        return;
+    }
 
-   if ( 0 <= strcmp(p1 -> Contents(),p2 -> Contents()) )
-      push(pTrueConstant);
-   else
-      push(pFalseConstant);
+    //
+    // I'm not sure if strcmp is equivalent to the 
+    // intended test
+    //
+    if ( 0 <= strcmp(p1 -> Contents(),p2 -> Contents()) )
+        push(pTrueConstant);
+    else
+        push(pFalseConstant);
 
-   return;
-   }
+    return;
+    }
 
     void job::operatorGet() {
 /*
@@ -2211,49 +2329,64 @@ printf("wtf");
 
 */
     object *pIndex = pop();
-    object *pTarget = pop();
-    dictionary *pFontDictionary = NULL;
+    object *pSource = pop();
+    dictionary *pDictionary = NULL;
 
-    switch ( pTarget -> ObjectType() ) {
-
-    case object::objTypeArray:
-        push(reinterpret_cast<array *>(pTarget) -> getElement(pIndex -> IntValue()));
+    switch ( pSource -> ObjectType() ) {
+    case object::objectType::objTypeArray:
+        push(reinterpret_cast<array *>(pSource) -> getElement(pIndex -> IntValue()));
         return;
 
-    case object::objTypeMatrix:
-        push(reinterpret_cast<matrix *>(pTarget) -> getElement(pIndex -> IntValue()));
+    case object::objectType::objTypeMatrix:
+        push(reinterpret_cast<matrix *>(pSource) -> getElement(pIndex -> IntValue()));
         return;
 
-    case object::packedarray: {
-        __debugbreak();
-        }
-        break;
+    case object::objectType::packedarray:
+        push(reinterpret_cast<procedure *>(pSource) -> entries[pIndex -> IntValue()]);
+        return;
 
-    case object::font:
-        pFontDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pTarget));
-
-    case object::dictionary: {
-        if ( NULL == pFontDictionary )
-            pFontDictionary = reinterpret_cast<dictionary *>(pTarget);
-
-        object *pObject = pFontDictionary -> retrieve(pIndex -> Name());
-
+    case object::objectType::font:
+        pDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pSource));
+    case object::objectType::dictionaryObject: {
+        if ( NULL == pDictionary )
+            pDictionary = reinterpret_cast<dictionary *>(pSource);
+        object *pObject = pDictionary -> retrieve(pIndex -> Name());
         if ( NULL == pObject ) {
             char szError[1024];
-            sprintf(szError,"operator get: cannot find %s in font or dictionary %s (type: %s)",pIndex -> Name(),pFontDictionary -> Name(),pFontDictionary -> TypeName());
+            sprintf(szError,"operator get: cannot find %s in font or dictionary %s (type: %s)",pIndex -> Name(),pDictionary -> Name(),pDictionary -> TypeName());
             throw new undefined(szError);
         }
-
         push(pObject);
         }
         break;
 
-    case object::binaryString:
-    case object::constantString:
-    case object::hexString:
-    case object::string:
-        push(new (CurrentObjectHeap()) object(this,(long)pTarget -> get(pIndex -> IntValue())));
-        break;
+    case object::objectType::atom: {
+        switch ( pSource -> ValueType() ) {
+        case object::valueType::constantString:
+            push(new (CurrentObjectHeap()) object(this,(long)reinterpret_cast<constantString *>(pSource) -> get(pIndex -> IntValue())));
+            break;
+
+        case object::valueType::string:
+            push(new (CurrentObjectHeap()) object(this,(long)reinterpret_cast<string *>(pSource) -> get(pIndex -> IntValue())));
+            break;
+
+        case object::valueType::binaryString:
+            push(new (CurrentObjectHeap()) object(this,(long)reinterpret_cast<binaryString *>(pSource) -> get(pIndex -> IntValue())));
+            break;
+
+        default:
+            char szError[1024];
+            sprintf(szError,"operator get: typecheck: source object %s is not string, but is a %s",pSource -> Name(),pSource -> ValueTypeName());
+            throw new typecheck(szError);
+        }
+
+        }
+
+    default: {
+        char szError[1024];
+        sprintf(szError,"operator get: typecheck: source object %s has an invalid type (%s)",pSource -> Name(),pSource -> ValueTypeName());
+        throw new typecheck(szError);
+        }
 
     }
 
@@ -2282,40 +2415,40 @@ printf("wtf");
     return;
     }
 
-   void job::operatorGt() {
+    void job::operatorGt() {
 /*
-   gt 
-      num1 num2 gt bool
-      string1 string2 gt bool
+    gt 
+        num1 num2 gt bool
+        string1 string2 gt bool
 
-   pops two objects from the operand stack and pushes true if the first operand is
-   greater than the second, or false otherwise. If both operands are numbers, gt compares
-   their mathematical values. If both operands are strings, gt compares them
-   element by element, treating the elements as integers in the range 0 to 255, to
-   determine whether the first string is lexically greater than the second. If the operands
-   are of other types or one is a string and the other is a number, a typecheck
-   error occurs.
+    pops two objects from the operand stack and pushes true if the first operand is
+    greater than the second, or false otherwise. If both operands are numbers, gt compares
+    their mathematical values. If both operands are strings, gt compares them
+    element by element, treating the elements as integers in the range 0 to 255, to
+    determine whether the first string is lexically greater than the second. If the operands
+    are of other types or one is a string and the other is a number, a typecheck
+    error occurs.
 */
-   object *p2 = pop();
-   object *p1 = pop();
-   
-   if ( object::number == p1 -> ObjectType() && object::number == p2 -> ObjectType() ) {
-      double v1 = 0.0;
-      if ( object::real == p1 -> ValueType() )
-         v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
-      else
-         v1 = (double) p1 -> IntValue();
-      double v2 = 0.0;
-      if ( object::real == p2 -> ValueType() )
-         v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
-      else
-         v2 = (double) p2 -> IntValue();
-      if ( v1 > v2 )
-         push(pTrueConstant);
-      else 
-         push(pFalseConstant);
-      return;
-   }
+    object *p2 = pop();
+    object *p1 = pop();
+
+    if ( object::objectType::number == p1 -> ObjectType() && object::objectType::number == p2 -> ObjectType() ) {
+        double v1 = 0.0;
+        double v2 = 0.0;
+        if ( object::valueType::real == p1 -> ValueType() )
+            v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
+        else
+            v1 = (double)p1 -> IntValue();
+        if ( object::valueType::real == p2 -> ValueType() )
+            v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
+        else
+            v2 = (double)p2 -> IntValue();
+        if ( v1 > v2 )
+            push(pTrueConstant);
+        else 
+            push(pFalseConstant);
+        return;
+    }
 
    if ( 0 < strcmp(p1 -> Contents(),p2 -> Contents()) )
       push(pTrueConstant);
@@ -2495,7 +2628,7 @@ printf("wtf");
 
     object *pDict = pop();
 
-    if ( object::objectType::dictionary == pDict -> ObjectType() ) 
+    if ( object::objectType::dictionaryObject == pDict -> ObjectType() ) 
         return;
 
     pop();
@@ -2503,6 +2636,9 @@ printf("wtf");
     pop();
     pop();
 
+    char szMessage[1024];
+    sprintf(szMessage,"A call to the unimplemented operator imagemask was made");
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_ErrorNotification(szMessage);
     return;
     }
 
@@ -2528,7 +2664,7 @@ printf("wtf");
 
     long n = pCount -> IntValue();
 
-    std::list<object *> replacements;
+    std::list<object *,containerAllocator<object *>> replacements;
     for ( long k = 0; k < n; k++ )
         replacements.insert(replacements.end(),pop());
 
@@ -2562,11 +2698,11 @@ printf("wtf");
     components tx and ty of the transformation matrix. The distance vectors are thus
     positionless in both the original and target coordinate spaces, making this operator
 */
-    POINT_TYPE x,y;
+    FLOAT x,y;
     object *pTopObject = pop();
 
     switch ( pTopObject -> ObjectType() ) {
-    case object::objTypeMatrix: {
+    case object::objectType::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
@@ -2583,32 +2719,57 @@ printf("wtf");
 
     push(new (CurrentObjectHeap()) object(this,x));
     push(new (CurrentObjectHeap()) object(this,y));
+
     return;
     }
 
-   void job::operatorISOLatin1Encoding() {
+    void job::operatorInitclip() {
 /*
-   ISOLatin1Encoding 
-      – ISOLatin1Encoding array
+    initclip – initclip –
 
-   pushes the ISO Latin-1 encoding vector on the operand stack. This is a
-   256-element literal array object, indexed by character codes, whose values are the
-   character names for those codes. ISOLatin1Encoding is not an operator; it is a
-   name in systemdict associated with the array object.
+    sets the current clipping path in the graphics state to the default clipping path for
+    the current output device. This path usually corresponds to the boundary of the
+    maximum imageable area on the current device. For a page device, its dimensions
+    are those established by the setpagedevice operator. For a display device, the 
+    clipping region established by initclip is not well defined.
 
-   Latin-text fonts produced by Adobe usually use the StandardEncoding encoding
-   vector. However, they contain all the characters needed to support the use of
-   ISOLatin1Encoding. A font can have its Encoding array changed to
-   ISOLatin1Encoding by means of the procedure shown in Section 5.9.1, “Changing
-   the Encoding Vector.” The contents of ISOLatin1Encoding are documented in
-   Appendix E.
+    There are few situations in which a PostScript program should invoke initclip explicitly. 
+    A page description that invokes initclip usually produces incorrect results
+    if it is embedded within another, composite page.
 
-   Errors: stackoverflow
-   See Also: StandardEncoding, findencoding
+    Errors: none
+    See Also: clip, eoclip, rectclip, clippath, initgraphics
+
 */
-   push(pISOLatin1Encoding);
-   return;
-   }
+    char szMessage[1024];
+    sprintf(szMessage,"A call to the unimplemented operator initclip was made");
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_ErrorNotification(szMessage);
+    return;
+    }
+
+    void job::operatorISOLatin1Encoding() {
+/*
+    ISOLatin1Encoding 
+        – ISOLatin1Encoding array
+
+    pushes the ISO Latin-1 encoding vector on the operand stack. This is a
+    256-element literal array object, indexed by character codes, whose values are the
+    character names for those codes. ISOLatin1Encoding is not an operator; it is a
+    name in systemdict associated with the array object.
+
+    Latin-text fonts produced by Adobe usually use the StandardEncoding encoding
+    vector. However, they contain all the characters needed to support the use of
+    ISOLatin1Encoding. A font can have its Encoding array changed to
+    ISOLatin1Encoding by means of the procedure shown in Section 5.9.1, “Changing
+    the Encoding Vector.” The contents of ISOLatin1Encoding are documented in
+    Appendix E.
+
+    Errors: stackoverflow
+    See Also: StandardEncoding, findencoding
+*/
+    push(pISOLatin1Encoding);
+    return;
+    }
 
     void job::operatorInitmatrix() {
 
@@ -2631,8 +2792,7 @@ printf("wtf");
     See Also: defaultmatrix, setmatrix, currentmatrix
 */
 
-operatorDebug();
-    //currentGS() -> initMatrix();
+    currentGS() -> defaultMatrix();
     return;
     }
 
@@ -2654,7 +2814,7 @@ operatorDebug();
     object *pTopObject = pop();
 
     switch ( pTopObject -> ObjectType() ) {
-    case object::objTypeMatrix: {
+    case object::objectType::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
@@ -2685,7 +2845,8 @@ operatorDebug();
     object *pKey = pop();
     object *pDictObject = pop();
     dictionary *pDictionary = NULL;
-    if ( object::objectType::dictionary == pDictObject -> ObjectType() ) 
+
+    if ( object::objectType::dictionaryObject == pDictObject -> ObjectType() ) 
         pDictionary = reinterpret_cast<dictionary *>(pDictObject);
     else if ( object::objectType::font == pDictObject -> ObjectType() )
         pDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pDictObject));
@@ -2700,6 +2861,7 @@ operatorDebug();
         push(pTrueConstant);
     else
         push(pFalseConstant);
+
     return;
     }
 
@@ -2740,33 +2902,35 @@ operatorDebug();
     long length = 0L;
 
     switch ( pItem -> ObjectType() ) {
-   
-    case object::objTypeArray:
+    case object::objectType::objTypeArray:
         length = reinterpret_cast<array *>(pItem) -> size();
         break;
 
-    case object::font:
+    case object::objectType::font:
         length = static_cast<dictionary *>(reinterpret_cast<font *>(pItem)) -> size();
         break;
 
-    case object::dictionary:
+    case object::objectType::dictionaryObject:
         length = reinterpret_cast<dictionary *>(pItem) -> size();
         break;
 
-    case object::atom: {
+    case object::objectType::atom: {
 
         switch ( pItem -> ValueType() ) {
-        case object::string:
-        case object::character:
+        case object::valueType::string:
             length = (long)reinterpret_cast<string *>(pItem) -> length();
             break;
 
-        case object::constantString:
+        case object::valueType::constantString:
             length = (long)reinterpret_cast<constantString *>(pItem) -> length();
             break;
+			
+        case object::valueType::character:
+            length = 1;
+            break;
 
-        case object::binaryString:
-            length = (DWORD)strlen(pItem -> Contents()) / 2;
+        case object::valueType::binaryString:
+            length = reinterpret_cast<binaryString *>(pItem) -> length();
             break;
 
         default: 
@@ -2830,10 +2994,9 @@ operatorDebug();
 
     operatorWhere();
 
-    if ( top() == pFalseConstant ) {
+    if ( pop() == pFalseConstant ) {
 
-        pop();
-
+#if 0
         std::map<size_t,name *>::iterator it = validNames.find(std::hash<std::string>()(pKey -> Name()));
 
         if ( ! ( it == validNames.end() ) ) {
@@ -2842,14 +3005,11 @@ operatorDebug();
         }
 
         push(pKey);
-        {
+#endif
         char szMessage[1024];
         sprintf_s<1024>(szMessage,"%s,Line: %d. key %s is undefined",__FUNCTION__,__LINE__,pKey -> Name());
         throw new undefined(szMessage);
-        }
     }
-
-    pop();
 
     dictionary *pDictionary = reinterpret_cast<dictionary *>(pop());
 
@@ -2858,21 +3018,21 @@ operatorDebug();
     return;
     }
 
-   void job::operatorLoop() {
+    void job::operatorLoop() {
 /*
-   loop 
-      proc loop –
+    loop 
+        proc loop –
 
-   repeatedly executes proc until proc executes the exit operator, at which point
-   interpretation resumes at the object next in sequence after the loop operator.
-   Control also leaves proc if the stop operator is executed. If proc never executes exit
-   or stop, an infinite loop results, which can be broken only via an external interrupt
-   (see interrupt).
+    repeatedly executes proc until proc executes the exit operator, at which point
+    interpretation resumes at the object next in sequence after the loop operator.
+    Control also leaves proc if the stop operator is executed. If proc never executes exit
+    or stop, an infinite loop results, which can be broken only via an external interrupt
+    (see interrupt).
 */
-   object *pProcedure = pop();
-   hasExited = false;
-   while ( ! hasExited )
-      pProcedure -> execute();
+    object *pProcedure = pop();
+    hasExited = false;
+    while ( ! hasExited )
+        pProcedure -> execute();
 
-   return;
-   }
+    return;
+    }

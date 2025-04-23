@@ -41,7 +41,7 @@ This is the MIT License
     } else
         n = (long)(*ppEnd - pStart);
 
-    pszStringRepresentation = new char[n];
+    pszStringRepresentation = (char *)allocate(n * sizeof(char));
     memset(pszStringRepresentation,0,n * sizeof(char));
 
     strncpy(pszStringRepresentation,pStart,n - 1);
@@ -56,14 +56,6 @@ This is the MIT License
     procedure::procedure(job *pj) : procedure(pj,NULL,NULL,NULL,NULL) {}
 
     procedure::procedure(job *pj,char *pStart,char **ppEnd,long *pLineNumber) : procedure(pj,pStart,NULL,ppEnd,pLineNumber) {}
-
-
-    procedure::~procedure() {
-    entries.clear();
-    if ( ! ( NULL == pszStringRepresentation ) )
-        delete pszStringRepresentation;
-    return;
-    }
 
 
     void procedure::insert(object *p) {
@@ -132,8 +124,8 @@ This is the MIT License
 
     char *procedure::ToString() {
 
-    if ( pszStringRepresentation )
-        delete [] pszStringRepresentation;
+    //if ( pszStringRepresentation )
+    //    delete [] pszStringRepresentation;
 
     long n = 0L;
     for ( object *pObj : entries )
@@ -142,7 +134,7 @@ This is the MIT License
     n += 4 * (long)entries.size();
     n += 4;
 
-    pszStringRepresentation = new char[n];
+    pszStringRepresentation = (char *)allocate(n * sizeof(char));
 
     memset(pszStringRepresentation,0,n * sizeof(char));
 

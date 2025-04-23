@@ -23,12 +23,27 @@ This is the MIT License
 
 #pragma once
 
-#include "object.h"
+#include "PostScriptInterpreter.h"
 
-   class structureSpec : public object {
-   public:
+    class structureSpec {
+    public:
 
-      structureSpec(job *pJob,char *pStart,char *pEnd);
-      ~structureSpec();
+        structureSpec(char *ps,char *pe) {
+            //pszValue = new char[pe - ps + 1];
+            //char *p = pszValue + (pe - ps);
+            //*p = '\0';
+            //strncpy(pszValue,ps,(pe - ps));
+            //p--;
+            //while ( 0x0A == *p || 0x0D == *p )
+            //    p--;
+            //*(p + 1) = '\0';
+        }
 
-   };
+        ~structureSpec() {
+            delete [] pszValue;
+        }
+
+    private:
+
+        char *pszValue{NULL};
+    };

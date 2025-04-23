@@ -23,7 +23,7 @@ This is the MIT License
 
 #pragma once
 
-#include "string.h"
+#include "PostScript objects/string.h"
 
    class constantString : public string {
    public:

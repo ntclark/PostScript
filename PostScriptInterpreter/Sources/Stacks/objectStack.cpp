@@ -21,7 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "Stacks\objectStack.h"
+#include "Stacks/objectStack.h"
 
 #include "error.h"
 

@@ -29,7 +29,7 @@ This is the MIT License
       comment(char *ps,char *pe) : pStart(ps), pEnd(pe) {};
       ~comment() {};
 
-   public:
+   private:
 
       char *pStart,*pEnd;
 

@@ -257,14 +257,17 @@ MessageBox(NULL,"Not implemented","Error",MB_OK);
 
     for ( long k = 0; k < countSimpleGlyphs; k++ )
         delete ppSimpleGlyphs[k];
+
     delete [] ppSimpleGlyphs;
 
     for ( long k = 0; k < countCompositeGlyphs; k++ )
         delete ppCompositeGlyphs[k];
+
     delete [] ppCompositeGlyphs;
 
     for ( long k = 0; k < countComponents; k++ )
         delete ppGlyphRecord[k];
+
     delete [] ppGlyphRecord;
 
     delete [] ppGlyphGeometrys;

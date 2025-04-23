@@ -66,8 +66,11 @@
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\Utils\getHBITMAPFromPixels.cpp">
-      <Filter>Source Files\Common</Filter>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\getHBITMAPFromPixels.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicElements.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

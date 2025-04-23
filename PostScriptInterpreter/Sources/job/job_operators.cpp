@@ -92,6 +92,7 @@ This is the MIT License
     pSystemDict -> put("image",&job::operatorImage);
     pSystemDict -> put("imagemask",&job::operatorImagemask);
     pSystemDict -> put("index",&job::operatorIndex);
+    pSystemDict -> put("initclip",&job::operatorInitclip);
     pSystemDict -> put("initmatrix",&job::operatorInitmatrix);
     pSystemDict -> put("ISOLatin1Encoding",&job::operatorISOLatin1Encoding);
     pSystemDict -> put("itransform",&job::operatorItransform);

@@ -181,8 +181,10 @@ This is the MIT License
 
     }
 
-    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : fillPathsMap )
+    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : fillPathsMap ) {
+        pPair.second -> clear();
         delete pPair.second;
+    }
 
     fillPathsMap.clear();
 
@@ -229,13 +231,14 @@ This is the MIT License
 
     }
 
-    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : strokePathsMap )
+    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : strokePathsMap ) {
+        pPair.second -> clear();
         delete pPair.second;
+    }
 
     strokePathsMap.clear();
 
-    pIGraphicElements -> pFirstPath = NULL;
-    pIGraphicElements -> pCurrentPath = NULL;
+    pIGraphicElements -> clearPaths();
 
     shutdownRenderer();
 

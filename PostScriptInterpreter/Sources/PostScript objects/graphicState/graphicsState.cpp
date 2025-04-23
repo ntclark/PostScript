@@ -36,7 +36,8 @@ This is the MIT License
 
     gdiParameters graphicsState::theGDIParameters;
     pathParameters graphicsState::thePathParameters;
-    psTransformsStack graphicsState::psXformsStack;
+    psTransformsStack *graphicsState::pPSXformsStack = NULL;
+    long graphicsState::instanceCount = 0;
 
     GS_POINT::GS_POINT(GS_POINT *pPointd) {
         x = pPointd -> x;
@@ -46,10 +47,15 @@ This is the MIT License
 
     graphicsState::graphicsState(job *pj) : pJob(pj) {
 
+    instanceCount++;
+
+    if ( 1 == instanceCount )
+        pPSXformsStack = new psTransformsStack();
+
     setFont(findFont("Courier"));
 
-    if ( ! psXformsStack.isInitialized() )
-        psXformsStack.initialize(pJob);
+    //if ( ! pPSXformsStack -> isInitialized() )
+    pPSXformsStack -> initialize(pJob);
 
     SetSurface(pJob -> hwndSurface,0);
 
@@ -57,20 +63,19 @@ This is the MIT License
     }
 
 
-    graphicsState::~graphicsState() {
-    return;
-    }
-
-
     void graphicsState::initialize() {
-    psXformsStack.initialize(pJob);
+    pPSXformsStack -> initialize(pJob);
     return;
     }
 
 
-    void graphicsState::uninitialize() {
-    while ( 0 < psXformsStack.size() )
-        psXformsStack.pop();
+    graphicsState::~graphicsState() {
+    pPSXformsStack -> clear();
+    instanceCount--;
+    if ( 0 == instanceCount ) {
+        delete pPSXformsStack;
+        pPSXformsStack = NULL;
+    }
     return;
     }
 

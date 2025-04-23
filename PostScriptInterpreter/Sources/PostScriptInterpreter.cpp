@@ -22,7 +22,7 @@ This is the MIT License
 */
 
 #include "PostScriptInterpreter.h"
-#include "error.h"
+#include "job.h"
 
     IFontManager *PostScriptInterpreter::pIFontManager = NULL;
     IRenderer *PostScriptInterpreter::pIRenderer = NULL;
@@ -97,6 +97,9 @@ This is the MIT License
 
 
     PostScriptInterpreter::~PostScriptInterpreter() {
+
+    if ( pJob )
+        delete pJob;
 
     if ( ! ( NULL == pIRendererNotifications ) )
         delete pIRendererNotifications;

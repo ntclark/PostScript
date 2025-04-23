@@ -23,31 +23,33 @@ This is the MIT License
 
 #pragma once
 
-#include "object.h"
+#include "job.h"
+#include "PostScript objects/object.h"
+#include "PostScript objects/containerAllocator.h"
+
 #include <map>
 
-   class string : public object {
-   public:
+    class string : public object {
+    public:
 
-      string(job *pJob,char *pszValue); 
-      string(job *pJob,char *pStart,char *pEnd);
+        string(job *pJob,char *pszValue); 
+        string(job *pJob,char *pStart,char *pEnd);
 
-      ~string();
+        virtual BYTE get(long index);
+        virtual void put(long index,BYTE v);
 
-      virtual BYTE get(long index);
-      virtual void put(long index,BYTE v);
+        size_t length() { return NULL == pszUnescapedString ? strlen(Contents()) : strlen(pszUnescapedString); };
 
-      size_t length() { return NULL == pszUnescapedString ? strlen(Contents()) : strlen(pszUnescapedString); };
+    protected:
 
-   protected:
+        string(job *pJob,object::valueType valueType);
+        string(job *pJob,char *pszValue,object::valueType valueType);
+        string(job *pJob,char *pStart,char *pEnd,object::valueType valueType);
 
-      string(job *pJob,object::valueType valueType);
-      string(job *pJob,char *pszValue,object::valueType valueType);
-      string(job *pJob,char *pStart,char *pEnd,object::valueType valueType);
+    private:
 
-   private:
+        char *pszUnescapedString{NULL};
 
-      char *pszUnescapedString{NULL};
-      std::map<uint16_t,BYTE> escapedValues;
+        std::map<uint16_t,BYTE,std::less<uint16_t>,containerAllocator<BYTE>> escapedValues;
 
-   };
+    };

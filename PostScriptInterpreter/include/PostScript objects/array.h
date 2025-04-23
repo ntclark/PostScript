@@ -25,7 +25,8 @@ This is the MIT License
 
 #include <map>
 
-#include "object.h"
+#include "PostScript objects/object.h"
+#include "PostScript objects/containerAllocator.h"
 
 #define A 0
 #define B 1
@@ -45,12 +46,10 @@ class job;
       array(job *pJob,long initialCount);
       array(job *pJob,char *pszName,long initialCount,char *pszValues);
 
-      virtual ~array();
-
       void insert(object *);
 
-      virtual void putElement(long index,object *);
-      virtual object *getElement(long index);
+      void putElement(long index,object *);
+      object *getElement(long index);
 
       virtual void setValue(long index,POINT_TYPE v);
 
@@ -68,7 +67,7 @@ class job;
 
    protected:
 
-      std::map<long,object *> entries;
+      std::map<long,object *,std::less<long>,containerAllocator<object *>> entries;
 
       friend class job;
    };

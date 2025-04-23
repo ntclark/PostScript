@@ -29,6 +29,5 @@ This is the MIT License
    public:
 
       mark(job *pJob,object::valueType);
-      ~mark();
 
    };

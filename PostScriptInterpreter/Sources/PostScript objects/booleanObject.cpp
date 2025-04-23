@@ -32,8 +32,3 @@ This is the MIT License
       value = false;
    return;
    }
-
-
-   booleanObject::~booleanObject() {
-   return;
-   }

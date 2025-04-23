@@ -19,8 +19,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/#include "job.h"
+*/
 
+#include "job.h"
 
 #include "pathParameters.h"
 
@@ -135,7 +136,7 @@ This is the MIT License
 
     void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
     PostScriptInterpreter::pIFontManager -> RenderGlyph(bGlyph,
-                                        (UINT_PTR)psXformsStack.top() -> XForm(),
+                                        (UINT_PTR)pPSXformsStack -> back() -> XForm(),
                                         (UINT_PTR)pathParameters::ToDeviceSpace(),
                                             pStartPoint,pEndPoint);
     return;
@@ -200,7 +201,7 @@ This is the MIT License
     pJob -> push(CurrentFont());
     pJob -> push(pCharacterName);
 
-    psXformsStack.gSave();
+    pPSXformsStack -> gSave();
 
     translate(currentUserSpacePoint.x,currentUserSpacePoint.y);
 
@@ -208,7 +209,7 @@ This is the MIT License
 
     pJob -> executeProcedure(pBuildGlyph);
 
-    psXformsStack.gRestore();
+    pPSXformsStack -> gRestore();
 
     return;
     }

@@ -23,12 +23,12 @@ This is the MIT License
 
 #pragma once
 
-
-#include <stack>
+#include <list>
+#include "PostScript objects/containerAllocator.h"
 
 class matrix;
 
-    class psTransformsStack : public std::stack<matrix *> {
+    class psTransformsStack : public std::list<matrix */*,containerAllocator<matrix *>*/> {
     public:
 
         psTransformsStack();

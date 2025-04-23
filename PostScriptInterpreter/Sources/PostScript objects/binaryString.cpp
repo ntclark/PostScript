@@ -21,24 +21,15 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include <stdio.h>
-
 #include "job.h"
-#include "PostScript objects\binaryString.h"
-#include "error.h"
+#include "PostScript objects/binaryString.h"
 
 
     binaryString::binaryString(job *pJob,char *pszContents,BYTE *pBinary,long theLength) : 
         dwLength(theLength),
         string(pJob,pszContents,object::valueType::binaryString) { 
-    pbData = new BYTE[dwLength];
+    pbData = (BYTE *)allocate(dwLength * sizeof(BYTE));
     memcpy(pbData,pBinary,dwLength);
-    return;
-    }
-
-    binaryString::~binaryString() {
-    if ( ! ( NULL == pbData ) )
-        delete [] pbData;
     return;
     }
 

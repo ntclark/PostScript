@@ -32,7 +32,6 @@ This is the MIT License
 
         colorSpace(job *,object *);
         colorSpace(job *,char *pszName);
-        ~colorSpace();
 
         void setColor();
 

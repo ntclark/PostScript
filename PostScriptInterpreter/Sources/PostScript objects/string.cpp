@@ -23,12 +23,8 @@ This is the MIT License
 
 #include <stdio.h>
 
-#include "PostScript objects\string.h"
-#include "PostScript objects\binaryString.h"
-
 #include "job.h"
-
-#include "error.h"
+#include "PostScript objects\string.h"
 
     string::string(job *pJob,char *pszValue) : string(pJob,pszValue,NULL) { }
 
@@ -47,7 +43,7 @@ This is the MIT License
 
     DWORD n = (DWORD)strlen(Contents()) + 1;
 
-    pszUnescapedString  = new char[n];
+    pszUnescapedString = (char *)allocate(n * sizeof(char));
 
     char *pLast = pszUnescapedString + n;
     *pLast = '\0';
@@ -61,7 +57,8 @@ This is the MIT License
         if ( isdigit(*(pSlash + 1)) ) {
 
             char *pDigit = pSlash + 1;
-            while ( isdigit(*pDigit) && pDigit < pLast ) pDigit++;
+            while ( isdigit(*pDigit) && pDigit < pLast )
+                pDigit++;
             char c = *pDigit;
             *pDigit = '\0';
 
@@ -72,7 +69,7 @@ This is the MIT License
             long value;
             sscanf(szOctal,"%o",&value);
 
-            char *pszRemainder = new char[pLast - pDigit];
+            char *pszRemainder = ::new char[pLast - pDigit];
             strcpy(pszRemainder,pDigit);
             *pSlash = '#';
             strcpy(pSlash + 1,pszRemainder);
@@ -80,22 +77,22 @@ This is the MIT License
             escapedValues[(uint16_t)(pSlash - pszUnescapedString)] = (BYTE)value;
 
             delete [] pszRemainder;
+
             pSlash = strchr(pSlash + 1,'\\');
+
             continue;
         }
 
-        char *pszRemainder = new char[pLast - pSlash];
+        char *pszRemainder = ::new char[pLast - pSlash];
+
         strcpy(pszRemainder,pSlash + 1);
         strcpy(pSlash,pszRemainder);
+
         delete [] pszRemainder;
+
         pSlash = strchr(pSlash,'\\');
     }
 
-    return;
-    }
-
-
-    string::~string() {
     return;
     }
 
@@ -117,6 +114,7 @@ This is the MIT License
         pszNew[index + 1] = '\0';
         memcpy(pszNew,Contents(),strlen(Contents()));
         Contents(pszNew);
+        delete [] pszNew;
     }
 
     Contents()[index] = (char)v;

@@ -24,7 +24,6 @@ This is the MIT License
 #include "PostScriptInterpreter.h"
 #include "job.h"
 
-
     HRESULT PostScriptInterpreter::SetSource(char *pszFileName) {
 
     struct _stat fstat;
@@ -50,7 +49,7 @@ This is the MIT License
     }
 
 
-    HRESULT PostScriptInterpreter::Parse(char *pszFileName) {
+    HRESULT PostScriptInterpreter::Parse(char *pszFileName,BOOL autoStart) {
 
     if ( pJob )
         delete pJob;
@@ -61,6 +60,15 @@ This is the MIT License
 
     if ( ! ( S_OK == rc ) )
         return E_FAIL;
+
+    if ( FALSE == autoStart )
+        return S_OK;
+
+//_CrtSetBreakAlloc(184);
+//_CrtSetBreakAlloc(185);
+//_CrtSetBreakAlloc(186);
+//_CrtSetBreakAlloc(187);
+//_CrtSetBreakAlloc(4395);
 
     pJob = new job(szCurrentPostScriptFile,hwndClient);
 
@@ -73,7 +81,7 @@ This is the MIT License
     HRESULT PostScriptInterpreter::ParseText(char *pszStream) {
     if ( pJob )
         delete pJob;
-    pJob = new job();
+    pJob = new job(NULL,NULL);
     WaitForSingleObject(pJob -> hsemIsInitialized,INFINITE);
     pJob -> execute(pszStream);
     return S_OK;

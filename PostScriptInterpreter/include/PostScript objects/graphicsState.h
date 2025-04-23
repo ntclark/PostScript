@@ -41,6 +41,7 @@ This is the MIT License
         void setMatrix(object *pMatrix);
         void currentMatrix();
         void revertMatrix();
+        void defaultMatrix();
 
         void concat(matrix *);
         void concat(array *);
@@ -131,7 +132,6 @@ This is the MIT License
         void setCacheDevice();
 
         void initialize();
-        void uninitialize();
 
         void gSave();
         void gRestore();
@@ -165,6 +165,8 @@ This is the MIT License
 
         POINTF *CurrentPoint();
 
+        font *CurrentFont() { return font::CurrentFont(); }
+
         static void RenderGeometry();
 
         static void SetSurface(HWND hwndSurface,long pageNumber);
@@ -177,8 +179,6 @@ This is the MIT License
 
         job *pJob{NULL};
 
-        font *CurrentFont() { return font::CurrentFont(); }
-
         boolean strokeAdjustmentParameter{true};
 
         uint8_t *getBitmapBits(uint8_t *pbImage,uint32_t cbData,uint16_t width,uint16_t height,uint8_t bitsPerComponent,array *pDecodeArray);
@@ -188,13 +188,15 @@ This is the MIT License
 
         static gdiParameters theGDIParameters;
         static pathParameters thePathParameters;
-        static psTransformsStack psXformsStack;
+        static psTransformsStack *pPSXformsStack;
 
         static long pageHeightPoints;
         static long pageWidthPoints;
 
         static long cyPageGutter;
         static long pageCount;
+
+        static long instanceCount;
 
         friend class graphicsStateStack;
         friend struct pathParameters;

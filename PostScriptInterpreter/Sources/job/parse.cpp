@@ -132,6 +132,7 @@ This is the MIT License
         }
 
         long n = (long)((char *)(*ppEnd + 1) - pSource);
+
         char *pNew = new char[n];
 
         memcpy(pNew,pSource,n);

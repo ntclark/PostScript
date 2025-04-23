@@ -190,11 +190,11 @@ This is the MIT License
 
 */
 
-   std::list<object *> entries;
+   std::list<object *,containerAllocator<object *>> entries;
 
    object *pObject = pop();
 
-   while ( object::mark != pObject -> ObjectType() ) {
+   while ( object::objectType::mark != pObject -> ObjectType() ) {
       entries.insert(entries.end(),pObject);
       pObject = pop();
    }
@@ -260,7 +260,7 @@ This is the MIT License
     std::vector<object *> toInsertValues;
     std::vector<object *> toInsertKeys;
 
-    while ( ! ( object::mark == top() -> ObjectType() ) ) {
+    while ( ! ( object::objectType::mark == top() -> ObjectType() ) ) {
         toInsertValues.push_back(pop());
         toInsertKeys.push_back(pop());
     }
@@ -296,11 +296,11 @@ This is the MIT License
 
    void job::operatorMarkProcedureEnd() {
 
-   std::list<object *> entries;
+   std::list<object *,containerAllocator<object *>> entries;
 
    object *pObject = pop();
 
-   while ( object::mark != pObject -> ObjectType() ) {
+   while ( object::objectType::mark != pObject -> ObjectType() ) {
       entries.insert(entries.end(),pObject);
       pObject = pop();
    }
@@ -371,14 +371,14 @@ This is the MIT License
    object *p2 = pop();
    object *p1 = pop();
    
-   if ( object::integer == p1 -> ValueType() && object::integer == p2 -> ValueType() )
+   if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() * p2 -> IntValue()));
    else {
       double v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
-      if ( object::integer == p1 -> ValueType() )
+      if ( object::valueType::integer == p1 -> ValueType() )
          v1 = (double)p1 -> IntValue();
       double v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
-      if ( object::integer == p2 -> ValueType() )
+      if ( object::valueType::integer == p2 -> ValueType() )
          v2 = (double)p2 -> IntValue();
       push(new (CurrentObjectHeap()) object(this,v1 * v2));
    }
@@ -418,7 +418,7 @@ This is the MIT License
    real number.
 */
    object *p = pop();
-   if ( object::integer == p -> ValueType() )
+   if ( object::valueType::integer == p -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,-1 * p -> IntValue()));
    else
       push(new (CurrentObjectHeap()) object(this,-1.0 * p -> OBJECT_POINT_TYPE_VALUE));
@@ -451,7 +451,7 @@ This is the MIT License
 //
     object *pTop = pop();
 
-    if ( object::logical == pTop -> ObjectType() ) {
+    if ( object::objectType::logical == pTop -> ObjectType() ) {
         if ( pTop == pTrueConstant )
             push(pFalseConstant);
         else
@@ -510,7 +510,7 @@ This is the MIT License
     of its effects.
 */
 
-    std::list<object *> entries;
+    std::list<object *,containerAllocator<object *>> entries;
 
     while ( operandStack.size() ) 
         entries.insert(entries.end(),pop());
@@ -582,39 +582,38 @@ This is the MIT License
 
     switch ( pTarget -> ObjectType() ) {
 
-    case object::objTypeArray:
+    case object::objectType::objTypeArray:
         reinterpret_cast<array *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
         break;
 
-    case object::dictionary:
+    case object::objectType::dictionaryObject:
         reinterpret_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
         break;
 
 #if 0
-    case object::font:
+    case object::objectType::font:
         static_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
         break;
+#endif
 
-    case object::procedure:
+    case object::objectType::procedure:
         reinterpret_cast<procedure *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
         break;
 
-    case object::objTypeMatrix:
+#if 0
+    case object::objectType::objTypeMatrix:
         reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> OBJECT_POINT_TYPE_VALUE);
         break;
 #endif
 
-    case object::atom:
-        if ( object::string == pTarget -> ValueType() ) {
+    case object::objectType::atom:
+        if ( object::valueType::string == pTarget -> ValueType() ) {
             string *pString = reinterpret_cast<string *>(pTarget);
             if ( NULL == pValue -> Contents() ) {
                 char szMessage[256];
                 sprintf_s<256>(szMessage,"%s: Line: %ld. The value may not have been initialized",__FUNCTION__,__LINE__);
                 throw new syntaxerror(szMessage);
             }
-if ( pTarget -> pszContents && 0 == strcmp(pTarget -> pszContents,"fM") )
-printf("hello world");
-else
             pString -> put((long)pIndex -> IntValue(),(BYTE)(pValue -> Contents()[0]));
             break;
         }
@@ -666,65 +665,85 @@ else
     Errors: invalidaccess, rangecheck, stackunderflow, typecheck
 
 */
-    object *pObject2 = pop();
-    object *pIndex = pop();
-    object *pObject1 = pop();
 
-    push(pObject2);
+    object *pSource = pop();
+    object *pIndex = pop();
+    object *pTarget = pop();
+
+    push(pSource);
 
     operatorLength();
 
-    long n = pop() -> IntValue();
+    long countItems = pop() -> IntValue();
 
     long index = pIndex -> IntValue();
 
-    if ( object::objTypeArray == pObject1 -> ObjectType() || object::packedarray == pObject1 -> ObjectType() ) {
+    if ( object::objectType::objTypeArray == pTarget -> ObjectType() || object::objectType::packedarray == pTarget -> ObjectType() ) {
 
-        array *pArray = reinterpret_cast<array *>(pObject1);
+        array *pTargetArray = reinterpret_cast<array *>(pTarget);
+        string *pSourceString = NULL;
 
-        switch ( pObject2 -> ObjectType() ) {
-        case object::objTypeArray:
-        case object::packedarray: {
-            array *pSource = reinterpret_cast<array *>(pObject2);
-            for ( long k = 0; k < n; k++ ) 
-            pArray -> putElement(index++,pSource -> getElement(k));
+        switch ( pSource -> ObjectType() ) {
+        case object::objectType::objTypeArray:
+        case object::objectType::packedarray: {
+            array *pSourceArray = reinterpret_cast<array *>(pSource);
+            for ( long k = 0; k < countItems; k++ ) 
+                pTargetArray -> putElement(index++,pSourceArray -> getElement(k));
             }
             break;
 
-        case object::string: {
+        case object::valueType::constantString: {
+            pSourceString = static_cast<string *>(reinterpret_cast<constantString *>(pSource));
+        case object::valueType::string:
+            if ( NULL == pSourceString )
+                pSourceString = reinterpret_cast<string *>(pSource);
+            char szItem[2];
+            szItem[1] = '\0';
+            for ( long k = 0; k < countItems; k++ ) {
+                szItem[0] = pSourceString -> Contents()[k];
+                pTargetArray -> putElement(index++,new (CurrentObjectHeap()) string(this,szItem));
+            }
             }
             break;
 
         default: {
             char szMessage[1024];
-            sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array or string",pObject2 -> Name(),pObject2 -> TypeName());
+            sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be array or string",pSource -> Name(),pSource -> TypeName());
             throw typecheck(szMessage);
             }
         }
 
-    } else if ( object::atom == pObject1 -> ObjectType() && 
-                ( object::valueType::string == pObject1 -> ValueType() || object::valueType::constantString == pObject1 -> ValueType() || 
-                    object::valueType::hexString == pObject1 -> ValueType() || object::valueType::binaryString == pObject1 -> ValueType() ) ) {
+        return;
 
-        /*if ( ! ( pObject1 -> ObjectType() == pObject2 -> ObjectType() ) || ! ( pObject1 -> ValueType() == pObject2 -> ValueType() ) ) {
-            char szMessage[1024];
-            sprintf(szMessage,"operator putinterval: the type of object %s is invalid (%s) should be string",pObject2 -> Name(),pObject2 -> TypeName());
-            throw typecheck(szMessage);
-        }*/
+    } 
 
-        for ( long k = 0; k < n; k++ ) 
-            pObject1 -> put(index++,pObject2 -> get(k));
+    if ( object::objectType::atom == pTarget -> ObjectType() ) {
 
-    } else {
-        char szMessage[1024];
-        sprintf(szMessage,"operator putinterval: the type of an object is invalid (%s) should be array, packedarray, or string",pObject1 -> TypeName());
-        throw typecheck(szMessage);
+        if ( object::valueType::string == pTarget -> ValueType() ||
+                object::valueType::string == pSource -> ValueType() ) {
+            for ( long k = 0; k < countItems; k++ )
+                reinterpret_cast<string *>(pTarget) -> put(index++,reinterpret_cast<string *>(pSource) -> get(k));
+            return;
+        }
+
+        if ( object::valueType::binaryString == pTarget -> ValueType() ) {
+            binaryString *pTarget = reinterpret_cast<binaryString *>(pTarget);
+            if ( object::valueType::string == pSource -> ValueType() ) 
+                for ( long k = 0; k < countItems; k++ ) 
+                    pTarget -> put(index++,(BYTE)reinterpret_cast<string *>(pSource) -> get(k));
+            else
+                for ( long k = 0; k < countItems; k++ ) 
+                    pTarget -> put(index++,reinterpret_cast<binaryString *>(pSource) -> get(k));
+            return;
+        }
+
+    } 
+
+    char szMessage[1024];
+    sprintf(szMessage,"operator putinterval: the type of an object is invalid (%s) should be array, packedarray, or string",pTarget -> TypeName());
+    throw typecheck(szMessage);
+
     }
-
-    return;
-    }
-
-
 
     void job::operatorQuadcurveto() {
 /*
@@ -824,7 +843,7 @@ else
 */
    object *pTop = pop();
    switch ( pTop -> ObjectType() ) {
-   case object::number:
+   case object::objectType::number:
       pop();
       pop();
       pop();
@@ -854,11 +873,11 @@ else
 */
    object *pTop = pop();
    switch ( pTop -> ObjectType() ) {
-   case object::objTypeArray:
+   case object::objectType::objTypeArray:
       return;
    default:
       switch ( pTop -> ValueType() ) {
-      case object::string:
+      case object::valueType::string:
          return;
       default:
          pop(); 
@@ -898,10 +917,10 @@ else
    object *pTop = pop();
    switch ( pTop -> ObjectType() ) {
 
-   case object::objTypeMatrix: {
+   case object::objectType::objTypeMatrix: {
       object *pNext = pop();
       switch ( pNext -> ObjectType() ) {
-      case object::number:
+      case object::objectType::number:
          pop();
          pop();
          pop();
@@ -911,7 +930,7 @@ else
       }
       }
 
-   case object::number:
+   case object::objectType::number:
       pop();
       pop();
       pop();
@@ -1171,7 +1190,7 @@ else
          -6.5 round => -6.0
          99 round => 99
 */
-   if ( object::integer == top() -> ValueType() )
+   if ( object::valueType::integer == top() -> ValueType() )
       push(pop());
    else {
       double v = pop() -> Value();
@@ -1513,7 +1532,7 @@ else
 
     object *pTop = pop();
 
-    if ( object::objTypeArray == pTop -> ObjectType() )
+    if ( object::objectType::objTypeArray == pTop -> ObjectType() )
         currentGS() -> setColorSpace(new (CurrentObjectHeap()) colorSpace(this,reinterpret_cast<array *>(pTop)));
     else
         currentGS() -> setColorSpace(new (CurrentObjectHeap()) colorSpace(this,pTop -> Name()));
@@ -1592,7 +1611,7 @@ else
     dictionary *pDictionary = NULL;
 
     switch ( pObject -> ObjectType() ) {
-    case object::objectType::dictionary: {
+    case object::objectType::dictionaryObject: {
         pDictionary = reinterpret_cast<dictionary *>(pObject);
         object *pName = pDictionary -> retrieve("FontName");
         if ( ! ( NULL == pName ) ) 
@@ -2137,7 +2156,7 @@ else
 
     object *pObject = top();
 
-    if ( object::procedure == pObject -> ObjectType() ) {
+    if ( object::objectType::procedure == pObject -> ObjectType() ) {
         pop();
         executeProcedure(reinterpret_cast<procedure *>(pObject));
     } else  
@@ -2222,7 +2241,7 @@ else
 */
    object *p2 = pop();
    object *p1 = pop();
-   if ( object::integer == p1 -> ValueType() && object::integer == p2 -> ValueType() )
+   if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,(long)(p1 -> IntValue() - p2 -> IntValue())));
    else
       push(new (CurrentObjectHeap()) object(this,(double)(p1 -> OBJECT_POINT_TYPE_VALUE - p2 -> OBJECT_POINT_TYPE_VALUE)));
@@ -2246,7 +2265,7 @@ else
     object *pTopObject = pop();
 
     switch ( pTopObject -> ObjectType() ) {
-    case object::objTypeMatrix: {
+    case object::objectType::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
@@ -2373,9 +2392,9 @@ else
     object *pDictObject = pop();
     dictionary *pDict = NULL;
 
-    if ( object::dictionary == pDictObject -> ObjectType() )
+    if ( object::objectType::dictionaryObject == pDictObject -> ObjectType() )
         pDict = reinterpret_cast<dictionary *>(pDictObject);
-    else if ( object::font == pDictObject -> ObjectType() )
+    else if ( object::objectType::font == pDictObject -> ObjectType() )
         pDict = static_cast<dictionary *>(reinterpret_cast<font *>(pDictObject));
     else {
         char szMessage[1024];
@@ -2606,6 +2625,9 @@ else
     pop();
     pop();
     pop();
+    char szMessage[1024];
+    sprintf(szMessage,"A call to the unimplemented operator widthshow was made");
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_ErrorNotification(szMessage);
     return;
     }
 

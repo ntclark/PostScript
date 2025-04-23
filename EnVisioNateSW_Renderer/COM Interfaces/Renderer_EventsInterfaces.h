@@ -43,7 +43,7 @@ This is the MIT License
 
     private:
 
-        uint32_t refCount{0};
+        uint32_t refCount{1};
         Renderer *pParent{NULL};
 
     } *pIConnectionPointContainer{NULL};
@@ -66,8 +66,6 @@ This is the MIT License
         STDMETHOD (Unadvise)(DWORD);
         STDMETHOD (EnumConnections)(IEnumConnections **ppEnum);
 
-        IUnknown *AdviseSink() { return adviseSink; }
-
         int CountConnections() { return countConnections; }
 
     private:
@@ -75,13 +73,12 @@ This is the MIT License
         int getSlot();
         int findSlot(DWORD dwCookie);
 
-        IUnknown *adviseSink{NULL};
         Renderer *pParent{NULL};
         DWORD nextCookie{0L};
         int countConnections{0};
         int countLiveConnections{0};
 
-        uint32_t refCount{0};
+        uint32_t refCount{1};
         CONNECTDATA *connections{NULL};
 
     } *pIConnectionPoint{NULL};

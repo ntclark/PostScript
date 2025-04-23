@@ -37,11 +37,6 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
-    matrix::~matrix() {
-    return;
-    }
-
-
     void matrix::SetValue(long index,FLOAT value) {
     entries[index] = new (pJob -> CurrentObjectHeap()) object(pJob,value);
     switch ( index ) {
@@ -67,13 +62,6 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     invalidated = true;
     return;
     }
-
-
-    //char *matrix::ToString() {
-    //static char szMatrix[64];
-    //sprintf_s<64>(szMatrix,"%5.2f, %5.2f, %5.2f, %5.2f, %5.2f, %5.2f",a(),b(),c(),d(),tx(),ty());
-    //return szMatrix;
-    //}
 
 
     void matrix::identity() {
@@ -144,10 +132,6 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     return;
     }
 
-    //void matrix::concat(XFORM &winXForm) {
-    //matrix::concat(reinterpret_cast<FLOAT *>(&winXForm));
-    //return;
-    //}
 
     void matrix::concat(FLOAT *pPrime) {
 

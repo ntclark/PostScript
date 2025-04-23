@@ -27,7 +27,7 @@ This is the MIT License
 
     Renderer::_IConnectionPoint::_IConnectionPoint(Renderer *pp) : 
         pParent(pp), 
-        adviseSink(0),
+
         nextCookie(400),
         countLiveConnections(0),
         countConnections(ALLOC_CONNECTIONS)
@@ -75,7 +75,8 @@ This is the MIT License
 
 
     STDMETHODIMP Renderer::_IConnectionPoint::GetConnectionInterface(IID *pIID) {
-    if ( pIID == 0 ) return E_POINTER;
+    if ( 0 == pIID ) 
+        return E_POINTER;
     return S_OK;
     }
 
@@ -86,8 +87,8 @@ This is the MIT License
 
 
     STDMETHODIMP Renderer::_IConnectionPoint::Advise(IUnknown *pUnkSink,DWORD *pdwCookie) {
-    
-    IUnknown* pISink = 0;
+
+    IUnknown *pISink = NULL;
 
     HRESULT hr = pUnkSink -> QueryInterface(MY_EVENT_INTERFACE,(void **)&pISink);
 
@@ -139,6 +140,7 @@ This is the MIT License
     return S_OK;
     }
 
+
     STDMETHODIMP Renderer::_IConnectionPoint::EnumConnections(IEnumConnections **ppEnum) {
 
     *ppEnum = NULL;
@@ -147,6 +149,7 @@ This is the MIT License
         return OLE_E_NOCONNECTION;
 
     CONNECTDATA *pTempConnections = new CONNECTDATA[countLiveConnections];
+    memset(pTempConnections,0,countLiveConnections * sizeof(CONNECTDATA));
 
     int j = 0;
     for ( int k = 0, j = 0; k < countConnections && j < countLiveConnections; k++) {
@@ -183,7 +186,8 @@ This is the MIT License
 
 
     int Renderer::_IConnectionPoint::findSlot(DWORD dwCookie) {
-    for ( int i = 0; i < countConnections; i++ )
-        if ( dwCookie == connections[i].dwCookie ) return i;
+    for ( int k = 0; k < countConnections; k++ )
+        if ( dwCookie == connections[k].dwCookie ) 
+            return k;
     return -1;
     }

@@ -31,10 +31,8 @@ This is the MIT License
         Contents("[");
         break;
     default:
-        Name("?");
-        Contents("?");
+        Name("<<");
+        Contents("<<");
     }
     return;
     }
-
-   mark::~mark() { }

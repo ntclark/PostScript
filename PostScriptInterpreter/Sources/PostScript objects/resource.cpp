@@ -30,11 +30,6 @@ This is the MIT License
    }
 
 
-   resource::~resource() {
-   return;
-   }
-
-
    char *resource::Name(char *pszNewName) {
    return pName -> Name();
    }

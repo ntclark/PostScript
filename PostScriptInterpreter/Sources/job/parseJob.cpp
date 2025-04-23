@@ -100,15 +100,9 @@ This is the MIT License
 
             if ( NULL == pObject || ! ( object::executableAttribute::executable == pObject -> theExecutableAttribute ) ) {
                 if ( ! ( NULL == pObject ) ) {
-if ( top() -> pszContents && 0 == strcmp(top() -> pszContents,"fM") )
-printf("hello world");
                     pop();
                     push(pObject);
                 }
-else {
-if ( top() -> pszContents && 0 == strcmp(top() -> pszContents,"fM") )
-printf("hello world");
-}
                 return 0;
             }
 
@@ -128,14 +122,14 @@ printf("hello world");
 
     // A directExecutable is an operator
 
-    case object::directExecutable: {
+    case object::objectType::directExecutable: {
         directExec *pDirectExec = reinterpret_cast<directExec *>(pop());
         void (__thiscall job::*pOperator)() = pDirectExec -> Operator();
         (this ->* pOperator)();
         return 1L;
         }
 
-    case object::procedure:
+    case object::objectType::procedure:
 /*
       3.5.3 Deferred Execution
 
@@ -174,9 +168,6 @@ printf("hello world");
     long job::executeProcedure(procedure *pProcedure) {
 
     for ( object *pObj : pProcedure -> entries ) {
-
-if ( pObj -> pszContents && 0 == strcmp(pObj -> pszContents,"fM") )
-printf("hello world");
 
         push(pObj);
 
@@ -241,7 +232,7 @@ printf("hello world");
         k++;
 
         switch ( pObject -> ObjectType() ) {
-        case object::procedure:
+        case object::objectType::procedure:
             reinterpret_cast<procedure *>(pObject) -> bind();
             continue;
 
@@ -425,20 +416,21 @@ printf("hello world");
 
     void job::parseStructureSpec(char *pStart,char **ppEnd,long *pLineNumber) {
     char *p = pStart;
-    ADVANCE_THRU_END_OF_LINE(p)
+    ADVANCE_THRU_END_OF_LINE(p,pLineNumber)
     *ppEnd = p;
-    structureSpecs.insert(structureSpecs.end(),new (CurrentObjectHeap()) structureSpec(this,pStart,*ppEnd));
-    *pLineNumber++;
+if ( 29 == structureStack.size() )
+printf("hello world");
+    structureSpec *pwtf = new structureSpec(pStart,*ppEnd);
+    structureStack.insert(structureStack.end(),pwtf);
     return;
     }
 
 
     void job::parseComment(char *pStart,char **ppEnd,long *pLineNumber) {
     char *p = pStart;
-    ADVANCE_THRU_END_OF_LINE(p)
+    ADVANCE_THRU_END_OF_LINE(p,pLineNumber)
     *ppEnd = p;
     commentStack.insert(commentStack.end(),new comment(pStart,*ppEnd));
-    *pLineNumber++;
     return;
     }
 
@@ -465,46 +457,46 @@ printf("hello world");
 
     parse(HEX_STRING_DELIMITER_BEGIN,HEX_STRING_DELIMITER_END,p,ppEnd,pLineNumber);
 
-    if ( *ppEnd ) {
+    if ( ! *ppEnd ) 
+        return;
 
-        char c = **ppEnd;
-        **ppEnd = '\0';
+    char c = **ppEnd;
+    **ppEnd = '\0';
 
-        long n = (DWORD)strlen((char *)p) + 1;
-        char *pszNew = new char[n];
-        memset(pszNew,0,n * sizeof(char));
-        long k = 0; 
-        long cbString = 0;
-        while ( k < n ) {
-            if ( 0x0D == p[k] && 0x0A == p[k + 1] ) {
-                k += 2;
-                continue;
-            }
-            pszNew[cbString++] = p[k];
+    long n = (DWORD)strlen((char *)p) + 1;
+    char *pszNew = new char[n];
+    memset(pszNew,0,n * sizeof(char));
+    long k = 0; 
+    long cbString = 0;
+    while ( k < n ) {
+        if ( 0x0D == p[k] || 0x0A == p[k] ) {
             k++;
+            continue;
         }
-
-        cbString--;
-
-        DWORD dwFlags = 0L;
-        DWORD dwCount = 0L;
-
-        CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,NULL,&dwCount,NULL,&dwFlags);
-
-        BYTE *pDecoded = new BYTE[dwCount];
-
-        memset(pDecoded,0,dwCount * sizeof(BYTE));
-
-        CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,pDecoded,&dwCount,NULL,&dwFlags);
-
-        push(new (CurrentObjectHeap()) binaryString(this,pszNew,pDecoded,dwCount));
-
-        delete [] pDecoded;
-        delete [] pszNew;
-
-        **ppEnd = c;
-        *ppEnd = *ppEnd + 1;
+        pszNew[cbString++] = p[k];
+        k++;
     }
+
+    cbString--;
+
+    DWORD dwFlags = 0L;
+    DWORD dwCount = 0L;
+
+    CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,NULL,&dwCount,NULL,&dwFlags);
+
+    BYTE *pbDecoded = new BYTE[dwCount];
+
+    memset(pbDecoded,0,dwCount * sizeof(BYTE));
+
+    CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,pbDecoded,&dwCount,NULL,&dwFlags);
+
+    push(new (CurrentObjectHeap()) binaryString(this,"<binary>",pbDecoded,dwCount));
+
+    delete [] pbDecoded;
+    delete [] pszNew;
+
+    **ppEnd = c;
+    *ppEnd = *ppEnd + 1;
 
     return;
     }

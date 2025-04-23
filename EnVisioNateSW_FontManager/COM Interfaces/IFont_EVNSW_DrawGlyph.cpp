@@ -61,7 +61,7 @@ This is the MIT License
 
     if ( 0 < encodingTable.size() ) {
         if ( ! ( encodingTable.end() == encodingTable.find((uint32_t)glyph) ) ) {
-            char *pszCharTableIndex = encodingTable[(uint32_t)glyph];
+            const char *pszCharTableIndex = encodingTable[(uint32_t)glyph];
             std::map<uint32_t,char *> *pCharStrings = &charStringsTable;
             if ( 0 == pCharStrings -> size() )
                 pCharStrings = &font::adobeGlyphList;

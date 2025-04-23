@@ -23,14 +23,13 @@ This is the MIT License
 
 #pragma once
 
-#include "string.h"
+#include "job.h"
+#include "PostScript objects/string.h"
 
    class binaryString : public string {
    public:
 
       binaryString(job *pJob,char *pszContents,BYTE *pBinary,long dwLength);
-
-      virtual ~binaryString();
 
       long length();
 

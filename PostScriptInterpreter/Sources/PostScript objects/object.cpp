@@ -26,61 +26,46 @@ This is the MIT License
 
 #include <float.h>
 
-    void *object::pHeap = NULL;
-    void *object::pCurrentHeap = NULL;
-    void *object::pNextHeap = NULL;
-    size_t object::currentlyAllocatedHeap = 0L;
-
-    void object::initializeStorage() {
-    pHeap = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT,OBJECT_HEAP_SIZE);
-    pCurrentHeap = (BYTE *)pHeap;
-    pNextHeap = (BYTE *)pCurrentHeap;
-    currentlyAllocatedHeap = OBJECT_HEAP_SIZE;
-    }
-
-    void object::releaseStorage() {
-    GlobalFree(pHeap);
-    pHeap = NULL;
-    pCurrentHeap = NULL;
-    pNextHeap = NULL;
-    currentlyAllocatedHeap = 0L;
-    }
-
-    void *object::operator new(size_t theSize) {
-    return ::new BYTE[theSize];
-    }
 
     void *object::operator new(size_t theSize,void *pPtr) {
 
-    if ( ((BYTE *)pNextHeap - (BYTE *)pHeap + theSize) > currentlyAllocatedHeap ) {
+    if ( ((BYTE *)job::pNextHeap - (BYTE *)job::pHeap + theSize) > job::currentlyAllocatedHeap ) {
 MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     }
 
-    pCurrentHeap = pNextHeap;
-    pNextHeap = (BYTE *)pCurrentHeap + theSize;
-    return pCurrentHeap;
+    job::pCurrentHeap = job::pNextHeap;
+    job::pNextHeap = (BYTE *)job::pCurrentHeap + theSize;
+    return job::pCurrentHeap;
     }
 
 
-    object::object(job *pj,char charVal,long longVal,double realVal,char *pszVal,char *pszEnd,objectType ot,valueType vt,valueClassification vcf,executableAttribute ea,accessAttribute aa) :
+    void *object::allocate(size_t theSize) {
+    if ( ((BYTE *)job::pNextHeap - (BYTE *)job::pHeap + theSize) > job::currentlyAllocatedHeap ) {
+MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
+    }
+    job::pCurrentHeap = job::pNextHeap;
+    job::pNextHeap = (BYTE *)job::pCurrentHeap + theSize;
+    return job::pCurrentHeap;
+    }
 
+
+    object::object(job *pj,char charVal,long longVal,double realVal,char *pszVal,
+                    char *pszEnd,objectType ot,valueType vt,
+                        valueClassification vcf,executableAttribute ea,accessAttribute aa) :
         pJob(pj),
         theObjectType(ot),
         theValueType(vt),
         theExecutableAttribute(ea),
         theAccessAttribute(aa)
-
     {
-
-    pJob -> incrementCount();
 
     if ( ! ( '\0' == charVal ) ) {
 
-        pszContents = new char[2];
+        pszContents = (char *)allocate(2 * sizeof(char));
         pszContents[0] = charVal;
         pszContents[1] = '\0';
 
-        pszName = new char[2];
+        pszName = (char *)allocate(2 * sizeof(char));
         pszName[0] = charVal;
         pszName[1] = '\0';
 
@@ -98,14 +83,14 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         else
             n = (long)strlen(pszVal);
 
-        pszContents = new char[n + 1];
+        pszContents = (char *)allocate((n + 1) * sizeof(char));
         pszContents[n] = '\0';
         if ( ! ( NULL == pszEnd ) )
             strncpy(pszContents,pszVal,n);
         else
             strcpy(pszContents,pszVal);
 
-        pszName = new char[n + 1];
+        pszName = (char *)allocate((n + 1) * sizeof(char));
         pszName[n] = '\0';
         if ( ! ( NULL == pszEnd ) )
             strncpy(pszName,pszVal,n);
@@ -120,11 +105,11 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     } else if ( ! ( LONG_MAX == longVal ) ) {
 
-        pszContents = new char[64];
+        pszContents = (char *)allocate(64 * sizeof(char));
         memset(pszContents,0,64 * sizeof(char));
         sprintf(pszContents,"%ld",longVal);
 
-        pszName = new char[64];
+        pszName = (char *)allocate(64 * sizeof(char));
         memset(pszName,0,64 * sizeof(char));
         sprintf(pszName,"%ld",longVal);
 
@@ -136,11 +121,11 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     } else if ( ! ( DBL_MAX == realVal ) ) {
 
-        pszContents = new char[64];
+        pszContents = (char *)allocate(64 * sizeof(char));
         memset(pszContents,0,64 * sizeof(char));
         sprintf(pszContents,"%lf",realVal);
 
-        pszName = new char[64];
+        pszName = (char *)allocate(64 * sizeof(char));
         memset(pszName,0,64 * sizeof(char));
         sprintf(pszName,"%lf",realVal);
 
@@ -191,23 +176,9 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         object(pj,'\0',LONG_MAX,value,NULL,NULL,number,real,simple,nonExecutable,unlimited) {}
 
 
-    object::~object() {
-
-    pJob -> decrementCount();
-
-    if ( ! ( NULL == pszContents ) )
-        delete [] pszContents;
-    if ( ! ( NULL == pszName ) )
-        delete [] pszName;
-    return;
-    }
-
-
-    char *object::Contents(char *pszNewContents) { 
+    char *object::Contents(char *pszNewContents) {
     if ( ! ( NULL == pszNewContents ) ) {
-        if ( ! ( NULL == pszContents ) )
-            delete [] pszContents;
-        pszContents = new char[strlen(pszNewContents) + 1];
+        pszContents = (char *)allocate(strlen(pszNewContents) + 1);
         strcpy(pszContents,pszNewContents);
     }
     return pszContents;
@@ -219,10 +190,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     if ( NULL == pszNewName )
         return pszName;
 
-    if ( ! ( NULL == pszName ) )
-        delete [] pszName;
-
-    pszName = new char[strlen(pszNewName) + 1];
+    pszName = (char *)allocate((strlen(pszNewName) + 1) * sizeof(char));
     pszName[strlen(pszNewName)] = '\0';
     strcpy(pszName,pszNewName);
 
@@ -298,7 +266,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     if ( isReal ) {
         doubleValue = atof(pszContents);
         if ( valueTypeUnspecified == vt )
-            theValueType = object::real;
+            theValueType = object::valueType::real;
     } else if ( radixFound ) {
         char *p = strchr(pszContents,'#');
         *p = '\0';
@@ -307,11 +275,11 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         p = p + 1;
         intValue = strtoul(p,NULL,base);
         if ( valueTypeUnspecified == vt )
-            theValueType = object::radix;
+            theValueType = object::valueType::radix;
     } else {
         intValue = atol(pszContents);
         if ( valueTypeUnspecified == vt )
-            theValueType = object::integer;
+            theValueType = object::valueType::integer;
     } 
 
     return;
@@ -320,7 +288,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     long object::IntValue(long value) { 
     if ( -LONG_MAX == value ) {
-        if ( object::integer == theValueType )
+        if ( object::valueType::integer == theValueType )
             return intValue;
         return atol(pszContents);
     }
@@ -328,8 +296,8 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     char szInt[32];
     sprintf_s<32>(szInt,"%ld",value);
     Contents(szInt);
-    theObjectType = object::number;
-    theValueType = object::integer;
+    theObjectType = object::objectType::number;
+    theValueType = object::valueType::integer;
     return intValue;
     }
 
@@ -337,7 +305,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     double object::DoubleValue(double value) {
 
     if ( -DBL_MAX == value ) {
-        if ( object::real == theValueType )
+        if ( object::valueType::real == theValueType )
             return doubleValue; 
         return atof(pszContents);
     }
@@ -346,8 +314,8 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     char szDouble[64];
     sprintf_s<64>(szDouble,"%f",value);
     Contents(szDouble);
-    theObjectType = object::number;
-    theValueType = object::real;
+    theObjectType = object::objectType::number;
+    theValueType = object::valueType::real;
     return doubleValue;
     }
 
@@ -365,13 +333,14 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
 
     double object::Value() {
-    if ( object::number == theObjectType ) {
-        if ( object::integer == theValueType )
+    if ( object::objectType::number == theObjectType ) {
+        if ( object::valueType::integer == theValueType )
             return (double)intValue;
         return doubleValue;
     }
     return atof(pszContents);
     }
+
 
     char *object::TypeName() {
 
@@ -382,8 +351,10 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "atom";
     case procedure:
         return "procedure";
-    case dictionary:
+    case dictionaryObject:
         return "dictionary";
+    case dictionaryEntryObject:
+        return "dictionaryEntry";
     case structureSpec:
         return "structureSpec";
     case directExecutable:
@@ -412,6 +383,11 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "font";
     case resource:
         return "resource";
+    default: {
+        char szMessage[256];
+        sprintf_s<256>(szMessage,"Note: TypeName is not implemented for type %d",theObjectType);
+        throw new notimplemented(szMessage);
+    }
     }
     return "";
     }
@@ -432,36 +408,19 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "real";
     case radix:
         return "radix";
+    default: {
+        char szMessage[256];
+        sprintf_s<256>(szMessage,"Note: ValueTypeName is not implemented for value type %d",theValueType);
+        throw new notimplemented(szMessage);
+    }
+
     }
     return "";
     }
 
 
-    void object::put(long,BYTE) {
-    throw new notimplemented("put is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    return;
-    }
-
-
-    BYTE object::get(long index) {
-    throw new notimplemented("get is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    return NULL;
-    }
-
-    void object::putElement(long index,object *) {
-    throw new notimplemented("putElement is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    return;
-    }
-
-
-    object *object::getElement(long index) {
-    throw new notimplemented("getElement is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
-    return NULL;
-    }
-
-
     void object::execute() {
-    throw new notimplemented("execute is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
+    //throw new notimplemented("execute is not implemented on a subclass of object. This is an error condition, further parsing is suspect");
     return;
     }
 

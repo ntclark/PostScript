@@ -297,4 +297,8 @@ This is the MIT License
     delete [] pPointFirstY;
     delete [] pFlagsFirst;
 
-}
+    delete [] pPoints;
+    delete [] pPointFirst;
+
+    return;
+    }

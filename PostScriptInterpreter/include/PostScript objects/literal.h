@@ -30,7 +30,6 @@ This is the MIT License
 
       literal(job *pJob,char *pValue);
       literal(job *pJob,char *pStart,char *pEnd);
-      ~literal();
 
       char *ToString();
 

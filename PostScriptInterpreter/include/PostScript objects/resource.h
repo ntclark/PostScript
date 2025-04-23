@@ -29,7 +29,6 @@ This is the MIT License
     public:
 
         resource(job *pJob,object *pCategory,object *pInstance,object *pName);
-        ~resource();
 
         virtual char *Name(char *pszNewName = NULL);
 

@@ -22,11 +22,13 @@ This is the MIT License
 */
 
 #include "job.h"
-#include "PostScript objects/pattern.h"
 
-   pattern::pattern(job *pj) :
-      dictionary(pj,DEFAULT_DICTIONARY_SIZE)
-   {
-   theObjectType = object::objectType::pattern;
-   return;
-   }
+#include "PostScript objects/dictionaryEntry.h"
+
+    dictionaryEntry::dictionaryEntry(job *pJob,char *pszName,object *pObj) : 
+        object(pJob,pszName),
+        pValue(pObj) {
+    theObjectType = object::objectType::dictionaryEntryObject;
+    pKeyObject = new (pJob -> CurrentObjectHeap()) class string(pJob,pszName,NULL);
+    nameSize = (long)strlen(pszName);
+    }

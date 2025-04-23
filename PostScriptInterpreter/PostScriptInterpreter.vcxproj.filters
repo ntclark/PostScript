@@ -126,9 +126,6 @@
     <ClCompile Include="Sources\PostScript objects\string.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\PostScript objects\structureSpec.cpp">
-      <Filter>Source Files\PostScript objects</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Stacks\dictionaryStack.cpp">
       <Filter>Source Files\Stacks</Filter>
     </ClCompile>
@@ -161,9 +158,6 @@
     </ClCompile>
     <ClCompile Include="Sources\job\parseJob_execute.cpp">
       <Filter>Source Files\job</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\PostScript objects\constantString.cpp">
-      <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\binaryString.cpp">
       <Filter>Source Files\PostScript objects</Filter>
@@ -243,14 +237,20 @@
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\COM Interfaces\IDropTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Fonts\font.cpp">
       <Filter>Source Files\Fonts</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\Utils\getHBITMAPFromPixels.cpp">
-      <Filter>Source Files\Common</Filter>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\getHBITMAPFromPixels.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\COM Interfaces\IDropTarget.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\constantString.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\dictionaryEntry.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -308,9 +308,6 @@
     <ClInclude Include="include\PostScript objects\save.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
-    <ClInclude Include="include\PostScript objects\structureSpec.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
     <ClInclude Include="include\Stacks\dictionaryStack.h">
       <Filter>Header Files\Stacks</Filter>
     </ClInclude>
@@ -345,9 +342,6 @@
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
     <ClInclude Include="include\job_operators.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\job_pdfOperators.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\PostScript objects\font.h">
@@ -387,6 +381,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CentralEuropeanEncoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\dictionaryEntry.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\containerAllocator.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\structureSpec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

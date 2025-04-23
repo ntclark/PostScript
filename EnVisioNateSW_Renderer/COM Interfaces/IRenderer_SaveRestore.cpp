@@ -34,6 +34,12 @@ This is the MIT License
     }
 
 
+    Renderer::GraphicsStateManager::~GraphicsStateManager() {
+    clear();
+    return;
+    }
+
+
     HRESULT Renderer::GraphicsStateManager::Save() {
     parametersStack.push(new Renderer::GraphicParameters::values(*parametersStack.top()));
     CoCreateGuid(&parametersStack.top() -> valuesId);

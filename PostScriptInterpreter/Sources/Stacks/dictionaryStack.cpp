@@ -21,6 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
+#include "job.h"
 #include "Stacks/dictionaryStack.h"
 
 #include "error.h"

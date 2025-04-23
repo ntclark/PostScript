@@ -29,7 +29,6 @@ This is the MIT License
    public:
 
       name(job *pJob,char *pszValue); 
-      ~name();
 
    private:
    };

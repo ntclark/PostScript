@@ -31,9 +31,7 @@ This is the MIT License
     else
         memset(szClientFamily,0,sizeof(szClientFamily));
 
-    matrix *pFontMatrix = new matrix();
-
-    matrixStack.push(pFontMatrix);
+    matrixStack.push(new matrix());
 
     return;
     }
@@ -63,36 +61,111 @@ This is the MIT License
     if ( ftype42 == fontType )
         type42Load(pbFontData);
 
-    for ( std::pair<uint32_t,char *> pPair : rhs.encodingTable ) 
-        //
-        // Note that this is using a pointer to char as the held
-        // (mapped) value. This means that fonts with a dupCount > 0
-        // should not delete these values when it clears this map
-        //
-        encodingTable[pPair.first] = pPair.second;
+    for ( std::pair<uint32_t,char *> pPair : rhs.encodingTable ) {
+        char *pszCopy = new char[strlen(pPair.second) + 1];
+        strcpy(pszCopy,pPair.second);
+        encodingTable[pPair.first] = pszCopy;
+    }
 
-    for ( std::pair<uint32_t,char *> pPair : rhs.charStringsTable )
-        charStringsTable[pPair.first] = pPair.second;
+    for ( std::pair<uint32_t,char *> pPair : rhs.charStringsTable ) {
+        char *pszCopy = new char[strlen(pPair.second) + 1];
+        strcpy(pszCopy,pPair.second);
+        charStringsTable[pPair.first] = pszCopy;
+    }
 
     return;
     }
 
 
     font::~font() {
+
     while ( 0 < matrixStack.size() ) {
         delete matrixStack.top();
         matrixStack.pop();
     }
+
     for ( char *p : fontFullNames )
         delete [] p;
+
     for ( char *p : fontStyleNames )
         delete [] p;
+
     for ( char *p : fontScriptNames )
         delete [] p;
+
     fontFullNames.clear();
     fontStyleNames.clear();
     fontScriptNames.clear();
     fontWeights.clear();
+
+    for ( std::pair<uint32_t,char *> pPair : charStringsTable )
+        delete [] pPair.second;
+
+    charStringsTable.clear();
+
+    for ( std::pair<uint32_t,char *> pPair : encodingTable )
+        delete [] pPair.second;
+
+    encodingTable.clear();
+
+    delete [] pbFontData;
+
+#if 0
+    if ( ! ( NULL == pbFontData ) )
+        delete pbFontData;
+
+    if ( ! ( NULL == pGlyfTable ) )
+        delete pGlyfTable;
+
+    if ( ! ( NULL == pLocaTable ) )
+        delete pLocaTable;
+
+    if ( ! ( NULL == pMaxProfileTable ) )
+        delete pMaxProfileTable;
+
+    if ( ! ( NULL == pHeadTable ) )
+        delete pHeadTable;
+
+    if ( ! ( NULL == pHorizHeadTable ) )
+        delete pHorizHeadTable;
+
+    if ( ! ( NULL == pVertHeadTable ) )
+        delete pVertHeadTable;
+
+    if ( ! ( NULL == pHorizontalMetricsTable ) )
+        delete pHorizontalMetricsTable;
+
+    if ( ! ( NULL == pVerticalMetricsTable ) )
+        delete pVerticalMetricsTable;
+
+    if ( ! ( NULL == pOS2Table ) )
+        delete pOS2Table;
+
+    if ( ! ( NULL == pPostTable ) )
+        delete pPostTable;
+
+    if ( ! ( NULL == pFontVariationsTable ) )
+        delete pFontVariationsTable;
+#endif
+
+    if ( ! ( NULL == pMaxProfileTable ) )
+        delete pMaxProfileTable;
+
+    if ( ! ( NULL == pHeadTable ) )
+        delete pHeadTable;
+
+    if ( ! ( NULL == pHorizHeadTable ) )
+        delete pHorizHeadTable;
+
+    if ( ! ( NULL == pHorizontalMetricsTable ) )
+        delete pHorizontalMetricsTable;
+
+    if ( ! ( NULL == pCmapSubtableFormat4 ) )
+        delete pCmapSubtableFormat4;
+
+    if ( ! ( NULL == pPostTable ) )
+        delete pPostTable;
+
     return;
     }
 

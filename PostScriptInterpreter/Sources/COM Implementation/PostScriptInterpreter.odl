@@ -39,17 +39,12 @@ library PostScriptInterpreter {
    interface IPostScriptInterpreter : IUnknown {
 
       HRESULT SetSource(char *pszFileName);
-      HRESULT Parse([defaultvalue(NULL)]char *pszFileName);
+      HRESULT Parse([defaultvalue(NULL)]char *pszFileName,[defaultvalue(TRUE)] BOOL autoStart);
       HRESULT ParseText(char *pszText);
       HRESULT GetLastError(char **ppszError);
       HRESULT LogLevel(logLevel theLogLevel);
       HRESULT RendererLogLevel(logLevel theLogLevel);
 
-      [helpstring("There are properties in this object that I'd like to persist, but I don't "
-                            "want to force users to use my Properties COM Object.\n"
-                            "These two methods allow me to save these properties externally.\n"
-                            "If you call Get..., then CoTaskMemFree the memory when your're done with it."
-                            "This object will NOT free the memory passed in Set... and it will not cache it.")]
       HRESULT GetPeristableProperties(UINT_PTR *pProperties,long *pSize);
       HRESULT SetPeristableProperties(UINT_PTR pProperties);
 

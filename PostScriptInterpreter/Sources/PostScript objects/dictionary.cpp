@@ -22,51 +22,26 @@ This is the MIT License
 */
 
 #include "job.h"
+#include "PostScript objects/dictionaryEntry.h"
 
     long dictionary::countAutoCreated = 0;
 
-    entry::entry(job *pJob,char *pszName,object *pObj) : pValue(pObj) {
-        nName = (long)strlen(strcpy(szName,pszName));
-        pKey = new (pJob -> CurrentObjectHeap()) string(pJob,szName);
-    }
-
     dictionary::dictionary(job *pj,char *pszName,long initialSize) :
         entryCount(0L),
-        object(pj,pszName,object::objectType::dictionary,object::valueType::container,object::valueClassification::composite)
+        object(pj,pszName,object::objectType::dictionaryObject,object::valueType::container,object::valueClassification::composite)
     {
     entries.reserve(initialSize);
+    //pJob -> dictionarysToClear.push_back(&entries);
     return;
     }
+
 
     dictionary::dictionary(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE) { }
 
+
     dictionary::dictionary(job *pj,long initialSize) :
         dictionary(pj,NULL,initialSize) { }
-
-    dictionary::~dictionary() {
-
-    for ( entry *pEntry : entries ) {
-        object *pValue = pEntry -> pValue;
-        if ( this == pValue )
-            continue;
-        if ( ! ( NULL == pValue -> pContainingDictionary ) && ! ( pValue -> pContainingDictionary == this ) ) 
-            continue;
-        pJob -> deleteNonContainedObject(pValue);
-    }
-
-    entries.clear();
-
-    pJob -> dictionaryStack.remove(this);
-
-    return;
-    }
-
-
-    void dictionary::put(object *pValue) {
-    put(pValue -> Name(),pValue);
-    return;
-    }
 
 
     void dictionary::put(char *pszKey,object *pValue) {
@@ -74,7 +49,7 @@ This is the MIT License
     if ( exists(pszKey) )
         remove(pszKey);
 
-    entry *pEntry = new entry(pJob,pszKey,pValue);
+    dictionaryEntry *pEntry = new (pJob -> CurrentObjectHeap()) dictionaryEntry(pJob,pszKey,pValue);
 
     entries.push_back(pEntry);
     pValue -> pContainingDictionary = this;
@@ -98,25 +73,25 @@ This is the MIT License
     object *dictionary::retrieve(long index) {
     if ( (long)entries.size() < index )
         return NULL;
-    return entries[index] -> pValue;
+    return entries[index] -> Value();
     }
 
 
     char *dictionary::retrieveKey(long index) {
     if ( (long)entries.size() < index )
         return NULL;
-    return entries[index] -> szName;
+    return entries[index] -> KeyString();
     }
 
 
     object *dictionary::retrieve(char *pszName) {
 
     long nName = (long)strlen(pszName);
-    for ( entry *pEntry : entries ) {
-        if ( ! ( nName == pEntry -> nName ) )
+    for ( dictionaryEntry *pEntry : entries ) {
+        if ( ! ( nName == pEntry -> NameSize() ) )
             continue;
-        if ( 0 == strcmp(pEntry -> szName,pszName) )
-            return pEntry -> pValue;
+        if ( 0 == strcmp(pEntry -> KeyString(),pszName) )
+            return pEntry -> Value();
     }
     return NULL;
     }
@@ -124,11 +99,15 @@ This is the MIT License
 
     object *dictionary::retrieveKey(char *pszName) {
     long nName = (long)strlen(pszName);
-    for ( entry *pEntry : entries ) {
-        if ( ! ( nName == pEntry -> nName ) )
+    for ( dictionaryEntry *pEntry : entries ) {
+        if ( ! ( nName == pEntry -> NameSize() ) )
             continue;
-        if ( 0 == strcmp(pEntry -> szName,pszName) )
-            return pEntry -> pKey;
+        if ( 0 == strcmp(pEntry -> KeyString(),pszName) )
+            // Need to check this with a test
+{
+__debugbreak();
+            return pEntry;
+}
     }
     return NULL;
     }
@@ -164,11 +143,11 @@ This is the MIT License
     share the same value. Separate values are considered unequal, even if all the 
     components of those values are the same.
 */
-    for ( entry *pEntry : entries ) {
-        object *pOtherVal = pOtherDict -> retrieve(pEntry -> szName);
+    for ( dictionaryEntry *pEntry : entries ) {
+        object *pOtherVal = pOtherDict -> retrieve(pEntry -> KeyString());
         if ( NULL == pOtherVal )
             return false;
-        if ( ! ( pOtherVal == pEntry -> pValue) )
+        if ( ! ( pOtherVal == pEntry -> Value() ) )
             return false;
     }
     return true;
@@ -176,8 +155,8 @@ This is the MIT License
 
 
     void dictionary::remove(char *pszKey) {
-    for ( std::vector<entry *>::iterator it = entries.begin(); it != entries.end(); it++ ) {
-        if ( 0 == strcmp((*it) -> szName,pszKey) ) {
+    for ( std::vector<dictionaryEntry *>::iterator it = entries.begin(); it != entries.end(); it++ ) {
+        if ( 0 == strcmp((*it) -> KeyString(),pszKey) ) {
             entries.erase(it);
             return;
         }
@@ -193,17 +172,17 @@ This is the MIT License
 
 
     void dictionary::copyFrom(dictionary *pSource) {
-    for ( entry *pEntry : pSource -> entries )
-        put(pEntry -> szName,pEntry -> pValue);
+    for ( dictionaryEntry *pEntry : pSource -> entries )
+        put(pEntry -> KeyString(),pEntry -> Value());
     return;
     }
 
 
     void dictionary::forAll(class procedure *pProc) {
 
-    for ( entry *pEntry : entries ) {
-        pJob -> push(pEntry -> pKey);
-        pJob -> push(pEntry -> pValue);
+    for ( dictionaryEntry *pEntry : entries ) {
+        pJob -> push(pEntry -> Key());
+        pJob -> push(pEntry -> Value());
         pJob -> executeProcedure(pProc);
     }
 

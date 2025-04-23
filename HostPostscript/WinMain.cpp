@@ -1,4 +1,8 @@
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include "HostPostscript.h"
 
 #include "PostScriptInterpreter_i.c"
@@ -247,7 +251,8 @@ boolean useGSProperties = true;
 
     delete pParsePSHost;
 
-    return 0;
+_CrtDumpMemoryLeaks(  );
+     return 0;
     }
 
 

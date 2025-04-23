@@ -35,25 +35,25 @@ This is the MIT License
 
 
     void graphicsState::concat(matrix *pSource) {
-    psXformsStack.top() -> concat(pSource);
+    pPSXformsStack -> back() -> concat(pSource);
     return;
     }
 
 
     void graphicsState::concat(array *pSource) {
-    psXformsStack.top() -> concat(pSource);
+    pPSXformsStack -> back() -> concat(pSource);
     return;
     }
 
 
     void graphicsState::concat(XFORM *pXForm) {
-    psXformsStack.top() -> concat((FLOAT *)pXForm);
+    pPSXformsStack -> back() -> concat((FLOAT *)pXForm);
     return;
     }
 
 
     void graphicsState::concat(FLOAT *pValues) {
-    psXformsStack.top() -> concat(pValues);
+    pPSXformsStack -> back() -> concat(pValues);
     return;
     }
 
@@ -63,23 +63,23 @@ This is the MIT License
     switch ( pSource -> ObjectType() ) {
     case object::objectType::objTypeArray: {
         array *pArray = reinterpret_cast<class array *>(pSource);
-        psXformsStack.top() -> a(pArray -> getElement(A) -> OBJECT_POINT_TYPE_VALUE);
-        psXformsStack.top() -> b(pArray -> getElement(B) -> OBJECT_POINT_TYPE_VALUE);
-        psXformsStack.top() -> c(pArray -> getElement(C) -> OBJECT_POINT_TYPE_VALUE);
-        psXformsStack.top() -> d(pArray -> getElement(D) -> OBJECT_POINT_TYPE_VALUE);
-        psXformsStack.top() -> tx(pArray -> getElement(TX) -> OBJECT_POINT_TYPE_VALUE);
-        psXformsStack.top() -> ty(pArray -> getElement(TY) -> OBJECT_POINT_TYPE_VALUE);
+        pPSXformsStack -> back() -> a(pArray -> getElement(A) -> OBJECT_POINT_TYPE_VALUE);
+        pPSXformsStack -> back() -> b(pArray -> getElement(B) -> OBJECT_POINT_TYPE_VALUE);
+        pPSXformsStack -> back() -> c(pArray -> getElement(C) -> OBJECT_POINT_TYPE_VALUE);
+        pPSXformsStack -> back() -> d(pArray -> getElement(D) -> OBJECT_POINT_TYPE_VALUE);
+        pPSXformsStack -> back() -> tx(pArray -> getElement(TX) -> OBJECT_POINT_TYPE_VALUE);
+        pPSXformsStack -> back() -> ty(pArray -> getElement(TY) -> OBJECT_POINT_TYPE_VALUE);
         }
         break;
 
     case object::objectType::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pSource);
-        psXformsStack.top() -> a(pMatrix -> a());
-        psXformsStack.top() -> b(pMatrix -> b());
-        psXformsStack.top() -> c(pMatrix -> c());
-        psXformsStack.top() -> d(pMatrix -> d());
-        psXformsStack.top() -> tx(pMatrix -> tx());
-        psXformsStack.top() -> ty(pMatrix -> ty());
+        pPSXformsStack -> back() -> a(pMatrix -> a());
+        pPSXformsStack -> back() -> b(pMatrix -> b());
+        pPSXformsStack -> back() -> c(pMatrix -> c());
+        pPSXformsStack -> back() -> d(pMatrix -> d());
+        pPSXformsStack -> back() -> tx(pMatrix -> tx());
+        pPSXformsStack -> back() -> ty(pMatrix -> ty());
         }
         break;
 
@@ -97,43 +97,49 @@ This is the MIT License
 
     void graphicsState::currentMatrix() {
     matrix *pMatrix = reinterpret_cast<matrix *>(pJob -> pop());
-    pMatrix -> a(psXformsStack.top() -> a());
-    pMatrix -> b(psXformsStack.top() -> b());
-    pMatrix -> c(psXformsStack.top() -> c());
-    pMatrix -> d(psXformsStack.top() -> d());
-    pMatrix -> tx(psXformsStack.top() -> tx());
-    pMatrix -> ty(psXformsStack.top() -> ty());
+    pMatrix -> a(pPSXformsStack -> back() -> a());
+    pMatrix -> b(pPSXformsStack -> back() -> b());
+    pMatrix -> c(pPSXformsStack -> back() -> c());
+    pMatrix -> d(pPSXformsStack -> back() -> d());
+    pMatrix -> tx(pPSXformsStack -> back() -> tx());
+    pMatrix -> ty(pPSXformsStack -> back() -> ty());
     pPostScriptInterpreter -> currentJob() -> push(pMatrix);
     return;
     }
 
     void graphicsState::revertMatrix() {
-    psXformsStack.top() -> revertMatrix();
+    pPSXformsStack -> back() -> revertMatrix();
+    return;
+    }
+
+
+    void graphicsState::defaultMatrix() {
+    pPSXformsStack -> push_back(new (pJob -> CurrentObjectHeap()) matrix(pJob));
     return;
     }
 
 
     void graphicsState::setTranslation(FLOAT x,FLOAT y) {
-    psXformsStack.top() -> tx(x);
-    psXformsStack.top() -> ty(y);
+    pPSXformsStack -> back() -> tx(x);
+    pPSXformsStack -> back() -> ty(y);
     return;
     }
 
 
     void graphicsState::translate(FLOAT x,FLOAT y) {
-    psXformsStack.top() -> translate(x,y);
+    pPSXformsStack -> back() -> translate(x,y);
     return;
     }
 
 
     void graphicsState::scale(FLOAT scaleX,FLOAT scaleY) {
-    psXformsStack.top() -> scale(scaleX,scaleY);
+    pPSXformsStack -> back() -> scale(scaleX,scaleY);
     return;
     }
 
 
     void graphicsState::rotate(FLOAT angle) {
-    psXformsStack.top() -> rotate(angle);
+    pPSXformsStack -> back() -> rotate(angle);
     return;
     }
 
@@ -148,13 +154,13 @@ This is the MIT License
 
 
     void graphicsState::transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
-    transformPoint(psXformsStack.top(),x,y,pX2,pY2);
+    transformPoint(pPSXformsStack -> back(),x,y,pX2,pY2);
     return;
     }
 
 
     void graphicsState::transformPoint(GS_POINT *ptIn,GS_POINT *ptOut) {
-    transformPoint(psXformsStack.top(),ptIn -> x,ptIn -> y,&ptOut -> x,&ptOut -> y);
+    transformPoint(pPSXformsStack -> back(),ptIn -> x,ptIn -> y,&ptOut -> x,&ptOut -> y);
     return;
     }
 
@@ -169,7 +175,7 @@ This is the MIT License
 
 
     void graphicsState::transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
-    transformPointInPlace(psXformsStack.top(),x,y,pX2,pY2);
+    transformPointInPlace(pPSXformsStack -> back(),x,y,pX2,pY2);
     return;
     }
 
@@ -184,7 +190,7 @@ This is the MIT License
 
 
     void graphicsState::untransformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
-    untransformPoint(psXformsStack.top(),x,y,pX2,pY2);
+    untransformPoint(pPSXformsStack -> back(),x,y,pX2,pY2);
     return;
     }
 
@@ -209,13 +215,13 @@ This is the MIT License
 
 
     void graphicsState::untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
-    untransformPointInPlace(psXformsStack.top(),x,y,pX2,pY2);
+    untransformPointInPlace(pPSXformsStack -> back(),x,y,pX2,pY2);
     return;
     }
 
 
     void graphicsState::scalePoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2) {
-    *pX2 = psXformsStack.top() -> a() * x;
-    *pY2 = psXformsStack.top() -> d() * y;
+    *pX2 = pPSXformsStack -> back() -> a() * x;
+    *pY2 = pPSXformsStack -> back() -> d() * y;
     return;
     }

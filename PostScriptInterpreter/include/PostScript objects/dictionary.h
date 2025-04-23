@@ -29,30 +29,22 @@ This is the MIT License
 
 #define DEFAULT_DICTIONARY_SIZE 32
 
-class job;
+#include "job.h"
 
+#include "PostScript objects/containerAllocator.h"
 #include "PostScript objects/string.h"
 #include "PostScript objects/procedure.h"
-
-    struct entry {
-        entry(job *pJob,char *pszName,object *pObj);
-        char szName[64];
-        long nName{0L};
-        string *pKey{NULL};
-        object *pValue{NULL};
-    };
-
+#include "PostScript objects/dictionaryEntry.h"
 
     class dictionary : public object {
     public:
+
+        dictionary(){};
 
         dictionary(job *,long initialSize);
         dictionary(job *,char *pszName);
         dictionary(job *,char *pszName,long initialSize);
 
-        virtual ~dictionary();
-
-        void put(object *);
         void put(char *pszKey,char *);
         void put(char *pszKey,object *);
         void put(char *pszKey,void (job::*theProcedure)());
@@ -80,7 +72,7 @@ class job;
 
     private:
 
-        std::vector<entry *> entries;
+        std::vector<dictionaryEntry *,containerAllocator<dictionaryEntry *>> entries;
 
         long entryCount{0};
 

@@ -31,11 +31,8 @@ This is the MIT License
     public:
 
         matrix(job *pJob);
-        ~matrix();
 
         void SetValue(long index,FLOAT value);
-
-        //virtual char *ToString();
 
         void identity();
 

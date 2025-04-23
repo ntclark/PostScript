@@ -27,7 +27,6 @@ This is the MIT License
    public:
 
       booleanObject(job *pJob,char *pszName);
-      ~booleanObject();
 
       boolean is() { return value; }
 

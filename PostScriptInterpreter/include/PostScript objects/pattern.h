@@ -23,13 +23,12 @@ This is the MIT License
 
 #pragma once
 
-#include "dictionary.h"
+#include "PostScript objects/dictionary.h"
 
    class pattern : public dictionary {
    public:
 
       pattern(job *);
-      ~pattern();
 
    private:
 

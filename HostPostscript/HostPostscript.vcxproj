@@ -81,6 +81,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_GS_PROPERTIES=1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

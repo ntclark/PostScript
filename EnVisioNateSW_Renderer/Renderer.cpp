@@ -43,19 +43,20 @@ This is the MIT License
     pIConnectionPointContainer = new _IConnectionPointContainer(this);
     pIConnectionPoint = new _IConnectionPoint(this);
 
-    pIConnectionPointContainer -> AddRef();
-    pIConnectionPoint -> AddRef();
-
     return;
     }
 
 
     Renderer::~Renderer() {
+
     pID2D1Factory1 -> Release();
     pID2D1Factory1 = NULL;
     pIConnectionPointContainer -> Release();
     pIConnectionPoint -> Release();
-    graphicsStateManager.clear();
+
+    delete pIGraphicElements;
+    delete pIGraphicParameters;
+
     return;
     }
 

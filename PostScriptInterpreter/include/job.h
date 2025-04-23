@@ -37,12 +37,14 @@ This is the MIT License
 #include "Stacks/objectStack.h"
 #include "Stacks/dictionaryStack.h"
 #include "Stacks/psTransformsStack.h"
+#include "structureSpec.h"
 
     class job {
     public:
 
         job(char *pszFileName,HWND hwndSurface);
         job() : job(NULL,NULL) {}
+
         ~job();
 
         void *CurrentObjectHeap();
@@ -71,17 +73,9 @@ This is the MIT License
         object* pop() { return operandStack.pop(); }
         void push(object *pObject) { operandStack.push(pObject); }
 
-        boolean deleteObject(object *pObject);
-        void deleteNonContainedObject(object *pObj);
-
-        void incrementCount() { countObjects++; }
-        void decrementCount() { --countObjects; }
-
         graphicsState *currentGS();
 
 #include "job_operators.h"
-
-//#include "job_pdfOperators.h"
 
         static void *pHeap;
         static void *pCurrentHeap;
@@ -90,9 +84,10 @@ This is the MIT License
 
    private:
 
-        //job();
-
         static DWORD dwNotificationCookie;
+
+        void initializeHeap();
+        void releaseHeap();
 
         void resolve();
         object *resolve(char *pszObjectName);
@@ -105,9 +100,6 @@ This is the MIT License
         void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd,long *pLineNumber);
         void parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd);
         char *parseObject(char *pStart,char **pEnd);
-
-        void parseFile(char *pszFileName);
-
         void parseStructureSpec(char *pStart,char **ppEnd,long *pLineNumber);
         void parseComment(char *pStart,char **ppEnd,long *pLineNumber);
         void parseString(char *pStart,char **ppEnd,long *pLineNumber);
@@ -124,7 +116,7 @@ This is the MIT License
 
         std::list<comment *> commentStack;
         std::map<size_t,object *> literalNames;
-        std::list<structureSpec *> structureSpecs;
+        std::list<structureSpec *> structureStack;
 
         std::map<object::objectType,std::map<object::valueType,object *>> nameTypeMap;
 
@@ -197,12 +189,11 @@ This is the MIT License
         long saveCount{0L};
         long inputLineNumber{0L};
         long procedureDefinitionLevel{0L};
-        long countObjects{0L};
         long countPages{0L};
 
         char *collectionDelimiterPeek(char *,char **);
         char *delimiterPeek(char *,char **);
-        char *token();
+        //char *token();
 
         bool isGlobalVM{false};
         bool hasExited{false};
@@ -213,7 +204,7 @@ This is the MIT License
         HWND hwndSurface{NULL};
         HANDLE hsemIsInitialized{INVALID_HANDLE_VALUE};
 
-        HBITMAP hbmSink{NULL};
+        //HBITMAP hbmSink{NULL};
 
         static unsigned int __stdcall executeInitialization(void *);
         static unsigned int __stdcall executeThread(void *);

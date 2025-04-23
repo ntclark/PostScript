@@ -29,7 +29,6 @@ This is the MIT License
    public:
 
       save(job *pJob);
-      ~save();
 
    private:
 

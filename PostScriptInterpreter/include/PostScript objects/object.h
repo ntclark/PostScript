@@ -44,7 +44,7 @@ This is the MIT License
         enum objectType {
             atom = 0,
             procedure = 1,
-            dictionary = 2,
+            dictionaryObject = 2,
             structureSpec = 3,
             directExecutable = 4,
             objTypeMatrix = 5,
@@ -63,6 +63,7 @@ This is the MIT License
             resource = 18,
             file = 19,
             filter = 20,
+            dictionaryEntryObject = 21,
             objectTypeUnspecified = 99
         };
 
@@ -77,18 +78,17 @@ This is the MIT License
             container = 101,
             string = 102,
             constantString = 103,
-            hexString = 104,
-            binaryString = 105,
-            character = 106,
-            integer = 107,
-            real = 108,
-            radix = 109,
-            trueOrFalse = 110,
-            arrayMark = 111,
-            dictionaryMark = 112,
-            procedureMark = 113,
-            executableProcedure = 114,
-            executableOperator = 115
+            binaryString = 104,
+            character = 105,
+            integer = 106,
+            real = 107,
+            radix = 108,
+            trueOrFalse = 109,
+            arrayMark = 110,
+            dictionaryMark = 111,
+            procedureMark = 112,
+            executableProcedure = 113,
+            executableOperator = 114
         };
 
         enum executableAttribute {
@@ -102,11 +102,6 @@ This is the MIT License
             executeOnly = 303,
             none = 304
         };
-
-        static void initializeStorage();
-        void *operator new (size_t size);
-        void *operator new(size_t size,void *pPtr);
-        static void releaseStorage();
 
         object() {}
 
@@ -124,11 +119,11 @@ This is the MIT License
         object(job *,long value);
         object(job *,double value);
 
-        virtual void put(long index,BYTE v);
-        virtual BYTE get(long index);
+        object(object &) = delete;
+        object(object &&) = delete;
 
-        virtual void putElement(long index,object *pElement);
-        virtual object *getElement(long index);
+        void *operator new(size_t size,void *pPtr);
+        void *allocate(size_t size);
 
         virtual void execute();
         virtual char *ToString();
@@ -150,14 +145,10 @@ This is the MIT License
         bool IsExecuteOnly() { return isExecuteOnly; };
 
         enum objectType ObjectType() { return theObjectType; };
-        enum valueType ValueType( enum valueType vt = invalidValueType ) { if ( vt != invalidValueType ) theValueType = vt; return theValueType; };
+        enum valueType ValueType( enum valueType vt = invalidValueType ) 
+            { if ( vt != invalidValueType ) theValueType = vt; return theValueType; };
 
         object *ContainingDictionary() { return pContainingDictionary; }
-
-        static void *pHeap;
-        static void *pCurrentHeap;
-        static void *pNextHeap;
-        static size_t currentlyAllocatedHeap;
 
         job *Job() { return pJob; }
 
@@ -170,11 +161,10 @@ This is the MIT License
         executableAttribute theExecutableAttribute{nonExecutable};
         accessAttribute theAccessAttribute{none};
 
-        virtual ~object();
-
     private:
 
-        object(job *,char charVal,long longVal,double realVal,char *pStart,char *pEnd,objectType,valueType,valueClassification,executableAttribute,accessAttribute);
+        object(job *,char charVal,long longVal,double realVal,char *pStart,char *pEnd,
+                 objectType,valueType,valueClassification,executableAttribute,accessAttribute);
 
         void parseValue(objectType,valueType);
 

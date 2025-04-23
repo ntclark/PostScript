@@ -81,7 +81,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
         class GraphicElements : public IUnknown {
         public:
 
-            GraphicElements(Renderer *pp) : pParent(pp) {}
+            GraphicElements(Renderer *pp);
+            ~GraphicElements();
 
             //   IUnknown
 
@@ -560,6 +561,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 return;
             }
 
+            void clearPaths();
+
             path *pFirstPath{NULL};
             path *pCurrentPath{NULL};
 
@@ -570,6 +573,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
             XFORM toUserSpace{6 * 0.0f};
 
             void calcInverseTransform();
+
+            uint8_t *getPixelsFromJpeg(uint8_t *pJPEGData,long dataSize,long width,long height);
 
             void scalePoint(FLOAT *px,FLOAT *py);
             void transformPoint(FLOAT *px,FLOAT *py);
@@ -658,6 +663,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 parametersStack.push(new Renderer::GraphicParameters::values());
                 parametersStack.top() -> valuesId = initialGUID;
             }
+
+            ~GraphicsStateManager();
 
             HRESULT Save();
             HRESULT Restore();

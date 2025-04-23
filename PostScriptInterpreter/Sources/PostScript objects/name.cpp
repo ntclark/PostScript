@@ -29,9 +29,3 @@ This is the MIT License
    {
    pJob -> validNames[std::hash<std::string>()(pszValue)] = this;
    }
-
-   name::~name() {
-   return;
-   }
-
-   

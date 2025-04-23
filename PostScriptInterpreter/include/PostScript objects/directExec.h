@@ -32,8 +32,6 @@ This is the MIT License
             object(pJob,pszContents,object::objectType::directExecutable,object::valueType::executableOperator,
                     object::valueClassification::simple,object::executableAttribute::executable), pOperator(pProc) {};
 
-      ~directExec() {};
-
       void (__thiscall job::*Operator())() { return pOperator; };
 
    private:

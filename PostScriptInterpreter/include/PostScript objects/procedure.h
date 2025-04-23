@@ -27,7 +27,8 @@ This is the MIT License
 
 class job;
 
-#include "object.h"
+#include "PostScript objects/object.h"
+#include "PostScript objects/containerAllocator.h"
 
    class procedure : public object {
    public:
@@ -36,8 +37,6 @@ class job;
       procedure(job *p,char *pStart,char **ppEnd,long *pLineNumber);
       procedure(job *p,long *pLineNumber);
       procedure(job *p);
-
-      virtual ~procedure();
 
       virtual char *Contents(char *pszContents = NULL);
 
@@ -58,7 +57,7 @@ class job;
       procedure(job *pj,char *pStart,char *pEnd,char **ppEnd,long *pLineNumber);
 
       bool isBound{false};
-      std::vector<object *> entries;
+      std::vector<object *,containerAllocator<object *>> entries;
       char *pszStringRepresentation{NULL};
       procedure *pContainingProcedure{NULL};
 

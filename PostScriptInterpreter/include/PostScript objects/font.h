@@ -25,10 +25,13 @@ This is the MIT License
 
 #include "FontManager_i.h"
 
+#include "job.h"
+
+#include "PostScript objects/dictionary.h"
 #include "PostScript objects/matrix.h"
 
-class job;
 class graphicsState;
+class dictionary;
 
     class font : public dictionary {
 
@@ -38,8 +41,6 @@ class graphicsState;
         font(job *pJob,dictionary *,char *fontName);
 
         font(font &);
-
-        ~font();
 
         char *fontName();
 

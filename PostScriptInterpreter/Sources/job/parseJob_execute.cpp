@@ -74,6 +74,21 @@ This is the MIT License
                 p = pNext;
                 continue;
             }
+#if 0
+            if ( ! ( NULL == pDelimiter ) ) {
+                if ( DSC_DELIMITER[0] == pDelimiter[0] && DSC_DELIMITER[1] == pDelimiter[1] ) {
+                    parseStructureSpec(p,&pNext,&lineNumber);
+                    pPostScriptInterpreter -> queueLog(true,p,pNext);
+                    p = pNext;
+                    continue;
+                } else if ( COMMENT_DELIMITER[0] == pDelimiter[0] ) {
+                    parseComment(pNext,&pNext,&lineNumber);
+                    pPostScriptInterpreter -> queueLog(true,p,pNext);
+                    p = pNext;
+                    continue;
+                }
+            }
+#endif
         }
 
         pPostScriptInterpreter -> queueLog(true,p,pNext);
@@ -127,7 +142,7 @@ This is the MIT License
             }
         }
 
-        if ( object::procedure == po -> ObjectType() ) {
+        if ( object::objectType::procedure == po -> ObjectType() ) {
             pop();
             executeProcedure(reinterpret_cast<procedure *>(po));
         } else
@@ -161,7 +176,22 @@ This is the MIT License
     return 0;
     }
 
+#define xADVANCE_THRU_END_OF_LINE(p)               \
+{                                         \
+while ( ! ( *p == 0x0A ) && ! ( *p == 0x0D ) ) \
+   p++;                                   \
+if ( *p == 0x0A || *p == 0x0D )           \
+   p++;                                   \
+if ( *p == 0x0A || *p == 0x0D )           \
+   p++;                                   \
+}
 
+#define ADVANCE_THRU_WHITE_SPACE_AND_EOL(p)         \
+{                                                   \
+while ( *p && strchr(PSZ_WHITE_SPACE_AND_EOL,*p) ) {\
+   p++;                                             \
+}                                                   \
+}
     void job::parseProcedure(procedure *pProcedure,char *pStart,char **ppEnd,long *pLineNumber) {
 
     char *p = pStart;
@@ -170,6 +200,16 @@ This is the MIT License
     do {
 
         ADVANCE_THRU_WHITE_SPACE_AND_EOL(p)
+#if 0
+        {
+        long count[]{0,0,0};
+        while ( *p && strchr(PSZ_WHITE_SPACE_AND_EOL,*p) ) {
+            count[0x0A == *p ? 0 : 0x0D == *p ? 1 : 2]++;
+            p++;
+        }
+        *pLineNumber += max(count[0],count[1]);
+        }
+#endif
 
         if ( '\0' == *p )
             break;

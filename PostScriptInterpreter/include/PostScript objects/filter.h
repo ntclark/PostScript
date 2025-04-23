@@ -30,7 +30,6 @@ This is the MIT License
     public:
 
         filter(job *pj,char *pszFilterName,object *pDataSource,char *pszEndDelimiter);
-        virtual ~filter();
 
         void setSource(object *pFilterSource);
 

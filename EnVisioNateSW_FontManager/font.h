@@ -653,6 +653,9 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
                 BE_TO_LE_16(pb,pHorizontalMetrics[cntMetrics + k].lsb)
             }
         }
+        ~otHorizontalMetricsTable() {
+            delete pHorizontalMetrics;
+        }
         otLongHorizontalMetric *pHorizontalMetrics{NULL}; // [numberOfHMetrics]   Paired advance width and left side bearing values for each glyph. Records are indexed by glyph ID.
         //int16_t *pLeftSideBearings{NULL};               // [numGlyphs - numberOfHMetrics] Left side bearings for glyph IDs greater than or equal to numberOfHMetrics.
     };

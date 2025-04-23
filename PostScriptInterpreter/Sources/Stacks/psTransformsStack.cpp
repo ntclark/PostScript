@@ -29,25 +29,22 @@ This is the MIT License
 
 
     psTransformsStack::~psTransformsStack() {
-    while ( 0 < size() ) {
-        //delete top();
-        pop();
-    }
+    clear();
     return;
     }
 
 
     void psTransformsStack::initialize(job *pj) {
     pJob = pj;
-    push(new (pJob -> CurrentObjectHeap()) matrix(pJob));
+    push_back(new (pJob -> CurrentObjectHeap()) matrix(pJob));
     return;
     }
 
 
     void psTransformsStack::gSave() {
     matrix *pMatrix = new (pJob -> CurrentObjectHeap()) matrix(pJob);
-    pMatrix -> copyFrom(top());
-    push(pMatrix);
+    pMatrix -> copyFrom(back());
+    push_back(pMatrix);
     return;
     }
 
@@ -58,7 +55,6 @@ This is the MIT License
         OutputDebugStringA("There has been a gRestore underflow\n");//Beep(2000,200);
         return;
 }
-    //delete top();
-    pop();
+    pop_back();
     return;
     }

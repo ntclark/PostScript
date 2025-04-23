@@ -25,7 +25,7 @@ This is the MIT License
 
 #include <deque>
 
-#include "PostScript objects\dictionary.h"
+#include "PostScript objects/dictionary.h"
 
    class dictionaryStack : public std::deque<dictionary *> {
    public:

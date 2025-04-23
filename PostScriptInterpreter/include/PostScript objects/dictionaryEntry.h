@@ -21,12 +21,26 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript objects\structureSpec.h"
+#pragma once
 
-   structureSpec::structureSpec(job *pJob,char *pStart,char *pEnd) :
-      object(pJob,pStart,pEnd,object::structureSpec,object::string,object::composite)
-   {
-   }
+#include "job.h"
+#include "PostScript objects/string.h"
 
-   structureSpec::~structureSpec() {
-   }   
+    class dictionaryEntry : public object {
+    public:
+
+        dictionaryEntry(job *pJob,char *pszName,object *pObj);
+
+        object *Key() { return pKeyObject; }
+        object *Value() { return pValue; }
+        char *KeyString() { return pKeyObject -> Contents(); }
+
+        long NameSize() { return nameSize; }
+
+    private:
+
+        class string *pKeyObject{NULL};
+        object *pValue{NULL};
+        long nameSize{0L};
+
+    };

@@ -254,6 +254,9 @@ This is the MIT License
 
     HRESULT font::SetEncoding(UINT_PTR ptrData) {
 
+    for ( std::pair<uint32_t,char *> pPair : encodingTable )
+        delete [] pPair.second;
+
     encodingTable.clear();
 
     char *pszEncoding = (char *)ptrData;
@@ -264,7 +267,7 @@ This is the MIT License
         uint32_t index = atol(p);
         p += 5;
         uint16_t n = (uint16_t)strlen(p);
-        char *psz = new char[n];
+        char *psz = new char[n + 1];
         strcpy(psz,p);
         encodingTable[index] = psz;
         p += strlen(p) + 1;
@@ -275,6 +278,9 @@ This is the MIT License
 
 
     HRESULT font::SetCharStrings(UINT_PTR ptrData) {
+
+    for ( std::pair<uint32_t,char *> pPair : charStringsTable )
+        delete [] pPair.second;
 
     charStringsTable.clear();
 
@@ -287,7 +293,7 @@ This is the MIT License
             p++;
         *p = '\0';
         uint16_t n = (uint16_t)(p - pStart);
-        char *psz = new char[n];
+        char *psz = new char[n + 1];
         p++;
         uint32_t index = atol(p);
         p++;

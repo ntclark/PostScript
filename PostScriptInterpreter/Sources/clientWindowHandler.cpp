@@ -27,6 +27,10 @@ This is the MIT License
 
 #define SCROLL_DELTA 16
 
+    static POINT ptDragStart;
+    static boolean isCaptured = false;
+    static TRACKMOUSEEVENT trackMouseEvent;
+
     long windowTop = 0L;
 
     boolean awaitingClientPaint = false;
@@ -68,17 +72,6 @@ This is the MIT License
         awaitingClientPaint = false;
         return (LRESULT)TRUE;
         }
-
-    case WM_DROPFILES: {
-        char szFiles[MAX_PATH];
-        HDROP hDropInfo = reinterpret_cast<HDROP>(wParam);
-        for ( long k = 0; k < (long)DragQueryFile(hDropInfo,0xFFFFFFFF,NULL,0L); k++ ) {
-            DragQueryFile(hDropInfo,k,szFiles,MAX_PATH);
-            p -> Parse(szFiles);
-            break;
-        }
-        }
-        break;
 
     case WM_SIZE: {
         if ( 0 == HIWORD(lParam) )
@@ -228,10 +221,6 @@ This is the MIT License
     return DefWindowProc(hwnd,msg,wParam,lParam);
     }
 
-
-    static POINT ptDragStart;
-    static boolean isCaptured = false;
-    static TRACKMOUSEEVENT trackMouseEvent;
 
     LRESULT CALLBACK PostScriptInterpreter::splitterHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 

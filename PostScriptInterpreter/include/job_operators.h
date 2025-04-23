@@ -92,6 +92,7 @@ This is the MIT License
         void operatorImage();
         void operatorImagemask();
         void operatorIndex();
+        void operatorInitclip();
         void operatorInitmatrix();
         void operatorISOLatin1Encoding();
         void operatorItransform();

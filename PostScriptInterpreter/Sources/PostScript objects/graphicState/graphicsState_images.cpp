@@ -35,7 +35,7 @@ This is the MIT License
 
     object *pSource = pJob -> pop();
 
-    if ( ! ( object::dictionary == pSource -> ObjectType() ) ) {
+    if ( ! ( object::objectType::dictionaryObject == pSource -> ObjectType() ) ) {
         char szMessage[1024];
         sprintf_s<1024>(szMessage,"Error: Only language level 2 and above is supported for the image operator");
         throw notimplemented(szMessage);
@@ -131,7 +131,7 @@ This is the MIT License
         if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
             PostScriptInterpreter::beginPathAction();
         PostScriptInterpreter::pIGraphicElements -> PostScriptJpegImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbImage,cbData,
-                                                        (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
+                                                        (UINT_PTR)pPSXformsStack -> back() -> XForm(),(FLOAT)width,(FLOAT)height);
         return;
     }
 
@@ -159,7 +159,7 @@ This is the MIT License
     if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
         PostScriptInterpreter::beginPathAction();
     PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),hbmResult,
-                                                (UINT_PTR)psXformsStack.top() -> XForm(),(FLOAT)width,(FLOAT)height);
+                                                (UINT_PTR)pPSXformsStack -> back() -> XForm(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
     return;
     }
@@ -218,7 +218,7 @@ This is the MIT License
 
             uint8_t *pbRGBTarget = pbRGBImage - 3;
 
-            for ( long row = 0; row < countRows; row++ ) {
+            for ( uint32_t row = 0; row < countRows; row++ ) {
 
                 uint16_t index;
 
@@ -284,7 +284,7 @@ This is the MIT License
 
                 compIndex++;
 
-            }// while ( pbNext < pbLast );
+            }
 
         }
 

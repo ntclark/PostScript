@@ -28,26 +28,27 @@ This is the MIT License
         parameterCount(0),
         array(pj,po -> Name())
     {
-    if ( object::objTypeMatrix == po -> ObjectType() ) {
+    if ( object::objectType::objTypeMatrix == po -> ObjectType() )
         __debugbreak();
-    }
-    pFamilyName = po -> getElement(0);
+    array *pArray = reinterpret_cast<array *>(po);
+    pFamilyName = pArray -> getElement(0);
     putElement(0,pFamilyName);
     if ( 0 == strcmp(pFamilyName -> Contents(),"Indexed") ) {
-        colorSpace *pFromColorSpace = reinterpret_cast<colorSpace *>(po -> getElement(1));
+        colorSpace *pFromColorSpace = reinterpret_cast<colorSpace *>(pArray -> getElement(1));
         if ( ! ( 0 == strcmp(pFromColorSpace -> pFamilyName -> Name(),"Indexed") ) )
             pBaseName = pFromColorSpace -> getElement(0);
         else
             pBaseName = pFromColorSpace -> pBaseName;
-        hiVal = (uint16_t)po -> getElement(2) -> IntValue();
-        pLookup = po -> getElement(3);
+        hiVal = (uint16_t)pArray -> getElement(2) -> IntValue();
+        pLookup = pArray -> getElement(3);
         putElement(1,pBaseName);
-        putElement(2,po -> getElement(2));
-        putElement(3,po -> getElement(3));
+        putElement(2,pArray -> getElement(2));
+        putElement(3,pArray -> getElement(3));
     }
     parameterCount = size() - 1;
     return;
     }
+
 
     colorSpace::colorSpace(job *pj,char *pszName) :
         parameterCount(0),
@@ -55,11 +56,6 @@ This is the MIT License
     {
     pFamilyName = new (pJob -> CurrentObjectHeap()) object(pj,pszName);
     putElement(0,pFamilyName);
-    return;
-    }
-
-
-    colorSpace::~colorSpace() {
     return;
     }
 
@@ -96,7 +92,7 @@ This is the MIT License
 
     char szMessage[1024];
     sprintf_s<1024>(szMessage,"Error: ColorSpace family %s is not implemented",pFamilyName -> Contents());
-    //throw notimplemented(szMessage);
+    throw notimplemented(szMessage);
     return -1;
     }
 
