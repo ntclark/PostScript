@@ -21,17 +21,29 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScriptInterpreter.h"
+#pragma once
 
-   class comment {
-   public:
+#include "PostScript objects/object.h"
 
-      comment(char *ps,char *pe) : pStart(ps), pEnd(pe) {};
-      ~comment() {};
+    class dscItem : public object {
+    public:
 
-   private:
+        dscItem(job *pj,char *ps,char *pe) :
+            object(pj,ps,pe,object::objectType::dscItem,
+                object::valueType::valueTypeUnspecified,object::valueClassification::simple) {
+            pszValue = (char *)allocate((pe - ps + 1) * sizeof(char));//new char[pe - ps + 1];
+            char *p = pszValue + (pe - ps);
+            *p = '\0';
+            strncpy(pszValue,ps,(pe - ps));
+            p--;
+            while ( 0x0A == *p || 0x0D == *p )
+                p--;
+            *(p + 1) = '\0';
+        }
 
-      char *pStart,*pEnd;
+        ~dscItem() {}
 
-   };
-   
+    private:
+
+        char *pszValue{NULL};
+    };

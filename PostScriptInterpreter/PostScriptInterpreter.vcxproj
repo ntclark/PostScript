@@ -126,7 +126,7 @@ regsvr32 /s "$(TargetPath)"
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_RENDERER;DLLEXPORT=;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;POSTSCRIPT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderFile>
@@ -216,9 +216,9 @@ regsvr32 /s "$(TargetPath)"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\getHBITMAPFromPixels.cpp" />
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
     <ClCompile Include="Sources\ascii85.cpp" />
     <ClCompile Include="Sources\cmdPaneHandler.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />
@@ -306,7 +306,6 @@ regsvr32 /s "$(TargetPath)"
   <ItemGroup>
     <ClInclude Include="include\ascii85.h" />
     <ClInclude Include="include\CentralEuropeanEncoding.h" />
-    <ClInclude Include="include\comment.h" />
     <ClInclude Include="include\error.h" />
     <ClInclude Include="include\gdiParameters.h" />
     <ClInclude Include="include\ISOLatin1Encoding.h" />
@@ -317,6 +316,7 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\PostScript objects.h" />
     <ClInclude Include="include\PostScript objects\array.h" />
     <ClInclude Include="include\PostScript objects\binaryString.h" />
+    <ClInclude Include="include\PostScript objects\comment.h" />
     <ClInclude Include="include\PostScript objects\constantString.h" />
     <ClInclude Include="include\PostScript objects\booleanObject.h" />
     <ClInclude Include="include\PostScript objects\colorSpace.h" />
@@ -338,6 +338,7 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\PostScript objects\resource.h" />
     <ClInclude Include="include\PostScript objects\save.h" />
     <ClInclude Include="include\PostScript objects\string.h" />
+    <ClInclude Include="include\PostScript objects\dscItem.h" />
     <ClInclude Include="include\PostScriptInterpreter.h" />
     <ClInclude Include="include\logHandling.h" />
     <ClInclude Include="include\resourceIdentifiers.h" />
@@ -346,7 +347,6 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\Stacks\objectStack.h" />
     <ClInclude Include="include\Stacks\psTransformsStack.h" />
     <ClInclude Include="include\StandardEncoding.h" />
-    <ClInclude Include="include\structureSpec.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />

@@ -38,6 +38,12 @@ This is the MIT License
 
     pPostScriptInterpreter -> ConnectServices();
 
+    pValidNames = new std::map<size_t,name *,std::less<size_t>,containerAllocator<name *>>();
+    pDSCItems = new std::list<dscItem *,containerAllocator<dscItem *>>();
+    pComments = new std::list<comment *,containerAllocator<comment *>>();
+    pOperandStack = new objectStack();
+    pDictionaryStack = new dictionaryStack();
+
     pLanguageLevel = new (CurrentObjectHeap()) object(this,2L);
 
     pUserDict = new (CurrentObjectHeap()) dictionary(this,"userdict");
@@ -68,6 +74,7 @@ This is the MIT License
     pPostScriptSourceFile = NULL;
 
     pStringType = new (CurrentObjectHeap()) name(this,"stringtype");
+    pConstantStringType = new (CurrentObjectHeap()) name(this,"stringtype");
     pBinaryStringType = new (CurrentObjectHeap()) name(this,"stringtype");
     pArrayType = new (CurrentObjectHeap()) name(this,"arraytype");
     pPackedArrayType = new (CurrentObjectHeap()) name(this,"packedarraytype");
@@ -81,13 +88,15 @@ This is the MIT License
     pFontType = new (CurrentObjectHeap()) name(this,"fonttype");
     pOperatorType = new (CurrentObjectHeap()) name(this,"operatortype");
     pNameType = new (CurrentObjectHeap()) name(this,"nametype");
+    pDSCItem = new (CurrentObjectHeap()) name(this,"DSCtype");
+    pComment = new (CurrentObjectHeap()) name(this,"commenttype");
 
     // Resource names
     new (CurrentObjectHeap()) name(this,"Font");
 
     nameTypeMap[object::objectType::atom][object::valueType::container] = pArrayType;
     nameTypeMap[object::objectType::atom][object::valueType::string] = pStringType;
-	nameTypeMap[object::objectType::atom][object::valueType::constantString] = pStringType;
+    nameTypeMap[object::objectType::atom][object::valueType::constantString] = pConstantStringType;
     nameTypeMap[object::objectType::atom][object::valueType::character] = pStringType;
     nameTypeMap[object::objectType::atom][object::valueType::integer] = pIntegerType;
     nameTypeMap[object::objectType::atom][object::valueType::radix] = pIntegerType;
@@ -110,8 +119,10 @@ This is the MIT License
     nameTypeMap[object::objectType::font][object::valueType::valueTypeUnspecified] = pFontType;
     nameTypeMap[object::objectType::directExecutable][object::valueType::valueTypeUnspecified] = pOperatorType;
     nameTypeMap[object::objectType::name][object::valueType::valueTypeUnspecified] = pNameType;
+    nameTypeMap[object::objectType::dscItem][object::valueType::valueTypeUnspecified] = pDSCItem;
+    nameTypeMap[object::objectType::comment][object::valueType::valueTypeUnspecified] = pComment;
 
-    tokenProcedures[std::hash<std::string>()(DSC_DELIMITER)] = &job::parseStructureSpec;
+    tokenProcedures[std::hash<std::string>()(DSC_DELIMITER)] = &job::parseDSC;
     tokenProcedures[std::hash<std::string>()(COMMENT_DELIMITER)] = &job::parseComment;
     tokenProcedures[std::hash<std::string>()(STRING_DELIMITER_BEGIN)] = &job::parseString;
     tokenProcedures[std::hash<std::string>()(HEX_STRING_DELIMITER_BEGIN)] = &job::parseHexString;
@@ -178,12 +189,12 @@ This is the MIT License
     pSystemDict -> put("=string",new (CurrentObjectHeap()) string(this,"=string"));
     pSystemDict -> put("=print",new (CurrentObjectHeap()) string(this,"=print"));
 
-    dictionaryStack.setCurrent(pGlobalDict);
-    dictionaryStack.setCurrent(pStatusDict);
-    dictionaryStack.setCurrent(pErrorDict);
-    dictionaryStack.setCurrent(pPdfDict);
-    dictionaryStack.setCurrent(pUserDict);
-    dictionaryStack.setCurrent(pSystemDict);
+    pDictionaryStack -> setCurrent(pGlobalDict);
+    pDictionaryStack -> setCurrent(pStatusDict);
+    pDictionaryStack -> setCurrent(pErrorDict);
+    pDictionaryStack -> setCurrent(pPdfDict);
+    pDictionaryStack -> setCurrent(pUserDict);
+    pDictionaryStack -> setCurrent(pSystemDict);
 
     pGraphicsState = new graphicsState(this);
 
@@ -215,21 +226,23 @@ This is the MIT License
 
     job::~job() {
 
-    for ( comment *pComment : commentStack ) 
-        delete pComment;
+    pComments -> clear();
+    delete pComments;
 
-    commentStack.clear();
+    pDSCItems -> clear();
+    delete pDSCItems;
 
-    for ( structureSpec *pStructure : structureStack )
-        delete pStructure;
+    pOperandStack -> clear();
+    delete pOperandStack;
 
-    structureStack.clear();
+    pDictionaryStack -> clear();
+    delete pDictionaryStack;
 
-    while ( 0 < operandStack.size() )
-        operandStack.pop();
+    pValidNames -> clear();
+    delete pValidNames;
 
-    while ( 0 < dictionaryStack.size() )
-        dictionaryStack.pop();
+    for ( std::pair<object::objectType,std::map<object::valueType,object *>> pPair : nameTypeMap )
+        pPair.second.clear();
 
     nameTypeMap.clear();
 
@@ -294,6 +307,87 @@ This is the MIT License
     return;
     }
 
+#define MAGIC1        52845
+#define MAGIC2        22719
+
+    void job::executeEExec(file *pFileObject) {
+
+    DWORD cbData;
+    uint8_t *pbData = pFileObject -> getBinaryData(&cbData,"cleartomark");
+
+    uint8_t *pbTemp = new uint8_t[cbData];
+
+    uint16_t cypher;
+    uint16_t clear;
+    uint32_t key = 55665;
+    uint16_t index = 0;
+
+    uint8_t *p = pbData;
+
+    uint32_t n = (uint32_t)strlen("000000000000000000000000000000000000000000000000000000000000");
+
+    while ( ! ( '\0' == *p ) ) {
+
+        if ( 0 == strncmp("000000000000000000000000000000000000000000000000000000000000",(char *)p,n) )
+            break;
+
+        cypher = *p;
+
+        if ( isdigit(cypher) )
+            cypher -= '0';
+
+        else if ( isupper(cypher) )
+            cypher -= 'A' - 10;
+
+        else if ( islower(cypher) )
+            cypher -= 'a' - 10;
+
+        p++;
+
+        uint16_t cypher2 = *p;
+
+        if ( isdigit(cypher2) )
+            cypher2 -= '0';
+
+        else if ( isupper(cypher2) )
+            cypher2 -= 'A' - 10;
+
+        else if ( islower(cypher2) )
+            cypher2 -= 'a' - 10;
+    
+        cypher = (cypher << 4) | cypher2;
+
+        clear = ((key >> 8) ^ cypher) & 0xFF;
+
+        key = (key + cypher ) * MAGIC1 + MAGIC2;
+
+        if ( ! ( '\0' == clear ) )
+            pbTemp[index++] = (uint8_t)clear;
+
+        p++;
+    }
+
+    pFileObject -> releaseData();
+
+    cbData = index;
+
+    char *pszPS = new char[cbData];
+    memcpy((uint8_t *)pszPS,pbTemp,cbData);
+
+    delete [] pbTemp;
+
+    pDictionaryStack -> setCurrent(pSystemDict);
+
+    char szEmbeddedFile[MAX_PATH];
+    sprintf_s<MAX_PATH>(szEmbeddedFile,"%s:%ld",szPostScriptSourceFile,(uint32_t)executionStack.size());
+
+    execute((char *)pszPS,szEmbeddedFile);
+
+    delete [] pszPS;
+
+    return;
+    }
+
 
     object *job::resolve(char *pszObjectName) {
 
@@ -310,33 +404,13 @@ This is the MIT License
     if ( isNumeric )
         return NULL;
 
-    dictionary *pDictionary = dictionaryStack.find(pszObjectName);
+    dictionary *pDictionary = pDictionaryStack -> find(pszObjectName);
 
     if ( NULL == pDictionary )
         return NULL;
 
     return pDictionary -> retrieve(pszObjectName);
     }
-
-
-    //boolean job::deleteObject(object *pObj) {
-
-    //if ( NULL == pObj )
-    //    return false;
-
-    //if ( ! ( NULL == pObj -> pContainingDictionary ) ) 
-    //    return false;
-
-    //delete pObj;
-
-    //return true;
-    //}
-
-
-    //void job::deleteNonContainedObject(object *pObj) {
-    //delete pObj;
-    //return;
-    //}
 
 
     long job::getPageCount(char *pszFileName) {

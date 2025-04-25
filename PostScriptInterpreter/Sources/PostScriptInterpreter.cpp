@@ -155,7 +155,9 @@ This is the MIT License
     pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
     pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
     pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
-    pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
+
+    if ( ! ( logLevel::none == theRendererLogLevel ) )
+        pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
 
     return rc;
     }
@@ -174,6 +176,11 @@ This is the MIT License
     pIRenderer = NULL;
     pIGraphicElements = NULL;
     pIGraphicParameters = NULL;
+
+    if ( ! ( NULL == pIRendererNotifications ) )
+        delete pIRendererNotifications;
+
+    pIRendererNotifications = NULL;
 
     ReleaseDC();
 

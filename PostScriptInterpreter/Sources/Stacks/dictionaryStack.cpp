@@ -24,8 +24,6 @@ This is the MIT License
 #include "job.h"
 #include "Stacks/dictionaryStack.h"
 
-#include "error.h"
-
 
     dictionary *dictionaryStack::top() {
     if ( 0 == size() ) 

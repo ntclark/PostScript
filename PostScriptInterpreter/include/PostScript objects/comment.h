@@ -23,27 +23,28 @@ This is the MIT License
 
 #pragma once
 
-#include "PostScriptInterpreter.h"
+#include "PostScript objects/object.h"
 
-    class structureSpec {
-    public:
+   class comment : public object {
+   public:
 
-        structureSpec(char *ps,char *pe) {
-            //pszValue = new char[pe - ps + 1];
-            //char *p = pszValue + (pe - ps);
-            //*p = '\0';
-            //strncpy(pszValue,ps,(pe - ps));
-            //p--;
-            //while ( 0x0A == *p || 0x0D == *p )
-            //    p--;
-            //*(p + 1) = '\0';
+      comment(job *pj,char *ps,char *pe) : 
+            object(pj,ps,pe,object::objectType::comment,
+                object::valueType::valueTypeUnspecified,object::valueClassification::simple) {
+            pszValue = (char *)allocate((pe - ps + 1) * sizeof(char));
+            char *p = pszValue + (pe - ps);
+            *p = '\0';
+            strncpy(pszValue,ps,(pe - ps));
+            p--;
+            while ( 0x0A == *p || 0x0D == *p )
+                p--;
+            *(p + 1) = '\0';
         }
 
-        ~structureSpec() {
-            delete [] pszValue;
-        }
+      ~comment() {};
 
     private:
 
         char *pszValue{NULL};
-    };
+   };
+   

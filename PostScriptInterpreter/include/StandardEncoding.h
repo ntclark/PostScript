@@ -1,6 +1,6 @@
 #pragma once
 
-char *StandardEncoding[]{
+char *StandardEncoding[] {
     ".notdef","breve","caron","dotaccent","dotlessi","fi","fl","fraction",
     "hungarumlaut","Lslash","lslash","minus","ogonek","ring","Zcaron","zcaron",".notdef",".notdef",
     ".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",

@@ -36,6 +36,7 @@ This is the MIT License
         void operatorBind();
         void operatorCleartomark();
         void operatorClip();
+        void operatorClosefile();
         void operatorClosepath();
         void operatorColorimage();
         void operatorConcat();
@@ -73,6 +74,7 @@ This is the MIT License
         void operatorExch();
         void operatorExit();
         void operatorExec();
+        void operatorEexec();
         void operatorExecuteonly();
         void operatorFill();
         void operatorFilter();
@@ -115,6 +117,7 @@ This is the MIT License
         void operatorNe();
         void operatorNeg();
         void operatorNewpath();
+        void operatorNoaccess();
         void operatorNot();
         void operatorPop();
         void operatorPrint();
@@ -125,6 +128,7 @@ This is the MIT License
         void operatorQuadcurveto();
         void operatorQuit();
         void operatorReadonly();
+        void operatorReadstring();
         void operatorRectclip();
         void operatorRectfill();
         void operatorRectstroke();

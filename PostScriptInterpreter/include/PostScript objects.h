@@ -52,3 +52,6 @@ This is the MIT License
 #include "PostScript objects/pattern.h"
 #include "PostScript objects/procedure.h"
 #include "PostScript objects/resource.h"
+#include "PostScript objects/dscItem.h"
+#include "PostScript objects/comment.h"
+

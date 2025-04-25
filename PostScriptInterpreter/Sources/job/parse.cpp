@@ -45,14 +45,14 @@ This is the MIT License
                     p++;
                 if ( '\0' == *p )
                     break;
-                if ( '%' == *p && '%' == *(p + 1) ) {
+                if ( DSC_DELIMITER[0] == *p && DSC_DELIMITER[1] == *(p + 1) ) {
                     pClear[clearCount] = p;
-                    parseStructureSpec(p + 2,&p,pLineNumber);
+                    parseDSC(p + 2,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
                     clearCount++;
                     continue;
                 }
-                if ( '%' == *p ) {
+                if ( COMMENT_DELIMITER[0] == *p ) {
                     pClear[clearCount] = p;
                     parseComment(p + 1,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
@@ -84,14 +84,14 @@ This is the MIT License
                 *pLineNumber += max(count[0],count[1]);
                 if ( '\0' == *p )
                     break;
-                if ( '%' == *p && '%' == *(p + 1) ) {
+                if ( DSC_DELIMITER[0] == *p && DSC_DELIMITER[1] == *(p + 1) ) {
                     pClear[clearCount] = p;
-                    parseStructureSpec(p + 2,&p,pLineNumber);
+                    parseDSC(p + 2,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
                     clearCount++;
                     continue;
                 }
-                if ( '%' == *p ) {
+                if ( COMMENT_DELIMITER[0] == *p ) {
                     pClear[clearCount] = p;
                     parseComment(p + 1,&p,pLineNumber);
                     memset(pClear[clearCount],' ',p - pClear[clearCount]);
@@ -160,14 +160,25 @@ This is the MIT License
     void job::parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd) {
 
     char *p = pStart;
-    bool twoCharDelimiter = ! ('\0' == pszEndDelimiter[1]);
+    bool twoCharDelimiter = false;
+
+    if ( ! ( NULL == pszEndDelimiter ) ) 
+        twoCharDelimiter = ! ('\0' == pszEndDelimiter[1]);
 
     if ( twoCharDelimiter )
 
         while ( *p && ( ! ( *p == pszEndDelimiter[0] ) || ! ( *(p + 1) == pszEndDelimiter[1] ) ) ) 
             p++;
 
-    else
+    else if ( 0 == strcmp(pszEndDelimiter,"cleartomark") ) {
+
+        while ( *p ) { 
+            if ( 0 == strcmp(p,"cleartomark") )
+                break;
+            p++;
+        }
+
+    } else
 
         while ( *p && ( ! ( *p == pszEndDelimiter[0] ) ) ) 
             p++;

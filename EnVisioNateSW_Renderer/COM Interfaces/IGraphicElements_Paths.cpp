@@ -206,9 +206,6 @@ This is the MIT License
     if ( NULL == pCurrentPath )
         return E_UNEXPECTED;
 
-    //if ( pCurrentPath -> pLastPrimitive -> theType == primitive::type::closePathMarker ) 
-    //    pCurrentPath -> removePrimitive(pCurrentPath -> pLastPrimitive);
-
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::fillPathMarker));
 
     pCurrentPath -> isFillPath = true;

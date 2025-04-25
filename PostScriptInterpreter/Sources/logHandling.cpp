@@ -54,8 +54,12 @@ This is the MIT License
     if ( isPostScriptLog && none == theLogLevel )
         return 0L;
 
-    if ( none == theRendererLogLevel )
-        return 0L;
+    if ( isPostScriptLog ) {
+        if ( none == theLogLevel )
+            return 0L;
+    } else
+        if ( none == theRendererLogLevel )
+            return 0L;
 
     if ( NULL == pszOutput )
         return 0L;
@@ -71,10 +75,10 @@ This is the MIT License
         hwndLog = hwndLogContent;
         pLogStream = &logStream;
         static char szOperandStackSize[64];
-        sprintf_s<64>(szOperandStackSize,"%ld",(long)pJob -> operandStack.size());
+        sprintf_s<64>(szOperandStackSize,"%ld",(long)pJob -> pOperandStack -> size());
         PostMessage(hwndOperandStackSize,WM_SETTEXT,0L,(LPARAM)szOperandStackSize);
         static char szCurrentDictionary[64];
-        sprintf_s<64>(szCurrentDictionary,"%s",pJob -> dictionaryStack.top() -> Name());
+        sprintf_s<64>(szCurrentDictionary,"%s",pJob -> pDictionaryStack -> top() -> Name());
         PostMessage(hwndCurrentDictionary,WM_SETTEXT,0L,(LPARAM)szCurrentDictionary);
     } else {
         pLog = &theRendererLogQueue;

@@ -24,12 +24,13 @@ This is the MIT License
 #pragma once
 
 #include <string>
+#include <deque>
+#include <stack>
 
 #include "PostScriptInterpreter_i.h"
 #include "Renderer_i.h"
 
 #include "parsing.h"
-#include "comment.h"
 #include "error.h"
 
 #include "PostScript objects.h"
@@ -37,7 +38,6 @@ This is the MIT License
 #include "Stacks/objectStack.h"
 #include "Stacks/dictionaryStack.h"
 #include "Stacks/psTransformsStack.h"
-#include "structureSpec.h"
 
     class job {
     public:
@@ -51,27 +51,28 @@ This is the MIT License
 
         long parseJob(bool useThread = true);
 
-        long execute(char *);
+        long execute(char *pszPostScriptSource,char *pszFileName);
         long executeObject();
-        long executeProcedure(procedure *);
+        void executeProcedure(procedure *);
+        void executeEExec(class file *pFileObject);
 
         void parseProcedure(procedure *,char *pStart,char **ppEnd,long *pLineNumber);
         void bindProcedure(procedure *pProcedure);
         void parseProcedureString(char *pStart,char **ppEnd,long *pLineNumber);
 
-        void RequestQuit() { quitRequested = true; }
+        void RequestQuit() { executionStack.top() -> quitRequested = true; }
 
-        long currentInputFileOffset() { return (long)(currentInput() - pStart); }
-        char *currentInput() { ADVANCE_THRU_WHITE_SPACE(pNext); return pNext; }
-        void setCurrentInput(char *pInput) { pNext = pInput; }
+        long currentInputFileOffset() { return (long)(currentInput() - executionStack.top() -> pStart); }
+        char *currentInput() { ADVANCE_THRU_WHITE_SPACE((executionStack.top() -> pNext)) return executionStack.top() -> pNext; }
+        void setCurrentInput(char *pInput) { executionStack.top() -> pNext = pInput; }
 
         object* top() { 
-            if ( 0 == operandStack.size() )
+            if ( 0 == pOperandStack -> size() )
                 return NULL;
-            return operandStack.top(); 
+            return pOperandStack -> top(); 
         }
-        object* pop() { return operandStack.pop(); }
-        void push(object *pObject) { operandStack.push(pObject); }
+        object* pop() { return pOperandStack -> pop(); }
+        void push(object *pObject) { pOperandStack -> push(pObject); }
 
         graphicsState *currentGS();
 
@@ -100,28 +101,37 @@ This is the MIT License
         void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd,long *pLineNumber);
         void parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd);
         char *parseObject(char *pStart,char **pEnd);
-        void parseStructureSpec(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseDSC(char *pStart,char **ppEnd,long *pLineNumber);
         void parseComment(char *pStart,char **ppEnd,long *pLineNumber);
         void parseString(char *pStart,char **ppEnd,long *pLineNumber);
         void parseHexString(char *pStart,char **ppEnd,long *pLineNumber);
         void parseHex85String(char *pStart,char **ppEnd,long *pLineNumber);
         void parseLiteralName(char *apStart,char **ppEnd,long *pLineNumber);
 
-        char *pStart{NULL};
-        char *pNext{NULL};
+        struct executionLevel {
+            executionLevel(char *pBegin,char *pszFileName) : 
+                pStart(pBegin),pNext(pBegin) {
+                strncpy(szCurrentFile,pszFileName,MAX_PATH);
+            }
+            char *pStart{NULL};
+            char *pNext{NULL};
+            boolean quitRequested{false};
+            char szCurrentFile[MAX_PATH]{0};
+        };
+
+        std::stack<executionLevel *> executionStack;
 
         std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd,long *pLineNumber)> tokenProcedures;
         std::map<size_t,char *> antiDelimiters;
-        std::map<size_t,name *> validNames;
+        std::map<size_t,name *,std::less<size_t>,containerAllocator<name *>> *pValidNames{NULL};
 
-        std::list<comment *> commentStack;
-        std::map<size_t,object *> literalNames;
-        std::list<structureSpec *> structureStack;
+        std::list<comment *,containerAllocator<comment *>> *pComments{NULL};
+        std::list<dscItem *,containerAllocator<dscItem *>> *pDSCItems{NULL};
 
         std::map<object::objectType,std::map<object::valueType,object *>> nameTypeMap;
 
-        objectStack operandStack;
-        dictionaryStack dictionaryStack;
+        objectStack *pOperandStack{NULL};
+        dictionaryStack *pDictionaryStack{NULL};
 
         std::list<resource *> resourceList;
         std::list<procedure *> procedureList;
@@ -162,6 +172,7 @@ This is the MIT License
         object *pBuildCharLiteral{NULL};
 
         name *pStringType{NULL};
+        name *pConstantStringType{NULL};
         name *pBinaryStringType{NULL};
         name *pArrayType{NULL};
         name *pPackedArrayType{NULL};
@@ -175,6 +186,8 @@ This is the MIT License
         name *pFontType{NULL};
         name *pOperatorType{NULL};
         name *pNameType{NULL};
+        name *pDSCItem{NULL};
+        name *pComment{NULL};
 
         object *pLanguageLevel{NULL};
 
@@ -193,18 +206,14 @@ This is the MIT License
 
         char *collectionDelimiterPeek(char *,char **);
         char *delimiterPeek(char *,char **);
-        //char *token();
 
         bool isGlobalVM{false};
         bool hasExited{false};
-        bool quitRequested{false};
 
         char *pStorage{NULL},*pEnd{NULL};
 
         HWND hwndSurface{NULL};
         HANDLE hsemIsInitialized{INVALID_HANDLE_VALUE};
-
-        //HBITMAP hbmSink{NULL};
 
         static unsigned int __stdcall executeInitialization(void *);
         static unsigned int __stdcall executeThread(void *);

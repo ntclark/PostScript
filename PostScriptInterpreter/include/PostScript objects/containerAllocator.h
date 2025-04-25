@@ -1,6 +1,5 @@
 #pragma once
 
-
     template <class T1> class containerAllocator;
 
     template <> class containerAllocator<void> {
@@ -13,7 +12,6 @@
 
 
     template <class T1> class containerAllocator {
-
     public:
 
         typedef T1 value_type;
@@ -24,8 +22,8 @@
         typedef T1& reference;
         typedef const T1& const_reference;
 
-        template <class U> struct rebind { 
-            typedef containerAllocator<U> other; 
+        template <class U> struct rebind {
+            typedef containerAllocator<U> other;
         };
 
         containerAllocator() {}

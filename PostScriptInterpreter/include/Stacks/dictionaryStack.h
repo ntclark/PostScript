@@ -23,11 +23,9 @@ This is the MIT License
 
 #pragma once
 
-#include <deque>
-
 #include "PostScript objects/dictionary.h"
 
-   class dictionaryStack : public std::deque<dictionary *> {
+   class dictionaryStack : public std::deque<dictionary *,containerAllocator<dictionary *>> {
    public:
 
       dictionary *top();

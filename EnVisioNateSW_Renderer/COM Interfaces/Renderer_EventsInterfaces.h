@@ -66,7 +66,7 @@ This is the MIT License
         STDMETHOD (Unadvise)(DWORD);
         STDMETHOD (EnumConnections)(IEnumConnections **ppEnum);
 
-        int CountConnections() { return countConnections; }
+        int CountConnections() { return countLiveConnections; }
 
     private:
 

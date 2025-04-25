@@ -83,7 +83,7 @@ This is the MIT License
     job *pThis = reinterpret_cast<job *>(pvThis);
     if ( ! ( INVALID_HANDLE_VALUE == pThis -> hsemIsInitialized ) )
         WaitForSingleObject(pThis -> hsemIsInitialized,INFINITE);
-    pThis -> execute((char *)(pThis -> pStorage));
+    pThis -> execute((char *)(pThis -> pStorage),pThis -> szPostScriptSourceFile);
     return 0L;
     }
 
@@ -165,7 +165,7 @@ This is the MIT License
     }
 
 
-    long job::executeProcedure(procedure *pProcedure) {
+    void job::executeProcedure(procedure *pProcedure) {
 
     for ( object *pObj : pProcedure -> entries ) {
 
@@ -182,11 +182,11 @@ This is the MIT License
 
         executeObject();
 
-        if ( quitRequested )
+        if ( executionStack.top() -> quitRequested )
             break;
     }
 
-    return 0L;
+    return;
     }
 
 
@@ -219,7 +219,7 @@ This is the MIT License
     dictionary * job::containingDictionary(object *pObj) {
     if ( NULL == pObj -> Name() )
         return NULL;
-    return dictionaryStack.find(pObj -> Name());
+    return pDictionaryStack -> find(pObj -> Name());
     }
 
 
@@ -265,7 +265,7 @@ This is the MIT License
         }
 
         if ( ! ( NULL == pObject -> Name() ) ) {
-            dictionary *pDict = dictionaryStack.find(pObject -> Name());
+            dictionary *pDict = pDictionaryStack -> find(pObject -> Name());
             if ( ! ( NULL == pDict ) ) {
                 pProcedure -> entries[k] = pDict -> retrieve(pObject -> Name());
                 continue;
@@ -414,14 +414,11 @@ This is the MIT License
     }
 
 
-    void job::parseStructureSpec(char *pStart,char **ppEnd,long *pLineNumber) {
+    void job::parseDSC(char *pStart,char **ppEnd,long *pLineNumber) {
     char *p = pStart;
     ADVANCE_THRU_END_OF_LINE(p,pLineNumber)
     *ppEnd = p;
-if ( 29 == structureStack.size() )
-printf("hello world");
-    structureSpec *pwtf = new structureSpec(pStart,*ppEnd);
-    structureStack.insert(structureStack.end(),pwtf);
+    pDSCItems -> push_back(new (CurrentObjectHeap()) dscItem(this,pStart,*ppEnd));
     return;
     }
 
@@ -430,7 +427,7 @@ printf("hello world");
     char *p = pStart;
     ADVANCE_THRU_END_OF_LINE(p,pLineNumber)
     *ppEnd = p;
-    commentStack.insert(commentStack.end(),new comment(pStart,*ppEnd));
+    pComments -> push_back(new (CurrentObjectHeap()) comment(this,pStart,*ppEnd));
     return;
     }
 

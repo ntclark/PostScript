@@ -64,11 +64,7 @@ This is the MIT License
     if ( FALSE == autoStart )
         return S_OK;
 
-//_CrtSetBreakAlloc(184);
-//_CrtSetBreakAlloc(185);
-//_CrtSetBreakAlloc(186);
-//_CrtSetBreakAlloc(187);
-//_CrtSetBreakAlloc(4395);
+//_CrtSetBreakAlloc(281);
 
     pJob = new job(szCurrentPostScriptFile,hwndClient);
 
@@ -83,7 +79,7 @@ This is the MIT License
         delete pJob;
     pJob = new job(NULL,NULL);
     WaitForSingleObject(pJob -> hsemIsInitialized,INFINITE);
-    pJob -> execute(pszStream);
+    pJob -> execute(pszStream,"<unnamed>");
     return S_OK;
    }
 

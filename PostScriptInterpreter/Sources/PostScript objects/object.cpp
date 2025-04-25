@@ -355,8 +355,8 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "dictionary";
     case dictionaryEntryObject:
         return "dictionaryEntry";
-    case structureSpec:
-        return "structureSpec";
+    case dscItem:
+        return "dscItem";
     case directExecutable:
         return "operand";
     case objTypeMatrix:

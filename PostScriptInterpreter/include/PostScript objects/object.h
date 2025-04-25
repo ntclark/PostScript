@@ -45,7 +45,7 @@ This is the MIT License
             atom = 0,
             procedure = 1,
             dictionaryObject = 2,
-            structureSpec = 3,
+            dscItem = 3,
             directExecutable = 4,
             objTypeMatrix = 5,
             objTypeArray = 6,
@@ -64,6 +64,7 @@ This is the MIT License
             file = 19,
             filter = 20,
             dictionaryEntryObject = 21,
+            comment = 22,
             objectTypeUnspecified = 99
         };
 

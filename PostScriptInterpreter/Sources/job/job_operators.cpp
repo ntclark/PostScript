@@ -36,6 +36,7 @@ This is the MIT License
     pSystemDict -> put("bind",&job::operatorBind);
     pSystemDict -> put("cleartomark",&job::operatorCleartomark);
     pSystemDict -> put("clip",&job::operatorClip);
+    pSystemDict -> put("closefile",&job::operatorClosefile);
     pSystemDict -> put("closepath",&job::operatorClosepath);
     pSystemDict -> put("colorimage",&job::operatorColorimage);
     pSystemDict -> put("concat",&job::operatorConcat);
@@ -72,6 +73,7 @@ This is the MIT License
     pSystemDict -> put("errordict",&job::operatorErrordict);
     pSystemDict -> put("exch",&job::operatorExch);
     pSystemDict -> put("exec",&job::operatorExec);
+    pSystemDict -> put("eexec",&job::operatorEexec);
     pSystemDict -> put("executeonly",&job::operatorExecuteonly);
     pSystemDict -> put("exit",&job::operatorExit);
     pSystemDict -> put("filter",&job::operatorFilter);
@@ -109,6 +111,7 @@ This is the MIT License
     pSystemDict -> put("ne",&job::operatorNe);
     pSystemDict -> put("neg",&job::operatorNeg);
     pSystemDict -> put("newpath",&job::operatorNewpath);
+    pSystemDict -> put("noaccess",&job::operatorNoaccess);
     pSystemDict -> put("not",&job::operatorNot);
     pSystemDict -> put("pop",&job::operatorPop);
     pSystemDict -> put("print",&job::operatorPrint);
@@ -119,6 +122,7 @@ This is the MIT License
     pSystemDict -> put("quadcurveto",&job::operatorQuadcurveto);
     pSystemDict -> put("quit",&job::operatorQuit);
     pSystemDict -> put("readonly",&job::operatorReadonly);
+    pSystemDict -> put("readstring",&job::operatorReadstring);
     pSystemDict -> put("rectclip",&job::operatorRectclip);
     pSystemDict -> put("rectfill",&job::operatorRectfill);
     pSystemDict -> put("rectstroke",&job::operatorRectstroke);

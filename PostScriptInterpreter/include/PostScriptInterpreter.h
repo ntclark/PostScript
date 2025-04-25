@@ -392,6 +392,9 @@ class job;
         static HWND hwndLogContent;
         static HWND hwndRendererLogContent;
 
+        static enum logLevel theLogLevel;
+        static enum logLevel theRendererLogLevel;
+
     private:
 
         int initWindows();
@@ -418,9 +421,6 @@ class job;
         char szCurrentPostScriptFile[MAX_PATH];
 
         BYTE persistablePropertiesEnd{0x00};
-
-        static enum logLevel theLogLevel;
-        static enum logLevel theRendererLogLevel;
 
         long pageNumber{0};
 

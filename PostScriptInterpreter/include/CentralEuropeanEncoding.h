@@ -1,6 +1,6 @@
 #pragma once
 
-char *CentralEuropeanEncoding[]{
+char *CentralEuropeanEncoding[] {
     ".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",
     ".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",
     ".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",".notdef",

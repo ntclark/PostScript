@@ -23,17 +23,11 @@ This is the MIT License
 
 #pragma once
 
-#include <stack>
-
-#include "PostScript objects\object.h"
-
-    class objectStack : public std::stack<object *> {
+    class objectStack : public std::deque<object *,containerAllocator<object *>> {
     public:
 
         object *top();
         object *pop();
         void push(object *);
-
-    private:
 
     };

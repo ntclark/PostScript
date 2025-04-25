@@ -222,7 +222,7 @@ boolean useGSProperties = true;
     if ( 1 < argc )
         pParsePSHost -> pIPostScript -> SetSource((char *)argv[1]);
 
-    //pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
+    pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
     //pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
 
     //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);

@@ -32,17 +32,15 @@ This is the MIT License
     }
 
 
-    long job::execute(char *pBegin) {
+    long job::execute(char *pBegin,char *pszFileName) {
 
-    pStart = pBegin;
-    char *p = pStart;
-    pNext = p;
+    executionStack.push(new executionLevel(pBegin,pszFileName));
+
+    char *p = pBegin;
     char *pLogStart = NULL;
     long lineNumber = 0L;
 
     _se_translator_function defaultExTranslator = _set_se_translator(trans_func);
-
-    quitRequested = false;
 
     do {
 
@@ -50,66 +48,58 @@ This is the MIT License
             break;
 
         if ( 0x0A == p[0] || 0x0D == p[0] ) {
-            pNext = p;
+            executionStack.top() -> pNext = p;
             long count[]{0,0};
-            while ( 0x0A == *pNext || 0x0D == *pNext ) {
-                count[0x0A == *pNext ? 0 : 1]++;
-                pNext++;
+            while ( 0x0A == *executionStack.top() -> pNext || 0x0D == *executionStack.top() -> pNext ) {
+                count[0x0A == *executionStack.top() -> pNext ? 0 : 1]++;
+                executionStack.top() -> pNext++;
             }
-            pPostScriptInterpreter -> queueLog(true,p,pNext,false);
-            p = pNext;
+            pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext,false);
+            p = executionStack.top() -> pNext;
             lineNumber += max(count[0],count[1]);
             continue;
         }
 
-        char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
+        char *pCollectionDelimiter = collectionDelimiterPeek(p,&executionStack.top() -> pNext);
 
         char *pDelimiter = NULL;
 
         if ( NULL == pCollectionDelimiter ) {
-            pDelimiter = (char *)delimiterPeek(p,&pNext);
-            if ( ! ( NULL == pDelimiter ) && COMMENT_DELIMITER[0] == pDelimiter[0] ) {
-                parseComment(pNext,&pNext,&lineNumber);
-                pPostScriptInterpreter -> queueLog(true,p,pNext);
-                p = pNext;
-                continue;
-            }
-#if 0
+            pDelimiter = (char *)delimiterPeek(p,&executionStack.top() -> pNext);
             if ( ! ( NULL == pDelimiter ) ) {
                 if ( DSC_DELIMITER[0] == pDelimiter[0] && DSC_DELIMITER[1] == pDelimiter[1] ) {
-                    parseStructureSpec(p,&pNext,&lineNumber);
-                    pPostScriptInterpreter -> queueLog(true,p,pNext);
-                    p = pNext;
+                    parseDSC(p,&executionStack.top() -> pNext,&lineNumber);
+                    pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext);
+                    p = executionStack.top() -> pNext;
                     continue;
                 } else if ( COMMENT_DELIMITER[0] == pDelimiter[0] ) {
-                    parseComment(pNext,&pNext,&lineNumber);
-                    pPostScriptInterpreter -> queueLog(true,p,pNext);
-                    p = pNext;
+                    parseComment(executionStack.top() -> pNext,&executionStack.top() -> pNext,&lineNumber);
+                    pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext);
+                    p = executionStack.top() -> pNext;
                     continue;
                 }
             }
-#endif
         }
 
-        pPostScriptInterpreter -> queueLog(true,p,pNext);
+        pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext);
 
-        pLogStart = pNext;
+        pLogStart = executionStack.top() -> pNext;
 
         if ( ! ( NULL == pDelimiter ) ) {
-            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext,&lineNumber);
-            pPostScriptInterpreter -> queueLog(true,pLogStart,pNext);
-            ADVANCE_THRU_WHITE_SPACE(pNext)
-            p = pNext;
+            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(executionStack.top() -> pNext,&executionStack.top() -> pNext,&lineNumber);
+            pPostScriptInterpreter -> queueLog(true,pLogStart,executionStack.top() -> pNext);
+            ADVANCE_THRU_WHITE_SPACE(executionStack.top() -> pNext)
+            p = executionStack.top() -> pNext;
             continue;
         }
 
         if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == pCollectionDelimiter[0] ) {
             char *pProcedureEnd = NULL;
-            parseProcedureString(pNext,&pProcedureEnd,&lineNumber);
+            parseProcedureString(executionStack.top() -> pNext,&pProcedureEnd,&lineNumber);
             pPostScriptInterpreter -> queueLog(true,pLogStart,pProcedureEnd);
 
             try {
-            push(new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd,&lineNumber));
+            push(new (CurrentObjectHeap()) procedure(this,executionStack.top() -> pNext,pProcedureEnd,&lineNumber));
             } catch ( PStoPDFException *pe ) {
                 char szMessage[1024];
                 sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
@@ -117,7 +107,7 @@ This is the MIT License
             }
 
             ADVANCE_THRU_WHITE_SPACE(pProcedureEnd)
-            pNext = pProcedureEnd;
+            executionStack.top() -> pNext = pProcedureEnd;
             p = pProcedureEnd;
             continue;
         }
@@ -132,7 +122,7 @@ This is the MIT License
             resolve();
             po = top();
         } else {
-            char *pObjectName = parseObject(pNext,&pNext);
+            char *pObjectName = parseObject(executionStack.top() -> pNext,&executionStack.top() -> pNext);
             po = resolve(pObjectName);
             if ( NULL == po ) {
                 push(new (CurrentObjectHeap()) object(this,pObjectName));
@@ -154,44 +144,41 @@ This is the MIT License
             char szMessage[1024];
             sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
             pPostScriptInterpreter -> queueLog(true,szMessage,NULL,true);
+            if ( ! ( logLevel::none == PostScriptInterpreter::theLogLevel ) ) {
+                executionStack.top() -> quitRequested = true;
+            }
             //pPostScriptInterpreter -> queueLog("\nStack Trace:\n");
             //operatorPstack();
         }
 
-        ADVANCE_THRU_WHITE_SPACE(pNext)
+        ADVANCE_THRU_WHITE_SPACE(executionStack.top() -> pNext)
 
-        p = pNext;
+        p = executionStack.top() -> pNext;
 
-        if ( 0 == strncmp(pNext,"terminate",9) )
+        if ( 0 == strncmp(executionStack.top() -> pNext,"terminate",9) )
             break;
 
-        pPostScriptInterpreter -> queueLog(true,pLogStart,pNext);
+        pPostScriptInterpreter -> queueLog(true,pLogStart,executionStack.top() -> pNext);
 
-    } while ( p && ! quitRequested );
+    } while ( p && ! executionStack.top() -> quitRequested );
 
     pPostScriptInterpreter -> settleLog(PostScriptInterpreter::hwndLogContent);
 
     _set_se_translator(defaultExTranslator);
 
+    bool isTerminating = executionStack.top() -> quitRequested;
+
+    delete executionStack.top();
+
+    executionStack.pop();
+
+    if ( isTerminating && 0 < executionStack.size() )
+        executionStack.top() -> quitRequested = true;
+
     return 0;
     }
 
-#define xADVANCE_THRU_END_OF_LINE(p)               \
-{                                         \
-while ( ! ( *p == 0x0A ) && ! ( *p == 0x0D ) ) \
-   p++;                                   \
-if ( *p == 0x0A || *p == 0x0D )           \
-   p++;                                   \
-if ( *p == 0x0A || *p == 0x0D )           \
-   p++;                                   \
-}
 
-#define ADVANCE_THRU_WHITE_SPACE_AND_EOL(p)         \
-{                                                   \
-while ( *p && strchr(PSZ_WHITE_SPACE_AND_EOL,*p) ) {\
-   p++;                                             \
-}                                                   \
-}
     void job::parseProcedure(procedure *pProcedure,char *pStart,char **ppEnd,long *pLineNumber) {
 
     char *p = pStart;
@@ -199,8 +186,6 @@ while ( *p && strchr(PSZ_WHITE_SPACE_AND_EOL,*p) ) {\
 
     do {
 
-        ADVANCE_THRU_WHITE_SPACE_AND_EOL(p)
-#if 0
         {
         long count[]{0,0,0};
         while ( *p && strchr(PSZ_WHITE_SPACE_AND_EOL,*p) ) {
@@ -209,7 +194,6 @@ while ( *p && strchr(PSZ_WHITE_SPACE_AND_EOL,*p) ) {\
         }
         *pLineNumber += max(count[0],count[1]);
         }
-#endif
 
         if ( '\0' == *p )
             break;

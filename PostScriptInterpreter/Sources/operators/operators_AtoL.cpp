@@ -464,9 +464,7 @@ This is the MIT License
         return;
     }
 
-    dictionary *pDictionary = reinterpret_cast<dictionary *>(pObj);
-
-    dictionaryStack.setCurrent(pDictionary);
+    pDictionaryStack -> setCurrent(reinterpret_cast<dictionary *>(pObj));
 
     return;
     }
@@ -563,6 +561,28 @@ This is the MIT License
     Errors: limitcheck
     See Also: eoclip, clippath, initclip, rectclip
 */
+
+    return;
+    }
+
+    void job::operatorClosefile() {
+/*
+
+    closefile 
+        file closefile –
+
+    closes file, breaking the association between the file object and the underlying file
+    (see Section 3.8, “File Input and Output”). For an output file, closefile first 
+    performs a flushfile operation. It may also take device-dependent actions, such as
+    truncating a disk file to the current position or transmitting an end-of-file 
+    indication. Executing closefile on a file that has already been closed has no effect; 
+    it does not cause an error.
+
+    Errors: ioerror, stackunderflow, typecheck
+    See Also: file, filter, status
+*/
+
+    executionStack.top() -> quitRequested = true;
 
     return;
     }
@@ -877,7 +897,7 @@ This is the MIT License
     counts the number of dictionaries currently on the dictionary stack and pushes
     this count on the operand stack.
 */
-    push(new (CurrentObjectHeap()) object(this,(long)dictionaryStack.size()));
+    push(new (CurrentObjectHeap()) object(this,(long)pDictionaryStack -> size()));
     return;
     }
 
@@ -943,7 +963,7 @@ This is the MIT License
     a duplicate of its top element on the operand stack.
 
 */
-    push(dictionaryStack.top());
+    push(pDictionaryStack -> top());
     return;
     }
 
@@ -974,7 +994,7 @@ This is the MIT License
     otherwise, it is positioned after the last character of the token. 
 
 */
-    push( new (CurrentObjectHeap()) file(this,szPostScriptSourceFile));
+    push( new (CurrentObjectHeap()) file(this,executionStack.top() -> szCurrentFile));
     return;
     }
 
@@ -1259,7 +1279,7 @@ __debugbreak();
 
     object *pValue = pop();
 
-    dictionaryStack.top() -> put(pop() -> Name(),pValue);
+    pDictionaryStack -> top() -> put(pop() -> Name(),pValue);
 
     return;
     }
@@ -1546,9 +1566,18 @@ isNew = true;
     duplicates the top element on the operand stack. dup copies only the object; the
     value of a composite object is not copied but is shared. See Section 3.3, “Data
     Types and Objects.”
+
+    Errors: stackoverflow, stackunderflow
+    See Also: copy, index
 */
 
-    push(top());
+    object *pObject = top();
+    if ( NULL == pObject ) {
+        throw new stackunderflow("operator dup: nothing on the stack to duplicate");
+        return;
+    }
+
+    push(pObject);
 
     return;
     }
@@ -1564,13 +1593,13 @@ isNew = true;
     a dictstackunderflow error occurs.
 */
 
-    if ( 0 == dictionaryStack.size() ) {
+    if ( 0 == pDictionaryStack -> size() ) {
         char szMessage[1024];
         sprintf(szMessage,"operator: end. An attempt was made to pop a dictionary off an empty dictionary stack");
         throw new dictstackunderflow(szMessage);
     }
 
-    dictionary *pDictionary = dictionaryStack.pop();
+    dictionary *pDictionary = pDictionaryStack -> pop();
 
     return;
     }
@@ -1844,36 +1873,94 @@ isNew = true;
     return;
     }
 
-
-   void job::operatorExecuteonly() {
+    void job::operatorEexec() {
 /*
-   executeonly 
+    eexec 
+        file eexec –
+        string eexec –
 
-      array executeonly array
-      packedarray executeonly packedarray
-      file executeonly file
-      string executeonly string
+    causes the contents of file (open for reading) or string to be decrypted 
+    and then executed in a manner similar to the exec operator. The decryption 
+    operation does not cause file or string to be modified.
 
-   reduces the access attribute of an array, packed array, file, or string object to
-   execute-only (see Section 3.3.2, “Attributes of Objects”). Access can only be reduced
-   by this operator, never increased. When an object is execute-only, its value
-   cannot be read or modified explicitly by PostScript operators (an invalidaccess
-   error will result), but it can still be executed by the PostScript interpreter—for example,
-   by invoking it with the exec operator.
+    eexec creates a new file object that serves as a decryption filter on 
+    file or string. It pushes the new file object on the execution stack, 
+    making it the current file for the PostScript interpreter. 
 
-   executeonly affects the access attribute only of the object that it returns. If there
-   are other composite objects that share the same value, their access attributes are
-   unaffected.
+    Subsequently, each time the interpreter reads a character from this file, 
+    or a program reads explicitly from the file returned by currentfile,
+    the decryption filter reads one character from the original file or 
+    string and decrypts it. The decryption filter file is closed automatically 
+    when the end of the original file or string is encountered, or it can be 
+    closed explicitly by closefile. If the file passed to eexec was the current 
+    file, this resumes direct execution of that file with the decryption filter 
+    removed. The file may consist of encrypted text followed by unencrypted 
+    text if the last thing executed in the encrypted text is currentfile closefile.
 
-   Errors: invalidaccess, stackunderflow, typecheck
-   See Also: rcheck, wcheck, xcheck, readonly, noaccess
+    Before beginning execution, eexec pushes systemdict on the dictionary stack,
+    thus ensuring that the operators executed by the encrypted program have their
+    standard meanings. When the decryption filter file is closed either explicitly or
+    implicitly, the dictionary stack is popped. The program must be aware that it is
+    being executed with systemdict as the current dictionary; in particular, any 
+    definitions that it makes must be into a specific dictionary rather than the current one,
+    since systemdict is read-only. The encrypted file may be represented in 
+    either binary or hexadecimal; eexec can decrypt it without being told 
+    which type it is. The recommended representation is hexadecimal, because 
+    hexadecimal data can be transmitted through communication channels 
+    that are not completely transparent. Regardless of the representation 
+    of the encrypted file, the encryption and decryption processes are 
+    transparent—that is, an arbitrary binary file can be encrypted, transmitted as
+    either binary or hexadecimal, and decrypted to yield the original information.
+
+    The encryption employed by eexec is intended primarily for use in Type 1 font
+    programs. The book Adobe Type 1 Font Format contains a complete description of
+    the encryption algorithm and recommended uses of eexec.
+
+    Errors: dictstackoverflow, invalidaccess, invalidfileaccess, limitcheck,
+        stackunderflow, typecheck
+
+    See Also: exec, filter
+
 */
 
-   object *pObject = top();
+    if ( object::objectType::file == top() -> ObjectType() ) {
+        file *pFile = reinterpret_cast<file *>(pop());
+        executeEExec(pFile);
+        return;
+    }
 
-   pObject -> SetExecuteOnly(true);
+throw new notimplemented("eexec for strings");
+    pop();
+    return;
+    }
 
-   return;
+    void job::operatorExecuteonly() {
+/*
+    executeonly 
+
+        array executeonly array
+        packedarray executeonly packedarray
+        file executeonly file
+        string executeonly string
+
+    reduces the access attribute of an array, packed array, file, or string object to
+    execute-only (see Section 3.3.2, “Attributes of Objects”). Access can only be reduced
+    by this operator, never increased. When an object is execute-only, its value
+    cannot be read or modified explicitly by PostScript operators (an invalidaccess
+    error will result), but it can still be executed by the PostScript interpreter—for example,
+    by invoking it with the exec operator.
+
+    executeonly affects the access attribute only of the object that it returns. If there
+    are other composite objects that share the same value, their access attributes are
+    unaffected.
+
+    Errors: invalidaccess, stackunderflow, typecheck
+    See Also: rcheck, wcheck, xcheck, readonly, noaccess
+*/
+
+    top() -> SetExecuteOnly(true);
+
+    return;
    }
 
     void job::operatorExit() {
@@ -2668,7 +2755,7 @@ isNew = true;
     for ( long k = 0; k < n; k++ )
         replacements.insert(replacements.end(),pop());
 
-    object *pDuplicate = operandStack.top();
+    object *pDuplicate = pOperandStack -> top();
 
     for ( std::list<object *>::reverse_iterator it = replacements.rbegin(); it != replacements.rend(); it++ )
         push(*it);

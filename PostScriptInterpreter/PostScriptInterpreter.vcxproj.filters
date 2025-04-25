@@ -228,9 +228,6 @@
     <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters_Forwarder.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp">
-      <Filter>Source Files\Common</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\ascii85.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -251,6 +248,9 @@
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\dictionaryEntry.cpp">
       <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\source\utilities.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -313,9 +313,6 @@
     </ClInclude>
     <ClInclude Include="include\Stacks\objectStack.h">
       <Filter>Header Files\Stacks</Filter>
-    </ClInclude>
-    <ClInclude Include="include\comment.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\error.h">
       <Filter>Header Files</Filter>
@@ -389,8 +386,11 @@
     <ClInclude Include="include\PostScript objects\containerAllocator.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
-    <ClInclude Include="include\structureSpec.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\PostScript objects\dscItem.h">
+      <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\comment.h">
+      <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

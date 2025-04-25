@@ -437,6 +437,39 @@ This is the MIT License
     return;
     }
 
+    void job::operatorNoaccess() {
+
+/*
+    noaccess 
+        array noaccess array
+        packedarray noaccess packedarray
+        dict noaccess dict
+        file noaccess file
+        string noaccess string
+
+    reduces the access attribute of an array, packed array, dictionary, file, or 
+    string object to none (see Section 3.3.2, “Attributes of Objects”). 
+    The value of a no-access object cannot be executed or accessed directly 
+    by PostScript operators. No-access objects are of no use to PostScript programs, 
+    but serve certain internal purposes that are not documented in this book.
+
+    For an array, packed array, file, or string object, noaccess affects the access 
+    attribute only of the object that it returns. If there are other objects that share the
+    same value, their access attributes are unaffected. However, in the case of a 
+    dictionary, noaccess affects the value of the object, so all dictionary objects sharing
+    the same dictionary are affected. Applying noaccess to a dictionary whose access
+    is already read-only causes an invalidaccess error.
+    
+    Errors: invalidaccess, stackunderflow, typecheck
+    
+    See Also: rcheck, wcheck, xcheck, readonly, executeonly
+
+*/
+    top() -> theAccessAttribute = object::accessAttribute::none;
+    return;
+    }
+
+
     void job::operatorNot() {
 /*
     not 
@@ -512,7 +545,7 @@ This is the MIT License
 
     std::list<object *,containerAllocator<object *>> entries;
 
-    while ( operandStack.size() ) 
+    while ( pOperandStack -> size() ) 
         entries.insert(entries.end(),pop());
 
     pPostScriptInterpreter -> queueLog(true,"\n");
@@ -727,13 +760,13 @@ This is the MIT License
         }
 
         if ( object::valueType::binaryString == pTarget -> ValueType() ) {
-            binaryString *pTarget = reinterpret_cast<binaryString *>(pTarget);
+            binaryString *pBinaryStringTarget = reinterpret_cast<binaryString *>(pTarget);
             if ( object::valueType::string == pSource -> ValueType() ) 
                 for ( long k = 0; k < countItems; k++ ) 
-                    pTarget -> put(index++,(BYTE)reinterpret_cast<string *>(pSource) -> get(k));
+                    pBinaryStringTarget -> put(index++,(BYTE)reinterpret_cast<string *>(pSource) -> get(k));
             else
                 for ( long k = 0; k < countItems; k++ ) 
-                    pTarget -> put(index++,reinterpret_cast<binaryString *>(pSource) -> get(k));
+                    pBinaryStringTarget -> put(index++,reinterpret_cast<binaryString *>(pSource) -> get(k));
             return;
         }
 
@@ -822,37 +855,70 @@ This is the MIT License
     return;
     }
 
-   void job::operatorRectclip() {
+    void job::operatorReadstring() {
 /*
-   rectclip 
-      x y width height rectclip –
-      numarray rectclip –
-      numstring rectclip –
 
-   intersects the area inside the current clipping path with a rectangular path defined
-   by the operands to produce a new, smaller clipping path. In the first form, the operands
-   are four numbers that define a single rectangle. In the other two forms, the
-   operand is an array or an encoded number string that defines an arbitrary number
-   of rectangles (see Sections 3.14.5, “Encoded Number Strings,” and 4.6.5,
-   “Rectangles”). After computing the new clipping path, rectclip clears the current
-   path with an implicit newpath operation.
+    readstring 
+        file string readstring substring bool
 
-   Assuming width and height are positive, the first form of the operator is equivalent
-   to the following code:
+    reads characters from file and stores them into successive elements of string until
+    either the entire string has been filled or an end-of-file indication is encountered
+    in file. readstring then returns the substring of string that was filled and a boolean
+    value indicating the outcome (true normally, false if end-of-file was encountered
+    before the string was filled). If string is zero-length, a rangecheck error occurs.
+
+    All character codes are treated the same—as integers in the range 0 to 255. There
+    are no special characters (in particular, the newline character is not treated specially). 
+    However, the communication channel may usurp certain control characters; see Section 3.8, “File Input and Output.”
+
+    Errors: invalidaccess, ioerror, rangecheckk, stackunderflow, typecheck
+
+    See Also: read, readhexstring, readline
+*/
+
+    string *pString = reinterpret_cast<string *>(pop());
+    file *pFile = reinterpret_cast<file *>(pop());
+
+    uint32_t strSize = (uint32_t)pString -> length();
+    for ( uint32_t k = 0; k < strSize; k++ ) {
+        pString -> put(k,(BYTE)*currentInput());
+        setCurrentInput(currentInput() + 1);
+    }
+
+    return;
+    }
+
+    void job::operatorRectclip() {
+/*
+    rectclip 
+        x y width height rectclip –
+        numarray rectclip –
+        numstring rectclip –
+
+    intersects the area inside the current clipping path with a rectangular path defined
+    by the operands to produce a new, smaller clipping path. In the first form, the operands
+    are four numbers that define a single rectangle. In the other two forms, the
+    operand is an array or an encoded number string that defines an arbitrary number
+    of rectangles (see Sections 3.14.5, “Encoded Number Strings,” and 4.6.5,
+    “Rectangles”). After computing the new clipping path, rectclip clears the current
+    path with an implicit newpath operation.
+
+    Assuming width and height are positive, the first form of the operator is equivalent
+    to the following code:
 
 */
-   object *pTop = pop();
-   switch ( pTop -> ObjectType() ) {
-   case object::objectType::number:
-      pop();
-      pop();
-      pop();
-      break;
-   default:
-      break;
-   }
-   return;
-   }
+    object *pTop = pop();
+    switch ( pTop -> ObjectType() ) {
+    case object::objectType::number:
+        pop();
+        pop();
+        pop();
+        break;
+    default:
+        break;
+    }
+    return;
+    }
 
    void job::operatorRectfill() {
 /*
@@ -2186,7 +2252,7 @@ This is the MIT License
    char *pszString = new char[pCount -> IntValue() + 1];
    memset(pszString,'0',(pCount -> IntValue() + 1) * sizeof(char));
    
-   push(new (CurrentObjectHeap()) object(this,pszString,(pszString + pCount -> IntValue())));
+   push(new (CurrentObjectHeap()) string(this,pszString,(pszString + pCount -> IntValue())));
 
    delete [] pszString;
 
@@ -2560,7 +2626,7 @@ This is the MIT License
     dictionary *pCurrent = NULL;
 
     if ( ! ( NULL == pTop -> Name() ) )
-        pCurrent = dictionaryStack.find(pTop -> Name());
+        pCurrent = pDictionaryStack -> find(pTop -> Name());
 
     if ( ! ( NULL == pCurrent ) ) {
         push(pCurrent);

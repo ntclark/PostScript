@@ -90,7 +90,7 @@ This is the MIT License
 
     DragQueryFile(handleDrop,0,pszFileName,cb);
 
-    pParent -> Parse(pszFileName,FALSE);
+    pParent -> Parse(pszFileName,TRUE);
 
     delete [] pszFileName;
 
