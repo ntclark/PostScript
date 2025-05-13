@@ -37,7 +37,7 @@ This is the MIT License
         if ( ! pCurrentPath -> isClosed() ) {
             primitive *p = pCurrentPath -> pLastPrimitive;
             if ( p == pCurrentPath -> pFirstPrimitive -> pNextPrimitive && p -> theType == primitive::type::move ) {
-
+                //
                 // This is a newpath - moveto, and no other primitives.
                 // 
                 // I *believe* this happens when there is a move to set the current point

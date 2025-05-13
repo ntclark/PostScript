@@ -89,7 +89,7 @@ This is the MIT License
 
         graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
 
-        pIRenderer -> ClearRect(hdcSurface,&pathParameters::rcPage,RGB(255,255,255));
+        pIRenderer -> ClearRect(hdcSurface,&pageParameters::rcPage,RGB(255,255,255));
 
     };
 

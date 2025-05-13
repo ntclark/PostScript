@@ -29,6 +29,10 @@ This is the MIT License
         object(pJob,pszName),
         pValue(pObj) {
     theObjectType = object::objectType::dictionaryEntryObject;
+
+if ( '[' == pszName[0] )
+printf("hello world");
+
     pKeyObject = new (pJob -> CurrentObjectHeap()) class string(pJob,pszName,NULL);
     nameSize = (long)strlen(pszName);
     }

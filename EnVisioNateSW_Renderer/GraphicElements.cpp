@@ -94,17 +94,17 @@ This is the MIT License
     }
 
 
-    void Renderer::GraphicElements::calcInverseTransform() {
+    void Renderer::GraphicElements::calcInverseTransform(XFORM *pIn,XFORM *pOut) {
 
     double theMatrix[3][3];
     double theMatrixInverted[3][3];
 
-    theMatrix[0][0] = (double)toDeviceSpace.eM11;
-    theMatrix[0][1] = (double)toDeviceSpace.eM12;
-    theMatrix[0][2] = (double)toDeviceSpace.eDx;
-    theMatrix[1][0] = (double)toDeviceSpace.eM21;
-    theMatrix[1][1] = (double)toDeviceSpace.eM22;
-    theMatrix[1][2] = (double)toDeviceSpace.eDy;
+    theMatrix[0][0] = (double)pIn -> eM11;
+    theMatrix[0][1] = (double)pIn -> eM12;
+    theMatrix[0][2] = (double)pIn -> eDx;
+    theMatrix[1][0] = (double)pIn -> eM21;
+    theMatrix[1][1] = (double)pIn -> eM22;
+    theMatrix[1][2] = (double)pIn -> eDy;
 
     theMatrix[2][0] = 0.0;
     theMatrix[2][1] = 0.0;
@@ -112,57 +112,39 @@ This is the MIT License
 
     Mx3Inverse(&theMatrix[0][0],&theMatrixInverted[0][0]);
 
-    toUserSpace.eM11 = (FLOAT)theMatrixInverted[0][0];
-    toUserSpace.eM12 = (FLOAT)theMatrixInverted[0][1];
-    toUserSpace.eM21 = (FLOAT)theMatrixInverted[1][0];
-    toUserSpace.eM22 = (FLOAT)theMatrixInverted[1][1];
+    pOut -> eM11 = (FLOAT)theMatrixInverted[0][0];
+    pOut -> eM12 = (FLOAT)theMatrixInverted[0][1];
+    pOut -> eM21 = (FLOAT)theMatrixInverted[1][0];
+    pOut -> eM22 = (FLOAT)theMatrixInverted[1][1];
 
-    toUserSpace.eDx = (FLOAT)theMatrixInverted[0][2];
-    toUserSpace.eDy = (FLOAT)theMatrixInverted[1][2];
+    pOut -> eDx = (FLOAT)theMatrixInverted[0][2];
+    pOut -> eDy = (FLOAT)theMatrixInverted[1][2];
 
     return;
     }
 
 
-    void Renderer::GraphicElements::scalePoint(FLOAT *px,FLOAT *py) {
-    FLOAT xResult = toDeviceSpace.eM11 * *px + (FLOAT)fabs(toDeviceSpace.eM12) * *py;
-    FLOAT yResult = toDeviceSpace.eM21 * *px + (FLOAT)fabs(toDeviceSpace.eM22) * *py;
+    void Renderer::GraphicElements::scalePoint(XFORM *pXForm,FLOAT *px,FLOAT *py) {
+    FLOAT xResult = pXForm -> eM11 * *px + (FLOAT)fabs(pXForm -> eM12) * *py;
+    FLOAT yResult = pXForm -> eM21 * *px + (FLOAT)fabs(pXForm -> eM22) * *py;
     *px = xResult;
     *py = yResult;
     return;
     }
 
 
-    void Renderer::GraphicElements::transformPoint(FLOAT *px,FLOAT *py) {
-    FLOAT xResult = toDeviceSpace.eM11 * *px + toDeviceSpace.eM12 * *py + toDeviceSpace.eDx;
-    FLOAT yResult = toDeviceSpace.eM21 * *px + toDeviceSpace.eM22 * *py + toDeviceSpace.eDy;
-    *px = xResult;
-    *py = yResult;
-    return;
-    }
-
-
-    void Renderer::GraphicElements::unTransformPoint(FLOAT *px,FLOAT *py) {
-    FLOAT xResult = toUserSpace.eM11 * *px + toUserSpace.eM12 * *py + toUserSpace.eDx;
-    FLOAT yResult = toUserSpace.eM21 * *px + toUserSpace.eM22 * *py + toUserSpace.eDy;
-    *px = xResult;
-    *py = yResult;
-    return;
-    }
-
-
-    void Renderer::GraphicElements::transformPoint(POINTF *ptIn,POINTF *ptOut) {
-    FLOAT xResult = toDeviceSpace.eM11 * ptIn -> x + toDeviceSpace.eM12 * ptIn -> y + toDeviceSpace.eDx;
-    FLOAT yResult = toDeviceSpace.eM21 * ptIn -> x + toDeviceSpace.eM22 * ptIn -> y + toDeviceSpace.eDy;
+    void Renderer::GraphicElements::transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut) {
+    FLOAT xResult = pXForm -> eM11 * ptIn -> x + pXForm -> eM12 * ptIn -> y + pXForm -> eDx;
+    FLOAT yResult = pXForm -> eM21 * ptIn -> x + pXForm -> eM22 * ptIn -> y + pXForm -> eDy;
     ptOut -> x = xResult;
     ptOut -> y = yResult;
     return;
     }
 
 
-    void Renderer::GraphicElements::transformPoint(D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut) {
-    FLOAT xResult = toDeviceSpace.eM11 * ptIn -> x + toDeviceSpace.eM12 * ptIn -> y + toDeviceSpace.eDx;
-    FLOAT yResult = toDeviceSpace.eM21 * ptIn -> x + toDeviceSpace.eM22 * ptIn -> y + toDeviceSpace.eDy;
+    void Renderer::GraphicElements::transformPoint(XFORM *pXForm,D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut) {
+    FLOAT xResult = pXForm -> eM11 * ptIn -> x + pXForm -> eM12 * ptIn -> y + pXForm -> eDx;
+    FLOAT yResult = pXForm -> eM21 * ptIn -> x + pXForm -> eM22 * ptIn -> y + pXForm -> eDy;
     ptOut -> x = xResult;
     ptOut -> y = yResult;
     return;

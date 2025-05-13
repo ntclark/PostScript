@@ -37,38 +37,38 @@ This is the MIT License
 
 class job;
 
-   class array : public object {
-   public:
+    class array : public object {
+    public:
 
-      array(job *pJob,char *pszName);
-      array(job *pJob,char *pszName,char *pszValues);
-      array(job *pJob,char *pszName,long initialCount);
-      array(job *pJob,long initialCount);
-      array(job *pJob,char *pszName,long initialCount,char *pszValues);
+        array(job *pJob,char *pszName);
+        array(job *pJob,char *pszName,char *pszValues);
+        array(job *pJob,char *pszName,long initialCount);
+        array(job *pJob,long initialCount);
+        array(job *pJob,char *pszName,long initialCount,char *pszValues);
 
-      void insert(object *);
+        void insert(object *);
 
-      void putElement(long index,object *);
-      object *getElement(long index);
+        void putElement(long index,object *);
+        object *getElement(long index);
 
-      virtual void setValue(long index,POINT_TYPE v);
+        virtual void setValue(long index,POINT_TYPE v);
 
-      void copyFrom(array *pSource);
+        void copyFrom(array *pSource);
 
-      void clear();
+        void clear();
 
-      bool find(long index) { return entries.find(index) != entries.end() ; };
+        bool find(long index) { return ! ( entries.find(index) == entries.end()); };
 
-      long size() { return (long)entries.size(); };
+        long size() { return (long)entries.size(); };
 
-      long sizeFromString(char *pszValues);
+        long sizeFromString(char *pszValues);
 
-      char *stringValueFromArray(char *pszValue,long oneBasedIndex);
+        char *stringValueFromArray(char *pszValue,long oneBasedIndex);
 
-   protected:
+    protected:
 
-      std::map<long,object *,std::less<long>,containerAllocator<object *>> entries;
+        std::map<long,object *,std::less<long>,containerAllocator<object *>> entries;
 
-      friend class job;
-   };
+        friend class job;
+    };
    

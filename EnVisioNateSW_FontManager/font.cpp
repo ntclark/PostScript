@@ -48,7 +48,7 @@ This is the MIT License
 
     matrixStack.push(pFontMatrix);
 
-    fontType = rhs.fontType;
+    theFontType = rhs.theFontType;
 
     dupCount = rhs.dupCount + 1;
 
@@ -58,7 +58,7 @@ This is the MIT License
 
     memcpy(pbFontData,rhs.pbFontData,cbFontData);
 
-    if ( ftype42 == fontType )
+    if ( FontType::type42 == theFontType )
         type42Load(pbFontData);
 
     for ( std::pair<uint32_t,char *> pPair : rhs.encodingTable ) {

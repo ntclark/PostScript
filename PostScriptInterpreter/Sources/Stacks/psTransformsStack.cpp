@@ -45,6 +45,7 @@ This is the MIT License
     matrix *pMatrix = new (pJob -> CurrentObjectHeap()) matrix(pJob);
     pMatrix -> copyFrom(back());
     push_back(pMatrix);
+    PostScriptInterpreter::pIRenderer -> SaveState();
     return;
     }
 
@@ -52,9 +53,11 @@ This is the MIT License
     void psTransformsStack::gRestore() {
     if ( 1 == size() )
 {
-        OutputDebugStringA("There has been a gRestore underflow\n");//Beep(2000,200);
+        Beep(2000,200);
+        OutputDebugStringA("There has been a gRestore underflow\n");
         return;
 }
     pop_back();
+    PostScriptInterpreter::pIRenderer -> RestoreState();
     return;
     }

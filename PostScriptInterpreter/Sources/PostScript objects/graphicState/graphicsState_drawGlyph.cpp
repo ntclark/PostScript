@@ -23,27 +23,27 @@ This is the MIT License
 
 #include "job.h"
 
-#include "pathParameters.h"
+#include "pageParameters.h"
 
     void graphicsState::drawTextChar(BYTE glyphIndex) {
 
-    pJob -> push(CurrentFont());
-    pJob -> push(pJob -> pFontTypeLiteral);
-    pJob -> operatorGet();
+    POINTF startPoint{currentUserSpacePoint.x,currentUserSpacePoint.y};
+    POINTF endPoint;
 
-    object *pFontType = pJob -> pop();
+    if ( FontType::type1 == CurrentFont() -> TheFontType() ) {
+        drawType1Glyph(glyphIndex,&startPoint,&endPoint);
+        moveto(endPoint.x,endPoint.y);
+        return;
+    }
 
-    if ( 0 == strcmp(pFontType -> Contents(),"3") ) {
+    if ( FontType::type3 == CurrentFont() -> TheFontType() ) {
         drawType3Glyph(glyphIndex);
         return;
     }
 
-    POINTF startPoint{currentPageSpacePoint.x,currentPageSpacePoint.y};
-    POINTF endPoint;
-
     drawType42Glyph(glyphIndex,&startPoint,&endPoint);
 
-    untransformPoint(&endPoint,&endPoint);
+    pPSXformsStack -> untransformPoint(&endPoint,&endPoint);
 
     moveto(&endPoint);
 
@@ -76,13 +76,11 @@ This is the MIT License
     else
         pString = reinterpret_cast<string *>(pObject);
 
-    pJob -> push(CurrentFont());
-    pJob -> push(pJob -> pFontTypeLiteral);
-    pJob -> operatorGet();
+    POINTF startPoint{currentUserSpacePoint.x,currentUserSpacePoint.y};
+    POINTF endPoint{0.0f,0.0f};
 
-    object *pFontType = pJob -> pop();
-
-    if ( 0 == strcmp(pFontType -> Contents(),"3") ) {
+    if ( FontType::type1 == CurrentFont() -> TheFontType() || 
+            FontType::type3 == CurrentFont() -> TheFontType() ) {
 
         for ( long k = 0; k < strSize; k++ ) {
 
@@ -93,15 +91,19 @@ This is the MIT License
             else
                 glyphIndex = pString -> get(k);
 
-            drawType3Glyph(glyphIndex);
+            if ( FontType::type1 == CurrentFont() -> TheFontType() ) {
+                drawType1Glyph(glyphIndex,&startPoint,&endPoint);
+                startPoint = endPoint;
+            } else
+                drawType3Glyph(glyphIndex);
 
         }
 
+        if ( FontType::type1 == CurrentFont() -> TheFontType() ) 
+            moveto(endPoint.x,endPoint.y);
+
         return;
     }
-
-    POINTF startPoint{currentPageSpacePoint.x,currentPageSpacePoint.y};
-    POINTF endPoint;
 
     for ( long k = 0; k < strSize; k++ ) {
 
@@ -118,7 +120,7 @@ This is the MIT License
 
     }
 
-    POINT ptStart{(int)currentPageSpacePoint.x,(int)currentPageSpacePoint.y};
+    POINT ptStart{(int)currentUserSpacePoint.x,(int)currentUserSpacePoint.y};
 
     if ( NULL == pPostScriptInterpreter -> HwndClient() ) {
         ptStart.x = -1;
@@ -134,11 +136,19 @@ This is the MIT License
     }
 
 
-    void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
-    PostScriptInterpreter::pIFontManager -> RenderGlyph(bGlyph,
-                                        (UINT_PTR)pPSXformsStack -> back() -> XForm(),
-                                        (UINT_PTR)pathParameters::ToDeviceSpace(),
-                                            pStartPoint,pEndPoint);
+    void graphicsState::drawType1Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
+#if 0
+    RECT rcDrawing;
+    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
+    PostScriptInterpreter::pIRenderer -> SetRenderLive(pPostScriptInterpreter -> GetDC(),&rcDrawing);
+#endif
+    AdobeType1Fonts::drawGlyph(CurrentFont(),bGlyph,
+                                pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint);
+#if 0
+    RECT rcDrawing;
+    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
+    PostScriptInterpreter::pIRenderer -> Render(pPostScriptInterpreter -> GetDC(),&rcDrawing);
+#endif
     return;
     }
 
@@ -164,9 +174,9 @@ This is the MIT License
 
     procedure *pBuildGlyph = reinterpret_cast<procedure *>(pJob -> pop());
 
-    pJob -> push(CurrentFont());
-    pJob -> push(pJob -> pEncodingArrayLiteral);
-    pJob -> operatorGet();
+    //pJob -> push(CurrentFont());
+    //pJob -> push(pJob -> pEncodingArrayLiteral);
+    //pJob -> operatorGet();
 
 /*
     When a PostScript program tries to show a glyph from a Type 3 font, and the
@@ -192,24 +202,32 @@ This is the MIT License
 */
 
     // The BYTE bGlyph is the "index" into the Encoding array
+// I made a change above and it needs testing.
+__debugbreak();
 
-    pJob -> push(new (pJob -> CurrentObjectHeap()) object(pJob,(uint16_t)bGlyph));
-    pJob -> operatorGet();
-
-    object *pCharacterName = pJob -> pop();
+    object *pCharacterName = CurrentFont() -> Encoding() -> getElement((uint16_t)bGlyph);
 
     pJob -> push(CurrentFont());
     pJob -> push(pCharacterName);
 
     pPSXformsStack -> gSave();
 
-    translate(currentUserSpacePoint.x,currentUserSpacePoint.y);
+    pPSXformsStack -> translate(currentUserSpacePoint.x,currentUserSpacePoint.y);
 
-    concat(CurrentFont() -> getFontMatrix());
+    pPSXformsStack -> concat(CurrentFont() -> getFontMatrix());
 
     pJob -> executeProcedure(pBuildGlyph);
 
     pPSXformsStack -> gRestore();
 
+    return;
+    }
+
+
+    void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
+    PostScriptInterpreter::pIFontManager -> RenderGlyph(bGlyph,
+                                        (UINT_PTR)pPSXformsStack -> CurrentTransform(),
+                                        (UINT_PTR)pageParameters::ToDeviceSpace(),
+                                            pStartPoint,pEndPoint);
     return;
     }

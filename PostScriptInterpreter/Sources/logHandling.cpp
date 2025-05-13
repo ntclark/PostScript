@@ -74,12 +74,14 @@ This is the MIT License
         pLog = &theLogQueue;
         hwndLog = hwndLogContent;
         pLogStream = &logStream;
+#if 0
         static char szOperandStackSize[64];
         sprintf_s<64>(szOperandStackSize,"%ld",(long)pJob -> pOperandStack -> size());
         PostMessage(hwndOperandStackSize,WM_SETTEXT,0L,(LPARAM)szOperandStackSize);
         static char szCurrentDictionary[64];
         sprintf_s<64>(szCurrentDictionary,"%s",pJob -> pDictionaryStack -> top() -> Name());
         PostMessage(hwndCurrentDictionary,WM_SETTEXT,0L,(LPARAM)szCurrentDictionary);
+#endif
     } else {
         pLog = &theRendererLogQueue;
         hwndLog = hwndRendererLogContent;
@@ -108,6 +110,9 @@ This is the MIT License
 
     char *pStart = pszOutput;
 
+if ( n > 1024 )
+n = 1024;
+
     pEnd = pStart + n;
 
     while ( n > 4094 ) {
@@ -127,11 +132,12 @@ This is the MIT License
         memcpy((BYTE *)(p + cbError),pStart,pEnd - pStart - cbError);
     } else
         memcpy((BYTE *)p,pStart,pEnd - pStart);
-        
+
     p[pEnd - pStart] = '\0';
 
     if ( NULL == hwndLog ) {
         OutputDebugStringA(p);
+        OutputDebugStringA("\n");
         LeaveCriticalSection(&theQueueCriticalSection);
         return 0;
     }
@@ -173,6 +179,14 @@ This is the MIT License
     pLog -> pop();
 
     char *pNew = replaceChar(p,'{',"\\{");
+
+    char *pNew2 = replaceChar(pNew,'}',"\\}");
+
+    if ( ! ( pNew == pNew2 ) ) {
+        if ( ! ( p == pNew ) )
+            delete [] pNew;
+        pNew = pNew2;
+    }
 
     if ( ! ( p == pNew ) ) {
         char *pNew2 = replaceChar(pNew,'/',"\\/");

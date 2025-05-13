@@ -23,7 +23,6 @@ This is the MIT License
 
 #include "job.h"
 
-
     void trans_func( unsigned int u, EXCEPTION_POINTERS* ) {
     static char szException[1024];
     sprintf_s<1024>(szException,"A non postscript exception has occurred. Code: %04x",u);
@@ -32,15 +31,24 @@ This is the MIT License
     }
 
 
-    long job::execute(char *pBegin,char *pszFileName) {
+    long job::execute(char *pBegin,char *pEnd,char *pszFileName) {
 
-    executionStack.push(new executionLevel(pBegin,pszFileName));
+    executionStack.push(new executionLevel(pBegin,pEnd,pszFileName));
+
+    if (NULL == pRootExecutionLevel )
+        pRootExecutionLevel = executionStack.top();
 
     char *p = pBegin;
     char *pLogStart = NULL;
-    long lineNumber = 0L;
 
-    _se_translator_function defaultExTranslator = _set_se_translator(trans_func);
+    executionLevel *pExecutionLevel = executionStack.top();
+
+    pExecutionLevel -> lineNumber = 0;
+
+    static _se_translator_function defaultExTranslator = NULL;
+
+    if ( 1 == executionStack.size() )
+        defaultExTranslator = _set_se_translator(trans_func);
 
     do {
 
@@ -48,58 +56,66 @@ This is the MIT License
             break;
 
         if ( 0x0A == p[0] || 0x0D == p[0] ) {
-            executionStack.top() -> pNext = p;
+            pExecutionLevel-> pNext = p;
             long count[]{0,0};
-            while ( 0x0A == *executionStack.top() -> pNext || 0x0D == *executionStack.top() -> pNext ) {
-                count[0x0A == *executionStack.top() -> pNext ? 0 : 1]++;
-                executionStack.top() -> pNext++;
+            while ( 0x0A == *pExecutionLevel -> pNext || 0x0D == *pExecutionLevel -> pNext ) {
+                count[0x0A == *pExecutionLevel -> pNext ? 0 : 1]++;
+                pExecutionLevel -> pNext++;
             }
-            pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext,false);
-            p = executionStack.top() -> pNext;
-            lineNumber += max(count[0],count[1]);
+            pPostScriptInterpreter -> queueLog(true,p,pExecutionLevel -> pNext,false);
+            p = pExecutionLevel -> pNext;
+            pExecutionLevel -> lineNumber += max(count[0],count[1]);
             continue;
         }
 
-        char *pCollectionDelimiter = collectionDelimiterPeek(p,&executionStack.top() -> pNext);
+        if ( 0 == strncmp(pExecutionLevel -> pNext,"terminate",9) )
+            break;
 
+        char *pCollectionDelimiter = collectionDelimiterPeek(p,&pExecutionLevel -> pNext);
         char *pDelimiter = NULL;
 
         if ( NULL == pCollectionDelimiter ) {
-            pDelimiter = (char *)delimiterPeek(p,&executionStack.top() -> pNext);
+
+            pDelimiter = (char *)delimiterPeek(p,&pExecutionLevel -> pNext);
+
             if ( ! ( NULL == pDelimiter ) ) {
+
+                pLogStart = pExecutionLevel -> pNext;
+
                 if ( DSC_DELIMITER[0] == pDelimiter[0] && DSC_DELIMITER[1] == pDelimiter[1] ) {
-                    parseDSC(p,&executionStack.top() -> pNext,&lineNumber);
-                    pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext);
-                    p = executionStack.top() -> pNext;
-                    continue;
-                } else if ( COMMENT_DELIMITER[0] == pDelimiter[0] ) {
-                    parseComment(executionStack.top() -> pNext,&executionStack.top() -> pNext,&lineNumber);
-                    pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext);
-                    p = executionStack.top() -> pNext;
-                    continue;
+                    parseDSC(p,&pExecutionLevel -> pNext,&pExecutionLevel -> lineNumber);
+                    pLogStart -= 2;
+
+                } else {
+                    (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pExecutionLevel -> pNext,
+                            &pExecutionLevel -> pNext,&pExecutionLevel -> lineNumber);
+                    pLogStart--;
                 }
+
+                pPostScriptInterpreter -> queueLog(true,pLogStart,pExecutionLevel -> pNext);
+
+                ADVANCE_THRU_WHITE_SPACE(pExecutionLevel -> pNext)
+
+                p = pExecutionLevel -> pNext;
+
+                continue;
+
             }
-        }
 
-        pPostScriptInterpreter -> queueLog(true,p,executionStack.top() -> pNext);
-
-        pLogStart = executionStack.top() -> pNext;
-
-        if ( ! ( NULL == pDelimiter ) ) {
-            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(executionStack.top() -> pNext,&executionStack.top() -> pNext,&lineNumber);
-            pPostScriptInterpreter -> queueLog(true,pLogStart,executionStack.top() -> pNext);
-            ADVANCE_THRU_WHITE_SPACE(executionStack.top() -> pNext)
-            p = executionStack.top() -> pNext;
-            continue;
         }
 
         if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == pCollectionDelimiter[0] ) {
+
+            pLogStart = pExecutionLevel -> pNext - 1;
+
             char *pProcedureEnd = NULL;
-            parseProcedureString(executionStack.top() -> pNext,&pProcedureEnd,&lineNumber);
+            parseProcedureString(pExecutionLevel -> pNext,&pProcedureEnd,&pExecutionLevel -> lineNumber);
             pPostScriptInterpreter -> queueLog(true,pLogStart,pProcedureEnd);
 
             try {
-            push(new (CurrentObjectHeap()) procedure(this,executionStack.top() -> pNext,pProcedureEnd,&lineNumber));
+            push(new (CurrentObjectHeap()) procedure(this,pExecutionLevel -> pNext,pProcedureEnd,&pExecutionLevel -> lineNumber));
+            } catch ( nonPostscriptException *ex ) {
+                pPostScriptInterpreter -> queueLog(true,ex -> Message(),NULL,true);
             } catch ( PStoPDFException *pe ) {
                 char szMessage[1024];
                 sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
@@ -107,22 +123,26 @@ This is the MIT License
             }
 
             ADVANCE_THRU_WHITE_SPACE(pProcedureEnd)
-            executionStack.top() -> pNext = pProcedureEnd;
+
+            pExecutionLevel -> pNext = pProcedureEnd;
             p = pProcedureEnd;
             continue;
         }
+
+        pLogStart = pExecutionLevel -> pNext;
 
         object *po = NULL;
 
         try {
 
         if ( ! ( NULL == pCollectionDelimiter ) ) {
+            pPostScriptInterpreter -> queueLog(true,pCollectionDelimiter,NULL,false);
             po = new (CurrentObjectHeap()) object(this,pCollectionDelimiter);
             push(po);
             resolve();
             po = top();
         } else {
-            char *pObjectName = parseObject(executionStack.top() -> pNext,&executionStack.top() -> pNext);
+            char *pObjectName = parseObject(pExecutionLevel -> pNext,&pExecutionLevel -> pNext);
             po = resolve(pObjectName);
             if ( NULL == po ) {
                 push(new (CurrentObjectHeap()) object(this,pObjectName));
@@ -145,30 +165,32 @@ This is the MIT License
             sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
             pPostScriptInterpreter -> queueLog(true,szMessage,NULL,true);
             if ( ! ( logLevel::none == PostScriptInterpreter::theLogLevel ) ) {
-                executionStack.top() -> quitRequested = true;
+                pExecutionLevel -> quitRequested = true;
             }
-            //pPostScriptInterpreter -> queueLog("\nStack Trace:\n");
-            //operatorPstack();
         }
 
-        ADVANCE_THRU_WHITE_SPACE(executionStack.top() -> pNext)
+        ADVANCE_THRU_WHITE_SPACE(pExecutionLevel -> pNext)
 
-        p = executionStack.top() -> pNext;
+        p = pExecutionLevel -> pNext;
 
-        if ( 0 == strncmp(executionStack.top() -> pNext,"terminate",9) )
+        if ( 0 == strncmp(pExecutionLevel -> pNext,"terminate",9) )
             break;
 
-        pPostScriptInterpreter -> queueLog(true,pLogStart,executionStack.top() -> pNext);
+        pPostScriptInterpreter -> queueLog(true,pLogStart,pExecutionLevel -> pNext);
 
-    } while ( p && ! executionStack.top() -> quitRequested );
+    } while ( p && ! ( pExecutionLevel -> quitRequested || pExecutionLevel -> fileClosed ) );
 
     pPostScriptInterpreter -> settleLog(PostScriptInterpreter::hwndLogContent);
 
-    _set_se_translator(defaultExTranslator);
+    if ( 1 == executionStack.size() ) {
+        _set_se_translator(defaultExTranslator);
+        defaultExTranslator = NULL;
+    } else
+        pRootExecutionLevel -> lineNumber += pExecutionLevel -> lineNumber;
 
-    bool isTerminating = executionStack.top() -> quitRequested;
+    bool isTerminating = pExecutionLevel -> quitRequested;
 
-    delete executionStack.top();
+    delete pExecutionLevel;
 
     executionStack.pop();
 
@@ -240,6 +262,8 @@ This is the MIT License
             p = pNext;
         } else 
             po = new (CurrentObjectHeap()) object(this,parseObject(p,&p));
+
+        po -> HandyIdentifier((long)pProcedure -> entries.size());
 
         pProcedure -> insert(po);
 

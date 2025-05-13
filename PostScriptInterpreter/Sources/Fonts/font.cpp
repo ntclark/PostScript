@@ -25,12 +25,14 @@ This is the MIT License
 
 #include "FontManager_i.c"
 #include "PostScript objects/font.h"
+#include "PostScript objects/binaryString.h"
 
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
     {
     theObjectType = object::objectType::font;
     PostScriptInterpreter::pIFontManager -> LoadFont(pszName,(UINT_PTR)(void *)this,&pIFont);
+    pIFont -> get_FontType(&fontType);
     createDictionary();
     return;
     }
@@ -42,6 +44,25 @@ This is the MIT License
     static_cast<dictionary *>(this) -> copyFrom(pDict);
     pCharStrings = reinterpret_cast<dictionary *>(retrieve("CharStrings"));
     pEncoding = reinterpret_cast<array *>(retrieve("Encoding"));
+    object *pFontType = reinterpret_cast<dictionary *>(retrieve("FontType"));
+    if ( ! ( NULL == pFontType ) ) {
+        fontType = (FontType)pFontType -> IntValue();
+        pIFont -> put_FontType(fontType);
+    }
+    loadDictionary();
+    return;
+    }
+
+
+    font::font(font &rhs) { 
+    theObjectType = object::objectType::font;
+    pJob = rhs.pJob;
+    Name(rhs.Name());
+    Contents(rhs.Contents());
+    isCIDFont = rhs.isCIDFont;
+    dupCount = rhs.dupCount + 1;
+    copyFrom(static_cast<dictionary *>(&rhs));
+    PostScriptInterpreter::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
     loadDictionary();
     return;
     }
@@ -51,7 +72,7 @@ This is the MIT License
 
     if ( ! exists(pJob -> pFontTypeLiteral -> Name()) ) {
         char szType[16];
-        int fontType;
+        FontType fontType;
         pIFont -> get_FontType(&fontType);
         sprintf_s<16>(szType,"%d",fontType);
         put(pJob -> pFontTypeLiteral -> Name(),szType);
@@ -89,18 +110,22 @@ This is the MIT License
 
     void font::loadDictionary() {
 
-    if ( ! ( NULL == pCharStrings ) ) {
+    if ( ! ( NULL == pCharStrings ) && FontType::type42 == fontType ) {
         DWORD cb = 0;
-        for ( long k = 0; k < pCharStrings -> size(); k++ ) 
-            cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
+        for ( long k = 0; k < pCharStrings -> size(); k++ ) {
+            object *pStr = pCharStrings -> retrieve(k);
+            cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 6 + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
+        }
 
-        char *pszCharStrings = (char *)CoTaskMemAlloc(cb + 1);
+        uint8_t *pszCharStrings = (uint8_t *)CoTaskMemAlloc(cb + 1);
 
-        memset(pszCharStrings,0,(cb + 1) * sizeof(char));
-        char *pszEnd = pszCharStrings + cb;
+        memset(pszCharStrings,0,(cb + 1) * sizeof(uint8_t));
+        uint8_t *pszEnd = pszCharStrings + cb;
         cb = 0L;
         for ( long k = 0; k < pCharStrings -> size(); k++ ) {
-            cb += sprintf(pszCharStrings + cb,"%s;%s",pCharStrings -> retrieveKey(k),pCharStrings -> retrieve(k) -> Contents());
+            object *pStr = pCharStrings -> retrieve(k);
+            char *psz = pCharStrings -> retrieve(k) -> Contents();
+            cb += sprintf((char *)(pszCharStrings + cb),"%s:%04d;%s",pCharStrings -> retrieveKey(k),(uint16_t)strlen(psz),psz);
             cb++;
         }
 
@@ -109,7 +134,7 @@ This is the MIT License
         CoTaskMemFree(pszCharStrings);
     }
 
-    if ( ! ( NULL == pEncoding ) ) {
+    if ( ! ( NULL == pEncoding ) && FontType::type42 == fontType ) {
         DWORD cb = 0;
         for ( long k = 0; k < pEncoding -> size(); k++ )
             cb += 4 + 2 + (DWORD)strlen(pEncoding -> getElement(k) -> Contents());
@@ -124,23 +149,19 @@ This is the MIT License
         pIFont -> SetEncoding((UINT_PTR)pszEncoding);
 
         CoTaskMemFree(pszEncoding);
-
     }
 
     return;
     }
 
 
-    font::font(font &rhs) { 
-    theObjectType = object::objectType::font;
-    pJob = rhs.pJob;
-    Name(rhs.Name());
-    Contents(rhs.Contents());
-    isCIDFont = rhs.isCIDFont;
-    dupCount = rhs.dupCount + 1;
-    static_cast<dictionary *>(this) -> copyFrom(static_cast<dictionary *>(&rhs));
-    PostScriptInterpreter::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
-    loadDictionary();
+    void font::copyFrom(dictionary *pSource) {
+    dictionary::copyFrom(pSource);
+    pCharStrings = reinterpret_cast<dictionary *>(retrieve("CharStrings"));
+    pEncoding = reinterpret_cast<array *>(retrieve("Encoding"));
+    object *pFontType = reinterpret_cast<dictionary *>(retrieve("FontType"));
+    if ( ! ( NULL == pFontType ) ) 
+        fontType = (FontType)pFontType -> IntValue();
     return;
     }
 

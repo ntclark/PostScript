@@ -23,21 +23,33 @@ This is the MIT License
 
 #include "Renderer.h"
 
-    HRESULT Renderer::put_TransformMatrix(UINT_PTR pXFormToDeviceSpace) {
+    HRESULT Renderer::put_ToDeviceTransform(UINT_PTR pXFormToDeviceSpace) {
     memcpy(&pIGraphicElements -> toDeviceSpace,(void *)pXFormToDeviceSpace,sizeof(XFORM));
-    pIGraphicElements -> calcInverseTransform();
+    pIGraphicElements -> calcInverseTransform(&pIGraphicElements -> toDeviceSpace,&pIGraphicElements -> toDeviceInverse);
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::put_ToPageTransform(UINT_PTR pXForm) {
+    memcpy(&pGraphicsStateManager -> parametersStack.top() -> toPageSpace,(void *)pXForm,sizeof(XFORM));
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::put_ScaleTransform(UINT_PTR pXForm) {
+    memcpy(&pGraphicsStateManager -> parametersStack.top() -> scaleXForm,(void *)pXForm,sizeof(XFORM));
     return S_OK;
     }
 
 
     HRESULT Renderer::put_DownScale(FLOAT ds) {
-    downScale = ds; 
+    pGraphicsStateManager -> parametersStack.top() -> downScale = ds; 
     return S_OK;
     }
 
 
     HRESULT Renderer::put_Origin(POINTF ptOrigin) { 
-    origin = ptOrigin;
+    pGraphicsStateManager -> parametersStack.top() -> origin = ptOrigin;
     return S_OK;
     }
 
@@ -271,17 +283,18 @@ This is the MIT License
 
 
     HRESULT Renderer::WhereAmI(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY) {
+
     if ( ! pX && ! pY )
         return E_POINTER;
 
-    FLOAT x{(FLOAT)xPixels},y{(FLOAT)yPixels};
-    pIGraphicElements -> unTransformPoint(&x,&y);
+    POINTF ptPixels{(FLOAT)xPixels,(FLOAT)yPixels};
+    pIGraphicElements -> transformPoint(&pGraphicsStateManager -> parametersStack.top() -> toPageSpace,&ptPixels,&ptPixels);
 
     if ( pX ) 
-        *pX = x;
+        *pX = ptPixels.x;
 
     if ( pY )
-        *pY = y;
+        *pY = ptPixels.y;
 
     return S_OK;
     }

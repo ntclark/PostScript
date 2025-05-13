@@ -83,7 +83,7 @@ This is the MIT License
     job *pThis = reinterpret_cast<job *>(pvThis);
     if ( ! ( INVALID_HANDLE_VALUE == pThis -> hsemIsInitialized ) )
         WaitForSingleObject(pThis -> hsemIsInitialized,INFINITE);
-    pThis -> execute((char *)(pThis -> pStorage),pThis -> szPostScriptSourceFile);
+    pThis -> execute(pThis -> pStorage,pThis -> pStorageEnd,pThis -> szPostScriptSourceFile);
     return 0L;
     }
 
@@ -167,7 +167,11 @@ This is the MIT License
 
     void job::executeProcedure(procedure *pProcedure) {
 
+    long stepNumber = 0;
+
     for ( object *pObj : pProcedure -> entries ) {
+
+        stepNumber++;
 
         push(pObj);
 

@@ -52,6 +52,12 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{f55dd765-11a4-4d2e-a304-46a83ad925e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\AdobeType1Fonts">
+      <UniqueIdentifier>{3433bd18-0bbb-43b7-8b0c-f0d22b45f5d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AdobeType1Fonts">
+      <UniqueIdentifier>{d3382a79-4ed4-4c3c-afef-de700c03382d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\PostScriptInterpreter.cpp">
@@ -219,14 +225,11 @@
     <ClCompile Include="Sources\PostScript objects\graphicState\gdiParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters.cpp">
+    <ClCompile Include="Sources\PostScript objects\graphicState\pageParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="Sources\Stacks\psTransformsStack.cpp">
       <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters_Forwarder.cpp">
-      <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
     <ClCompile Include="Sources\ascii85.cpp">
       <Filter>Source Files</Filter>
@@ -249,8 +252,29 @@
     <ClCompile Include="Sources\PostScript objects\dictionaryEntry.cpp">
       <Filter>Source Files\PostScript objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\source\utilities.cpp">
-      <Filter>Source Files\Common</Filter>
+    <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_encryption.cpp">
+      <Filter>Source Files\AdobeType1Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_operators.cpp">
+      <Filter>Source Files\AdobeType1Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts.cpp">
+      <Filter>Source Files\AdobeType1Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_drawGlyph.cpp">
+      <Filter>Source Files\AdobeType1Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_operators12.cpp">
+      <Filter>Source Files\AdobeType1Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="include\AdobeType1Fonts\type1Glyph.cpp">
+      <Filter>Source Files\AdobeType1Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Stacks\psTransformsstack_transforms.cpp">
+      <Filter>Source Files\Stacks</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -356,7 +380,7 @@
     <ClInclude Include="include\gdiParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\pathParameters.h">
+    <ClInclude Include="include\pageParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\pointType.h">
@@ -391,6 +415,12 @@
     </ClInclude>
     <ClInclude Include="include\PostScript objects\comment.h">
       <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AdobeType1Fonts\AdobeType1Fonts.h">
+      <Filter>Header Files\AdobeType1Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AdobeType1Fonts\type1Glyph.h">
+      <Filter>Header Files\AdobeType1Fonts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

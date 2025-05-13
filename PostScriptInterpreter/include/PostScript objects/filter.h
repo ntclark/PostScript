@@ -33,7 +33,7 @@ This is the MIT License
 
         void setSource(object *pFilterSource);
 
-        virtual uint8_t *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
+        virtual uint8_t *getBinaryData(uint32_t *pcbSize,char *pszEndDelimiter);
 
         boolean IsDCTDecode() { return isDCTDecode; }
 

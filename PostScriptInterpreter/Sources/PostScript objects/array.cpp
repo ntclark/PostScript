@@ -66,8 +66,6 @@ This is the MIT License
             insert(new (pJob -> CurrentObjectHeap()) object(pJob,stringValueFromArray(pszValues,k + 1)));
     }
 
-    //pJob -> mapsToClear.push_back(&entries);
-
     return;
     }
 

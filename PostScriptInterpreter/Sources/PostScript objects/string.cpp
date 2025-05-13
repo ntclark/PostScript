@@ -38,6 +38,9 @@ This is the MIT License
         object(pJob,pStart,pEnd,object::objectType::atom,vt,object::valueClassification::composite)
     { 
 
+    if ( NULL == Contents() )
+        return;
+
     if ( NULL == strchr(Contents(),'\\') )
         return;
 

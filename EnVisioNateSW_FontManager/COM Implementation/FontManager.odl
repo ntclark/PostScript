@@ -33,10 +33,23 @@ import "ocidl.idl";
 
 library FontManager { 
 
-    [uuid(1FC20340-4355-4347-8A32-A82E2FB89891),
-      helpstring("EnVisioNateSW Font Interface: FUCK MIDL DOCUMENTATION FOR NOT DESCRIBING HOW TO OVERRIDE A SYSTEM INTERFACE"),
-      nonextensible,pointer_default(unique)] 
+    typedef enum FontType {
+        type0 = 0,
+        type1 = 1,
+        type2 = 2,
+        type3 = 3,
+        type9 = 9,
+        type10 = 10,
+        type11 = 11,
+        type14 = 14,
+        type32 = 32,
+        type42 = 42,
+        typeUnspecified = 99
+    } FontType;
 
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89891),
+      helpstring("EnVisioNateSW Font Interface: MIDL DOCUMENTATION DOES NOT DESCRIBEHOW TO OVERRIDE A SYSTEM INTERFACE"),
+      nonextensible,pointer_default(unique)] 
     interface IFont_EVNSW : IUnknown {
 
         [propget] HRESULT Matrix([out,retval]/*XFORM*/ LPVOID pResult);
@@ -56,7 +69,8 @@ library FontManager {
 
         HRESULT FontName(long cbName,char *szName);
         [propget] HRESULT FontCookie([out,retval] UINT_PTR *pCookie);
-        [propget] HRESULT FontType([out,retval] int *pFontType);
+        [propget] HRESULT FontType([out,retval] enum FontType *pFontType);
+        [propput] HRESULT FontType([in] enum FontType fontType);
         [propget] HRESULT GlyphIndex(unsigned short charCode,[out,retval] unsigned short *pGlyphId);
 
         HRESULT SetEncoding(UINT_PTR encoding);

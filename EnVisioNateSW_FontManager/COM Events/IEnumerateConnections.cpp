@@ -36,9 +36,8 @@ This is the MIT License
 
   connections = new CONNECTDATA[countConnections];
 
-  for ( UINT i = 0; i < countConnections; i++ ) {
-     connections[i] = paConnections[i];
-  }
+  for ( UINT k = 0; k < countConnections; k++ )
+     connections[k] = paConnections[k];
 
   return;
   }

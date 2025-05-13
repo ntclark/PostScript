@@ -49,6 +49,37 @@ This is the MIT License
     return;
     }
 
+    void job::operatorAbs() {
+/*
+    abs 
+        num1 abs num2
+
+    returns the absolute value of num1. The type of the result is the same as the type of
+    num1 unless num1 is the smallest (most negative) integer, in which case the result
+    is a real number.
+
+    Examples
+        4.5 abs -> 4.5
+        –3 abs -> 3
+        0 abs -> 0
+
+    Errors: stackunderflow, typecheck
+    See Also: neg
+*/
+    object *p = pop();
+
+    if ( object::objectType::number == p -> ObjectType() ) {
+        if ( object::valueType::integer == p -> ValueType() )
+            push(new (CurrentObjectHeap()) object(this,abs(p -> IntValue())));
+        else
+            push(new (CurrentObjectHeap()) object(this,abs(p -> DoubleValue())));
+        return;
+    }
+
+    throw new typecheck("Incompatible object type for operator abs (not a number)");
+    return;
+    }
+
     void job::operatorAdd() {
 /*
     add 
@@ -518,9 +549,8 @@ This is the MIT License
     pops entries from the operand stack repeatedly until it encounters a mark, which
     it also pops from the stack. obj1 through objn are any objects other than marks.
 */
-    while ( ! ( object::objectType::mark == top() -> ObjectType() ) ) {
+    while ( ! ( object::objectType::mark == top() -> ObjectType() ) )
         pop();
-    }
     pop();
     return;
     }
@@ -582,7 +612,8 @@ This is the MIT License
     See Also: file, filter, status
 */
 
-    executionStack.top() -> quitRequested = true;
+    pop();
+    executionStack.top() -> fileClosed = true;
 
     return;
     }
@@ -672,10 +703,10 @@ This is the MIT License
 
     switch ( pMatrixOrArray -> ObjectType() ) {
     case object::objectType::objTypeMatrix:
-        currentGS() -> concat(reinterpret_cast<matrix *>(pMatrixOrArray));
+        currentGS() -> PSTransforms() -> concat(reinterpret_cast<matrix *>(pMatrixOrArray));
         break;
     case object::objectType::objTypeArray:
-        currentGS() -> concat(reinterpret_cast<array *>(pMatrixOrArray));
+        currentGS() -> PSTransforms() -> concat(reinterpret_cast<array *>(pMatrixOrArray));
         break;
     default:
         char szMessage[1024];
@@ -1143,6 +1174,7 @@ __debugbreak();
 */
 
     object *pTop = pop();
+
     if ( object::objectType::number == pTop -> ObjectType() ) {
         if ( object::valueType::integer == pTop -> ValueType() || object::valueType::radix == pTop -> ValueType() )
             push(new (CurrentObjectHeap()) object(this,pTop -> IntValue()));
@@ -1150,6 +1182,7 @@ __debugbreak();
             push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
     } else
         push(new (CurrentObjectHeap()) object(this,atol(pTop -> Contents())));
+
     return;
     }
 
@@ -1195,10 +1228,130 @@ __debugbreak();
 */
 
     object *pTop = pop();
-    if ( object::objectType::number == pTop -> ObjectType() )
-        push(new (CurrentObjectHeap()) object(this,pTop -> OBJECT_POINT_TYPE_VALUE));
-    else
+    if ( object::objectType::number == pTop -> ObjectType() ) {
+        if ( object::valueType::real == pTop -> ValueType() )
+            push(pTop);
+        else
+            push(new (CurrentObjectHeap()) object(this,pTop -> FloatValue()));
+    } else
         push(new (CurrentObjectHeap()) object(this,atof(pTop -> Contents())));
+    return;
+    }
+
+    void job::operatorCvrs() {
+
+    static char szDigits[]{"0123456789ABCDEFGHIJKLMNOPQRSTUVXYZ"};
+    static char digits[]{'0','0','0','0','0','0','0','0','0','0','0','0'};
+
+/*
+    cvrs 
+        num radix string cvrs substring
+
+    (convert with radix to string) produces a text representation of the number num
+    in the specified radix, stores the text into string (overwriting some initial portion
+    of its value), and returns a string object designating the substring actually used. If
+    string is too small to hold the result of the conversion, a rangecheck error occurs.
+
+    Examples
+        /temp 12 string def
+        123 10 temp cvrs -> (123)
+        -123 10 temp cvrs -> (-123)
+        123.4 10 temp cvrs -> (123.4)
+        123 16 temp cvrs -> (7B)
+        -123 16 temp cvrs -> (FFFFFF85)
+        123.4 16 temp cvrs -> (7B)
+
+    Errors: invalidaccess, rangecheck, stackunderflow, typecheck
+    See Also: cvs
+
+*/
+/*
+
+    A radix number takes the form base # number, where base is a decimal integer in
+    the range 2 through 36. number is interpreted in this base; it must consist of digits
+    ranging from 0 to base - 1. Digits greater than 9 are represented by the letters A
+    through Z (or a through z). The number is treated as an unsigned integer and is
+    converted to an integer object having the same twos-complement binary representation.
+
+    This notation is intended for specifying integers in a nondecimal radix,
+    such as binary, octal, or hexadecimal. If the number exceeds the implementation
+    limit for integers, a limitcheck error occurs. 
+*/
+
+    object *pStrObject = pop();
+    object *pRadixObject = pop();
+    object *pNumObject = pop();
+
+/*
+    If radix is 10, cvrs produces the same result as the cvs operator when applied to
+    either an integer or a real number. That is, it produces a signed integer or real
+    token that conforms to the PostScript language syntax for that number.
+*/
+    if ( 10 == pRadixObject -> IntValue() ) {
+        push(new (CurrentObjectHeap()) string(this,pNumObject -> Contents()));
+        return;
+    }
+
+/*
+    If radix is not 10, cvrs converts num to an integer, as if by the cvi operator. Then it
+    treats the machine representation of that integer as an unsigned positive integer
+    and converts it to text form according to the specific radix. The resulting text is
+    not necessarily a valid number. However, if it is immediately preceded by the
+    same radix and #, the combination is a valid PostScript token that represents the
+    same number.
+*/
+    push(pNumObject);
+
+    operatorCvi();
+
+    pNumObject = pop();
+
+    int32_t theValue = pNumObject -> IntValue();
+    int32_t theBase = pRadixObject -> IntValue();
+
+    memset(digits,'0',sizeof(digits));
+
+    char szNumber[16];
+
+if ( 0 > theValue ) {
+// This ALMOST works - again, the comment above is totally useless
+//theValue = INT32_MAX + theValue + 1;
+}
+    if ( -1 < theValue ) {
+
+        int32_t quotient = theValue / theBase;
+        double fracPart = (double)theValue / (double)theBase - (double)quotient;
+        int32_t remainder = (uint32_t)((double)fracPart * (double)theBase);
+
+        int32_t digitIndex = sizeof(digits) / sizeof(char) - 1;
+        digits[digitIndex] = szDigits[remainder];
+        digitIndex--;
+
+        while ( ! ( 0 == quotient ) ) {
+            theValue = quotient;
+            quotient = theValue / theBase;
+            fracPart = (double)theValue / (double)theBase - (double)quotient;
+            remainder = (int32_t)((double)fracPart * (double)theBase);
+            digits[digitIndex] = szDigits[remainder];
+            digitIndex--;
+        }
+
+        uint32_t j = 0;
+        for ( uint32_t k = digitIndex + 1; k < sizeof(digits) / sizeof(char); k++, j++ )
+            szNumber[j] = digits[k];
+
+        szNumber[j] = '\0';
+
+    } else 
+        // I HAVE NO FUCKING CLUE what the comment starting with "If radix is not 10, ..."
+        // above actually means. Also, typical of documentation, they give a totally useless example 
+        // of a negative number with radix (base) 16! What would (should) the result be for
+        // a negative number with some other base, like 36 - which in fact, I've come across
+        // for a positive number.
+        sprintf_s<16>(szNumber,"%08X",theValue);
+
+    push(new (CurrentObjectHeap()) string(this,szNumber));
+
     return;
     }
 
@@ -1223,17 +1376,82 @@ __debugbreak();
     represented as 0.001 or as 1.0E-3.
 */
 
-    object *pTop = pop();
+    object *pString = pop();
+    object *pAny = pop();
 
-    if ( object::objectType::number == pTop -> ObjectType() ) {
+    string *pTargetStr = reinterpret_cast<string *>(pString);
+
+    if ( object::objectType::number == pAny -> ObjectType() ) {
+        // If any is a number, cvs produces a string representation of that number
         char szNumber[64];
-        if ( object::valueType::real == pTop -> ValueType() )
-            sprintf_s<64>(szNumber,"%g",pTop -> OBJECT_POINT_TYPE_VALUE);
+        if ( object::valueType::real == pAny -> ValueType() )
+            sprintf_s<64>(szNumber,"%g",pAny -> FloatValue());
         else
-            sprintf_s<64>(szNumber,"%ld",pTop -> IntValue());
-        push(new (CurrentObjectHeap()) literal(this,szNumber,NULL));
-    } else
-        push(new (CurrentObjectHeap()) literal(this,pTop -> Contents(),NULL));
+            sprintf_s<64>(szNumber,"%ld",pAny -> IntValue());
+        push(new (CurrentObjectHeap()) string(this,szNumber,NULL));
+
+        int32_t strSize = (DWORD)strlen(szNumber);
+
+        if ( strSize > pTargetStr -> length() ) {
+            throw new rangecheck("operator cvs: target string is too small to accept the converted string.");
+            return;
+        }
+
+        for ( int32_t k = 0; k < strSize; k++ )
+            pTargetStr -> put(k,szNumber[k]);
+        return;
+    } 
+
+    if ( object::objectType::logical == pAny -> ObjectType() ) {
+        // If any is a boolean value, cvs produces either the string true or the string false
+        int32_t strSize = 0;
+        if ( reinterpret_cast<booleanObject *>(pAny) -> is() ) {
+            push(new (CurrentObjectHeap()) string(this,"true",NULL));
+            strSize = 4;
+        } else {
+            push(new (CurrentObjectHeap()) string(this,"false",NULL));
+            strSize = 5;
+        }
+        if ( strSize > pTargetStr -> length() ) {
+            throw new rangecheck("operator cvs: target string is too small to accept the converted string.");
+            return;
+        }
+        pTargetStr -> Contents(top() -> Contents());
+        return;
+    }
+
+    if ( object::objectType::atom == pAny -> ObjectType() || 
+            object::objectType::literal == pAny -> ObjectType() ) {
+        if ( object::valueType::string == pAny -> ValueType() || 
+                object::valueType::constantString == pAny -> ValueType() ) {
+            // If any is a string, cvs copies its contents into string
+            string *pAnyStr = reinterpret_cast<string *>(pAny);
+            int32_t strSize = (DWORD)strlen(pAnyStr -> Contents());
+            if ( strSize > pTargetStr -> length() ) {
+                throw new rangecheck("operator cvs: target string is too small to accept the converted string.");
+                return;
+            }
+            for ( int32_t k = 0; k < strSize; k++ )
+                pTargetStr -> put(k,pAnyStr -> Contents()[k]);
+            push(new (CurrentObjectHeap()) string(this,pAny -> Contents()));
+            return;
+        }
+    }
+
+    if ( object::objectType::directExecutable == pAny -> ObjectType() || object::objectType::name == pAny -> ObjectType() ) {
+        // If any is a name or an operator, cvs produces the text representation of that name or the operator’s name
+        push(new (CurrentObjectHeap()) string(this,pAny -> Contents()));
+        int32_t strSize = (DWORD)strlen(pAny -> Contents());
+        if ( strSize > pTargetStr -> length() ) {
+            throw new rangecheck("operator cvs: target string is too small to accept the converted string.");
+            return;
+        }
+        for ( int32_t k = 0; k < strSize; k++ )
+            pTargetStr -> put(k,pAny -> Contents()[k]);
+        return;
+    }
+
+    push(new (CurrentObjectHeap()) literal(this,"--nostringval--",NULL));
 
     return;
     }
@@ -1248,6 +1466,9 @@ __debugbreak();
 */
 
     top() -> theExecutableAttribute = object::executableAttribute::executable;
+
+    if ( object::objectType::objTypeArray == top() -> ObjectType() )
+        push(new (CurrentObjectHeap()) procedure(reinterpret_cast<array *>(pop())));
 
     return;
     }
@@ -1541,14 +1762,14 @@ isNew = true;
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> transformPointInPlace(pMatrix,x,y,&x,&y);
+        currentGS() -> PSTransforms() -> transformPointInPlace(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
         y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> transformPointInPlace(x,y,&x,&y);
+        currentGS() -> PSTransforms() -> transformPointInPlace(x,y,&x,&y);
         }
     }
 
@@ -1599,7 +1820,7 @@ isNew = true;
         throw new dictstackunderflow(szMessage);
     }
 
-    dictionary *pDictionary = pDictionaryStack -> pop();
+    pDictionaryStack -> pop();
 
     return;
     }
@@ -1925,12 +2146,14 @@ isNew = true;
 
     if ( object::objectType::file == top() -> ObjectType() ) {
         file *pFile = reinterpret_cast<file *>(pop());
-        executeEExec(pFile);
+        AdobeType1Fonts::executeEExec(pFile);
         return;
     }
 
-throw new notimplemented("eexec for strings");
+    throw new notimplemented("eexec for strings");
+
     pop();
+
     return;
     }
 
@@ -2312,13 +2535,15 @@ throw new notimplemented("eexec for strings");
     object *pSource = pop();
 
     switch ( pSource -> ObjectType() ) {
+    case object::objectType::objTypeMatrix:
     case object::objectType::objTypeArray: {
         array *pArray = reinterpret_cast<array *>(pSource);
+        if ( object::objectType::objTypeMatrix == pSource -> ObjectType() )
+            pArray = static_cast<array *>(reinterpret_cast<matrix *>(pSource));
         long n = pArray -> size();
         for ( long k = 0; k < n; k++ ) {
             push(pArray -> getElement(k));
-            push(pProc);
-            executeObject();
+            executeProcedure(pProc);
         }
         }
         break;
@@ -2793,14 +3018,14 @@ throw new notimplemented("eexec for strings");
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> untransformPointInPlace(pMatrix,x,y,&x,&y);
+        currentGS() -> PSTransforms() -> untransformPointInPlace(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
         y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> untransformPointInPlace(x,y,&x,&y);
+        currentGS() -> PSTransforms() -> untransformPointInPlace(x,y,&x,&y);
         }
     }
 
@@ -2879,7 +3104,7 @@ throw new notimplemented("eexec for strings");
     See Also: defaultmatrix, setmatrix, currentmatrix
 */
 
-    currentGS() -> defaultMatrix();
+    currentGS() -> PSTransforms() -> defaultMatrix();
     return;
     }
 
@@ -2905,14 +3130,14 @@ throw new notimplemented("eexec for strings");
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
         y = pop() -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> untransformPoint(pMatrix,x,y,&x,&y);
+        currentGS() -> PSTransforms() -> untransformPoint(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
         y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
         x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> untransformPoint(x,y,&x,&y);
+        currentGS() -> PSTransforms() -> untransformPoint(x,y,&x,&y);
         }
     }
 
@@ -2948,6 +3173,66 @@ throw new notimplemented("eexec for strings");
         push(pTrueConstant);
     else
         push(pFalseConstant);
+
+    return;
+    }
+
+    void job::operatorLe() {
+/*
+    le 
+        num1 num2 le bool
+        string1 string2 le bool
+
+    pops two objects from the operand stack and pushes true if the first operand is less
+    than or equal to the second, or false otherwise. If both operands are numbers, le
+    compares their mathematical values. If both operands are strings, le compares
+    them element by element, treating the elements as integers in the range 0 to 255,
+    to determine whether the first string is lexically less than or equal to the second. If
+    the operands are of other types or one is a string and the other is a number, a
+    typecheck error occurs.
+
+    Errors: invalidaccess, stackunderflow, typecheck
+    See Also: lt, eq, ne, ge, gt
+*/
+    object *pObject2 = pop();
+    object *pObject1 = pop();
+
+    if ( object::objectType::number == pObject1 -> ObjectType() && 
+            object::objectType::number == pObject2 -> ObjectType() ) {
+        if ( object::valueType::integer == pObject1 -> ValueType() && 
+                object::valueType::integer == pObject2 -> ValueType() ) {
+            if ( pObject1-> IntValue() <= pObject2 -> IntValue() )
+                push(pTrueConstant);
+            else
+                push(pFalseConstant);
+            return;
+        } else 
+            if ( object::valueType::real == pObject1 -> ValueType() && 
+                    object::valueType::real == pObject2 -> ValueType() ) {
+                if ( pObject1-> DoubleValue() <= pObject2 -> DoubleValue() )
+                    push(pTrueConstant);
+                else
+                    push(pFalseConstant);
+            return;
+        }
+    } else {
+        if ( object::objectType::atom == pObject1 -> ObjectType() && 
+                object::objectType::atom == pObject2 -> ObjectType() ) {
+            if ( ( object::valueType::string == pObject1 -> ValueType() ) && 
+                    ( object::valueType::string == pObject2 -> ValueType() ) ||
+                ( object::valueType::constantString == pObject1 -> ValueType() ) && 
+                    ( object::valueType::constantString == pObject2 -> ValueType() ) ) {
+
+                if ( 0 <= strcmp(pObject1 -> Contents(),pObject2 -> Contents() ) )
+                    push(pTrueConstant);
+                else
+                    push(pFalseConstant);
+                return;
+            }
+        }
+    }
+
+    throw new typecheck("Incompatible types specified in operator le");
 
     return;
     }
@@ -3017,7 +3302,7 @@ throw new notimplemented("eexec for strings");
             break;
 
         case object::valueType::binaryString:
-            length = reinterpret_cast<binaryString *>(pItem) -> length();
+            length = (long)(reinterpret_cast<binaryString *>(pItem) -> length());
             break;
 
         default: 
@@ -3121,5 +3406,63 @@ throw new notimplemented("eexec for strings");
     while ( ! hasExited )
         pProcedure -> execute();
 
+    return;
+    }
+
+    void job::operatorLt() {
+/*
+    lt 
+        num1 num2 lt bool
+        string1 string2 lt bool
+
+    pops two objects from the operand stack and pushes true if the first operand is less
+    than the second, or false otherwise. If both operands are numbers, lt compares
+    their mathematical values. If both operands are strings, lt compares them element
+    by element, treating the elements as integers in the range 0 to 255, to determine
+    whether the first string is lexically less than the second. If the operands are of
+    other types or one is a string and the other is a number, a typecheck error occurs.
+
+    Errors: invalidaccess, stackunderflow, typecheck
+    See Also: le, eq, ne, ge, gt
+*/
+
+    object *pObject2 = pop();
+    object *pObject1 = pop();
+
+    if ( object::objectType::number == pObject1 -> ObjectType() && 
+            object::objectType::number == pObject2 -> ObjectType() ) {
+        if ( object::valueType::integer == pObject1 -> ValueType() && 
+                object::valueType::integer == pObject2 -> ValueType() ) {
+            if ( pObject1-> IntValue() < pObject2 -> IntValue() )
+                push(pTrueConstant);
+            else
+                push(pFalseConstant);
+            return;
+        } else 
+            if ( object::valueType::real == pObject1 -> ValueType() && 
+                    object::valueType::real == pObject2 -> ValueType() ) {
+                if ( pObject1-> DoubleValue() < pObject2 -> DoubleValue() )
+                    push(pTrueConstant);
+                else
+                    push(pFalseConstant);
+            return;
+        }
+    } else {
+        if ( object::objectType::atom == pObject1 -> ObjectType() && 
+                object::objectType::atom == pObject2 -> ObjectType() ) {
+            if ( ( object::valueType::string == pObject1 -> ValueType() ) && 
+                    ( object::valueType::string == pObject2 -> ValueType() ) ||
+                ( object::valueType::constantString == pObject1 -> ValueType() ) && 
+                    ( object::valueType::constantString == pObject2 -> ValueType() ) ) {
+                if ( 0 < strcmp(pObject1 -> Contents(),pObject2 -> Contents() ) )
+                    push(pTrueConstant);
+                else
+                    push(pFalseConstant);
+                return;
+            }
+        }
+    }
+
+    throw new typecheck("Incompatible types specified in operator lt");
     return;
     }

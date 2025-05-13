@@ -138,7 +138,7 @@ This is the MIT License
 
     DeleteObject(hFont);
 
-    pFont -> fontType = font::ftype42;
+    pFont -> theFontType = FontType::type42;
 
     if ( ! ( S_OK == pFont -> type42Load(pFont -> pbFontData) ) ) 
         goto NonType42Font;
@@ -149,7 +149,7 @@ This is the MIT License
 
 NonType42Font:
 
-    pFont -> fontType = font::ftypeUnspecified;
+    pFont -> theFontType = FontType::typeUnspecified;
 
 Type42Font:
 

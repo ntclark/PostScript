@@ -79,7 +79,7 @@ This is the MIT License
         delete pJob;
     pJob = new job(NULL,NULL);
     WaitForSingleObject(pJob -> hsemIsInitialized,INFINITE);
-    pJob -> execute(pszStream,"<unnamed>");
+    pJob -> execute(pszStream,pszStream + strlen(pszStream),"<unnamed>");
     return S_OK;
    }
 

@@ -35,7 +35,6 @@ library PostScriptInterpreter {
    typedef enum logLevel { none = 0, verbose = 1 } logLevel;
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6B)] 
-
    interface IPostScriptInterpreter : IUnknown {
 
       HRESULT SetSource(char *pszFileName);
@@ -51,7 +50,6 @@ library PostScriptInterpreter {
    };
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6C)] 
-
    interface IPostScriptInterpreterTakeText {
       HRESULT TakeText(RECT *pLocationPDF,char *pszText);
    };

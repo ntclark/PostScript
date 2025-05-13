@@ -32,13 +32,15 @@ This is the MIT License
     class string : public object {
     public:
 
-        string(job *pJob,char *pszValue); 
+        string(job *pJob,char *pszValue);
         string(job *pJob,char *pStart,char *pEnd);
 
         virtual BYTE get(long index);
         virtual void put(long index,BYTE v);
 
-        size_t length() { return NULL == pszUnescapedString ? strlen(Contents()) : strlen(pszUnescapedString); };
+        virtual size_t length() { 
+            return NULL == pszUnescapedString ? strlen(Contents()) : strlen(pszUnescapedString); 
+        }
 
     protected:
 

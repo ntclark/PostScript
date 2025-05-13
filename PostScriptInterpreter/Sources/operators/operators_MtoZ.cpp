@@ -107,118 +107,142 @@ This is the MIT License
     return;
     }
 
-   void job::operatorMakepattern() {
+    void job::operatorMakepattern() {
 /*
-   makepattern 
-      dict matrix makepattern pattern
+    makepattern 
+        dict matrix makepattern pattern
 
-   instantiates the pattern defined by the pattern dictionary dict, producing an instance
-   of the pattern locked to the current user space. After verifying that dict is a
-   prototype pattern dictionary with all required entries (see Section 4.9, “Patterns”),
-   makepattern creates a copy of dict in local VM, adding an Implementation
-   entry for use by the PostScript interpreter. Only the contents of dict itself are
-   copied; any subsidiary composite objects the dictionary contains are not copied,
-   but are shared with the original dictionary.
+    instantiates the pattern defined by the pattern dictionary dict, producing an instance
+    of the pattern locked to the current user space. After verifying that dict is a
+    prototype pattern dictionary with all required entries (see Section 4.9, “Patterns”),
+    makepattern creates a copy of dict in local VM, adding an Implementation
+    entry for use by the PostScript interpreter. Only the contents of dict itself are
+    copied; any subsidiary composite objects the dictionary contains are not copied,
+    but are shared with the original dictionary.
 
-   makepattern saves a copy of the current graphics state, to be used later when the
-   pattern’s PaintProc procedure is called to render the pattern cell. It then modifies
-   certain parameters in the saved graphics state, as follows:
+    makepattern saves a copy of the current graphics state, to be used later when the
+    pattern’s PaintProc procedure is called to render the pattern cell. It then modifies
+    certain parameters in the saved graphics state, as follows:
 
-      • Concatenates matrix with the saved copy of the current transformation matrix
-      • Adjusts the resulting matrix to ensure that the device space can be tiled properly
+        • Concatenates matrix with the saved copy of the current transformation matrix
+        • Adjusts the resulting matrix to ensure that the device space can be tiled properly
         with a pattern cell of the given size in accordance with the pattern’s tiling
         type
-      • Resets the current path to empty
-      • Replaces the clipping path with the pattern cell bounding box specified by the
+        • Resets the current path to empty
+        • Replaces the clipping path with the pattern cell bounding box specified by the
         pattern dictionary’s BBox entry
-      • Replaces the current device with a special one provided by the PostScript
+        • Replaces the current device with a special one provided by the PostScript
         implementation
 
-   Finally, makepattern makes the new dictionary read-only and returns it on the
-   operand stack. The resulting pattern dictionary is suitable for use as an operand to
-   setpattern or as a color value in a Pattern color space.
+    Finally, makepattern makes the new dictionary read-only and returns it on the
+    operand stack. The resulting pattern dictionary is suitable for use as an operand to
+    setpattern or as a color value in a Pattern color space.
 */
-   pop();
-   push(new (CurrentObjectHeap()) pattern(this));
-   return;
-   }
+    pop();
+    push(new (CurrentObjectHeap()) pattern(this));
+    return;
+    }
 
-   void job::operatorMarkArrayBegin() {
+    void job::operatorMark() {
 /*
-   [ 
-      – [ mark
 
-   pushes a mark object on the operand stack (the same as the mark and << operators).
-   The customary use of the [ operator is to mark the beginning of an indefinitely
-   long sequence of objects that will eventually be formed into a new array
-   object by a matching ] operator. See the discussion of array syntax in Section 3.2,
-   “Syntax,” and of array construction in Section 3.6, “Overview of Basic Operators.”
+    mark 
+        – mark mark
+
+    pushes a mark object on the operand stack. All marks are identical, and the 
+    operand stack may contain any number of them at once.
+
+    The primary use of marks is to indicate the stack position of the beginning of an
+    indefinitely long list of operands being passed to an operator or procedure. The ]
+    operator (array construction) is the most common operator that works this way;
+    it treats as operands all elements of the stack down to a mark that was pushed by
+    the [ operator ([ is a synonym for mark). It is possible to define procedures that
+    work similarly. Operators such as counttomark and cleartomark are useful within
+    such procedures.
+
+    Errors: stackoverflow
+    See Also: counttomark, cleartomark, pop
 */
-   push(new (CurrentObjectHeap()) mark(this,object::valueType::arrayMark));
-   return;
-   }
+    push(new (CurrentObjectHeap()) mark(this,object::valueType::genericMark));
+    return;
+    }
 
-
-   void job::operatorMarkArrayEnd() {
+    void job::operatorMarkArrayBegin() {
 /*
-   ] 
-      mark obj0 … objn-1 ] array
+    [ 
+        – [ mark
 
-   creates a new array of n elements (where n is the number of elements above the
-   topmost mark on the operand stack), stores those elements into the array, and returns
-   the array on the operand stack. The ] operator stores the topmost object
-   from the stack into element n - 1 of array and the bottommost one (the one immediately
-   above the mark) into element 0 of array. It removes all the array elements
-   from the stack, as well as the mark object.
-
-   The array is allocated in local or global VM according to the current VM allocation
-   mode. An invalidaccess error occurs if the array is in global VM and any of
-   the objects obj0 … objn-1 are in local VM. See Section 3.7.2, “Local and Global
-   VM.”
-
-      Examples
-         [5 4 3] =>  % A three-element array, with elements 5, 4, 3
-         mark 5 4 3 counttomark array astore exch pop => % Same as above
-         [1 2 add] => % A one-element array, with element 3
-
-   The first two lines of code above have the same effect, but the second line uses
-   lower-level array and stack manipulation primitives instead of [ and ].
-   In the last example, note that the PostScript interpreter acts on all of the array elements
-   as it encounters them (unlike its behavior with the { … } syntax for executable
-   array construction), so the add operator is executed before the array is
-   constructed.
-
+    pushes a mark object on the operand stack (the same as the mark and << operators).
+    The customary use of the [ operator is to mark the beginning of an indefinitely
+    long sequence of objects that will eventually be formed into a new array
+    object by a matching ] operator. See the discussion of array syntax in Section 3.2,
+    “Syntax,” and of array construction in Section 3.6, “Overview of Basic Operators.”
 */
+    push(new (CurrentObjectHeap()) mark(this,object::valueType::arrayMark));
+    return;
+    }
 
-   std::list<object *,containerAllocator<object *>> entries;
 
-   object *pObject = pop();
-
-   while ( object::objectType::mark != pObject -> ObjectType() ) {
-      entries.insert(entries.end(),pObject);
-      pObject = pop();
-   }
-
-   array *pArray = new (CurrentObjectHeap()) array(this,"auto");
-
-   for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
-      pArray -> insert(*it);
-
-   push(pArray);
-
-   return;
-   }
-
-   void job::operatorMarkDictionaryBegin() {
+    void job::operatorMarkArrayEnd() {
 /*
-   << 
-      – << mark
+    ] 
+        mark obj0 … objn-1 ] array
 
-   pushes a mark object on the operand stack (the same as the mark and [ operators).
+    creates a new array of n elements (where n is the number of elements above the
+    topmost mark on the operand stack), stores those elements into the array, and returns
+    the array on the operand stack. The ] operator stores the topmost object
+    from the stack into element n - 1 of array and the bottommost one (the one immediately
+    above the mark) into element 0 of array. It removes all the array elements
+    from the stack, as well as the mark object.
+
+    The array is allocated in local or global VM according to the current VM allocation
+    mode. An invalidaccess error occurs if the array is in global VM and any of
+    the objects obj0 … objn-1 are in local VM. See Section 3.7.2, “Local and Global
+    VM.”
+
+        Examples
+            [5 4 3] =>  % A three-element array, with elements 5, 4, 3
+            mark 5 4 3 counttomark array astore exch pop => % Same as above
+            [1 2 add] => % A one-element array, with element 3
+
+    The first two lines of code above have the same effect, but the second line uses
+    lower-level array and stack manipulation primitives instead of [ and ].
+    In the last example, note that the PostScript interpreter acts on all of the array elements
+    as it encounters them (unlike its behavior with the { … } syntax for executable
+    array construction), so the add operator is executed before the array is
+    constructed.
+
 */
-   push(new (CurrentObjectHeap()) mark(this,object::valueType::dictionaryMark));
-   return;
-   }
+
+    std::list<object *,containerAllocator<object *>> entries;
+
+    object *pObject = pop();
+
+    while ( object::objectType::mark != pObject -> ObjectType() ) {
+        entries.insert(entries.end(),pObject);
+        pObject = pop();
+    }
+
+    array *pArray = new (CurrentObjectHeap()) array(this,"auto");
+
+    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
+        pArray -> insert(*it);
+
+    push(pArray);
+
+    return;
+    }
+
+    void job::operatorMarkDictionaryBegin() {
+/*
+    << 
+        – << mark
+
+    pushes a mark object on the operand stack (the same as the mark and [ operators).
+*/
+    push(new (CurrentObjectHeap()) mark(this,object::valueType::dictionaryMark));
+    return;
+    }
 
     void job::operatorMarkDictionaryEnd() {
 /*
@@ -374,10 +398,10 @@ This is the MIT License
    if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() * p2 -> IntValue()));
    else {
-      double v1 = p1 -> OBJECT_POINT_TYPE_VALUE;
+      double v1 = p1 -> FloatValue();
       if ( object::valueType::integer == p1 -> ValueType() )
          v1 = (double)p1 -> IntValue();
-      double v2 = p2 -> OBJECT_POINT_TYPE_VALUE;
+      double v2 = p2 -> FloatValue();
       if ( object::valueType::integer == p2 -> ValueType() )
          v2 = (double)p2 -> IntValue();
       push(new (CurrentObjectHeap()) object(this,v1 * v2));
@@ -421,7 +445,7 @@ This is the MIT License
    if ( object::valueType::integer == p -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,-1 * p -> IntValue()));
    else
-      push(new (CurrentObjectHeap()) object(this,-1.0 * p -> OBJECT_POINT_TYPE_VALUE));
+      push(new (CurrentObjectHeap()) object(this,-1.0 * p -> FloatValue()));
    return;
    }
 
@@ -635,7 +659,7 @@ This is the MIT License
 
 #if 0
     case object::objectType::objTypeMatrix:
-        reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> OBJECT_POINT_TYPE_VALUE);
+        reinterpret_cast<matrix *>(pTarget) -> SetValue(pIndex -> IntValue(),pValue -> FloatValue());
         break;
 #endif
 
@@ -880,10 +904,94 @@ This is the MIT License
     file *pFile = reinterpret_cast<file *>(pop());
 
     uint32_t strSize = (uint32_t)pString -> length();
-    for ( uint32_t k = 0; k < strSize; k++ ) {
-        pString -> put(k,(BYTE)*currentInput());
-        setCurrentInput(currentInput() + 1);
+
+    if ( 0 == strSize ) {
+        throw new rangecheck("A zero length string was passed to readstring");
+        return;
     }
+
+    uint8_t *pbContents = new uint8_t[strSize + 1];
+    pbContents[strSize] = '\0';
+
+/*
+    Each use of RD is followed by exactly one blank
+    character followed by a sequence of binary bytes that are the
+    charstring contents.
+*/
+    currentInputFlushSpace();
+
+    uint32_t countRead = 0;
+
+    while ( countRead < strSize ) {
+        if ( NULL == currentInput() )
+            break;
+        pbContents[countRead] = (uint8_t)*currentInput();
+        setCurrentInput(currentInput() + 1);
+        countRead++;
+    }
+
+    /*
+
+    page 65 of Adobe Type 1 Font Format states:
+
+        When this encoded and encrypted charstring is expressed in
+        binary form, it is ready for inclusion in a Type 1 font program.
+        The charstring would be inserted in the CharStrings dictionary as
+        follows:
+
+        /C 41 RD ~41~binary~bytes~ ND
+
+        SOMEWHERE I saw a reference to the first, or first few bytes, in the 
+        string indicating it is binary and should be decrypted.
+        Can't find that again. In any case, I will assume that if
+        executionStack.size is > 0, it means that an Adobe type1 font
+        program is being read, and that charstrings are encrypted
+        but still keep them encrypted until point of use
+    */
+
+    object *pTarget = NULL;
+
+    if ( 0 == executionStack.size() )
+        pTarget = new (CurrentObjectHeap()) string(this,(char *)pbContents);
+    else
+        pTarget = new (CurrentObjectHeap()) binaryString(this,NULL,pbContents,countRead);
+
+    push(pTarget);
+
+    delete [] pbContents;
+
+    if ( countRead == strSize )
+        push(pTrueConstant);
+    else
+        // Need a test for this which is an eexec or readstring at end of the input
+        push(pFalseConstant);
+
+    return;
+    }
+
+    void job::operatorRcheck() {
+/*
+    rcheck 
+        array rcheck bool
+        packedarray rcheck bool
+        dict rcheck bool
+        file rcheck bool
+        string rcheck bool
+
+    tests whether the operand’s access permits its value to be read explicitly 
+    by PostScript operators. It returns true if the operand’s access is 
+    unlimited or read-only, or false otherwise.
+
+    Errors: stackunderflow, typecheck
+    See Also: executeonly, noaccess, readonly, wcheck
+*/
+    object *pObject = pop();
+
+    if ( object::accessAttribute::unlimited == pObject -> theAccessAttribute ||
+            object::accessAttribute::readOnly == pObject -> theAccessAttribute )
+        push(pTrueConstant);
+    else
+        push(pFalseConstant);
 
     return;
     }
@@ -1215,12 +1323,12 @@ This is the MIT License
 
     switch ( pTop -> ObjectType() ) {
     case object::objectType::objTypeMatrix: 
-        angle = pop() -> OBJECT_POINT_TYPE_VALUE;
+        angle = pop() -> FloatValue();
         break;
 
     default:
-        angle = pTop -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> rotate(angle);
+        angle = pTop -> FloatValue();
+        currentGS() -> PSTransforms() -> rotate(angle);
         return;
     }
 
@@ -1327,14 +1435,14 @@ This is the MIT License
 
     switch ( pTop -> ObjectType() ) {
     case object::objectType::objTypeMatrix: 
-        sy = pop() -> OBJECT_POINT_TYPE_VALUE;
-        sx = pop() -> OBJECT_POINT_TYPE_VALUE;
+        sy = pop() -> FloatValue();
+        sx = pop() -> FloatValue();
         break;
 
     default:
-        sy = pTop -> OBJECT_POINT_TYPE_VALUE;
-        sx = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> scale(sx,sy);
+        sy = pTop -> FloatValue();
+        sx = pop() -> FloatValue();
+        currentGS() -> PSTransforms() -> scale(sx,sy);
         return;
     }
 
@@ -1368,7 +1476,7 @@ This is the MIT License
 */
     object *pFontScale = pop();
 
-    font *pFont = currentGS() -> scaleFont(pFontScale -> OBJECT_POINT_TYPE_VALUE,reinterpret_cast<font *>(pop()));
+    font *pFont = currentGS() -> scaleFont(pFontScale -> FloatValue(),reinterpret_cast<font *>(pop()));
 
     pFontDirectory -> put(pFont -> fontName(),pFont);
 
@@ -1649,7 +1757,7 @@ This is the MIT License
 
 */
 
-   POINT_TYPE offset = pop() -> OBJECT_POINT_TYPE_VALUE;
+   POINT_TYPE offset = pop() -> FloatValue();
    class array *pArray = reinterpret_cast<array *>(pop());
 
    currentGS() -> setLineDash(pArray,offset);
@@ -1848,7 +1956,7 @@ This is the MIT License
     pixel grid. Automatic stroke adjustment (see setstrokeadjust) can be used to ensure
     uniform line width.
 */
-    currentGS() -> setLineWidth(pop() -> OBJECT_POINT_TYPE_VALUE);
+    currentGS() -> setLineWidth(pop() -> FloatValue());
 
     return;
     }
@@ -1864,7 +1972,7 @@ This is the MIT License
     the CTM with the translate, scale, rotate, and concat operators rather than replace
     it.
 */
-    currentGS() -> setMatrix(pop());
+    currentGS() -> PSTransforms() -> setMatrix(pop());
     return;
     }
 
@@ -1980,7 +2088,7 @@ This is the MIT License
     object *pBlue = pop();
     object *pGreen = pop();
     object *pRed = pop();
-    currentGS() -> setRGBColor(pRed -> OBJECT_POINT_TYPE_VALUE,pGreen -> OBJECT_POINT_TYPE_VALUE,pBlue -> OBJECT_POINT_TYPE_VALUE);
+    currentGS() -> setRGBColor(pRed -> FloatValue(),pGreen -> FloatValue(),pBlue -> FloatValue());
     return;
     }
 
@@ -2155,7 +2263,7 @@ This is the MIT License
     See Also: cos, atan
 
 */
-    object *pSin = new (CurrentObjectHeap()) object(this,sin(graphicsState::degToRad * pop() -> OBJECT_POINT_TYPE_VALUE));
+    object *pSin = new (CurrentObjectHeap()) object(this,sin(graphicsState::degToRad * pop() -> FloatValue()));
     push(pSin);
     return;
     }
@@ -2310,7 +2418,7 @@ This is the MIT License
    if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
       push(new (CurrentObjectHeap()) object(this,(long)(p1 -> IntValue() - p2 -> IntValue())));
    else
-      push(new (CurrentObjectHeap()) object(this,(double)(p1 -> OBJECT_POINT_TYPE_VALUE - p2 -> OBJECT_POINT_TYPE_VALUE)));
+      push(new (CurrentObjectHeap()) object(this,(double)(p1 -> FloatValue() - p2 -> FloatValue())));
    return;
    }
 
@@ -2333,16 +2441,16 @@ This is the MIT License
     switch ( pTopObject -> ObjectType() ) {
     case object::objectType::objTypeMatrix: {
         matrix *pMatrix = reinterpret_cast<matrix *>(pTopObject);
-        y = pop() -> OBJECT_POINT_TYPE_VALUE;
-        x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> transformPoint(pMatrix,x,y,&x,&y);
+        y = pop() -> FloatValue();
+        x = pop() -> FloatValue();
+        currentGS() -> PSTransforms() -> transformPoint(pMatrix,x,y,&x,&y);
         }
         break;
 
     default: {
-        y = pTopObject -> OBJECT_POINT_TYPE_VALUE;
-        x = pop() -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> transformPoint(x,y,&x,&y);
+        y = pTopObject -> FloatValue();
+        x = pop() -> FloatValue();
+        currentGS() -> PSTransforms() -> transformPoint(x,y,&x,&y);
         }
     }
 
@@ -2380,18 +2488,18 @@ This is the MIT License
 
     switch ( pTop -> ObjectType() ) {
     case object::objectType::objTypeMatrix: 
-        ty = pop() -> OBJECT_POINT_TYPE_VALUE;
+        ty = pop() -> FloatValue();
         break;
 
     default:
-        ty = pTop -> OBJECT_POINT_TYPE_VALUE;
-        currentGS() -> translate(pop() -> OBJECT_POINT_TYPE_VALUE,ty);
+        ty = pTop -> FloatValue();
+        currentGS() -> PSTransforms() -> translate(pop() -> FloatValue(),ty);
         return;
     }
 
     matrix *pMatrix = new (CurrentObjectHeap()) matrix(this);
 
-    pMatrix -> tx(pop() -> OBJECT_POINT_TYPE_VALUE);
+    pMatrix -> tx(pop() -> FloatValue());
     pMatrix -> ty(ty);
 
     push(pMatrix);

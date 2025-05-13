@@ -90,8 +90,6 @@ This is the MIT License
 
     HRESULT rc = CoInitialize(NULL);
 
-    //connectServices();
-
     return;
     }
 

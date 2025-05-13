@@ -31,10 +31,12 @@ This is the MIT License
     char Renderer::szStatusMessage[1024];
     char Renderer::szErrorMessage[1024];
 
-    Renderer::Renderer(IUnknown *pUnkOuter) : graphicsStateManager(this) {
+    Renderer::Renderer(IUnknown *pUnkOuter) {
 
     pIGraphicElements = new GraphicElements(this);
     pIGraphicParameters = new GraphicParameters(this);
+
+    pGraphicsStateManager = new GraphicsStateManager(this);
 
     D2D1_FACTORY_OPTIONS factoryOptions{D2D1_DEBUG_LEVEL_INFORMATION};
 
@@ -56,6 +58,7 @@ This is the MIT License
 
     delete pIGraphicElements;
     delete pIGraphicParameters;
+    delete pGraphicsStateManager;
 
     return;
     }
@@ -173,7 +176,8 @@ This is the MIT License
     }
 
     pID2D1DCRenderTarget -> BeginDraw();
-    pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,graphicsStateManager.parametersStack.top() -> lineWidth,pID2D1StrokeStyle1);
+    pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,
+                                            pGraphicsStateManager -> parametersStack.top() -> lineWidth,pID2D1StrokeStyle1);
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
     if ( ! ( S_OK == hr ) ) {

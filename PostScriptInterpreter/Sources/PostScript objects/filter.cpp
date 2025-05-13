@@ -40,7 +40,7 @@ This is the MIT License
     }
 
 
-    uint8_t *filter::getBinaryData(DWORD *pcbSize,char *pszEndDelimiter) {
+    uint8_t *filter::getBinaryData(uint32_t *pcbSize,char *pszEndDelimiter) {
 
     if ( NULL == pDataSource )
         return NULL;

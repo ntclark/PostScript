@@ -23,7 +23,7 @@ This is the MIT License
 
 #include "job.h"
 
-#include "pathParameters.h"
+#include "pageParameters.h"
 
     long graphicsState::cyPageGutter = 32L;
     long graphicsState::pageCount = 0L;
@@ -35,7 +35,7 @@ This is the MIT License
     FLOAT graphicsState::degToRad = piOver2 / 90.0f;
 
     gdiParameters graphicsState::theGDIParameters;
-    pathParameters graphicsState::thePathParameters;
+    pageParameters graphicsState::thePageParameters;
     psTransformsStack *graphicsState::pPSXformsStack = NULL;
     long graphicsState::instanceCount = 0;
 
@@ -54,11 +54,19 @@ This is the MIT License
 
     setFont(findFont("Courier"));
 
-    //if ( ! pPSXformsStack -> isInitialized() )
     pPSXformsStack -> initialize(pJob);
 
     SetSurface(pJob -> hwndSurface,0);
 
+    return;
+    }
+
+
+    graphicsState::~graphicsState() {
+    PSTransforms() -> Clear();
+    instanceCount--;
+    if ( 0 == instanceCount ) 
+        delete pPSXformsStack;
     return;
     }
 
@@ -69,24 +77,8 @@ This is the MIT License
     }
 
 
-    graphicsState::~graphicsState() {
-    pPSXformsStack -> clear();
-    instanceCount--;
-    if ( 0 == instanceCount ) {
-        delete pPSXformsStack;
-        pPSXformsStack = NULL;
-    }
-    return;
-    }
-
-
     void graphicsState::SetSurface(HWND hwndSurface,long pageNumber) {
     initMatrix(hwndSurface,pageNumber);
-    return;
-    }
-
-
-    void graphicsState::restored() {
     return;
     }
 
@@ -99,13 +91,9 @@ This is the MIT License
     class array *pPageSizeArray = NULL;
 
     pJob -> push(pDict);
-
     pJob -> operatorBegin();
-
     pJob -> push(pJob -> pPageSizeLiteral);
-
     pJob -> operatorWhere();
-
     pJob -> operatorEnd();
 
     if ( pJob -> pFalseConstant == pJob -> pop() ) 
@@ -173,23 +161,7 @@ Beep(2000,200);
 
 
     void graphicsState::setLineWidth(FLOAT lw) { 
-
-    /*
-    When stroking a path, stroke paints all points whose perpendicular 
-    distance from the path in user space is less than or equal to half 
-    the absolute value of num.
-    (therefore, lineWidth is given in user space coordinates and it is ALSO 
-    in the Y direction !)
-
-    The effect produced in device space depends on the current transformation 
-    matrix (CTM) in effect at the time the path is stroked.
-    (therefore, the value must be converted to page space here because the renderer deals only
-    with conversion between page space (pageWidth x pageHeight in points) TO device space)
-    */
-
-    POINTF ptLW{0.0f,lw};
-    transformPointInPlace(0.0f,lw,&ptLW.x,&ptLW.y);
-    theGDIParameters.setLineWidth(abs(ptLW.y));
+    theGDIParameters.setLineWidth(abs(lw));
     return;
     }
 
@@ -222,11 +194,8 @@ Beep(2000,200);
 
     FLOAT *pValues = new FLOAT[countItems];
 
-    for ( long k = 0; k < countItems; k++ ) {
-        GS_POINT ptDash{pArray -> getElement(k) -> FloatValue(),0.0f};
-        transformPoint(&ptDash,&ptDash);
-        pValues[k] = ptDash.x;
-    }
+    for ( long k = 0; k < countItems; k++ )
+        pValues[k] = pArray -> getElement(k) -> FloatValue();
 
     theGDIParameters.setLineDash(pValues,countItems,offset);
 
@@ -237,6 +206,6 @@ Beep(2000,200);
 
 
     void graphicsState::setStrokeAdjustmentParameter(object *pBool) {
-    strokeAdjustmentParameter = pBool == pBool -> Job() -> pTrueConstant;
+    strokeAdjustmentParameter = (pBool == pBool -> Job() -> pTrueConstant);
     return;
     }

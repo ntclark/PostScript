@@ -25,12 +25,12 @@ This is the MIT License
 
 
     HRESULT Renderer::SaveState() {
-    return graphicsStateManager.Save();
+    return pGraphicsStateManager -> Save();
     }
 
 
     HRESULT Renderer::RestoreState() {
-    return graphicsStateManager.Restore();
+    return pGraphicsStateManager -> Restore();
     }
 
 

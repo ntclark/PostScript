@@ -22,41 +22,40 @@ This is the MIT License
 */
 
 #include "job.h"
-
-#include "pathParameters.h"
+#include "pageParameters.h"
 
     void graphicsState::newpath() {
-    thePathParameters.newpath();
+    PostScriptInterpreter::pIGraphicElements -> NewPath();
     currentUserSpacePoint = POINT_TYPE_NAN_POINT;
     return;
     }
 
 
     void graphicsState::stroke() {
-    thePathParameters.stroke();
+    PostScriptInterpreter::pIGraphicElements -> StrokePath();
     return;
     }
 
 
     void graphicsState::closepath() {
-    thePathParameters.closepath();
+    PostScriptInterpreter::pIGraphicElements -> ClosePath();
     return;
     }
 
 
     void graphicsState::fillpath() {
-    thePathParameters.fillpath();
+    PostScriptInterpreter::pIGraphicElements -> FillPath();
     return;
     }
 
 
     void graphicsState::eofillpath() {
-    thePathParameters.eofillpath();
+    PostScriptInterpreter::pIGraphicElements -> FillPath();
     return;
     }
 
 
     void graphicsState::render() {
-    thePathParameters.RenderGeometry();
+    thePageParameters.RenderGeometry();
     return;
     }

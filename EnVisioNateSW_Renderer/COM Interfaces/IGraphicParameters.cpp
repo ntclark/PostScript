@@ -54,7 +54,7 @@ This is the MIT License
 
 
     HRESULT Renderer::GraphicParameters::put_LineWidth(FLOAT lw) {
-    pParent -> graphicsStateManager.parametersStack.top() -> lineWidth = lw; 
+    pParent -> pGraphicsStateManager -> parametersStack.top() -> lineWidth = lw; 
     if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
         sprintf_s<1024>(Renderer::szLogMessage,"Set LineWidth: %5.2f",lw);
         pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
@@ -68,19 +68,19 @@ This is the MIT License
     switch ( lj ) {
     default:
     case 0:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER;
         break;
 
     case 1:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_BEVEL;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_BEVEL;
         break;
 
     case 2:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_ROUND;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_ROUND;
         break;
 
     case 3:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER_OR_BEVEL;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_MITER_OR_BEVEL;
         break;
 
     }
@@ -99,13 +99,13 @@ This is the MIT License
     switch ( lc ) {
     default:
     case 0:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineCap = D2D1_CAP_STYLE_FLAT;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_FLAT;
         break;
     case 1:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineCap = D2D1_CAP_STYLE_SQUARE;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_SQUARE;
         break;
     case 2:
-        pParent -> graphicsStateManager.parametersStack.top() -> lineCap = D2D1_CAP_STYLE_ROUND;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_ROUND;
         break;
     }
 
@@ -120,7 +120,7 @@ This is the MIT License
 
     HRESULT Renderer::GraphicParameters::put_LineDash(FLOAT *pDashValues,long countValues,FLOAT passedOffset) {
 
-    values *pValues = pParent -> graphicsStateManager.parametersStack.top();
+    values *pValues = pParent -> pGraphicsStateManager -> parametersStack.top();
 
     if ( ! ( NULL == pDashValues ) ) {
 
@@ -128,7 +128,11 @@ This is the MIT License
         pValues -> lineDashOffset = passedOffset;
         for ( long k = 0; k < pValues -> countDashSizes; k++ ) {
             POINTF ptValue{30.0f * 5.0f * pDashValues[k] / 9.0f,0.0f};
-            pParent -> pIGraphicElements -> transformPoint(&ptValue,&ptValue);
+            //
+            // Need to check whether the current toDeviceSpace transform is the right one here
+            // or if it should be the transform saved into the primitives, maybe at rendering time ?
+            //
+            pParent -> pIGraphicElements -> transformPoint(&pParent -> pIGraphicElements -> toDeviceSpace,&ptValue,&ptValue);
             pValues -> lineDashSizes[k] = ptValue.x;
         }
         pValues -> lineDashStyle = D2D1_DASH_STYLE_CUSTOM;
@@ -157,13 +161,12 @@ This is the MIT License
         pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
     }
 
-
     return S_OK;
     }
 
 
     HRESULT Renderer::GraphicParameters::put_RGBColor(COLORREF color) {
-    pParent -> graphicsStateManager.parametersStack.top() -> rgbColor = color;
+    pParent -> pGraphicsStateManager -> parametersStack.top() -> rgbColor = color;
     if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
         FLOAT r = (FLOAT)GetRValue(color) / 255.0f;
         FLOAT g = (FLOAT)GetGValue(color) / 255.0f;
@@ -178,7 +181,7 @@ This is the MIT License
 
     void Renderer::GraphicParameters::setParameters(char *pszLineSettings,boolean doFill) {
 
-    values *pValues = pParent -> graphicsStateManager.parametersStack.top();
+    values *pValues = pParent -> pGraphicsStateManager -> parametersStack.top();
     char szLDashes[128]{128 * '\0'};
     long cntPrint = 0;
     for ( int k = 0; k < 16; k++ )
@@ -187,7 +190,7 @@ This is the MIT License
 
     wchar_t szwGUID[64]{0};
     char szGUID[64];
-    StringFromGUID2(pParent -> graphicsStateManager.parametersStack.top() -> valuesId,szwGUID,64);
+    StringFromGUID2(pParent -> pGraphicsStateManager -> parametersStack.top() -> valuesId,szwGUID,64);
     WideCharToMultiByte(CP_ACP,0,szwGUID,-1,szGUID,64,NULL,NULL);
 
     sprintf_s(pszLineSettings,256,"%s:%05.2f:%01d:%01d:%01d:%01d:%08ld:%c:%s",
@@ -200,7 +203,7 @@ This is the MIT License
 
     void Renderer::GraphicParameters::resetParameters(char *pszLineSettings) {
 
-    values *pValues = pParent -> graphicsStateManager.parametersStack.top();
+    values *pValues = pParent -> pGraphicsStateManager -> parametersStack.top();
 
     char doFillChar;
     char szLDashes[128]{128 * '\0'};

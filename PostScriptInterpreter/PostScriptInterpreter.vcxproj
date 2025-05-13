@@ -82,7 +82,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MkTypLibCompatible>false</MkTypLibCompatible>
       <WarningLevel>0</WarningLevel>
       <DefaultCharType>Ascii</DefaultCharType>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -106,7 +105,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -117,7 +116,6 @@ regsvr32 /s "$(TargetPath)"
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MkTypLibCompatible>false</MkTypLibCompatible>
       <WarningLevel>0</WarningLevel>
       <DefaultCharType>Ascii</DefaultCharType>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -141,7 +139,7 @@ regsvr32 /s "$(TargetPath)"
       <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -174,7 +172,7 @@ regsvr32 /s "$(TargetPath)"
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -207,7 +205,7 @@ regsvr32 /s "$(TargetPath)"
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <DataExecutionPrevention>true</DataExecutionPrevention>
-      <AdditionalDependencies>crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -219,6 +217,12 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\getHBITMAPFromPixels.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
+    <ClCompile Include="include\AdobeType1Fonts\type1Glyph.cpp" />
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts.cpp" />
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_drawGlyph.cpp" />
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_operators12.cpp" />
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_encryption.cpp" />
+    <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_operators.cpp" />
     <ClCompile Include="Sources\ascii85.cpp" />
     <ClCompile Include="Sources\cmdPaneHandler.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />
@@ -244,12 +248,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\job\parse.cpp" />
     <ClCompile Include="Sources\job\parseJob.cpp" />
     <ClCompile Include="Sources\job\parseJob_execute.cpp" />
-    <ClCompile Include="Sources\logPaneHandler.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Sources\logPaneHandler.cpp" />
     <ClCompile Include="Sources\operators\operators_AtoL.cpp" />
     <ClCompile Include="Sources\operators\operators_MtoZ.cpp" />
     <ClCompile Include="Sources\PostScript objects\array.cpp" />
@@ -272,8 +271,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_saveRestore.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_showPage.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_transforms.cpp" />
-    <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters.cpp" />
-    <ClCompile Include="Sources\PostScript objects\graphicState\pathParameters_Forwarder.cpp" />
+    <ClCompile Include="Sources\PostScript objects\graphicState\pageParameters.cpp" />
     <ClCompile Include="Sources\PostScript objects\literal.cpp" />
     <ClCompile Include="Sources\PostScript objects\mark.cpp" />
     <ClCompile Include="Sources\PostScript objects\matrix.cpp" />
@@ -292,6 +290,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\Stacks\dictionaryStack.cpp" />
     <ClCompile Include="Sources\Stacks\objectStack.cpp" />
     <ClCompile Include="Sources\Stacks\psTransformsStack.cpp" />
+    <ClCompile Include="Sources\Stacks\psTransformsstack_transforms.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />
@@ -304,6 +303,8 @@ regsvr32 /s "$(TargetPath)"
     <Midl Include="Sources\COM Implementation\PostScriptInterpreter.odl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\AdobeType1Fonts\AdobeType1Fonts.h" />
+    <ClInclude Include="include\AdobeType1Fonts\type1Glyph.h" />
     <ClInclude Include="include\ascii85.h" />
     <ClInclude Include="include\CentralEuropeanEncoding.h" />
     <ClInclude Include="include\error.h" />
@@ -311,7 +312,7 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\ISOLatin1Encoding.h" />
     <ClInclude Include="include\job.h" />
     <ClInclude Include="include\job_operators.h" />
-    <ClInclude Include="include\pathParameters.h" />
+    <ClInclude Include="include\pageParameters.h" />
     <ClInclude Include="include\pointType.h" />
     <ClInclude Include="include\PostScript objects.h" />
     <ClInclude Include="include\PostScript objects\array.h" />

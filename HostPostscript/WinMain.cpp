@@ -222,14 +222,18 @@ boolean useGSProperties = true;
     if ( 1 < argc )
         pParsePSHost -> pIPostScript -> SetSource((char *)argv[1]);
 
-    pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
-    //pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
+    //pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
+    pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
 
-    //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
+    pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
     //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
 
     if ( 0 < cbPostScriptProperties )
         pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);
+
+_CrtSetBreakAlloc(26337);
+_CrtSetBreakAlloc(26328);
+_CrtSetBreakAlloc(26319);
 
     MSG qMessage;
 
@@ -406,7 +410,6 @@ _CrtDumpMemoryLeaks(  );
     rectFrame.bottom = rectFrame.top + cy;
 
     *prcFrame = rectFrame;
-    //SetWindowPos(hwndFrame,HWND_TOP,rectFrame.left,rectFrame.top,rectFrame.right - rectFrame.left,rectFrame.bottom - rectFrame.top,SWP_SHOWWINDOW);
 
     return;
     }

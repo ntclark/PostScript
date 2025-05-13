@@ -32,7 +32,7 @@ This is the MIT License
     }
 
 
-    uint8_t *file::getBinaryData(DWORD *pcbData,char *pszEndDelimiter) {
+    uint8_t *file::getBinaryData(uint32_t *pcbData,char *pszEndDelimiter) {
 
     char *pStart = pJob -> currentInput();
 
@@ -46,14 +46,15 @@ This is the MIT License
 
     memcpy(pbTemp,pStart,cbData);
 
-    ppEnd += strlen(pszEndDelimiter);
+    if ( strcmp(pszEndDelimiter,"cleartomark") )
+        ppEnd += strlen(pszEndDelimiter);
     pJob -> setCurrentInput(ppEnd);
 
     long k = 0;
     long cbResult = 0;
     while ( k < cbData ) {
         if ( 0x0D == pbTemp[k] || 0x0A == pbTemp[k] ) {
-            k += 1;
+            k++;
             continue;
         }
         cbResult++;
@@ -68,7 +69,7 @@ This is the MIT License
     cbResult = 0;
     while ( k < cbData ) {
         if ( 0x0D == pbTemp[k] || 0x0A == pbTemp[k] ) {
-            k += 1;
+            k++;
             continue;
         }
         pbData[cbResult++] = pbTemp[k];

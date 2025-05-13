@@ -50,6 +50,9 @@ This is the MIT License
         void translate(FLOAT toX,FLOAT toY);
         void rotate(FLOAT angle);
 
+        static void transformPoint(XFORM *,POINTF *pIn,POINTF *pOut = NULL);
+        static void transformPointInverse(XFORM *,POINTF *pIn,POINTF *pOut = NULL);
+
         FLOAT *Values();
         XFORM *XForm();
 
@@ -85,5 +88,6 @@ This is the MIT License
         boolean invalidated{false};
 
         void invert();
+        static XFORM *invert(XFORM *pXForm);
 
     };

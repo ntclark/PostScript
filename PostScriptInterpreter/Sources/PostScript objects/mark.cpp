@@ -30,6 +30,14 @@ This is the MIT License
         Name("[");
         Contents("[");
         break;
+    case object::valueType::procedureMark:
+        Name("procmark");
+        Contents("procmark");
+        break;
+    case object::valueType::genericMark:
+        Name("mark");
+        Contents("mark");
+        break;
     default:
         Name("<<");
         Contents("<<");

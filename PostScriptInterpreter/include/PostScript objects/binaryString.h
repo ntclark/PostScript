@@ -31,13 +31,12 @@ This is the MIT License
 
       binaryString(job *pJob,char *pszContents,BYTE *pBinary,long dwLength);
 
-      long length();
-
       virtual void put(long index,BYTE v);
       virtual BYTE get(long index);
 
       uint8_t *getData();
-      
+      size_t length() { return dwLength; }
+
    private:
 
       DWORD dwLength{0L};

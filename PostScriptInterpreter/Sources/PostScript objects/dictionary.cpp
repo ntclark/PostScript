@@ -70,6 +70,12 @@ This is the MIT License
     }
 
 
+    void dictionary::put(char *pszName,void (AdobeType1Fonts::*theProcedure)()) {
+    put(pszName,new (pJob -> CurrentObjectHeap()) directExec(pJob,pszName,theProcedure));
+    return;
+    }
+
+
     object *dictionary::retrieve(long index) {
     if ( (long)entries.size() < index )
         return NULL;
@@ -87,6 +93,7 @@ This is the MIT License
     object *dictionary::retrieve(char *pszName) {
 
     long nName = (long)strlen(pszName);
+
     for ( dictionaryEntry *pEntry : entries ) {
         if ( ! ( nName == pEntry -> NameSize() ) )
             continue;

@@ -88,8 +88,9 @@ This is the MIT License
             arrayMark = 110,
             dictionaryMark = 111,
             procedureMark = 112,
-            executableProcedure = 113,
-            executableOperator = 114
+            genericMark = 113,
+            executableProcedure = 114,
+            executableOperator = 115
         };
 
         enum executableAttribute {
@@ -139,9 +140,12 @@ This is the MIT License
         double DoubleValue(double value = -DBL_MAX);
         POINT_TYPE PointValue();
 
+        long HandyIdentifier(long v = -LONG_MAX);
+
         float FloatValue(float value = -FLT_MAX);
         double Value();
 
+        void SetExecutableAttribute(executableAttribute ea) { theExecutableAttribute = ea; }
         void SetExecuteOnly(bool v) { isExecuteOnly = v; };
         bool IsExecuteOnly() { return isExecuteOnly; };
 
@@ -173,6 +177,8 @@ This is the MIT License
 
         char *pszContents{NULL};
         char *pszName{NULL};
+
+        long handyIdentifier{0L};
 
         union {
             long intValue{-LONG_MAX};

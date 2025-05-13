@@ -151,7 +151,6 @@
         pIRenderer -> ClearRect(hdc,&rcAdjust,WHITE);
 
         pIRenderer -> Render(hdc,&rcAdjust);
-        pIRenderer -> Reset();
 
         ReleaseDC(hwndFrame,hdc);
         }

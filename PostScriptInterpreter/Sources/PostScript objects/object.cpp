@@ -310,7 +310,7 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return atof(pszContents);
     }
 
-    doubleValue = value; 
+    doubleValue = value;
     char szDouble[64];
     sprintf_s<64>(szDouble,"%f",value);
     Contents(szDouble);
@@ -416,6 +416,15 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     }
     return "";
+    }
+
+
+    long object::HandyIdentifier(long v) {
+    if ( -LONG_MAX == v )
+        return handyIdentifier;
+    long rv = handyIdentifier;
+    handyIdentifier = v;
+    return rv;
     }
 
 

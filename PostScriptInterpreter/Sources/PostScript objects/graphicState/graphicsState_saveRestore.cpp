@@ -22,11 +22,9 @@ This is the MIT License
 */
 
 #include "job.h"
-
 #include "gdiParameters.h"
 
     void graphicsState::gSave() {
-    PostScriptInterpreter::pIRenderer -> SaveState();
     pPSXformsStack -> gSave();
     CurrentFont() -> gSave();
     return;
@@ -34,7 +32,6 @@ This is the MIT License
 
 
     void graphicsState::gRestore() {
-    PostScriptInterpreter::pIRenderer -> RestoreState();
     pPSXformsStack -> gRestore();
     CurrentFont() -> gRestore();
     return;

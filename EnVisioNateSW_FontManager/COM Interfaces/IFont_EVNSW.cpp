@@ -144,10 +144,16 @@ This is the MIT License
     }
 
 
-    HRESULT font::get_FontType(int *pFontType) {
+    HRESULT font::get_FontType(FontType *pFontType) {
     if ( ! pFontType )
         return E_POINTER;
-    *pFontType = (int)fontType;
+    *pFontType = theFontType;
+    return S_OK;
+    }
+
+
+    HRESULT font::put_FontType(FontType setFontType) {
+    theFontType = setFontType;
     return S_OK;
     }
 
@@ -284,21 +290,41 @@ This is the MIT License
 
     charStringsTable.clear();
 
-    char *pszCharStrings = (char *)ptrData;
+    uint8_t *pszCharStrings = (uint8_t *)ptrData;
 
-    char *p = pszCharStrings;
+__debugbreak();
+
+    uint8_t *p = pszCharStrings;
+
     while ( *p ) {
-        char *pStart = p;
-        while ( ! ( ';' == *p ) )
+
+        uint8_t *pKey = p;
+        while ( ! ( ':' == *p ) )
             p++;
         *p = '\0';
-        uint16_t n = (uint16_t)(p - pStart);
-        char *psz = new char[n + 1];
         p++;
-        uint32_t index = atol(p);
-        p++;
-        charStringsTable[index] = psz;
-        p += strlen(p) + 1;
+        uint8_t *pStrSize = p;
+
+        uint8_t *pStrBegin = p;
+        while ( ! ( ';' == *pStrBegin ) )
+            pStrBegin++;
+        *pStrBegin = '\0';
+        pStrBegin++;
+
+        uint16_t strSize = (uint16_t)atol((char *)pStrSize);
+
+        uint8_t *psz = new uint8_t[strSize + 1];
+
+        psz[strSize] = '\0';
+        memcpy(psz,pStrBegin,strSize);
+
+        uint32_t index = 0;
+        if ( ! ( 0 == strcmp((char *)pKey,".notdef") ) )
+            index = atol((char *)pKey);
+
+        charStringsTable[index] = (char *)psz;
+
+        p = pStrBegin + strSize + 2;
     }
 
     return S_OK;

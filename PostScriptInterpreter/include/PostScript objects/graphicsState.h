@@ -30,7 +30,7 @@ This is the MIT License
 #include "gdiParameters.h"
 #include "Stacks/psTransformsStack.h"
 #include "Stacks/fontStack.h"
-#include "pathParameters.h"
+#include "pageParameters.h"
 
     class graphicsState {
     public:
@@ -38,17 +38,9 @@ This is the MIT License
         graphicsState(job *pJob);
         ~graphicsState();
 
-        void setMatrix(object *pMatrix);
+        psTransformsStack *PSTransforms() { return pPSXformsStack; }
+
         void currentMatrix();
-        void revertMatrix();
-        void defaultMatrix();
-
-        void concat(matrix *);
-        void concat(array *);
-        void concat(FLOAT *);
-        void concat(XFORM *);
-
-        void restored();
 
         // ALL graphics primitives take values in USER space
         // as input. That is, values verbatim as they exist
@@ -78,41 +70,12 @@ This is the MIT License
 
         void arcto(FLOAT xCenter,FLOAT yCenter,FLOAT radius,FLOAT angle1,FLOAT angle2);
 
-        void dot(GS_POINT at,FLOAT radius);
-
         void newpath();
         void stroke();
         void closepath();
         void fillpath();
         void eofillpath();
         void render();
-
-        // ALL transformations are from USER space to PAGE space
-        // USER space is that in which all numeric x,y values are in
-        // in the postscript file.
-        // PAGE space is the domain PDF Width x PDF Height
-        // Transformation from USER space to PAGE space
-        // uses the "current transformation matrix" (CTM)
-        // and in the case of text, the current font matrix
-
-        void translate(FLOAT x,FLOAT y);
-        void rotate(FLOAT angle);
-        void scale(FLOAT scaleX,FLOAT scaleY);
-        void setTranslation(FLOAT x,FLOAT y);
-
-        void transformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
-        void transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
-        void transformPoint(GS_POINT *ptIn,GS_POINT *ptOut);
-        void transformPointInPlace(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
-        void transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
-
-        void untransformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
-        void untransformPoint(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
-        void untransformPoint(POINTF *ptIn,POINTF *ptOut);
-        void untransformPointInPlace(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
-        void untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
-
-        void scalePoint(FLOAT x,FLOAT y,FLOAT *px2,FLOAT *py2);
 
         void setPageDevice(dictionary *pDictionary);
 
@@ -126,8 +89,9 @@ This is the MIT License
         void drawTextChar(BYTE bGlyph);
         void drawTextString();
 
-        void drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
+        void drawType1Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
         void drawType3Glyph(uint16_t bGlyph);
+        void drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
 
         void setCacheDevice();
 
@@ -184,10 +148,9 @@ This is the MIT License
         uint8_t *getBitmapBits(uint8_t *pbImage,uint32_t cbData,uint16_t width,uint16_t height,uint8_t bitsPerComponent,array *pDecodeArray);
 
         GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
-        GS_POINT currentPageSpacePoint POINT_TYPE_NAN_POINT;
 
         static gdiParameters theGDIParameters;
-        static pathParameters thePathParameters;
+        static pageParameters thePageParameters;
         static psTransformsStack *pPSXformsStack;
 
         static long pageHeightPoints;
@@ -199,6 +162,5 @@ This is the MIT License
         static long instanceCount;
 
         friend class graphicsStateStack;
-        friend struct pathParameters;
     };
    

@@ -60,7 +60,9 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
         // IRenderer
 
-        STDMETHOD(put_TransformMatrix)(UINT_PTR /*XFORM */ pXformToDeviceSpace);
+        STDMETHOD(put_ToDeviceTransform)(UINT_PTR /*XFORM */ pToDeviceSpaceXForm);
+        STDMETHOD(put_ToPageTransform)(UINT_PTR /*XFORM*/ pXForm);
+        STDMETHOD(put_ScaleTransform)(UINT_PTR /*XFORM*/ pScaleXForm);
         STDMETHOD(put_DownScale)(FLOAT ds);
         STDMETHOD(put_Origin)(POINTF ptOrigin);
 
@@ -71,7 +73,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
         STDMETHOD(Discard)();
         STDMETHOD(ClearRect)(HDC hdc,RECT *pREct,COLORREF theColor);
         STDMETHOD(WhereAmI)(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
-        STDMETHOD(Reset)() { origin.x = 0.0f; origin.y = 0.0f; downScale = 1.0f; return S_OK; }
 
         STDMETHOD(SaveState)();
         STDMETHOD(RestoreState)();
@@ -113,6 +114,9 @@ int Mx3Inverse(double *pSource,double *pTarget);
             STDMETHOD(NonPostScriptImage)(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
             STDMETHOD(NonPostScriptJpegImage)(HDC hdc,UINT_PTR pJpegData,long dataSize,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
 
+            STDMETHOD(GetCurrentPoint)(FLOAT *pX,FLOAT *pY);
+            STDMETHOD(SetCurrentPoint)(FLOAT *pX,FLOAT *pY);
+
             struct primitive {
 
                 enum type {
@@ -128,7 +132,13 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     fillPathMarker = 27
                 };
 
-                primitive(GraphicElements *pp,type t) : pParent(pp), theType(t) {}
+                primitive(GraphicElements *pp,type t) : 
+                    pParent(pp), 
+                    theType(t),
+                    origin(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> origin),
+                    downScale(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> downScale),
+                    xForm(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> toPageSpace),
+                    scaleXForm(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> scaleXForm) {}
 
                 ~primitive() {}
 
@@ -164,7 +174,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
                 FLOAT downScale{1.0f};
                 POINTF origin{0.0f,0.0f};
-
+                XFORM xForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+                XFORM scaleXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
                 GraphicElements *pParent{NULL};
 
                 POINTF vertex{0.0f,0.0f};
@@ -175,16 +186,16 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 movePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::move) {
                     vertex.x = pPoint -> x;
                     vertex.y = pPoint -> y;
-                    origin = pParent -> pParent -> origin;
-                    downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
                     vertex.x /= downScale;
                     vertex.y /= downScale;
+                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
                     vertex.y += origin.y;
-                    pParent -> transformPoint(&vertex,&vertex);
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&vertex,&vertex);
                 }
                 void logPrimitive() {
                     if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
@@ -198,16 +209,16 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 linePrimitive(GraphicElements *pp,POINTF *pPoint) : primitive(pp,type::line) {
                     vertex.x = pPoint -> x;
                     vertex.y = pPoint -> y;
-                    origin = pParent -> pParent -> origin;
-                    downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
                     vertex.x /= downScale;
                     vertex.y /= downScale;
+                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
                     vertex.y += origin.y;
-                    pParent -> transformPoint(&vertex,&vertex);
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&vertex,&vertex);
                  }
                 void logPrimitive() {
                     if ( 0 == pParent -> pParent -> pIConnectionPoint -> CountConnections() )
@@ -226,8 +237,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     arcSegment.rotationAngle = pSegment -> rotationAngle;
                     arcSegment.sweepDirection = pSegment -> sweepDirection;
                     arcSegment.arcSize = pSegment -> arcSize;
-                    origin = pParent -> pParent -> origin;
-                    downScale = pParent -> pParent -> downScale;
                     return;
                 }
                 void transform() {
@@ -235,8 +244,17 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     arcSegment.point.y /= downScale;
                     arcSegment.size.width /= downScale;
                     arcSegment.size.height /= downScale;
-                    pParent -> transformPoint(&arcSegment.point,&arcSegment.point);
-                    pParent -> scalePoint(&arcSegment.size.width,&arcSegment.size.height);
+
+                    pParent -> transformPoint(&xForm,&arcSegment.point,&arcSegment.point);
+                    pParent -> transformPoint(&scaleXForm,&arcSegment.point,&arcSegment.point);
+                    arcSegment.point.x += origin.x;
+                    arcSegment.point.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&arcSegment.point,&arcSegment.point);
+
+                    pParent -> scalePoint(&xForm,&arcSegment.size.width,&arcSegment.size.height);
+                    pParent -> scalePoint(&scaleXForm,&arcSegment.size.width,&arcSegment.size.height);
+                    pParent -> scalePoint(&pParent -> toDeviceSpace,&arcSegment.size.width,&arcSegment.size.height);
+
                     return;
                 }
                 void logPrimitive() {
@@ -258,8 +276,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     ellipseSegment.point.y = pSegment -> point.y;
                     ellipseSegment.radiusX = pSegment -> radiusX;
                     ellipseSegment.radiusY = pSegment -> radiusY;
-                    origin = pParent -> pParent -> origin;
-                    downScale = pParent -> pParent -> downScale;
                     return;
                 }
                 void transform() {
@@ -267,8 +283,16 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     ellipseSegment.point.y /= downScale;
                     ellipseSegment.radiusX /= downScale;
                     ellipseSegment.radiusY /= downScale;
-                    pParent -> transformPoint(&ellipseSegment.point,&ellipseSegment.point);
-                    pParent -> scalePoint(&ellipseSegment.radiusX,&ellipseSegment.radiusY);
+
+                    pParent -> transformPoint(&xForm,&ellipseSegment.point,&ellipseSegment.point);
+                    pParent -> transformPoint(&scaleXForm,&ellipseSegment.point,&ellipseSegment.point);
+                    ellipseSegment.point.x += origin.x;
+                    ellipseSegment.point.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&ellipseSegment.point,&ellipseSegment.point);
+
+                    pParent -> scalePoint(&xForm,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
+                    pParent -> scalePoint(&scaleXForm,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
+                    pParent -> scalePoint(&pParent -> toDeviceSpace,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
                     return;
                 }
                 void logPrimitive() {
@@ -292,8 +316,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     bezierSegment.point2.y = pSegment -> point2.y;
                     bezierSegment.point3.x = pSegment -> point3.x;
                     bezierSegment.point3.y = pSegment -> point3.y;
-                    origin = pParent -> pParent -> origin;
-                    downScale = pParent -> pParent -> downScale;
                     return;
                 }
                 void transform() { 
@@ -305,18 +327,30 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     bezierSegment.point2.y /= downScale;
                     bezierSegment.point3.x /= downScale;
                     bezierSegment.point3.y /= downScale;
+
+                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
                     vertex.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&vertex,&vertex);
+
+                    pParent -> transformPoint(&xForm,&bezierSegment.point1,&bezierSegment.point1);
+                    pParent -> transformPoint(&scaleXForm,&bezierSegment.point1,&bezierSegment.point1);
                     bezierSegment.point1.x += origin.x;
                     bezierSegment.point1.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&bezierSegment.point1,&bezierSegment.point1);
+
+                    pParent -> transformPoint(&xForm,&bezierSegment.point2,&bezierSegment.point2);
+                    pParent -> transformPoint(&scaleXForm,&bezierSegment.point2,&bezierSegment.point2);
                     bezierSegment.point2.x += origin.x;
                     bezierSegment.point2.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&bezierSegment.point2,&bezierSegment.point2);
+
+                    pParent -> transformPoint(&xForm,&bezierSegment.point3,&bezierSegment.point3);
+                    pParent -> transformPoint(&scaleXForm,&bezierSegment.point3,&bezierSegment.point3);
                     bezierSegment.point3.x += origin.x;
                     bezierSegment.point3.y += origin.y;
-                    pParent -> transformPoint(&vertex,&vertex);
-                    pParent -> transformPoint(&bezierSegment.point1,&bezierSegment.point1);
-                    pParent -> transformPoint(&bezierSegment.point2,&bezierSegment.point2);
-                    pParent -> transformPoint(&bezierSegment.point3,&bezierSegment.point3);
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&bezierSegment.point3,&bezierSegment.point3);
                     return;
                 }
                 void logPrimitive() {
@@ -339,8 +373,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     quadraticBezierSegment.point1.y = pSegment -> point1.y;
                     quadraticBezierSegment.point2.x = pSegment -> point2.x;
                     quadraticBezierSegment.point2.y = pSegment -> point2.y;
-                    origin = pParent -> pParent -> origin;
-                    downScale = pParent -> pParent -> downScale;
                     return;
                     }
                 void transform() { 
@@ -350,13 +382,24 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     quadraticBezierSegment.point1.y /= downScale;
                     quadraticBezierSegment.point2.x /= downScale;
                     quadraticBezierSegment.point2.y /= downScale;
+
+                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
+                    vertex.x += origin.x;
+                    vertex.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&vertex,&vertex);
+
+                    pParent -> transformPoint(&xForm,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
+                    pParent -> transformPoint(&scaleXForm,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
                     quadraticBezierSegment.point1.x += origin.x;
                     quadraticBezierSegment.point1.y += origin.y;
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
+
+                    pParent -> transformPoint(&xForm,&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
+                    pParent -> transformPoint(&scaleXForm,&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     quadraticBezierSegment.point2.x += origin.x;
                     quadraticBezierSegment.point2.y += origin.y;
-                    pParent -> transformPoint(&vertex,&vertex);
-                    pParent -> transformPoint(&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
-                    pParent -> transformPoint(&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
+                    pParent -> transformPoint(&pParent -> toDeviceSpace,&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     return;
                 }
                 void logPrimitive() {
@@ -569,18 +612,16 @@ int Mx3Inverse(double *pSource,double *pTarget);
             POINTF currentPageSpacePoint{0,0};
             boolean isFigureStarted{false};
 
-            XFORM toDeviceSpace{6 * 0.0f};
-            XFORM toUserSpace{6 * 0.0f};
+            XFORM toDeviceSpace{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+            XFORM toDeviceInverse{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
 
-            void calcInverseTransform();
+            void calcInverseTransform(XFORM *pInput,XFORM *pOutput);
 
             uint8_t *getPixelsFromJpeg(uint8_t *pJPEGData,long dataSize,long width,long height);
 
-            void scalePoint(FLOAT *px,FLOAT *py);
-            void transformPoint(FLOAT *px,FLOAT *py);
-            void unTransformPoint(FLOAT *px,FLOAT *py);
-            void transformPoint(POINTF *ptIn,POINTF *ptOut);
-            void transformPoint(D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut);
+            void scalePoint(XFORM *pXForm,FLOAT *px,FLOAT *py);
+            void transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
+            void transformPoint(XFORM *pXForm,D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut);
 
             Renderer *pParent{NULL};
 
@@ -624,6 +665,10 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     memcpy(lineDashSizes,rhs.lineDashSizes,sizeof(lineDashSizes));
                     lineDashOffset = rhs.lineDashOffset;
                     rgbColor = rhs.rgbColor;
+                    origin = rhs.origin;
+                    downScale = rhs.downScale;
+                    toPageSpace = rhs.toPageSpace;
+                    scaleXForm = rhs.scaleXForm;
                     return;
                 }
                 GUID valuesId{GUID_NULL};
@@ -635,6 +680,10 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 FLOAT lineDashSizes[16]{16 * 0.0f};
                 FLOAT lineDashOffset{0.0f};
                 COLORREF rgbColor{defaultRGBColor};
+                POINTF origin{0.0f,0.0f};
+                FLOAT downScale{1.0f};
+                XFORM toPageSpace{1.0,0.0,0.0,1.0,0.0,0.0};
+                XFORM scaleXForm{1.0,0.0,0.0,1.0,0.0,0.0};
             };
 
             long hashCode(char *pszLineSettings,boolean doFill);
@@ -689,7 +738,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
             friend class GraphicElements;
             friend class GraphicParameters;
 
-        } graphicsStateManager;
+        } *pGraphicsStateManager;
 
         void setupRenderer(HDC hdc,RECT *pDrawingRect);
         void shutdownRenderer();
@@ -720,9 +769,6 @@ int Mx3Inverse(double *pSource,double *pTarget);
         boolean doRasterize{false};
         boolean lastRenderWasFilled{false};
         boolean renderLive{false};
-
-        POINTF origin{0.0f,0.0f};
-        FLOAT downScale{1.0f};
 
         static char szLogMessage[1024];
         static char szStatusMessage[1024];

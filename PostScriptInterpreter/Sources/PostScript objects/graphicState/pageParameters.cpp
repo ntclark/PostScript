@@ -22,30 +22,23 @@ This is the MIT License
 */
 
 #include "job.h"
-
-#include "PostScriptInterpreter.h"
-
-#include "pathParameters.h"
-
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <wincodec.h>
+#include "pageParameters.h"
 
     int Mx3Inverse(double *,double *);
 
-    FLOAT pathParameters::scalePointsToPixels = 1.0f;
+    FLOAT pageParameters::scalePointsToPixels = 1.0f;
 
-    XFORM pathParameters::toDeviceSpace{1.0,0.0,0.0,1.0,0.0,0.0};
-    XFORM pathParameters::toDeviceSpaceInverse{6 * 0.0};
+    XFORM pageParameters::toDeviceSpace{1.0,0.0,0.0,1.0,0.0,0.0};
+    XFORM pageParameters::toDeviceSpaceInverse{6 * 0.0};
 
-    long pathParameters::displayResolution = 0L;
-    long pathParameters::cxClient = 0L;
-    long pathParameters::cyClient = 0L;
+    long pageParameters::displayResolution = 0L;
+    long pageParameters::cxClient = 0L;
+    long pageParameters::cyClient = 0L;
 
-    RECT pathParameters::rcPage{-1L,-1L,-1L,-1L};
-    RECT pathParameters::rcClient{-1L,-1L,-1L,-1L};
+    RECT pageParameters::rcPage{-1L,-1L,-1L,-1L};
+    RECT pageParameters::rcClient{-1L,-1L,-1L,-1L};
 
-    void pathParameters::initialize() {
+    void pageParameters::initialize() {
     memset(&toDeviceSpace,0,sizeof(XFORM));
     toDeviceSpace.eM11 = 1.0;
     toDeviceSpace.eM22 = 1.0;
@@ -62,7 +55,7 @@ This is the MIT License
     }
 
 
-    void pathParameters::initMatrix(HWND hwndSurface,long pageNumber,long pageHeightPoints,long pageWidthPoints) {
+    void pageParameters::initMatrix(HWND hwndSurface,long pageNumber,long pageHeightPoints,long pageWidthPoints) {
 
     if ( ! ( NULL == hwndSurface ) ) {
 
@@ -83,7 +76,7 @@ This is the MIT License
             rcClient.bottom = (rcPage.bottom - rcPage.top);
 
             HDC hdc = GetDC(hwndSurface);
-            PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&pathParameters::rcPage,RGB(255,255,255));
+            PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&pageParameters::rcPage,RGB(255,255,255));
             ReleaseDC(hwndSurface,hdc);
         }
 
@@ -120,13 +113,13 @@ This is the MIT License
     toDeviceSpaceInverse.eDx = (FLOAT)inverse[2][1];
     toDeviceSpaceInverse.eDy = (FLOAT)inverse[2][2];
 
-    PostScriptInterpreter::pIRenderer -> put_TransformMatrix((UINT_PTR)&toDeviceSpace);
+    PostScriptInterpreter::pIRenderer -> put_ToDeviceTransform((UINT_PTR)&toDeviceSpace);
 
     return;
     }
 
 
-    void pathParameters::RenderGeometry() {
+    void pageParameters::RenderGeometry() {
     RECT rcDrawing;
     GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
     PostScriptInterpreter::pIRenderer -> Render(pPostScriptInterpreter -> GetDC(),&rcDrawing);

@@ -19,8 +19,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This is the MIT License
-*/import "oaidl.idl";
+*/
 
+import "oaidl.idl";
 import "ocidl.idl";
 
 #include <olectl.h>
@@ -40,7 +41,9 @@ library Renderer {
 
     interface IRenderer : IUnknown {
 
-        [propput] HRESULT TransformMatrix(UINT_PTR /*XFORM*/ pXformToDeviceSpace);
+        [propput] HRESULT ToDeviceTransform(UINT_PTR /*XFORM*/ pXformToDeviceSpace);
+        [propput] HRESULT ToPageTransform(UINT_PTR /*XFORM*/ pXForm);
+        [propput] HRESULT ScaleTransform(UINT_PTR /*XFORM*/ pXForm);
         [propput] HRESULT DownScale(FLOAT downScale);
         [propput] HRESULT Origin(POINTF origin);
 
@@ -53,8 +56,6 @@ library Renderer {
         HRESULT ClearRect(HDC hdc,RECT *pRect,COLORREF theColor);
 
         HRESULT WhereAmI(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
-
-        HRESULT Reset();
 
         HRESULT SaveState();
         HRESULT RestoreState();
@@ -93,6 +94,9 @@ library Renderer {
         HRESULT NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT displayWidth,FLOAT displayHeight);
 
         HRESULT NonPostScriptJPegImage(HDC hdc,UINT_PTR pJpegData,long dataSize,FLOAT x0,FLOAT y0,FLOAT displayWidth,FLOAT displayHeight);
+
+        HRESULT GetCurrentPoint(FLOAT *pX,FLOAT *pY);
+        HRESULT SetCurrentPoint(FLOAT *pX,FLOAT *pY);
 
     };
 

@@ -33,6 +33,8 @@ This is the MIT License
 #include "parsing.h"
 #include "error.h"
 
+#include "AdobeType1Fonts/AdobeType1Fonts.h"
+
 #include "PostScript objects.h"
 
 #include "Stacks/objectStack.h"
@@ -51,10 +53,9 @@ This is the MIT License
 
         long parseJob(bool useThread = true);
 
-        long execute(char *pszPostScriptSource,char *pszFileName);
+        long execute(char *pszBegin,char *pszEnd,char *pszFileName);
         long executeObject();
         void executeProcedure(procedure *);
-        void executeEExec(class file *pFileObject);
 
         void parseProcedure(procedure *,char *pStart,char **ppEnd,long *pLineNumber);
         void bindProcedure(procedure *pProcedure);
@@ -62,9 +63,21 @@ This is the MIT License
 
         void RequestQuit() { executionStack.top() -> quitRequested = true; }
 
-        long currentInputFileOffset() { return (long)(currentInput() - executionStack.top() -> pStart); }
-        char *currentInput() { ADVANCE_THRU_WHITE_SPACE((executionStack.top() -> pNext)) return executionStack.top() -> pNext; }
-        void setCurrentInput(char *pInput) { executionStack.top() -> pNext = pInput; }
+        void currentInputFlushSpace() {
+            while ( ' ' == *(executionStack.top() -> pNext) )
+                executionStack.top() -> pNext++;
+        }
+        char *currentInput() { 
+            if ( executionStack.top() -> pNext == executionStack.top() -> pEnd )
+                return NULL;
+            return executionStack.top() -> pNext;
+        }
+        void setCurrentInput(char *pInput) { 
+            if ( pInput < executionStack.top() -> pEnd )
+                executionStack.top() -> pNext = pInput;
+            else
+                executionStack.top() -> pNext = executionStack.top() -> pEnd;
+        }
 
         object* top() { 
             if ( 0 == pOperandStack -> size() )
@@ -75,6 +88,12 @@ This is the MIT License
         void push(object *pObject) { pOperandStack -> push(pObject); }
 
         graphicsState *currentGS();
+
+        dictionary *SystemDict() { return pSystemDict; }
+        uint32_t ExecutionStackSize() { return (uint32_t)executionStack.size(); }
+        char *CurrentSourceFileName() { return szPostScriptSourceFile; }
+
+        bool seekDefinition();
 
 #include "job_operators.h"
 
@@ -92,7 +111,6 @@ This is the MIT License
 
         void resolve();
         object *resolve(char *pszObjectName);
-        bool seekDefinition();
 
         dictionary *containingDictionary(object *pObj);
 
@@ -109,17 +127,25 @@ This is the MIT License
         void parseLiteralName(char *apStart,char **ppEnd,long *pLineNumber);
 
         struct executionLevel {
-            executionLevel(char *pBegin,char *pszFileName) : 
-                pStart(pBegin),pNext(pBegin) {
-                strncpy(szCurrentFile,pszFileName,MAX_PATH);
+            executionLevel(char *pBegin,char *pe,char *pszFileName) : 
+                pStart(pBegin),pNext(pBegin),pEnd(pe) {
+                if ( NULL == pszFileName )
+                    strcpy(szCurrentFile,"<unspecified>");
+                else
+                    strncpy(szCurrentFile,pszFileName,MAX_PATH);
             }
             char *pStart{NULL};
             char *pNext{NULL};
+            char *pEnd{NULL};
             boolean quitRequested{false};
+            boolean fileClosed{false};
+            long lineNumber{0L};
             char szCurrentFile[MAX_PATH]{0};
         };
 
         std::stack<executionLevel *> executionStack;
+
+        static executionLevel *pRootExecutionLevel;
 
         std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd,long *pLineNumber)> tokenProcedures;
         std::map<size_t,char *> antiDelimiters;
@@ -210,7 +236,8 @@ This is the MIT License
         bool isGlobalVM{false};
         bool hasExited{false};
 
-        char *pStorage{NULL},*pEnd{NULL};
+        char *pStorage{NULL};
+        char *pStorageEnd{NULL};
 
         HWND hwndSurface{NULL};
         HANDLE hsemIsInitialized{INVALID_HANDLE_VALUE};

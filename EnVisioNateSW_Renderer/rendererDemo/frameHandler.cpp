@@ -127,7 +127,7 @@ HBITMAP getSampleImage(HDC hdc);
     if ( 0 < shaveHeight )
         xFormToPixels.eDy += shaveHeight/ 2.0f;
 
-    pIRenderer -> put_TransformMatrix((UINT_PTR)&xFormToPixels);
+    pIRenderer -> put_ToPageTransform((UINT_PTR)&xFormToPixels);
 
     pIGraphicParameters -> put_RGBColor(RGB(0,0,0));
 

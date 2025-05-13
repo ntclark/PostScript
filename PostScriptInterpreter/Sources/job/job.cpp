@@ -30,7 +30,7 @@ This is the MIT License
     void *job::pCurrentHeap = NULL;
     void *job::pNextHeap = NULL;
     size_t job::currentlyAllocatedHeap = 0L;
-
+    job::executionLevel *job::pRootExecutionLevel = NULL;
 
     job::job(char *pszFileName,HWND hwndSurf) : hwndSurface(hwndSurf) {
 
@@ -113,7 +113,12 @@ This is the MIT License
     nameTypeMap[object::objectType::number][object::valueType::radix] = pIntegerType;
     nameTypeMap[object::objectType::number][object::valueType::real] = pRealType;
     nameTypeMap[object::objectType::logical][object::valueType::string] = pBooleanType;
-    nameTypeMap[object::objectType::mark][object::valueType::valueTypeUnspecified] = pMarkType;
+
+    nameTypeMap[object::objectType::mark][object::valueType::arrayMark] = pMarkType;
+    nameTypeMap[object::objectType::mark][object::valueType::dictionaryMark] = pMarkType;
+    nameTypeMap[object::objectType::mark][object::valueType::procedureMark] = pMarkType;
+    nameTypeMap[object::objectType::mark][object::valueType::genericMark] = pMarkType;
+
     nameTypeMap[object::objectType::null][object::valueType::valueTypeUnspecified] = pNullType;
     nameTypeMap[object::objectType::objTypeSave][object::valueType::valueTypeUnspecified] = pSaveType;
     nameTypeMap[object::objectType::font][object::valueType::valueTypeUnspecified] = pFontType;
@@ -138,15 +143,6 @@ This is the MIT License
     antiDelimiters[std::hash<std::string>()(ARRAY_DELIMITER_BEGIN)] = ARRAY_DELIMITER_END;
 
     pSystemDict -> put("languagelevel",pLanguageLevel);
-
-    pSystemDict -> put(ARRAY_DELIMITER_BEGIN,&job::operatorMarkArrayBegin);
-    pSystemDict -> put(ARRAY_DELIMITER_END,&job::operatorMarkArrayEnd);
-
-    pSystemDict -> put(DICTIONARY_DELIMITER_BEGIN,&job::operatorMarkDictionaryBegin);
-    pSystemDict -> put(DICTIONARY_DELIMITER_END,&job::operatorMarkDictionaryEnd);
-
-    pSystemDict -> put(PROC_DELIMITER_BEGIN,&job::operatorMarkProcedureBegin);
-    pSystemDict -> put(PROC_DELIMITER_END,&job::operatorMarkProcedureEnd);
 
 #include "job_operators.cpp"
 
@@ -206,13 +202,15 @@ This is the MIT License
             long fileSize = ftell(f);
             fseek(f,0,SEEK_SET);
             pStorage = new char[fileSize + 1];
-            pEnd = pStorage + fileSize;
-            *pEnd = '\0';
+            pStorageEnd = pStorage + fileSize;
+            *pStorageEnd = '\0';
             fread(pStorage,fileSize,1,f);
             fclose(f);
             countPages = getPageCount(pszFileName);
         }
     }
+
+    AdobeType1Fonts::Initialize(this,PostScriptInterpreter::pIRenderer,PostScriptInterpreter::pIGraphicElements);
 
     hsemIsInitialized = CreateSemaphore(NULL,0,1,NULL);
 
@@ -225,6 +223,8 @@ This is the MIT License
 
 
     job::~job() {
+
+    AdobeType1Fonts::Shutdown();
 
     pComments -> clear();
     delete pComments;
@@ -303,87 +303,6 @@ This is the MIT License
         operatorLoad();
 
     }
-
-    return;
-    }
-
-#define MAGIC1        52845
-#define MAGIC2        22719
-
-    void job::executeEExec(file *pFileObject) {
-
-    DWORD cbData;
-    uint8_t *pbData = pFileObject -> getBinaryData(&cbData,"cleartomark");
-
-    uint8_t *pbTemp = new uint8_t[cbData];
-
-    uint16_t cypher;
-    uint16_t clear;
-    uint32_t key = 55665;
-    uint16_t index = 0;
-
-    uint8_t *p = pbData;
-
-    uint32_t n = (uint32_t)strlen("000000000000000000000000000000000000000000000000000000000000");
-
-    while ( ! ( '\0' == *p ) ) {
-
-        if ( 0 == strncmp("000000000000000000000000000000000000000000000000000000000000",(char *)p,n) )
-            break;
-
-        cypher = *p;
-
-        if ( isdigit(cypher) )
-            cypher -= '0';
-
-        else if ( isupper(cypher) )
-            cypher -= 'A' - 10;
-
-        else if ( islower(cypher) )
-            cypher -= 'a' - 10;
-
-        p++;
-
-        uint16_t cypher2 = *p;
-
-        if ( isdigit(cypher2) )
-            cypher2 -= '0';
-
-        else if ( isupper(cypher2) )
-            cypher2 -= 'A' - 10;
-
-        else if ( islower(cypher2) )
-            cypher2 -= 'a' - 10;
-    
-        cypher = (cypher << 4) | cypher2;
-
-        clear = ((key >> 8) ^ cypher) & 0xFF;
-
-        key = (key + cypher ) * MAGIC1 + MAGIC2;
-
-        if ( ! ( '\0' == clear ) )
-            pbTemp[index++] = (uint8_t)clear;
-
-        p++;
-    }
-
-    pFileObject -> releaseData();
-
-    cbData = index;
-
-    char *pszPS = new char[cbData];
-    memcpy((uint8_t *)pszPS,pbTemp,cbData);
-
-    delete [] pbTemp;
-
-    pDictionaryStack -> setCurrent(pSystemDict);
-
-    char szEmbeddedFile[MAX_PATH];
-    sprintf_s<MAX_PATH>(szEmbeddedFile,"%s:%ld",szPostScriptSourceFile,(uint32_t)executionStack.size());
-
-    execute((char *)pszPS,szEmbeddedFile);
-
-    delete [] pszPS;
 
     return;
     }

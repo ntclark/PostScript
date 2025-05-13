@@ -1059,7 +1059,8 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         STDMETHOD(ConcatMatrix)(/*XFORM*/ UINT_PTR pXForm);
         STDMETHOD(FontName)(long cbName,char *szFontName);
         STDMETHOD(get_FontCookie)(UINT_PTR *ppCookie);
-        STDMETHOD(get_FontType)(int *pFontType);
+        STDMETHOD(get_FontType)(FontType *pFontType);
+        STDMETHOD(put_FontType)(FontType fontType);
         STDMETHOD(get_GlyphIndex)(unsigned short charCode,unsigned short *pGlyphId);
         STDMETHOD(SetEncoding)(UINT_PTR encodingVector);
         STDMETHOD(SetCharStrings)(UINT_PTR charStringsVector);
@@ -1110,20 +1111,6 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
         FLOAT PointSize(FLOAT v = -FLT_MAX);
 
-        enum fontType {
-            ftype0 = 0,
-            ftype1 = 1,
-            ftype2 = 2,
-            ftype3 = 3,
-            ftype9 = 9,
-            ftype10 = 10,
-            ftype11 = 11,
-            ftype14 = 14,
-            ftype32 = 32,
-            ftype42 = 42,
-            ftypeUnspecified = 99
-        };
-
         void SetCIDFont(boolean isCID) { isCIDFont = isCID; }
 
         long refCount{0};
@@ -1154,7 +1141,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         char szInstalledFamily[64]{64 * '\0'};
         char szInstalledQualifier[64]{64 * '\0'};
 
-        enum fontType fontType{fontType::ftypeUnspecified};
+        FontType theFontType{FontType::typeUnspecified};
 
         FLOAT scaleFUnitsToPoints{0.0f};
 

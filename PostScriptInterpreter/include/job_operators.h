@@ -23,6 +23,7 @@ This is the MIT License
 
         void operatorStdout();
 
+        void operatorAbs();
         void operatorAdd();
         void operatorAload();
         void operatorAnd();
@@ -55,6 +56,7 @@ This is the MIT License
         void operatorCvi();
         void operatorCvn();
         void operatorCvr();
+        void operatorCvrs();
         void operatorCvs();
         void operatorCvx();
         void operatorDebug();
@@ -99,12 +101,15 @@ This is the MIT License
         void operatorISOLatin1Encoding();
         void operatorItransform();
         void operatorKnown();
+        void operatorLe();
         void operatorLength();
         void operatorLineto();
         void operatorLoad();
         void operatorLoop();
+        void operatorLt();
         void operatorMakefont();
         void operatorMakepattern();
+        void operatorMark();
         void operatorMarkArrayBegin();
         void operatorMarkArrayEnd();
         void operatorMarkDictionaryBegin();
@@ -129,6 +134,7 @@ This is the MIT License
         void operatorQuit();
         void operatorReadonly();
         void operatorReadstring();
+        void operatorRcheck();
         void operatorRectclip();
         void operatorRectfill();
         void operatorRectstroke();

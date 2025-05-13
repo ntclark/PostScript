@@ -27,10 +27,10 @@ This is the MIT License
 
     HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
-    if ( font::fontType::ftype3 == fontType ) 
+    if ( FontType::type3 == theFontType ) 
         return drawType3Glyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
 
-    if ( ! ( font::fontType::ftype42 == fontType ) )
+    if ( ! ( FontType::type42 == theFontType ) )
         return E_UNEXPECTED;
 
     return drawType42Glyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
@@ -109,10 +109,12 @@ This is the MIT License
         pGlyphGeometry = static_cast<otGlyphGeometry *>(pSimpleGlyph);
     }
 
-    FontManager::pIRenderer -> put_TransformMatrix((UINT_PTR)pXformToDeviceSpace);
+    //FontManager::pIRenderer -> put_ToPageTransform(pPSXform);
 
     if ( NULL == FontManager::pIGraphicElements )
         FontManager::pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&FontManager::pIGraphicElements));
+
+    FontManager::pIRenderer -> SaveState();
 
     matrix *pMatrix = new matrix();
 
@@ -133,20 +135,13 @@ This is the MIT License
     // which will put the coordinates in PAGE space
     pMatrix -> concat((XFORM *)pPSXform);
 
-    if ( NULL == FontManager::pIRenderer ) {
-        POINTF initialPoint{pStartPoint -> x,pStartPoint -> y};
-        pMatrix -> concat((XFORM *)pXformToDeviceSpace);
-        matrix::transformPoints((XFORM *)pXformToDeviceSpace,(GS_POINT *)&initialPoint,1);
-        pMatrix -> move(initialPoint.x,initialPoint.y);
-    } else {
-        // startPoint (initialPoint) should be in page space coordinates
-        // That is, the coordinates in the range PDF Height x PDF Width (792x612)
-        // essentially after the current postscript transformation has been 
-        // applied.
-        // The GlyphRenderer will convert this to device (GDI) coordinates
-        FontManager::pIRenderer -> put_Origin(*pStartPoint);
-        FontManager::pIRenderer -> put_DownScale(64.0f);
-    }
+    // startPoint (initialPoint) should be in page space coordinates
+    // That is, the coordinates in the range PDF Height x PDF Width (792x612)
+    // essentially after the current postscript transformation has been 
+    // applied.
+
+    FontManager::pIRenderer -> put_Origin(*pStartPoint);
+    FontManager::pIRenderer -> put_DownScale(64.0f);
 
     // Transform Glyph coordinates using current font matrix
     pMatrix -> concat(matrixStack.top());
@@ -260,10 +255,8 @@ CaptureBezier:
 
     }
 
-    if ( ! ( NULL == FontManager::pIGraphicElements ) ) {
-        FontManager::pIGraphicElements -> FillPath();
-        FontManager::pIRenderer -> Reset();
-    }
+    FontManager::pIGraphicElements -> FillPath();
+    FontManager::pIRenderer -> RestoreState();
 
     if ( ! ( NULL == pEndPoint ) ) {
         POINTF ptAdvance{pGlyphGeometry -> AdvanceWidth() * scaleFUnitsToPoints * PointSize(),0.0f};

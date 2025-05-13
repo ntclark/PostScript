@@ -32,10 +32,18 @@ This is the MIT License
             object(pJob,pszContents,object::objectType::directExecutable,object::valueType::executableOperator,
                     object::valueClassification::simple,object::executableAttribute::executable), pOperator(pProc) {};
 
+      directExec(job *pJob,char *pszContents,void (__thiscall AdobeType1Fonts::*pProc)()) : 
+            object(pJob,pszContents,object::objectType::directExecutable,object::valueType::executableOperator,
+                    object::valueClassification::simple,object::executableAttribute::executable),
+                        pAdobeType1FontsOperator(pProc) {};
+
       void (__thiscall job::*Operator())() { return pOperator; };
+      void (__thiscall AdobeType1Fonts::*AdobeType1FontsOperator())() { return pAdobeType1FontsOperator; };
 
    private:
 
       void (__thiscall job::*pOperator)();
+
+      void (__thiscall AdobeType1Fonts::*pAdobeType1FontsOperator)();
 
    };

@@ -31,7 +31,7 @@ This is the MIT License
 #include "PostScript objects/matrix.h"
 
 class graphicsState;
-class dictionary;
+//class dictionary;
 
     class font : public dictionary {
 
@@ -44,6 +44,11 @@ class dictionary;
 
         char *fontName();
 
+        FontType TheFontType() { return fontType; }
+
+        array *Encoding() { return pEncoding; }
+        dictionary *CharStrings() { return pCharStrings; }
+
         void setFontMatrix(XFORM *pMatrix);
 
         XFORM *getFontMatrix();
@@ -54,6 +59,8 @@ class dictionary;
         void gRestore() { pIFont -> RestoreState(); }
 
         void loadDictionary();
+
+        virtual void copyFrom(dictionary *pSource);
 
         static void setFont(font *pFont);
         static font *findFont(job *pJob,char *pszFamily);
@@ -75,6 +82,7 @@ class dictionary;
 
         long dupCount{0};
 
+        FontType fontType{FontType::typeUnspecified};
         dictionary *pCharStrings{NULL};
         array *pEncoding{NULL};
         array *pSfntsArray{NULL};

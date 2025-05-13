@@ -29,18 +29,15 @@ This is the MIT License
         dwLength(theLength),
         string(pJob,pszContents,object::valueType::binaryString) { 
     pbData = (BYTE *)allocate(dwLength * sizeof(BYTE));
-    memcpy(pbData,pBinary,dwLength);
+    memset(pbData,0,dwLength);
+    if ( ! ( NULL == pBinary ) )
+        memcpy(pbData,pBinary,dwLength);
     return;
     }
 
 
-    long binaryString::length() {
-    return dwLength;
-    }
-
-
     void binaryString::put(long index,BYTE v) {
-    pbData[index] = (char)v;
+    pbData[index] = v;
     return;
     }
 

@@ -48,6 +48,7 @@ This is the MIT License
         void put(char *pszKey,char *);
         void put(char *pszKey,object *);
         void put(char *pszKey,void (job::*theProcedure)());
+        void put(char *pszKey,void (AdobeType1Fonts::*theProcedure)());
 
         object *retrieve(long index);
         char *retrieveKey(long index);
@@ -66,7 +67,7 @@ This is the MIT License
 
         long size() { return (long)entries.size(); };
 
-        void copyFrom(dictionary *pSource);
+        virtual void copyFrom(dictionary *pSource);
 
         void forAll(class procedure *pOperator);
 

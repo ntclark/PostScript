@@ -26,6 +26,7 @@ This is the MIT License
 #include <vector>
 
 class job;
+class array;
 
 #include "PostScript objects/object.h"
 #include "PostScript objects/containerAllocator.h"
@@ -37,6 +38,7 @@ class job;
       procedure(job *p,char *pStart,char **ppEnd,long *pLineNumber);
       procedure(job *p,long *pLineNumber);
       procedure(job *p);
+      procedure(array *pArray);
 
       virtual char *Contents(char *pszContents = NULL);
 

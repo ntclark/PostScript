@@ -33,7 +33,7 @@ This is the MIT License
 
         file(job *pJob,char *pszName);
 
-        virtual uint8_t *getBinaryData(DWORD *pcbSize,char *pszEndDelimiter);
+        virtual uint8_t *getBinaryData(uint32_t *pcbSize,char *pszEndDelimiter);
 
         virtual void releaseData() { 
             if ( ! ( NULL == pbData ) ) 

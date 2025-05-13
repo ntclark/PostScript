@@ -76,6 +76,12 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
 
 
     FLOAT *matrix::Values() {
+    xForm.eM11 = a();
+    xForm.eM12 = b();
+    xForm.eM21 = c();
+    xForm.eM22 = d();
+    xForm.eDx = tx();
+    xForm.eDy = ty();
     return (FLOAT *)&xForm;
     }
 
@@ -96,12 +102,12 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
-    FLOAT matrix::a() { return getElement(A) -> OBJECT_POINT_TYPE_VALUE; }
-    FLOAT matrix::b() { return getElement(B) -> OBJECT_POINT_TYPE_VALUE; }
-    FLOAT matrix::c() { return getElement(C) -> OBJECT_POINT_TYPE_VALUE; }
-    FLOAT matrix::d() { return getElement(D) -> OBJECT_POINT_TYPE_VALUE; }
-    FLOAT matrix::tx() { return getElement(TX) -> OBJECT_POINT_TYPE_VALUE; }
-    FLOAT matrix::ty() { return getElement(TY) -> OBJECT_POINT_TYPE_VALUE; }
+    FLOAT matrix::a() { return getElement(A) -> FloatValue(); }
+    FLOAT matrix::b() { return getElement(B) -> FloatValue(); }
+    FLOAT matrix::c() { return getElement(C) -> FloatValue(); }
+    FLOAT matrix::d() { return getElement(D) -> FloatValue(); }
+    FLOAT matrix::tx() { return getElement(TX) -> FloatValue(); }
+    FLOAT matrix::ty() { return getElement(TY) -> FloatValue(); }
 
     FLOAT matrix::aInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[0]; }
     FLOAT matrix::bInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[1]; }
@@ -110,18 +116,25 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     FLOAT matrix::txInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[4]; }
     FLOAT matrix::tyInverse(boolean force) { if ( force || invalidated ) invert(); return inverse[5]; }
 
-    void matrix::a(FLOAT v) { invalidated = true; getElement(A) -> OBJECT_SET_POINT_TYPE_VALUE(v); xForm.eM11 = v; }
-    void matrix::b(FLOAT v) { invalidated = true; getElement(B) -> OBJECT_SET_POINT_TYPE_VALUE(v); xForm.eM12 = v; }
-    void matrix::c(FLOAT v) { invalidated = true; getElement(C) -> OBJECT_SET_POINT_TYPE_VALUE(v); xForm.eM21 = v; }
-    void matrix::d(FLOAT v) { invalidated = true; getElement(D) -> OBJECT_SET_POINT_TYPE_VALUE(v); xForm.eM22 = v; }
-    void matrix::tx(FLOAT v) { invalidated = true; getElement(TX) -> OBJECT_SET_POINT_TYPE_VALUE(v); xForm.eDx = v; }
-    void matrix::ty(FLOAT v) { invalidated = true; getElement(TY) -> OBJECT_SET_POINT_TYPE_VALUE(v); xForm.eDy = v; }
+    void matrix::a(FLOAT v) { invalidated = true; getElement(A) -> FloatValue(v); xForm.eM11 = v; }
+    void matrix::b(FLOAT v) { invalidated = true; getElement(B) -> FloatValue(v); xForm.eM12 = v; }
+    void matrix::c(FLOAT v) { invalidated = true; getElement(C) -> FloatValue(v); xForm.eM21 = v; }
+    void matrix::d(FLOAT v) { invalidated = true; getElement(D) -> FloatValue(v); xForm.eM22 = v; }
+    void matrix::tx(FLOAT v) { invalidated = true; getElement(TX) -> FloatValue(v); xForm.eDx = v; }
+    void matrix::ty(FLOAT v) { invalidated = true; getElement(TY) -> FloatValue(v); xForm.eDy = v; }
 
 
     void matrix::concat(matrix *pSource) {
     concat((FLOAT *)pSource -> XForm());
     return;
     }
+
+
+    void matrix::concat(XFORM *pXForm) {
+    concat((FLOAT *)pXForm);
+    return;
+    }
+
 
     void matrix::concat(array *pSource) {
     FLOAT arrayValues[] = {
@@ -255,4 +268,53 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     invalidated = false;
 
     return;
+    }
+
+
+    void matrix::transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut) {
+    FLOAT xResult = pXForm -> eM11 * ptIn -> x + pXForm -> eM12 * ptIn -> y + pXForm -> eDx;
+    FLOAT yResult = pXForm -> eM21 * ptIn -> x + pXForm -> eM22 * ptIn -> y + pXForm -> eDy;
+    if ( NULL == ptOut )
+        ptOut = ptIn;
+    ptOut -> x = xResult;
+    ptOut -> y = yResult;
+    return;
+    }
+
+
+    void matrix::transformPointInverse(XFORM *pXFormIn,POINTF *ptIn,POINTF *ptOut) {
+    XFORM *pXForm = invert(pXFormIn);
+    FLOAT xResult = pXForm -> eM11 * ptIn -> x + pXForm -> eM12 * ptIn -> y + pXForm -> eDx;
+    FLOAT yResult = pXForm -> eM21 * ptIn -> x + pXForm -> eM22 * ptIn -> y + pXForm -> eDy;
+    if ( NULL == ptOut )
+        ptOut = ptIn;
+    ptOut -> x = xResult;
+    ptOut -> y = yResult;
+    return;
+    }
+
+
+    XFORM *matrix::invert(XFORM *pXForm) {
+
+    double theMatrix[3][3];
+    double theMatrixInverted[3][3];
+
+    theMatrix[0][0] = (double)pXForm -> eM11;
+    theMatrix[0][1] = (double)pXForm -> eM12;
+    theMatrix[0][2] = (double)pXForm -> eDx;
+    theMatrix[1][0] = (double)pXForm -> eM21;
+    theMatrix[1][1] = (double)pXForm -> eM22;
+    theMatrix[1][2] = (double)pXForm -> eDy;
+
+    theMatrix[2][0] = 0.0;
+    theMatrix[2][1] = 0.0;
+    theMatrix[2][2] = 1.0f;
+
+    Mx3Inverse(&theMatrix[0][0],&theMatrixInverted[0][0]);
+
+    static XFORM xForm{(FLOAT)theMatrixInverted[0][0],(FLOAT)theMatrixInverted[0][1],
+                        (FLOAT)theMatrixInverted[1][0],(FLOAT)theMatrixInverted[1][1],
+                        (FLOAT)theMatrixInverted[0][2],(FLOAT)theMatrixInverted[1][2]};
+
+    return &xForm;
     }

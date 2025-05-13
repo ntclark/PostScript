@@ -27,8 +27,12 @@ This is the MIT License
 
     procedure::procedure(job *pj,char *pStart,char *pEnd,char **ppEnd,long *pLineNumber) :
         isBound(false),pszStringRepresentation(NULL),
-        object(pj,NULL,object::objectType::procedure,object::valueType::executableProcedure,object::valueClassification::composite,object::executableAttribute::executable)
+        object(pj,NULL,object::objectType::procedure,object::valueType::executableProcedure,
+                object::valueClassification::composite,object::executableAttribute::executable)
     {
+
+    if ( NULL == pStart )
+        return;
 
     pJob -> parseProcedure(this,pStart,ppEnd,pLineNumber);
 
@@ -56,6 +60,21 @@ This is the MIT License
     procedure::procedure(job *pj) : procedure(pj,NULL,NULL,NULL,NULL) {}
 
     procedure::procedure(job *pj,char *pStart,char **ppEnd,long *pLineNumber) : procedure(pj,pStart,NULL,ppEnd,pLineNumber) {}
+
+    procedure::procedure(array *pArray) : procedure(pArray -> Job()) {
+
+    for ( long k = 0; k < pArray -> size(); k++ ) {
+        object *pObj = pArray -> getElement(k);
+        pJob -> push(pObj);
+        if ( pJob -> seekDefinition() ) 
+            pObj = pJob -> pop();
+        else
+            pJob -> pop();
+        insert(pObj);
+    }
+
+    return;
+    }
 
 
     void procedure::insert(object *p) {

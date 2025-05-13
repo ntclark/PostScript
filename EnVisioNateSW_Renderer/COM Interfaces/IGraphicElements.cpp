@@ -207,10 +207,10 @@ This is the MIT License
         return E_INVALIDARG;
 
     POINTF ptDevice{x0,y0};
-    transformPoint(&ptDevice,&ptDevice);
+    transformPoint(&toDeviceSpace,&ptDevice,&ptDevice);
 
     POINTF ptSize{width,height};
-    scalePoint(&ptSize.x,&ptSize.y);
+    scalePoint(&toDeviceSpace,&ptSize.x,&ptSize.y);
 
     HDC hdcSource = CreateCompatibleDC(hdc);
     SelectObject(hdcSource,hBitmap);
@@ -254,5 +254,23 @@ This is the MIT License
 
     delete [] pbImage;
 
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicElements::GetCurrentPoint(FLOAT *pX,FLOAT *pY) {
+    if ( NULL == pX || NULL == pY )
+        return E_POINTER;
+    *pX = currentPageSpacePoint.x;
+    *pY = currentPageSpacePoint.y;
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicElements::SetCurrentPoint(FLOAT *pX,FLOAT *pY) {
+    if ( NULL == pX || NULL == pY )
+        return E_INVALIDARG;
+    currentPageSpacePoint.x = *pX;
+    currentPageSpacePoint.y = *pY;
     return S_OK;
     }

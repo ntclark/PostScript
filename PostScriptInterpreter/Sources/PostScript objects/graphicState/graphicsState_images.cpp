@@ -27,7 +27,7 @@ This is the MIT License
 
 #include "job.h"
 
-#include "pathParameters.h"
+#include "pageParameters.h"
 
     HBITMAP getHBITMAPFromPixels(long cx,long cy,long bitsPerComponent,uint8_t *pBits);
 
@@ -56,7 +56,7 @@ This is the MIT License
         return;
     }
 
-    DWORD cbData = 0;
+    uint32_t cbData = 0;
     uint8_t *pbImage = NULL;
     class filter *pFilter = NULL;
 
@@ -102,7 +102,7 @@ This is the MIT License
     object *pHeight = pJob -> pop();
     object *pWidth = pJob -> pop();
 
-    DWORD cbData;
+    uint32_t cbData;
     BYTE *pbImage = NULL;
     class filter *pFilter = NULL;
 
@@ -131,7 +131,7 @@ This is the MIT License
         if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
             PostScriptInterpreter::beginPathAction();
         PostScriptInterpreter::pIGraphicElements -> PostScriptJpegImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbImage,cbData,
-                                                        (UINT_PTR)pPSXformsStack -> back() -> XForm(),(FLOAT)width,(FLOAT)height);
+                                                        (UINT_PTR)pPSXformsStack -> CurrentTransform(),(FLOAT)width,(FLOAT)height);
         return;
     }
 
@@ -159,7 +159,7 @@ This is the MIT License
     if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
         PostScriptInterpreter::beginPathAction();
     PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),hbmResult,
-                                                (UINT_PTR)pPSXformsStack -> back() -> XForm(),(FLOAT)width,(FLOAT)height);
+                                                (UINT_PTR)pPSXformsStack -> CurrentTransform(),(FLOAT)width,(FLOAT)height);
     DeleteObject(hbmResult);
     return;
     }

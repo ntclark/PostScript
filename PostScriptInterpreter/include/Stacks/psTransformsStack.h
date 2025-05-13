@@ -24,17 +24,53 @@ This is the MIT License
 #pragma once
 
 #include <list>
-#include "PostScript objects/containerAllocator.h"
 
 class matrix;
 
-    class psTransformsStack : public std::list<matrix */*,containerAllocator<matrix *>*/> {
+    class psTransformsStack : private std::list<matrix *> {
     public:
 
         psTransformsStack();
         ~psTransformsStack();
 
         void initialize(job *pJob);
+        void unInitialize() {
+            delete this;
+        }
+
+        void Clear() { clear(); return; }
+
+        void setMatrix(object *pMatrix);
+        void revertMatrix();
+        void defaultMatrix();
+
+        void concat(matrix *);
+        void concat(array *);
+        void concat(FLOAT *);
+        void concat(XFORM *);
+
+        void translate(FLOAT x,FLOAT y);
+        void rotate(FLOAT angle);
+        void scale(FLOAT scaleX,FLOAT scaleY);
+        void setTranslation(FLOAT x,FLOAT y);
+
+        XFORM *CurrentTransform() { return back() -> XForm(); }
+
+        void transformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPoint(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPoint(GS_POINT *ptIn,GS_POINT *ptOut);
+        void transformPointInPlace(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+        void transformPointInPlace(FLOAT x,FLOAT y,FLOAT *pX2,FLOAT *pY2);
+
+        void untransformPoint(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPoint(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPoint(POINTF *ptIn,POINTF *ptOut);
+        void untransformPointInPlace(matrix *pMatrix,FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+        void untransformPointInPlace(FLOAT x,FLOAT y,FLOAT *x2,FLOAT *y2);
+
+        void scalePoint(FLOAT x,FLOAT y,FLOAT *px2,FLOAT *py2);
+
+matrix *CurrentMatrix();
 
         void gSave();
         void gRestore();

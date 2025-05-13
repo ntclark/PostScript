@@ -23,6 +23,7 @@ This is the MIT License
 
     pSystemDict -> put("=",&job::operatorStdout);
 
+    pSystemDict -> put("abs",&job::operatorAbs);
     pSystemDict -> put("add",&job::operatorAdd);
     pSystemDict -> put("aload",&job::operatorAload);
     pSystemDict -> put("and",&job::operatorAnd);
@@ -55,6 +56,7 @@ This is the MIT License
     pSystemDict -> put("cvi",&job::operatorCvi);
     pSystemDict -> put("cvn",&job::operatorCvn);
     pSystemDict -> put("cvr",&job::operatorCvr);
+    pSystemDict -> put("cvrs",&job::operatorCvrs);
     pSystemDict -> put("cvs",&job::operatorCvs);
     pSystemDict -> put("cvx",&job::operatorCvx);
     pSystemDict -> put("debug",&job::operatorDebug);
@@ -99,12 +101,21 @@ This is the MIT License
     pSystemDict -> put("ISOLatin1Encoding",&job::operatorISOLatin1Encoding);
     pSystemDict -> put("itransform",&job::operatorItransform);
     pSystemDict -> put("known",&job::operatorKnown);
+    pSystemDict -> put("le",&job::operatorLe);
     pSystemDict -> put("length",&job::operatorLength);
     pSystemDict -> put("lineto",&job::operatorLineto);
     pSystemDict -> put("load",&job::operatorLoad);
     pSystemDict -> put("loop",&job::operatorLoop);
+    pSystemDict -> put("lt",&job::operatorLt);
     pSystemDict -> put("makefont",&job::operatorMakefont);
     pSystemDict -> put("makepattern",&job::operatorMakepattern);
+    pSystemDict -> put("mark",&job::operatorMark);
+    pSystemDict -> put(ARRAY_DELIMITER_BEGIN,&job::operatorMarkArrayBegin);
+    pSystemDict -> put(ARRAY_DELIMITER_END,&job::operatorMarkArrayEnd);
+    pSystemDict -> put(DICTIONARY_DELIMITER_BEGIN,&job::operatorMarkDictionaryBegin);
+    pSystemDict -> put(DICTIONARY_DELIMITER_END,&job::operatorMarkDictionaryEnd);
+    pSystemDict -> put(PROC_DELIMITER_BEGIN,&job::operatorMarkProcedureBegin);
+    pSystemDict -> put(PROC_DELIMITER_END,&job::operatorMarkProcedureEnd);
     pSystemDict -> put("matrix",&job::operatorMatrix);
     pSystemDict -> put("moveto",&job::operatorMoveto);
     pSystemDict -> put("mul",&job::operatorMul);
@@ -123,6 +134,7 @@ This is the MIT License
     pSystemDict -> put("quit",&job::operatorQuit);
     pSystemDict -> put("readonly",&job::operatorReadonly);
     pSystemDict -> put("readstring",&job::operatorReadstring);
+    pSystemDict -> put("rcheck",&job::operatorRcheck);
     pSystemDict -> put("rectclip",&job::operatorRectclip);
     pSystemDict -> put("rectfill",&job::operatorRectfill);
     pSystemDict -> put("rectstroke",&job::operatorRectstroke);
