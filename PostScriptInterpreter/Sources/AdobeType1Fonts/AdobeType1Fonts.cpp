@@ -147,9 +147,12 @@ std::map<uint8_t,char *> AdobeType1Fonts::type1CharStringSubCommands {
 
 
     void AdobeType1Fonts::Shutdown() {
+
     if ( ! ( NULL == pIRenderer ) )
         pIRenderer -> Release();
+
     if ( ! ( NULL == pIGraphicElements ) )
         pIGraphicElements -> Release();
+
     return;
     }

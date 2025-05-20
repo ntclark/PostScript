@@ -22,6 +22,7 @@ This is the MIT License
 */
 
 #include "PostScriptInterpreter.h"
+#include "job.h"
 
     LRESULT CALLBACK PostScriptInterpreter::cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
@@ -68,7 +69,7 @@ This is the MIT License
         case IDDI_CMD_PANE_ACTIVE_FILE: {
             char szTemp[MAX_PATH];
             GetWindowText((HWND)lParam,szTemp,MAX_PATH);
-            EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_EXECUTE), ! ( '\0' == szTemp[0] ) ? TRUE : FALSE);
+            EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_RUN), ! ( '\0' == szTemp[0] ) ? TRUE : FALSE);
             }
             break;
 
@@ -105,8 +106,16 @@ This is the MIT License
             }
             break;
 
-        case IDDI_CMD_PANE_EXECUTE:
+        case IDDI_CMD_PANE_RUN:
             p -> Parse();
+            EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_RUN),FALSE);
+            EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_STOP),TRUE);
+            break;
+
+        case IDDI_CMD_PANE_STOP:
+            p -> currentJob() -> RequestQuit();
+            EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_RUN),TRUE);
+            EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_STOP),FALSE);
             break;
 
         default:
@@ -121,35 +130,4 @@ This is the MIT License
     }
 
     return 0;
-    }
-
-
-    void PostScriptInterpreter::toggleLogVisibility(long itemId) {
-
-    if ( IDDI_CMD_PANE_LOG_SHOW == itemId ) {
-
-        logIsVisible = ! logIsVisible;
-
-        if ( logIsVisible && logLevel::none == theLogLevel ) {
-            SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,0L);
-            SetWindowText(hwndLogContent,"Note: The logLevel is set to none");
-            SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,0L);
-        }
-
-    } else if ( IDDI_CMD_PANE_RENDERER_LOG_SHOW == itemId ) {
-
-        rendererLogIsVisible = ! rendererLogIsVisible;
-
-        if ( rendererLogIsVisible && logLevel::none == theRendererLogLevel ) {
-            SendMessage(hwndRendererLogContent,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,0L);
-            SetWindowText(hwndRendererLogContent,"Note: The renderer logLevel is set to none");
-            SendMessage(hwndRendererLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,0L);
-        }
-
-    } else
-        return;
-
-    PostMessage(hwndClient,WM_REFRESH_CLIENT_WINDOW,0L,0L);
-
-    return;
     }

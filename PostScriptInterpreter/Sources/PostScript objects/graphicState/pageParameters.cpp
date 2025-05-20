@@ -59,8 +59,19 @@ This is the MIT License
 
     if ( ! ( NULL == hwndSurface ) ) {
 
-        scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - 2 * PostScriptInterpreter::TopGutter()) 
-                                            / (FLOAT)pageHeightPoints;
+        scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - 
+                                        2 * PostScriptInterpreter::TopGutter() ) / (FLOAT)pageHeightPoints;
+
+        FLOAT maxWidth = (FLOAT)(PostScriptInterpreter::ClientWindowWidth() - 2 * PostScriptInterpreter::SideGutter());
+
+        if ( maxWidth < pageWidthPoints * scalePointsToPixels ) {
+            scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientWindowWidth() - 
+                                            2 * PostScriptInterpreter::SideGutter() ) / (FLOAT)pageWidthPoints;
+
+            PostScriptInterpreter::TopGutter(((FLOAT)PostScriptInterpreter::ClientWindowHeight() - 
+                                                scalePointsToPixels * (FLOAT)pageHeightPoints ) / 2.0f);
+
+        }
 
         if ( -1L == rcPage.left ) {
 

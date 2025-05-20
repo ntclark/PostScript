@@ -26,23 +26,25 @@ This is the MIT License
 #define ID_GS_INIT          3
 #define ID_GS_RESOURCES     4
 
-#define IDD_CMD_PANE            1
-#define IDD_LOG_PANE            2
-#define IDD_RENDERER_LOG_PANE   3
+#define IDD_CMD_PANE                    1
+#define IDD_POSTSCRIPT_LOG_CMD_PANE     2
+#define IDD_RENDERER_LOG_CMD_PANE       3
 
 #define IDDI_CMD_PANE_ACTIVE_FILE           100
 #define IDDI_CMD_PANE_ACTIVE_FILE_GET       101
-#define IDDI_CMD_PANE_EXECUTE               102
-#define IDDI_CMD_PANE_ERROR                 103
-#define IDDI_CMD_PANE_LOG_SHOW              104
-#define IDDI_CMD_PANE_LOG_HIDE              105
+#define IDDI_CMD_PANE_RUN                   102
+#define IDDI_CMD_PANE_STOP                  103
+#define IDDI_CMD_PANE_ERROR                 104
+#define IDDI_CMD_PANE_LOG_SHOW              105
+#define IDDI_CMD_PANE_LOG_HIDE              106
 
-#define IDDI_CMD_PANE_RENDERER_LOG_SHOW     107
-#define IDDI_CMD_PANE_RENDERER_LOG_HIDE     108
+#define IDDI_CMD_PANE_RENDERER_LOG_SHOW     108
+//#define IDDI_CMD_PANE_RENDERER_LOG_HIDE     109
 
 
-#define IDDI_LOG_PANE_OPERAND_STACK_SIZE    200
-#define IDDI_LOG_PANE_CURRENT_DICTIONARY    201
+#define IDDI_POSTSCRIPT_LOG_CMD_PANE_LOG_LEVEL  200
+
+#define IDDI_RENDERER_LOG_CMD_PANE_LOG_LEVEL    301
 
 #define WM_FLUSH_LOG                    (WM_USER + 1)
 #define WM_REFRESH_CLIENT_WINDOW        (WM_USER + 2)

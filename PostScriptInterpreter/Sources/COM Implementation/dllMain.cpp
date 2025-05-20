@@ -60,6 +60,8 @@ This is the MIT License
 
         CreateDirectory(szApplicationDataDirectory,NULL);
 
+        LoadLibrary("Riched20.dll");
+
         }
 
         break;

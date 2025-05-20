@@ -265,7 +265,6 @@ This is the MIT License
             if ( pParent -> isFigureStarted )
                 pRenderer -> pID2D1GeometrySink -> EndFigure(D2D1_FIGURE_END_CLOSED);
             pParent -> isFigureStarted = false;
-            //return path::pathAction::close; //<--- causes fuzzy poor resolution !!!
             }
             break;
 

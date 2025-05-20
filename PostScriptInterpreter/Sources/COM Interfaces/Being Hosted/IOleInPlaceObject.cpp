@@ -66,8 +66,7 @@ This is the MIT License
    }
  
    STDMETHODIMP PostScriptInterpreter::_IOleInPlaceObject::SetObjectRects(LPCRECT pRectPos,LPCRECT pRectClip) {
-   SetWindowPos(pParent -> hwndClient,HWND_TOP,pRectPos -> left,pRectPos -> top,
-                               pRectPos -> right - pRectPos -> left,pRectPos -> bottom - pRectPos -> top,SWP_SHOWWINDOW);
+   pParent -> setWindowPanes((RECT *)pRectPos);
    return S_OK;
    }
  

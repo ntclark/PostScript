@@ -195,25 +195,18 @@ boolean useGSProperties = true;
 
     RegisterClass(&gClass);
 
-    gClass.lpfnWndProc = ParsePSHost::clientHandler;
-    gClass.lpszClassName = "psHostClient";
+    pParsePSHost -> hwndFrame = CreateWindowEx(0L,"psHostFrame","PostScript Interpreter",WS_THICKFRAME | WS_SYSMENU,0,0,0,0,HWND_DESKTOP,(HMENU)NULL,hModule,(LPVOID)pParsePSHost);
 
-    RegisterClass(&gClass);
-
-    pParsePSHost -> hwndFrame = CreateWindowEx(0L,"psHostFrame","PostScript Interpreter",WS_THICKFRAME | WS_VISIBLE | WS_SYSMENU,rcFrame.left,rcFrame.top,rcFrame.right - rcFrame.left,rcFrame.bottom - rcFrame.top,HWND_DESKTOP,(HMENU)NULL,hModule,(LPVOID)pParsePSHost);
-
-    RECT rcAdj{0,0,0,0};
-    AdjustWindowRectEx(&rcAdj,(DWORD)GetWindowLongPtr(pParsePSHost -> hwndFrame,GWL_STYLE),FALSE,(DWORD)GetWindowLongPtr(pParsePSHost -> hwndFrame,GWL_EXSTYLE));
-
-    pParsePSHost -> hwndPSHost = CreateWindowEx(0L,"psHostClient","",WS_CHILD | WS_VISIBLE,0,0,rcFrame.right - rcFrame.left - (rcAdj.right - rcAdj.left),
-                                                                        rcFrame.bottom - rcFrame.top - (rcAdj.bottom - rcAdj.top),pParsePSHost -> hwndFrame,(HMENU)NULL,hModule,(LPVOID)pParsePSHost);
-
-    pParsePSHost -> pIOleInPlaceFrame_HTML_Host = new ParsePSHost::_IOleInPlaceFrame(pParsePSHost,pParsePSHost -> hwndPSHost);
+    pParsePSHost -> pIOleInPlaceFrame_HTML_Host = new ParsePSHost::_IOleInPlaceFrame(pParsePSHost,pParsePSHost -> hwndFrame);
     pParsePSHost -> pIOleInPlaceSite_HTML_Host = new ParsePSHost::_IOleInPlaceSite(pParsePSHost,pParsePSHost -> pIOleInPlaceFrame_HTML_Host);
-    pParsePSHost -> pIOleClientSite_HTML_Host = new ParsePSHost::_IOleClientSite(pParsePSHost,pParsePSHost -> pIOleInPlaceSite_HTML_Host,pParsePSHost -> pIOleInPlaceFrame_HTML_Host);
+    pParsePSHost -> pIOleClientSite_HTML_Host = new ParsePSHost::_IOleClientSite(pParsePSHost,pParsePSHost -> pIOleInPlaceSite_HTML_Host,
+                                                                                    pParsePSHost -> pIOleInPlaceFrame_HTML_Host);
     pParsePSHost -> pIOleDocumentSite_HTML_Host = new ParsePSHost::_IOleDocumentSite(pParsePSHost,pParsePSHost -> pIOleClientSite_HTML_Host);
 
     rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScriptInterpreter,reinterpret_cast<void **>(&pParsePSHost -> pIPostScript));
+
+    if ( 0 < cbPostScriptProperties )
+        pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);
 
     pParsePSHost -> pIPostScript -> QueryInterface(IID_IOleObject,reinterpret_cast<void **>(&pParsePSHost -> pIOleObject_HTML));
     rc = pParsePSHost -> pIOleObject_HTML -> QueryInterface(IID_IOleInPlaceObject,reinterpret_cast<void **>(&pParsePSHost -> pIOleInPlaceObject_HTML));
@@ -222,18 +215,11 @@ boolean useGSProperties = true;
     if ( 1 < argc )
         pParsePSHost -> pIPostScript -> SetSource((char *)argv[1]);
 
-    //pParsePSHost -> pIPostScript -> LogLevel(logLevel::verbose);
-    pParsePSHost -> pIPostScript -> LogLevel(logLevel::none);
+    SetWindowPos(pParsePSHost -> hwndFrame,HWND_TOP,rcFrame.left,rcFrame.top,rcFrame.right - rcFrame.left,rcFrame.bottom - rcFrame.top,SWP_SHOWWINDOW);
 
-    pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::verbose);
-    //pParsePSHost -> pIPostScript -> RendererLogLevel(logLevel::none);
-
-    if ( 0 < cbPostScriptProperties )
-        pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);
-
-_CrtSetBreakAlloc(26337);
-_CrtSetBreakAlloc(26328);
-_CrtSetBreakAlloc(26319);
+_CrtSetBreakAlloc(17512);
+_CrtSetBreakAlloc(181);
+_CrtSetBreakAlloc(182);
 
     MSG qMessage;
 

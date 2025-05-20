@@ -42,7 +42,7 @@ This is the MIT License
     }
 
 
-    HRESULT font::drawType42Glyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::drawType42Glyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pxxXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     BYTE *pbGlyphData = NULL;
 
@@ -109,8 +109,6 @@ This is the MIT License
         pGlyphGeometry = static_cast<otGlyphGeometry *>(pSimpleGlyph);
     }
 
-    //FontManager::pIRenderer -> put_ToPageTransform(pPSXform);
-
     if ( NULL == FontManager::pIGraphicElements )
         FontManager::pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&FontManager::pIGraphicElements));
 
@@ -131,17 +129,30 @@ This is the MIT License
     // roundoff, itself due to lack of precision in FLOAT
     pMatrix -> scale(64.0f);
 
-    // Transform those using the current postscript CTM
-    // which will put the coordinates in PAGE space
-    pMatrix -> concat((XFORM *)pPSXform);
-
     // startPoint (initialPoint) should be in page space coordinates
     // That is, the coordinates in the range PDF Height x PDF Width (792x612)
     // essentially after the current postscript transformation has been 
     // applied.
 
-    FontManager::pIRenderer -> put_Origin(*pStartPoint);
+    POINTF ptStart{pStartPoint -> x,pStartPoint -> y};
+    pMatrix -> transformPoint((XFORM *)pPSXform,&ptStart,&ptStart);
+    FontManager::pIRenderer -> put_Origin(ptStart);
     FontManager::pIRenderer -> put_DownScale(64.0f);
+
+    // Set the Renderer "ToPage" transform to the "ToPage" transform 
+    // currently in effect (the CTM)
+    //
+    // HOWEVER, anytime zero (origin) based point data is sent to the
+    // Renderer, don't forget to zero out the translation component
+    // of the "ToPage" transform. The "origin" is set as the current
+    // point in the current parsing of the PS file and that is 
+    // sent to the Renderer IN PAGE SPACE coordinates (which DOES
+    // use the translation components of the CTM)
+    //
+    XFORM xFormScaleOnly = *(XFORM *)pPSXform;
+    xFormScaleOnly.eDx = 0.0f;
+    xFormScaleOnly.eDy = 0.0f;
+    FontManager::pIRenderer -> put_ToPageTransform((UINT_PTR)&xFormScaleOnly);
 
     // Transform Glyph coordinates using current font matrix
     pMatrix -> concat(matrixStack.top());

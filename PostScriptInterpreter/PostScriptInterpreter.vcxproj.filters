@@ -58,12 +58,12 @@
     <Filter Include="Source Files\AdobeType1Fonts">
       <UniqueIdentifier>{d3382a79-4ed4-4c3c-afef-de700c03382d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{e9aebb3e-83a8-4f39-ab7f-5ae378d2d7ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\PostScriptInterpreter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\clientWindowHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\logHandling.cpp">
@@ -143,15 +143,6 @@
     </ClCompile>
     <ClCompile Include="Sources\PostScript objects\save.cpp">
       <Filter>Source Files\PostScript objects</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\initWindows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\cmdPaneHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\logPaneHandler.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sources\job\job.cpp">
       <Filter>Source Files\job</Filter>
@@ -275,6 +266,21 @@
     </ClCompile>
     <ClCompile Include="Sources\Stacks\psTransformsstack_transforms.cpp">
       <Filter>Source Files\Stacks</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\clientWindowHandler.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\cmdPaneHandler.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\initWindows.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\logPaneHandler.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\setWindowPanes.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

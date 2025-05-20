@@ -36,14 +36,17 @@ This is the MIT License
     }
 
 
-    HRESULT Renderer::put_ScaleTransform(UINT_PTR pXForm) {
+    HRESULT Renderer::put_ScaleTransform(UINT_PTR pvXForm) {
+    XFORM *pXForm = (XFORM *)pvXForm;
     memcpy(&pGraphicsStateManager -> parametersStack.top() -> scaleXForm,(void *)pXForm,sizeof(XFORM));
+    pGraphicsStateManager -> parametersStack.top() -> hasScale = ! (1.0f == pXForm -> eM11 && 1.0f == pXForm -> eM22);
     return S_OK;
     }
 
 
     HRESULT Renderer::put_DownScale(FLOAT ds) {
     pGraphicsStateManager -> parametersStack.top() -> downScale = ds; 
+    pGraphicsStateManager -> parametersStack.top() -> hasDownScale = ! ( 1.0f == ds );
     return S_OK;
     }
 

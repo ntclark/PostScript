@@ -22,6 +22,7 @@ class array;
         int32_t countRandomBytes{-1};
 
         boolean firstRMove{true};
+        boolean terminationRequested{false};
         array *pFontMatrixArray{NULL};
         enum paintType thePaintType{paintType::fill};
         dictionary *pDictionary{NULL};

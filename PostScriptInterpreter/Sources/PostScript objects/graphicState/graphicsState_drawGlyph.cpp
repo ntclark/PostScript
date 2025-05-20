@@ -43,7 +43,7 @@ This is the MIT License
 
     drawType42Glyph(glyphIndex,&startPoint,&endPoint);
 
-    pPSXformsStack -> untransformPoint(&endPoint,&endPoint);
+    //pPSXformsStack -> untransformPoint(&endPoint,&endPoint);
 
     moveto(&endPoint);
 

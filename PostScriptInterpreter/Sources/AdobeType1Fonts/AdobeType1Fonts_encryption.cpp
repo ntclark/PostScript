@@ -92,7 +92,7 @@ This is the MIT License
     }
 
 
-    void AdobeType1Fonts::decryptType1CharString(uint8_t *pbData,uint32_t cbData,uint8_t countRandomBytes,std::list<type1Token *> *pTokens) {
+    uint32_t AdobeType1Fonts::decryptType1CharString(uint8_t *pbData,uint32_t cbData,uint8_t countRandomBytes,type1Token *pTokens[]) {
 
     uint8_t *pbTemp = NULL;
 
@@ -105,6 +105,8 @@ This is the MIT License
     inclusive indicates an integer. These values are decoded in four
     ranges.
 */
+
+    uint32_t countTokens = 0;
 
     int32_t val;
     uint32_t k = 0;
@@ -142,7 +144,7 @@ This is the MIT License
 */
             } else if ( 250 < b && b < 255 ) {
                 k++;
-                val = -( b - 251 ) * 256 - pbTemp[k] - 108;
+                val = -(( b - 251 ) * 256) - pbTemp[k] - 108;
 /*
     4. Finally, if the charstring byte contains the value 255, the next
         four bytes indicate a two’s complement signed integer. The
@@ -151,6 +153,12 @@ This is the MIT License
         byte contains the lowest order bits. Thus, any 32-bit signed
         integer may be encoded in 5 bytes in this manner (the 255 byte
         plus 4 more bytes).
+
+    !!!!!!!!!!!!
+
+    Note 3 The Type 2 interpretation of a number encoded in five-bytes (those
+    with an initial byte value of 255) differs from how it is interpreted in
+    the Type 1 format.
 */
             } else {
                 uint32_t uval =  (uint32_t) pbTemp[k + 1] << 24;
@@ -163,7 +171,9 @@ This is the MIT License
 
             k++;
 
-            pTokens -> push_back(new type1Token(type1Token::tokenKind::isNumber,val));
+            if ( ! ( NULL == pTokens ) )
+                pTokens[countTokens] = new type1Token(type1Token::tokenKind::isNumber,val);
+            countTokens++;
 
             continue;
 
@@ -195,10 +205,13 @@ This is the MIT License
         case 12: {
             k++;
             b = pbTemp[k];
-            if ( type1CharStringSubCommands.end() == type1CharStringSubCommands.find(b) ) 
-                pTokens -> push_back(new type1Token(type1Token::tokenKind::isCommand,type1CharStringSubCommands[99]));
-            else
-                pTokens -> push_back(new type1Token(type1Token::tokenKind::isCommand,type1CharStringSubCommands[b]));
+            if ( ! ( NULL == pTokens ) ) {
+                if ( type1CharStringSubCommands.end() == type1CharStringSubCommands.find(b) ) 
+                    pTokens[countTokens] = new type1Token(type1Token::tokenKind::isCommand,type1CharStringSubCommands[99]);
+                else
+                    pTokens[countTokens] = new type1Token(type1Token::tokenKind::isCommand,type1CharStringSubCommands[b]);
+            }
+            countTokens++;
             }
             break;
 
@@ -209,15 +222,20 @@ This is the MIT License
             val |= (pbTemp[k] & 0xff);
             if ( val & 0x8000 )
                 val |= ~0x7FFF;
-            pTokens -> push_back(new type1Token(type1Token::tokenKind::isNumber,val));
+            if ( ! ( NULL == pTokens ) )
+                pTokens[countTokens] = new type1Token(type1Token::tokenKind::isNumber,val);
+            countTokens++;
             }
             break;
 
         default:
-            if ( type1CharStringCommands.end() == type1CharStringCommands.find(b) ) 
-                pTokens -> push_back(new type1Token(type1Token::tokenKind::isCommand,type1CharStringCommands[99]));
-            else
-                pTokens -> push_back(new type1Token(type1Token::tokenKind::isCommand,type1CharStringCommands[b]));
+            if ( ! ( NULL == pTokens ) ) {
+                if ( type1CharStringCommands.end() == type1CharStringCommands.find(b) ) 
+                    pTokens[countTokens] = new type1Token(type1Token::tokenKind::isCommand,type1CharStringCommands[99]);
+                else
+                    pTokens[countTokens] = new type1Token(type1Token::tokenKind::isCommand,type1CharStringCommands[b]);
+            }
+            countTokens++;
             break;
         }
 
@@ -227,13 +245,14 @@ This is the MIT License
 
     delete [] pbTemp;
 
-    return;
+    return countTokens;
     }
 
 
     uint32_t AdobeType1Fonts::decryptType1Data(uint16_t initialKey,uint8_t *pbData,uint32_t cbData,uint8_t countRandomBytes,uint8_t **ppbResults) {
 
     *ppbResults = new uint8_t[cbData];
+
     memset(*ppbResults,0,cbData * sizeof(uint8_t));
 
     /*

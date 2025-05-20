@@ -23,6 +23,8 @@ This is the MIT License
 
 #include "job.h"
 
+static long setNumber = 0;
+
     void AdobeType1Fonts::drawGlyph(font *pFont,uint16_t bGlyph,
                                         XFORM *pPSXForm,POINTF *pStartPoint,POINTF *pEndPoint) {
 
@@ -61,9 +63,11 @@ This is the MIT License
 
     pType1Glyph = new type1Glyph(reinterpret_cast<dictionary *>(pFont));
 
-    std::list<type1Token *> tokens;
+    uint32_t countTokens = AdobeType1Fonts::decryptType1CharString(pString -> getData(),(uint32_t)pString -> length(),pType1Glyph -> countRandomBytes);
 
-    AdobeType1Fonts::decryptType1CharString(pString -> getData(),(uint32_t)pString -> length(),pType1Glyph -> countRandomBytes,&tokens);
+    type1Token **ppTokens = new type1Token *[countTokens];
+
+    AdobeType1Fonts::decryptType1CharString(pString -> getData(),(uint32_t)pString -> length(),pType1Glyph -> countRandomBytes,ppTokens);
 
     XFORM xForm{0};
     XFORM *pFontXForm = pFont -> getFontMatrix();
@@ -115,9 +119,22 @@ This is the MIT License
 
     pIRenderer -> put_ToPageTransform((UINT_PTR)&glyphSpaceToPageSpace);
 
-    processTokens(&tokens);
+    try {
 
-    tokens.clear();
+    processTokens(countTokens,ppTokens);
+
+    } catch ( nonPostscriptException *ex ) {
+        pPostScriptInterpreter -> queueLog(true,ex -> Message(),NULL,true);
+    } catch ( PStoPDFException *pe ) {
+        char szMessage[1024];
+        sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
+        pPostScriptInterpreter -> queueLog(true,szMessage,NULL,true);
+    }
+
+    for ( uint32_t k = 0; k < countTokens; k++ )
+        delete ppTokens[k];
+
+    delete [] ppTokens;
 
     if ( ! ( NULL == pEndPoint ) ) {
         POINTF delta{pType1Glyph -> leftSideBearing[0] + pType1Glyph -> characterWidth[0],
@@ -133,22 +150,28 @@ This is the MIT License
     }
 
 
-    void AdobeType1Fonts::processTokens(std::list<type1Token *> *pTokens) {
+    void AdobeType1Fonts::processTokens(uint32_t countTokens,type1Token *pTokens[]) {
 
-    for ( type1Token *pToken : *pTokens ) {
+    for ( uint32_t k = 0; k < countTokens; k++ ) {
 
-        switch ( pToken ->theKind ) {
+        type1Token *pToken = pTokens[k];
+
+        switch ( pToken -> theKind ) {
         case type1Token::tokenKind::isNumber:
             pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,(long)pToken -> value));
             break;
 
         case type1Token::tokenKind::isCommand: {
+            pPostScriptInterpreter -> queueLog(true,pToken -> pszCommand);
             directExec *pDirectExec = reinterpret_cast<directExec *>(pOperators -> retrieve(pToken -> pszCommand));
             void (__thiscall AdobeType1Fonts::*pOperator)() = pDirectExec -> AdobeType1FontsOperator();
             (&adobeType1Fonts ->* pOperator)();
             }
             break;
         }
+
+        if ( pType1Glyph -> terminationRequested )
+            return;
 
     }
     return;

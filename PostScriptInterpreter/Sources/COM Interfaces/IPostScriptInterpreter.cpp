@@ -113,14 +113,17 @@ This is the MIT License
     *pProperties = (UINT_PTR)pProps;
     *pSize = cbProperties;
 
+    memcpy(pProps,&cbProperties,sizeof(long));
+    pProps += sizeof(long);
+
     RECT rc;
 
-    GetWindowRect(hwndLogContent,&rc);
+    GetWindowRect(hwndPostScriptLogContent,&rc);
 
-    logPaneWidth = rc.right - rc.left;
+    postScriptLogPaneWidth = rc.right - rc.left;
 
-    memcpy(pProps,&logPaneWidth,sizeof(logPaneWidth));
-    pProps += sizeof(logPaneWidth);
+    memcpy(pProps,&postScriptLogPaneWidth,sizeof(postScriptLogPaneWidth));
+    pProps += sizeof(postScriptLogPaneWidth);
 
     GetWindowRect(hwndRendererLogContent,&rc);
 
@@ -136,6 +139,15 @@ This is the MIT License
     pProps += sizeof(rendererLogIsVisible);
 
     memcpy(pProps,szCurrentPostScriptFile,sizeof(szCurrentPostScriptFile));
+    pProps += sizeof(szCurrentPostScriptFile);
+
+    long v = (long)theLogLevel;
+    memcpy(pProps,&v,sizeof(long));
+    pProps += sizeof(long);
+
+    v = theRendererLogLevel;
+    memcpy(pProps,&v,sizeof(long));
+    pProps += sizeof(long);
 
     return S_OK;
     }
@@ -145,9 +157,15 @@ This is the MIT License
 
     uint8_t *pProps = (uint8_t *)pProperties;
 
+    long propertiesSize = 0L;
+    memcpy(&propertiesSize,pProps,sizeof(long));
+
+    uint8_t *pPropertiesEnd = pProps + propertiesSize;
+    pProps += sizeof(long);
+
     long x,y;
-    memcpy(&x,pProps,sizeof(logPaneWidth));
-    pProps += sizeof(logPaneWidth);
+    memcpy(&x,pProps,sizeof(postScriptLogPaneWidth));
+    pProps += sizeof(postScriptLogPaneWidth);
 
     memcpy(&y,pProps,sizeof(rendererLogPaneWidth));
     pProps += sizeof(rendererLogPaneWidth);
@@ -157,7 +175,7 @@ This is the MIT License
     if ( logIsVisible ) {
         logIsVisible = false;
         toggleLogVisibility(IDDI_CMD_PANE_LOG_SHOW);
-        logPaneWidth = x;
+        postScriptLogPaneWidth = x;
     }
 
     memcpy(&rendererLogIsVisible,pProps,sizeof(rendererLogIsVisible));
@@ -169,15 +187,23 @@ This is the MIT License
         rendererLogPaneWidth = y;
     }
 
-    if ( logIsVisible || rendererLogIsVisible )
-        setWindowPanes();
-
     if ( '\0' == szCurrentPostScriptFile[0] ) {
         memcpy(szCurrentPostScriptFile,pProps,sizeof(szCurrentPostScriptFile));
         if ( ! ( '\0' == szCurrentPostScriptFile[0] ) )
             if ( ! ( S_OK == SetSource(szCurrentPostScriptFile) ) )
                 memset(szCurrentPostScriptFile,0,sizeof(szCurrentPostScriptFile));
     }
+
+    pProps += sizeof(szCurrentPostScriptFile);
+
+    if ( pPropertiesEnd < pProps )
+        return S_OK;
+
+    theLogLevel = (enum logLevel)*(long *)pProps;
+    pProps += sizeof(long);
+
+    theRendererLogLevel = (enum logLevel)*(long *)pProps;
+    pProps += sizeof(long);
 
     return S_OK;
     }

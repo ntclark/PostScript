@@ -287,6 +287,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\initWindows.cpp" />
     <ClCompile Include="Sources\logHandling.cpp" />
     <ClCompile Include="Sources\runLengthEncodeDecode.cpp" />
+    <ClCompile Include="Sources\setWindowPanes.cpp" />
     <ClCompile Include="Sources\Stacks\dictionaryStack.cpp" />
     <ClCompile Include="Sources\Stacks\objectStack.cpp" />
     <ClCompile Include="Sources\Stacks\psTransformsStack.cpp" />

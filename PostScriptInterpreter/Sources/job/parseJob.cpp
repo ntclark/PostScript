@@ -25,7 +25,7 @@ This is the MIT License
 
     long job::parseJob(bool useThread) {
 
-    pPostScriptInterpreter -> clearLog(PostScriptInterpreter::hwndLogContent);
+    pPostScriptInterpreter -> clearLog(PostScriptInterpreter::hwndPostScriptLogContent);
 
     if ( useThread ) {
         unsigned int threadAddr;

@@ -27,22 +27,9 @@ This is the MIT License
     int PostScriptInterpreter::initWindows() {
 
     //
-    // Please note that hwndHost is *external*, our client window will be embedded in the
+    // Note that hwndHost is *external*, our client window will be embedded in the
     // windows application that is hosting this object.
     // 
-    // It is also true in this case, that this host is NOT the client of the main frame window.
-    // It is an additional simple window that is created to mimic the client *area* of the frame
-    // that is, under the caption, and inside the size-borders, etc.
-    // 
-    // In 30 years of windows development, I have never been able to actually get the handle
-    // of this area *as a window handle*, which is to me an obvious thing to need
-    // on so many occassions.
-    // 
-    // This object also subclasses that host window so that these windows stay consistent
-    // with it on move or size. Something in the IOleInPlaceObject and that flavor of
-    // interfaces might provide the proper notification of when to synchronize position,
-    // but I believe I gave up looking for it.
-    //
 
     pIOleInPlaceSite -> GetWindow(&hwndHost);
 
@@ -68,47 +55,45 @@ This is the MIT License
 
     RegisterClass(&gClass);
 
-    if ( ! ( NULL == PostScriptInterpreter::nativeHostFrameHandler ) )
-        SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::nativeHostFrameHandler);
+    hwndClient = CreateWindowEx(WS_EX_CLIENTEDGE,"psInterpreterCanvas","",WS_CHILD,0,0,0,0,hwndHost,
+                                    NULL,NULL,reinterpret_cast<void *>(this));
 
-    PostScriptInterpreter::nativeHostFrameHandler = (WNDPROC)SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::hostFrameHandlerOveride);
-
-    hwndClient = CreateWindowEx(0L,"psInterpreterCanvas","",WS_CHILD | WS_VISIBLE,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
-
-    hwndVScroll = CreateWindowEx(0L,"SCROLLBAR","",WS_CHILD | WS_VISIBLE | SBS_VERT,0,0,GetSystemMetrics(SM_CXVSCROLL),CW_USEDEFAULT,hwndClient,NULL,NULL,NULL);
+    hwndVScroll = CreateWindowEx(0L,"SCROLLBAR","",WS_CHILD | WS_VISIBLE | SBS_VERT,0,0,
+                                    GetSystemMetrics(SM_CXVSCROLL),CW_USEDEFAULT,hwndClient,NULL,NULL,NULL);
 
     DLGTEMPLATE *dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_CMD_PANE),RT_DIALOG));
-    hwndCmdPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndClient,(DLGPROC)PostScriptInterpreter::cmdPaneHandler,(ULONG_PTR)(void *)this);
+    hwndCmdPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndHost,(DLGPROC)PostScriptInterpreter::cmdPaneHandler,(ULONG_PTR)(void *)this);
 
-    LoadLibrary("Riched20.dll");
+    SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_ACTIVE_FILE),szCurrentPostScriptFile);
 
-    hwndLogContent = CreateWindowEx(WS_EX_CLIENTEDGE,RICHEDIT_CLASS,"",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
+    dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_POSTSCRIPT_LOG_CMD_PANE),RT_DIALOG));
+    hwndPostScriptLogCmdPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndCmdPane,(DLGPROC)PostScriptInterpreter::logPaneHandler,(ULONG_PTR)(void *)this);
+
+    dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_RENDERER_LOG_CMD_PANE),RT_DIALOG));
+    hwndRendererLogCmdPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndCmdPane,(DLGPROC)PostScriptInterpreter::logPaneHandler,(ULONG_PTR)(void *)this);
+
+
+    ShowWindow(hwndPostScriptLogCmdPane,SW_HIDE);
+
+    hwndPostScriptLogContent = CreateWindowEx(WS_EX_CLIENTEDGE,RICHEDIT_CLASS,"",WS_CHILD | ES_MULTILINE | WS_VSCROLL,
                                        0,0,0,0,hwndHost,NULL,NULL,NULL);
 
-    nativeRichEditHandler = (WNDPROC)GetWindowLongPtr(hwndLogContent,GWLP_WNDPROC);
+    hwndPostScriptLogSplitter = CreateWindowEx(0,"splitter","",WS_CHILD,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
 
-    dt = (DLGTEMPLATE *)LoadResource(hModule,FindResource(hModule,MAKEINTRESOURCE(IDD_LOG_PANE),RT_DIALOG));
-    hwndLogPane = CreateDialogIndirectParam(hModule,dt,(HWND)hwndClient,(DLGPROC)PostScriptInterpreter::logPaneHandler,(ULONG_PTR)(void *)this);
+    ShowWindow(hwndRendererLogCmdPane,SW_HIDE);
 
-    hwndOperandStackSize = GetDlgItem(hwndLogPane,IDDI_LOG_PANE_OPERAND_STACK_SIZE);
-    hwndCurrentDictionary = GetDlgItem(hwndLogPane,IDDI_LOG_PANE_CURRENT_DICTIONARY);
-
-    hwndLogSplitter = CreateWindowEx(WS_EX_TRANSPARENT,"splitter","",WS_CHILD | WS_VISIBLE,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
-
-    hwndRendererLogContent = CreateWindowEx(WS_EX_CLIENTEDGE,RICHEDIT_CLASS,"",WS_CHILD | WS_VISIBLE | ES_MULTILINE | WS_VSCROLL,
+    hwndRendererLogContent = CreateWindowEx(WS_EX_CLIENTEDGE,RICHEDIT_CLASS,"",WS_CHILD | ES_MULTILINE | WS_VSCROLL,
                                                     0,0,0,0,hwndHost,NULL,NULL,NULL);
 
-    hwndRendererLogSplitter = CreateWindowEx(WS_EX_TRANSPARENT,"splitter","",WS_CHILD | WS_VISIBLE,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
-
-    setWindowPanes();
+    hwndRendererLogSplitter = CreateWindowEx(0,"splitter","",WS_CHILD,0,0,0,0,hwndHost,NULL,NULL,reinterpret_cast<void *>(this));
 
     activePageOrigin.x = 0L;
     activePageOrigin.y = 0L;
 
-    SetWindowLongPtr(hwndLogContent,GWLP_USERDATA,(UINT_PTR)this);
+    SetWindowLongPtr(hwndPostScriptLogContent,GWLP_USERDATA,(UINT_PTR)this);
     SetWindowLongPtr(hwndRendererLogContent,GWLP_USERDATA,(UINT_PTR)this);
 
-    SendMessage(hwndLogContent,EM_SETREADONLY,(WPARAM)TRUE,0L);
+    SendMessage(hwndPostScriptLogContent,EM_SETREADONLY,(WPARAM)TRUE,0L);
     SendMessage(hwndRendererLogContent,EM_SETREADONLY,(WPARAM)TRUE,0L);
 
     CHARFORMAT charFormat;
@@ -120,9 +105,9 @@ This is the MIT License
     strcpy(charFormat.szFaceName,"Courier New");
     charFormat.yHeight = 10 * 20;
 
-    SendMessage(hwndLogContent,EM_SETCHARFORMAT,(WPARAM)SCF_ALL,(LPARAM)&charFormat);
-    SendMessage(hwndLogContent,EM_SHOWSCROLLBAR,(WPARAM)SB_VERT,(LPARAM)TRUE);
-    SendMessage(hwndLogContent,EM_SHOWSCROLLBAR,(WPARAM)SB_HORZ,(LPARAM)TRUE);
+    SendMessage(hwndPostScriptLogContent,EM_SETCHARFORMAT,(WPARAM)SCF_ALL,(LPARAM)&charFormat);
+    SendMessage(hwndPostScriptLogContent,EM_SHOWSCROLLBAR,(WPARAM)SB_VERT,(LPARAM)TRUE);
+    SendMessage(hwndPostScriptLogContent,EM_SHOWSCROLLBAR,(WPARAM)SB_HORZ,(LPARAM)TRUE);
 
     SendMessage(hwndRendererLogContent,EM_SETCHARFORMAT,(WPARAM)SCF_ALL,(LPARAM)&charFormat);
     SendMessage(hwndRendererLogContent,EM_SHOWSCROLLBAR,(WPARAM)SB_VERT,(LPARAM)TRUE);
@@ -133,22 +118,17 @@ This is the MIT License
     st.flags = ST_DEFAULT;
     st.codepage = CP_ACP;
 
-#ifdef DO_RTF
-    SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
+    SendMessage(hwndPostScriptLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
     SendMessage(hwndRendererLogContent,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
-#else
-    SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,(LPARAM)0L);
-    SendMessage(hwndLogContent,EM_SETTEXTMODE,(WPARAM)TM_PLAINTEXT,(LPARAM)0L);
-#endif
 
-    SendMessage(hwndLogContent,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
-    SendMessage(hwndLogContent,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));
+    SendMessage(hwndPostScriptLogContent,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
+    SendMessage(hwndPostScriptLogContent,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));
 
     SendMessage(hwndRendererLogContent,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
     SendMessage(hwndRendererLogContent,EM_EXLIMITTEXT,(WPARAM)0L,(LPARAM)(32768 * 65535));
 
     memset(&logStream,0,sizeof(EDITSTREAM));
-    logStream.dwCookie = (DWORD_PTR)hwndLogContent;
+    logStream.dwCookie = (DWORD_PTR)hwndPostScriptLogContent;
     logStream.pfnCallback = processLog;
 
     memset(&rendererLogStream,0,sizeof(EDITSTREAM));

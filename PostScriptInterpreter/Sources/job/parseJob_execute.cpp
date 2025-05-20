@@ -113,7 +113,9 @@ This is the MIT License
             pPostScriptInterpreter -> queueLog(true,pLogStart,pProcedureEnd);
 
             try {
+
             push(new (CurrentObjectHeap()) procedure(this,pExecutionLevel -> pNext,pProcedureEnd,&pExecutionLevel -> lineNumber));
+
             } catch ( nonPostscriptException *ex ) {
                 pPostScriptInterpreter -> queueLog(true,ex -> Message(),NULL,true);
             } catch ( PStoPDFException *pe ) {
@@ -180,7 +182,7 @@ This is the MIT License
 
     } while ( p && ! ( pExecutionLevel -> quitRequested || pExecutionLevel -> fileClosed ) );
 
-    pPostScriptInterpreter -> settleLog(PostScriptInterpreter::hwndLogContent);
+    pPostScriptInterpreter -> settleLog(PostScriptInterpreter::hwndPostScriptLogContent);
 
     if ( 1 == executionStack.size() ) {
         _set_se_translator(defaultExTranslator);

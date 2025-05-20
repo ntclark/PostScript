@@ -33,20 +33,20 @@ This is the MIT License
 
     CRITICAL_SECTION PostScriptInterpreter::theQueueCriticalSection;
 
-    LRESULT (__stdcall *PostScriptInterpreter::nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
-    LRESULT (__stdcall *PostScriptInterpreter::nativeRichEditHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
+    //LRESULT (__stdcall *PostScriptInterpreter::nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
 
     HWND PostScriptInterpreter::hwndHost = NULL;
     HWND PostScriptInterpreter::hwndClient = NULL;
     HWND PostScriptInterpreter::hwndCmdPane = NULL;
-    HWND PostScriptInterpreter::hwndLogPane = NULL;
-    HWND PostScriptInterpreter::hwndLogContent = NULL;
-    HWND PostScriptInterpreter::hwndLogSplitter = NULL;
+    HWND PostScriptInterpreter::hwndVScroll = NULL;
+
+    HWND PostScriptInterpreter::hwndPostScriptLogCmdPane = NULL;
+    HWND PostScriptInterpreter::hwndPostScriptLogContent = NULL;
+    HWND PostScriptInterpreter::hwndPostScriptLogSplitter = NULL;
+
+    HWND PostScriptInterpreter::hwndRendererLogCmdPane = NULL;
     HWND PostScriptInterpreter::hwndRendererLogContent = NULL;
     HWND PostScriptInterpreter::hwndRendererLogSplitter = NULL;
-    HWND PostScriptInterpreter::hwndOperandStackSize = NULL;
-    HWND PostScriptInterpreter::hwndCurrentDictionary = NULL;
-    HWND PostScriptInterpreter::hwndVScroll = NULL;
 
     HANDLE PostScriptInterpreter::hsemSized = INVALID_HANDLE_VALUE;
 
@@ -127,17 +127,15 @@ This is the MIT License
 
     cycle();
 
-    if ( ! ( NULL == PostScriptInterpreter::nativeHostFrameHandler ) )
-        SetWindowLongPtr(GetParent(hwndHost),GWLP_WNDPROC,(ULONG_PTR)PostScriptInterpreter::nativeHostFrameHandler);
-
     DestroyWindow(hwndClient);
     DestroyWindow(hwndCmdPane);
 
-    DestroyWindow(hwndLogContent);
-    DestroyWindow(hwndLogPane);
-    DestroyWindow(hwndLogSplitter);
+    DestroyWindow(hwndPostScriptLogContent);
+    DestroyWindow(hwndPostScriptLogCmdPane);
+    DestroyWindow(hwndPostScriptLogSplitter);
 
     DestroyWindow(hwndRendererLogContent);
+    DestroyWindow(hwndRendererLogCmdPane);
     DestroyWindow(hwndRendererLogSplitter);
 
     return;
@@ -192,7 +190,7 @@ This is the MIT License
 
     pageSizes.clear();
 
-    setWindowPanes();
+    setWindowPanes(NULL);
 
     return;
     }

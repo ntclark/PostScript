@@ -47,15 +47,12 @@ This is the MIT License
 
 #include "resourceIdentifiers.h"
 
-#define DO_RTF
-
 #define PS_VERSION   3000L
 #define PRODUCT_NAME "EnVisioNateSW PostScript Interpreter"
 
 #define POINTS_TO_PIXELS    2
 #define CMD_PANE_HEIGHT     96
-#define LOG_PANE_HEIGHT     72
-#define SPLITTER_WIDTH      12
+#define SPLITTER_WIDTH      6
 
 class job;
 
@@ -369,6 +366,7 @@ class job;
         void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
 
         static long ClientWindowHeight() { return cyClientWindow; }
+        static long ClientWindowWidth() { return cxClientWindow; }
 
         job *currentJob() { return pJob; }
 
@@ -377,8 +375,19 @@ class job;
 
         POINTL activePageOrigin{0L,0L};
 
-        static long SideGutter() { return sideGutter; }
-        static long TopGutter() { return topGutter; }
+        static long SideGutter(long v = -LONG_MAX) { 
+            if ( -LONG_MAX == v ) 
+                return sideGutter; 
+            sideGutter = v; 
+            return v; 
+        }
+
+        static long TopGutter(long v = -LONG_MAX) { 
+            if ( -LONG_MAX == v ) 
+                return topGutter; 
+            topGutter = v;
+            return v; 
+        }
 
         static char szErrorMessage[1024];
 
@@ -389,7 +398,7 @@ class job;
 
         static std::function<void(void)> beginPathAction;
 
-        static HWND hwndLogContent;
+        static HWND hwndPostScriptLogContent;
         static HWND hwndRendererLogContent;
 
         static enum logLevel theLogLevel;
@@ -413,12 +422,16 @@ class job;
 
         BYTE persistablePropertiesStart{0x00};
 
-        long logPaneWidth{256L};
+        long savedPropertiesSize{0L};
+        long postScriptLogPaneWidth{256L};
         long rendererLogPaneWidth{256L};
         boolean logIsVisible{false};
         boolean rendererLogIsVisible{false};
 
         char szCurrentPostScriptFile[MAX_PATH];
+
+        long persistLogLevel{0};
+        long persistRendererLogLevel{0};
 
         BYTE persistablePropertiesEnd{0x00};
 
@@ -431,13 +444,12 @@ class job;
         static HWND hwndClient;
         static HWND hwndCmdPane;
 
-        static HWND hwndLogPane;
-        static HWND hwndLogSplitter;
+        static HWND hwndPostScriptLogCmdPane;
+        static HWND hwndPostScriptLogSplitter;
 
+        static HWND hwndRendererLogCmdPane;
         static HWND hwndRendererLogSplitter;
 
-        static HWND hwndOperandStackSize;
-        static HWND hwndCurrentDictionary;
         static HWND hwndVScroll;
 
         static HANDLE hsemSized;
@@ -450,17 +462,16 @@ class job;
         static long cyClientWindow;
         static long cxClientWindow;
 
-        static void setWindowPanes();
+        static void setWindowPanes(RECT *prcClient);
 
-        static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
-        static LRESULT (__stdcall *nativeRichEditHandler)(HWND,UINT,WPARAM,LPARAM);
+        //static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
 
         static LRESULT CALLBACK clientWindowHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK logPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK splitterHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
-        static LRESULT CALLBACK hostFrameHandlerOveride(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+        //static LRESULT CALLBACK hostFrameHandlerOveride(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
         static DWORD __stdcall processLog(DWORD_PTR dwCookie,BYTE *pBuffer,LONG bufferSize,LONG *pBytesReturned);
 

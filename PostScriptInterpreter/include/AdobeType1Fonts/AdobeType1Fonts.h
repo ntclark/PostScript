@@ -55,7 +55,7 @@ class objectStack;
         static IGraphicElements *pIGraphicElements;
 
         static uint32_t decryptType1Data(uint16_t initialKey,uint8_t *pbData,uint32_t cbData,uint8_t countRandomBytes,uint8_t **ppResults);
-        static void decryptType1CharString(uint8_t *pbData,uint32_t cbData,uint8_t countRandomBytes,std::list<type1Token *> *pTokenList);
+        static uint32_t decryptType1CharString(uint8_t *pbData,uint32_t cbData,uint8_t countRandomBytes,type1Token *pTokens[] = NULL);
 
         static std::map<uint8_t,char *> type1CharStringCommands;
         static std::map<uint8_t,char *> type1CharStringSubCommands;
@@ -63,7 +63,7 @@ class objectStack;
         static objectStack *pOperandStack;
         static object *pZeroValue;
 
-        static void processTokens(std::list<type1Token *> *pTokens);
+        static void processTokens(uint32_t countTokens,type1Token *pTokens[]);
 
         void blend();
         void callgsubr();

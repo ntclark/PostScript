@@ -28,7 +28,7 @@ public:
     STDMETHOD_ (ULONG, Release)();
 
     HWND hwndFrame{NULL};
-    HWND hwndPSHost{NULL};
+    //HWND hwndPSHost{NULL};
 
     IPostScriptInterpreter *pIPostScript{NULL};
 
@@ -44,7 +44,7 @@ public:
 
     static LRESULT CALLBACK frameHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
-    static LRESULT CALLBACK clientHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+    //static LRESULT CALLBACK clientHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
 };
 

@@ -114,7 +114,12 @@ This is the MIT License
         DWORD cb = 0;
         for ( long k = 0; k < pCharStrings -> size(); k++ ) {
             object *pStr = pCharStrings -> retrieve(k);
-            cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 6 + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
+
+
+            // At some point I changed the "key" to be that from the CharStrings dictionary key
+            // I think originally it was the "index", k
+            //cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 6 + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
+            cb += 4 + 6 + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
         }
 
         uint8_t *pszCharStrings = (uint8_t *)CoTaskMemAlloc(cb + 1);
@@ -125,7 +130,8 @@ This is the MIT License
         for ( long k = 0; k < pCharStrings -> size(); k++ ) {
             object *pStr = pCharStrings -> retrieve(k);
             char *psz = pCharStrings -> retrieve(k) -> Contents();
-            cb += sprintf((char *)(pszCharStrings + cb),"%s:%04d;%s",pCharStrings -> retrieveKey(k),(uint16_t)strlen(psz),psz);
+            //cb += sprintf((char *)(pszCharStrings + cb),"%s:%04d;%s",pCharStrings -> retrieveKey(k),(uint16_t)strlen(psz),psz);
+            cb += sprintf((char *)(pszCharStrings + cb),"%04d:%04d;%s",k + 1,(uint16_t)strlen(psz),psz);
             cb++;
         }
 

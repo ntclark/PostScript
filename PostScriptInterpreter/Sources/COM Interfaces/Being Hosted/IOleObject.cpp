@@ -111,7 +111,7 @@ This is the MIT License
     rect.right = tempSizel.cx;
     rect.bottom = tempSizel.cy;
 
-    SetWindowPos(pParent -> hwndClient,HWND_TOP,rect.left,rect.top,rect.right - rect.left,rect.bottom - rect.top,SWP_SHOWWINDOW);
+    pParent -> setWindowPanes(&rect);
 
     return S_OK;
     }
@@ -142,7 +142,7 @@ This is the MIT License
         ShowWindow(pParent -> hwndHost,SW_HIDE);
         break;
 
-    case OLEIVERB_SHOW: 
+    case OLEIVERB_SHOW:
 
         if ( ! pParent -> hwndHost )
             pParent -> initWindows();

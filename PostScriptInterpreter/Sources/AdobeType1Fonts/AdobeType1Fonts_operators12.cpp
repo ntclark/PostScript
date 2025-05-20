@@ -30,16 +30,43 @@ This is the MIT License
 
 
     void AdobeType1Fonts::abs() {
+/*
+    abs 
+        num abs (12 9) num2
+
+    returns the absolute value of num.
+*/
+    object *pNumber = pOperandStack -> pop();
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,fabs(pNumber -> DoubleValue())));
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::add() {
+/*
+    add 
+        num1 num2 add (12 10) sum
+
+    returns the sum of the two numbers num1 and num2.
+*/
+
+    object *pNumber1 = pOperandStack -> pop();
+    object *pNumber2 = pOperandStack -> pop();
+
+    double result = pNumber1 -> DoubleValue() + pNumber2 -> DoubleValue();
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::and() {
+/*
+
+*/
     type2Command();
     return;
     }
@@ -99,11 +126,17 @@ This is the MIT License
     }
 
     void AdobeType1Fonts::div() {
+/*
+    div 
+        num1 num2 div (12 12) quotient
 
+    returns the quotient of num1 divided by num2. The result is
+    undefined if overflow occurs and is zero for underflow.
+*/
     object *pDenominator = pOperandStack -> pop();
     object *pNumerator = pOperandStack -> pop();
 
-    FLOAT result = (FLOAT)pNumerator -> DoubleValue()/ (FLOAT)pDenominator -> DoubleValue();
+    double result = pNumerator -> DoubleValue() / pDenominator -> DoubleValue();
 
     pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
 
@@ -113,22 +146,42 @@ This is the MIT License
     void AdobeType1Fonts::dotsection() {
 /*
     dotsection 
-        – dotsection (12 0)
+        – dotsection (12 0) |-
 
     brackets an outline section for the dots in letters such as “i”,“ j”,
     and “!”. This is a hint command that indicates that a section of a
     charstring should be understood as describing such a feature,
     rather than as part of the main outline. For more details, see se
 */
+    pOperandStack -> clear();
+
     return;
     }
 
     void AdobeType1Fonts::drop() {
+/*
+    drop 
+        num drop (12 18)
+
+    removes the top element num from the Type 2 argument stack.
+*/
+
+    pOperandStack -> pop();
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::dup() {
+/*
+    dup 
+        any dup (12 27) any any
+
+    duplicates the top element on the argument stack.
+*/
+
+    pOperandStack -> push(pOperandStack -> top());
+
     type2Command();
     return;
     }
@@ -139,6 +192,18 @@ This is the MIT License
     }
 
     void AdobeType1Fonts::exch() {
+/*
+    exch 
+        num1 num2 exch (12 28) num2 num1
+
+    exchanges the top two elements on the argument stack.
+*/
+    object *pNumber2 = pOperandStack -> pop();
+    object *pNumber1 = pOperandStack -> pop();
+
+    pOperandStack -> push(pNumber2);
+    pOperandStack -> push(pNumber1);
+
     type2Command();
     return;
     }
@@ -170,8 +235,8 @@ This is the MIT License
 
     void AdobeType1Fonts::hstem3() {
 /*
-    hstem3 
-        y0 dy0 y1 dy1 y2 dy2 hstem3 (12 2)
+    hstem3 |-
+        y0 dy0 y1 dy1 y2 dy2 hstem3 (12 2) |-
 
     declares the vertical ranges of three horizontal stem zones
     between the y coordinates y0 and y0 + dy0, y1 and y1 + dy1, and
@@ -209,16 +274,64 @@ This is the MIT License
     pOperandStack -> pop();
     pOperandStack -> pop();
 
-Beep(2000,200);
+    pOperandStack -> clear();
+
     return;
     }
 
     void AdobeType1Fonts::ifelse() {
+/*
+    ifelse 
+        s1 s2 v1 v2 ifelse (12 22) s1_or_s2
+
+    leaves the value s1 on the stack if v1 <= v2, or leaves s2 on the
+    stack if v1 > v2. The value of s1 and s2 is usually the biased
+    number of a subroutine; see section 2.3.
+
+*/
+    double v2 = pOperandStack -> pop() -> DoubleValue();
+    double v1 = pOperandStack -> pop() -> DoubleValue();
+
+    object *pOption2 = pOperandStack -> pop();
+
+    object *pOption1 = pOperandStack -> pop();
+
+    if ( v1 <= v2 )
+        pOperandStack -> push(pOption1);
+    else
+        pOperandStack -> push(pOption2);
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::index() {
+/*
+    index 
+        numX ... num0 i index (12 29) numX ... num0 numi
+
+    retrieves the element i from the top of the argument stack and
+    pushes a copy of that element onto that stack. If i is negative,
+    the top element is copied. If i is greater than X, the operation is
+    undefined.
+*/
+    object *pCount = pOperandStack -> pop();
+
+    long n = pCount -> IntValue();
+
+    std::list<object *> replacements;
+    for ( long k = 0; k < n; k++ )
+        replacements.insert(replacements.end(),pOperandStack -> pop());
+
+    object *pDuplicate = pOperandStack -> top();
+
+    for ( std::list<object *>::reverse_iterator it = replacements.rbegin(); it != replacements.rend(); it++ )
+        pOperandStack -> push(*it);
+
+    pOperandStack -> push(pDuplicate);
+
+    replacements.clear();
+
     type2Command();
     return;
     }
@@ -229,11 +342,37 @@ Beep(2000,200);
     }
 
     void AdobeType1Fonts::mul() {
+/*
+    mul 
+        num1 num2 mul (12 24) product
+
+    returns the product of num1 and num2. If overflow occurs, the
+    result is undefined, and zero is returned for underflow
+*/
+    object *pNumber2 = pOperandStack -> pop();
+    object *pNumber1 = pOperandStack -> pop();
+
+    double result = pNumber1 -> DoubleValue() * pNumber2 -> DoubleValue();
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::neg() {
+/*
+    neg 
+        num neg (12 14) num2
+
+    returns the negative of num
+*/
+    object *pNumber = pOperandStack -> pop();
+
+    double result = -1.0 * pNumber -> DoubleValue();
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
+
     type2Command();
     return;
     }
@@ -272,19 +411,94 @@ Beep(2000,200);
     }
 
     void AdobeType1Fonts::random() {
+/*
+    random 
+        random (12 23) num2
+
+    returns a pseudo random number num2 in the range (0,1], that
+    is, greater than zero and less than or equal to one.
+*/
+
+    uint32_t randomNumber = rand();
+    if ( 0 == randomNumber )
+        randomNumber++;
+
+    double result = (double)randomNumber / (double)RAND_MAX;
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::roll() {
+/*
+    roll 
+        num(N–1) ... num0 N J roll (12 30) num((J–1) mod N) ... num0
+        num(N–1) ... num(J mod N)
+
+    performs a circular shift of the elements num(N–1) ... num0 on
+    the argument stack by the amount J. Positive J indicates upward
+    motion of the stack; negative J indicates downward motion.
+    The value N must be a non-negative integer, otherwise the
+    operation is undefined.
+*/
+    long j = pOperandStack -> pop() -> IntValue();
+    long n = pOperandStack -> pop() -> IntValue();
+
+    object **pObjects = new object *[n];
+
+    long *pIndex = new long[n + 1];
+    
+    for ( long k = 0; k < n; k++ ) {
+        pIndex[k] = n - k - 1;
+        pObjects[pIndex[k]] = pOperandStack -> pop();
+    }
+
+    pIndex[n] = -1L;
+
+    if ( j > 0 ) {
+
+        for ( long k = 0; k < j; k++ ) {
+         
+            long topOfStack = pIndex[0];
+
+            for ( long sp = 0; sp < n; sp++ )
+                pIndex[sp] = pIndex[sp + 1];
+
+            pIndex[n - 1] = topOfStack;
+
+        }
+
+    } else {
+
+        for ( long k = 0; k < -j; k++ ) {
+
+            long bottomOfStack = pIndex[n - 1];
+
+            for ( long sp = n; sp > 0; sp-- )
+                pIndex[sp] = pIndex[sp - 1];
+
+            pIndex[0] = bottomOfStack;
+
+        }
+
+    }
+
+    for ( long k = n - 1; k >= 0; k-- )
+        pOperandStack -> push(pObjects[pIndex[k]]);
+
+    delete [] pObjects;
+    delete [] pIndex;
+
     type2Command();
     return;
     }
 
     void AdobeType1Fonts::sbw() {
 /*
-    sbw 
-        sbx sby wx wy sbw (12 7)
+    sbw |-
+        sbx sby wx wy sbw (12 7) |-
 
     sets the left sidebearing point to (sbx, sby) and sets the character
     width vector to (wx, wy) in character space. This command also
@@ -307,16 +521,15 @@ Beep(2000,200);
     pType1Glyph -> characterWidth[0] = wx;
     pType1Glyph -> characterWidth[1] = wy;
 
-    //pIGraphicElements -> SetCurrentPoint(&pType1Glyph -> leftSideBearing[0],
-    //                                        &pType1Glyph -> leftSideBearing[1]);
+    pOperandStack -> clear();
 
     return;
     }
 
     void AdobeType1Fonts::seac() {
 /*
-    seac 
-        asb adx ady bchar achar seac (12 6)
+    seac |-
+        asb adx ady bchar achar seac (12 6) |-
 
     for standard encoding accented character, makes an 
     accented character from two other characters in its 
@@ -359,7 +572,7 @@ Beep(2000,200);
     pOperandStack -> pop();
     pOperandStack -> pop();
 
-Beep(2000,200);
+    pOperandStack -> clear();
 
     return;
     }
@@ -383,6 +596,19 @@ Beep(2000,200);
     }
 
     void AdobeType1Fonts::sqrt() {
+/*
+    sqrt 
+        num sqrt (12 26) num2
+
+    returns the square root of num. If num is negative, the result is
+    undefined.
+*/
+    object *pNumber = pOperandStack -> pop();
+
+    double result = ::sqrt(pNumber -> DoubleValue());
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
+
     type2Command();
     return;
     }
@@ -393,14 +619,27 @@ Beep(2000,200);
     }
 
     void AdobeType1Fonts::sub() {
-    type2Command();
+/*
+    sub 
+        num1 num2 sub (12 11) difference
+
+    returns the result of subtracting num2 from num1.
+*/
+    object *pNumber2 = pOperandStack -> pop();
+    object *pNumber1 = pOperandStack -> pop();
+
+    double result = pNumber1 -> DoubleValue() - pNumber2 -> DoubleValue();
+
+    pOperandStack -> push(new (pJob -> CurrentObjectHeap()) object(pJob,result));
+
+//    type2Command();
     return;
     }
 
     void AdobeType1Fonts::vstem3() {
 /*
-    vstem3 
-        x0 dx0 x1 dx1 x2 dx2 vstem3 (12 1)
+    vstem3 |-
+        x0 dx0 x1 dx1 x2 dx2 vstem3 (12 1) |-
 
     declares the horizontal ranges of three vertical stem zones
     between the x coordinates x0 and x0 + dx0, x1 and x1 + dx1, and
@@ -427,6 +666,9 @@ Beep(2000,200);
     The vstem3 command is especially suited for controlling the
     stems and counters of characters such as a lower case “m.”
 */
+
+    pOperandStack -> clear();
+
     return;
     }
 

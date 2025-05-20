@@ -292,7 +292,7 @@ This is the MIT License
 
     uint8_t *pszCharStrings = (uint8_t *)ptrData;
 
-__debugbreak();
+//__debugbreak();
 
     uint8_t *p = pszCharStrings;
 

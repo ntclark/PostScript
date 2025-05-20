@@ -72,7 +72,7 @@ This is the MIT License
 
     if ( isPostScriptLog ) {
         pLog = &theLogQueue;
-        hwndLog = hwndLogContent;
+        hwndLog = hwndPostScriptLogContent;
         pLogStream = &logStream;
 #if 0
         static char szOperandStackSize[64];
@@ -202,10 +202,6 @@ n = 1024;
         pNew[bufferSize - 1] = '\0';
         n = bufferSize;
     }
-
-    //CHARRANGE chr;
-    //nativeRichEditHandler(hwndLog,EM_EXGETSEL,(WPARAM)0,(LPARAM)&chr);
-    //long charFirst = (long)nativeRichEditHandler(hwndLog,EM_LINEINDEX,(WPARAM)-1L,0L);
 
     *pBytesReturned = sprintf((char *)pBuffer,RESET_RTF"%s\\line\r",pNew);
 

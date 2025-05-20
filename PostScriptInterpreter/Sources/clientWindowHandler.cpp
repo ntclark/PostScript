@@ -33,8 +33,6 @@ This is the MIT License
 
     long windowTop = 0L;
 
-    boolean awaitingClientPaint = false;
-
     LRESULT CALLBACK PostScriptInterpreter::clientWindowHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
 
     PostScriptInterpreter *p = (PostScriptInterpreter *)GetWindowLongPtr(hwnd,GWLP_USERDATA);
@@ -49,7 +47,7 @@ This is the MIT License
         break;
 
     case WM_REFRESH_CLIENT_WINDOW:
-        hostFrameHandlerOveride(hwnd,WM_MOVE,0L,0L);
+        p -> setWindowPanes(NULL);
         break;
 
     case WM_PAINT: {
@@ -69,7 +67,6 @@ This is the MIT License
             y += pSizel -> cy;
         }
         EndPaint(hwnd,&ps);
-        awaitingClientPaint = false;
         return (LRESULT)TRUE;
         }
 
@@ -80,7 +77,8 @@ This is the MIT License
             PostScriptInterpreter::cxClientWindow = LOWORD(lParam);
             PostScriptInterpreter::cyClientWindow = HIWORD(lParam);
         }
-        SetWindowPos(hwndVScroll,HWND_TOP,LOWORD(lParam) - GetSystemMetrics(SM_CXVSCROLL),0,GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::cyClientWindow,0L);
+        SetWindowPos(hwndVScroll,HWND_TOP,LOWORD(lParam) - GetSystemMetrics(SM_CXVSCROLL),0,
+                                GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::cyClientWindow,0L);
         SCROLLINFO scrollInfo{0};
         scrollInfo.cbSize = sizeof(SCROLLINFO);
         scrollInfo.fMask = SIF_PAGE | SIF_RANGE;
@@ -204,11 +202,6 @@ This is the MIT License
         }
         break;
 
-    case WM_TIMER:
-        awaitingClientPaint = false;
-        KillTimer(hwnd,wParam);
-        break;
-
     case WM_FLUSH_LOG: {
         return 0L;
         }
@@ -237,12 +230,15 @@ This is the MIT License
     case WM_PAINT: {
         PAINTSTRUCT ps;
         BeginPaint(hwnd,&ps);
+        FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_3DFACE + 1));
         EndPaint(hwnd,&ps);
         return (LRESULT)TRUE;
         }
 
     case WM_MOUSELEAVE:
     case WM_LBUTTONUP:
+        if ( isCaptured )
+            setWindowPanes(NULL);
         isCaptured = false;
         ReleaseCapture();
         SetCursor(LoadCursor(NULL,IDC_ARROW));
@@ -274,25 +270,19 @@ This is the MIT License
                 isCaptured = true;
             }
 
-            if ( awaitingClientPaint )
-                break;
-
             POINT ptNew{GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam)};
             MapWindowPoints(hwnd,hwndClient,&ptNew,1);
 
             long deltaX = ptNew.x - ptDragStart.x;
             ptDragStart = ptNew;
 
-            if ( hwnd == hwndLogSplitter )
-                pPostScriptInterpreter -> logPaneWidth -= deltaX;
-            else if ( hwnd == hwndRendererLogSplitter )
+            if ( hwnd == hwndPostScriptLogSplitter ) {
+                pPostScriptInterpreter -> postScriptLogPaneWidth -= deltaX;
+            } else if ( hwnd == hwndRendererLogSplitter ) {
                 pPostScriptInterpreter -> rendererLogPaneWidth -= deltaX;
+            }
 
-            awaitingClientPaint = true;
-
-            SetTimer(hwndClient,1,500,NULL);
-
-            setWindowPanes();
+            setWindowPanes(NULL);
 
             SetCursor(LoadCursor(NULL,IDC_SIZEWE));
         }
@@ -304,67 +294,4 @@ This is the MIT License
     }
 
     return DefWindowProc(hwnd,msg,wParam,lParam);
-    }
-
-
-    LRESULT CALLBACK PostScriptInterpreter::hostFrameHandlerOveride(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam) {
-
-    switch ( msg ) {
-
-    case WM_SIZE:
-    case WM_MOVE: 
-        setWindowPanes();
-        break;
-
-    default:
-        break;
-
-    }
-
-    return PostScriptInterpreter::nativeHostFrameHandler(hwnd,msg,wParam,lParam);
-    }
-
-
-    void PostScriptInterpreter::setWindowPanes() {
-
-    RECT rcHost;
-    GetWindowRect(hwndHost,&rcHost);
-    long cx = rcHost.right - rcHost.left;
-    long cy = rcHost.bottom - rcHost.top;
-
-    long cxClient = cx - (pPostScriptInterpreter -> logIsVisible ? pPostScriptInterpreter -> logPaneWidth : 0);
-    cxClient -= (pPostScriptInterpreter -> rendererLogIsVisible ? pPostScriptInterpreter -> rendererLogPaneWidth : 0);
-    cxClient -= 8;
-
-    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClient,cy - CMD_PANE_HEIGHT,0L);
-    SetWindowPos(hwndCmdPane,HWND_TOP,rcHost.left,rcHost.top,cxClient,CMD_PANE_HEIGHT,SWP_SHOWWINDOW);
-
-    long cxLogWindow = 0;
-
-    if ( 0 < pPostScriptInterpreter -> logPaneWidth && pPostScriptInterpreter -> logIsVisible ) {
-        cxLogWindow = pPostScriptInterpreter -> logPaneWidth;
-        SetWindowPos(hwndLogContent,HWND_TOP,cxClient,LOG_PANE_HEIGHT,cxLogWindow,cy - LOG_PANE_HEIGHT,SWP_SHOWWINDOW);
-        SetWindowPos(hwndLogPane,HWND_TOP,rcHost.left + cxClient,rcHost.top,pPostScriptInterpreter -> logPaneWidth,LOG_PANE_HEIGHT,SWP_SHOWWINDOW);
-        SetWindowPos(hwndLogSplitter,HWND_TOP,cxClient - SPLITTER_WIDTH / 2,0,SPLITTER_WIDTH,cy,SWP_SHOWWINDOW);
-        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"PS Log >>");
-    } else {
-        cxLogWindow = 0;
-        ShowWindow(hwndLogContent,SW_HIDE);
-        ShowWindow(hwndLogPane,SW_HIDE);
-        ShowWindow(hwndLogSplitter,SW_HIDE);
-        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),"<< PS Log");
-    }
-
-    if ( 0 < pPostScriptInterpreter -> rendererLogPaneWidth && pPostScriptInterpreter -> rendererLogIsVisible ) {
-        SetWindowPos(hwndRendererLogContent,HWND_TOP,cxClient + cxLogWindow,0,pPostScriptInterpreter -> rendererLogPaneWidth,cy,SWP_SHOWWINDOW);
-        SetWindowPos(hwndRendererLogSplitter,HWND_TOP,cxClient + cxLogWindow - SPLITTER_WIDTH / 2,0,SPLITTER_WIDTH,cy,SWP_SHOWWINDOW);
-        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_RENDERER_LOG_SHOW),"Renderer Log >>");
-    } else {
-        ShowWindow(hwndRendererLogContent,SW_HIDE);
-        ShowWindow(hwndRendererLogSplitter,SW_HIDE);
-        SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_RENDERER_LOG_SHOW),"<< Renderer Log");
-    }
-
-
-    return;
     }
