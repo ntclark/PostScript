@@ -107,6 +107,10 @@ This is the MIT License
             break;
 
         case IDDI_CMD_PANE_RUN:
+            PostScriptInterpreter::endRunActions.push_back( [=] {
+                EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_RUN),TRUE);
+                EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_STOP),FALSE);
+            });
             p -> Parse();
             EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_RUN),FALSE);
             EnableWindow(GetDlgItem(hwnd,IDDI_CMD_PANE_STOP),TRUE);

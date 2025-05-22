@@ -13,10 +13,11 @@ class dictionary;
 class object;
 class objectStack;
 
-    static class AdobeType1Fonts {
+    class AdobeType1Fonts {
     public:
 
-        AdobeType1Fonts() {};
+        AdobeType1Fonts() {}
+        ~AdobeType1Fonts();
 
         static void Initialize(job *,IRenderer *,IGraphicElements *);
         static void Shutdown();
@@ -25,6 +26,8 @@ class objectStack;
 
         static void drawGlyph(font *pCurrentFont,uint16_t bGlyph,
                                 XFORM *pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
+
+        static AdobeType1Fonts *pAdobeType1Fonts;
 
         static type1Glyph *pType1Glyph;
 
@@ -134,4 +137,4 @@ class objectStack;
         void invalidCommand();
         void type2Command();
 
-    } adobeType1Fonts;
+    };

@@ -63,6 +63,8 @@ class font;
         STDMETHOD(get_CurrentFont)(IFont_EVNSW **ppIFont);
         STDMETHOD(put_CurrentFont)(IFont_EVNSW *pIFont);
 
+        STDMETHOD(Reset)();
+
         static char szFailureMessage[1024];
 
         static void FireErrorNotification(char *pszNotification) {

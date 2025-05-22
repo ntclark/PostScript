@@ -36,8 +36,6 @@ This is the MIT License
 
     initializeHeap();
 
-    pPostScriptInterpreter -> ConnectServices();
-
     pValidNames = new std::map<size_t,name *,std::less<size_t>,containerAllocator<name *>>();
     pDSCItems = new std::list<dscItem *,containerAllocator<dscItem *>>();
     pComments = new std::list<comment *,containerAllocator<comment *>>();
@@ -256,8 +254,6 @@ This is the MIT License
     delete pGraphicsState;
 
     releaseHeap();
-
-    pPostScriptInterpreter -> Cycle();
 
     return;
     }

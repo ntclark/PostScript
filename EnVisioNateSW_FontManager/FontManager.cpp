@@ -51,12 +51,7 @@ This is the MIT License
 
     FontManager::~FontManager() {
 
-    for ( font *pFont : managedFonts)
-        delete pFont;
-
-    managedFonts.clear();
-
-    pIFont_Current = NULL;
+    Reset();
 
     delete pIConnectionPointContainer;
     delete pIConnectionPoint;

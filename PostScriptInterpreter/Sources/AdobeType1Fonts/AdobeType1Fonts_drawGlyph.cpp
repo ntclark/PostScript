@@ -23,7 +23,7 @@ This is the MIT License
 
 #include "job.h"
 
-static long setNumber = 0;
+    AdobeType1Fonts adobeType1Fonts;
 
     void AdobeType1Fonts::drawGlyph(font *pFont,uint16_t bGlyph,
                                         XFORM *pPSXForm,POINTF *pStartPoint,POINTF *pEndPoint) {

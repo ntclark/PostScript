@@ -217,10 +217,6 @@ boolean useGSProperties = true;
 
     SetWindowPos(pParsePSHost -> hwndFrame,HWND_TOP,rcFrame.left,rcFrame.top,rcFrame.right - rcFrame.left,rcFrame.bottom - rcFrame.top,SWP_SHOWWINDOW);
 
-_CrtSetBreakAlloc(17512);
-_CrtSetBreakAlloc(181);
-_CrtSetBreakAlloc(182);
-
     MSG qMessage;
 
     while ( GetMessage(&qMessage,(HWND)NULL,0L,0L) ) { 
@@ -239,9 +235,13 @@ _CrtSetBreakAlloc(182);
     }
 #endif
 
+    for ( long k = 0; k < argc; k++ ) 
+        delete [] argv[k];
+
+    delete [] argv;
+
     delete pParsePSHost;
 
-_CrtDumpMemoryLeaks(  );
      return 0;
     }
 

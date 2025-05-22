@@ -81,9 +81,17 @@ This is the MIT License
 
     unsigned int __stdcall job::executeThread(void *pvThis) {
     job *pThis = reinterpret_cast<job *>(pvThis);
+
     if ( ! ( INVALID_HANDLE_VALUE == pThis -> hsemIsInitialized ) )
         WaitForSingleObject(pThis -> hsemIsInitialized,INFINITE);
+
     pThis -> execute(pThis -> pStorage,pThis -> pStorageEnd,pThis -> szPostScriptSourceFile);
+
+    for ( std::function<void(void)> fn : PostScriptInterpreter::endRunActions )
+        fn();
+
+    PostScriptInterpreter::endRunActions.clear();
+
     return 0L;
     }
 

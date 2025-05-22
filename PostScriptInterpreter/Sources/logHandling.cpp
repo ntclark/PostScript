@@ -28,8 +28,8 @@ This is the MIT License
 
     char *replaceChar(char *pszString,char theChar,char *pszReplacement);
 
-    static std::queue<char *> theLogQueue;
-    static std::queue<char *> theRendererLogQueue;
+    std::queue<char *> theLogQueue;
+    std::queue<char *> theRendererLogQueue;
 
     long PostScriptInterpreter::clearLog(HWND hwndLog) {
 
@@ -44,6 +44,11 @@ This is the MIT License
     PostMessage(hwndLog,EM_SETTEXTEX,(WPARAM)&st,(LPARAM)L"");
 
     //PostMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
+
+    while ( ! theRendererLogQueue.empty() ) {
+        delete theRendererLogQueue.front();
+        theRendererLogQueue.pop();
+    }
 
     return 0;
     }

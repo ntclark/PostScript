@@ -30,8 +30,12 @@ This is the MIT License
     }
 
 
-    HRESULT Renderer::put_ToPageTransform(UINT_PTR pXForm) {
+    HRESULT Renderer::put_ToPageTransform(UINT_PTR pvXForm) {
+    XFORM *pXForm = (XFORM *)pvXForm;
     memcpy(&pGraphicsStateManager -> parametersStack.top() -> toPageSpace,(void *)pXForm,sizeof(XFORM));
+    pGraphicsStateManager -> parametersStack.top() -> hasXForm = ! 
+        (1.0f == pXForm -> eM11 && 0.0f == pXForm -> eM12 && 0.0f == pXForm -> eM21 && 1.0f == pXForm -> eM22 &&
+                0.0f == pXForm -> eDx && 0.0f == pXForm -> eDy);
     return S_OK;
     }
 
@@ -99,8 +103,8 @@ This is the MIT License
         //
         // This happens when there are no primitives in the path at all
         // other than the initial newPath marker.
-        // I am not entirely sure this is okay, but I'm removing the
-        // path from any fendering
+        // I am not entirely sure this is okay, but I'll remove the
+        // path from any rendering
         //
         if ( p -> pFirstPrimitive == p -> pLastPrimitive ) {
             p = p -> pNextPath;

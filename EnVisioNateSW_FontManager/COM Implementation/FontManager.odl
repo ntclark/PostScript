@@ -111,6 +111,8 @@ library FontManager {
         [propget] HRESULT CurrentFont([out,retval] IFont_EVNSW **ppIFont_Current);
         [propput] HRESULT CurrentFont(IFont_EVNSW *ppIFont_Current);
 
+        HRESULT Reset();
+
     };
 
     [uuid(1FC20340-4355-4347-8A32-A82E2FB89893),

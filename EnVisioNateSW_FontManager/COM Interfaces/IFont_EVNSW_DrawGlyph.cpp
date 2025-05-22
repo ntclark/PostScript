@@ -61,14 +61,24 @@ This is the MIT License
 
     if ( 0 < encodingTable.size() ) {
         if ( ! ( encodingTable.end() == encodingTable.find((uint32_t)glyph) ) ) {
-            const char *pszCharTableIndex = encodingTable[(uint32_t)glyph];
+            char *pszCharTableIndex = encodingTable[(uint32_t)glyph];
             std::map<uint32_t,char *> *pCharStrings = &charStringsTable;
-            if ( 0 == pCharStrings -> size() )
-                pCharStrings = &font::adobeGlyphList;
-            for ( std::pair<uint32_t,char *> pPair : *pCharStrings ) {
-                if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
-                    glyph = pPair.first;
-                    break;
+            boolean found = false;
+            if ( 0 < charStringsTable.size() ) {
+                for ( std::pair<uint32_t,char *> pPair : charStringsTable ) {
+                    if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
+                        glyph = pPair.first;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if ( ! found ) {
+                for ( std::pair<uint32_t,char *> pPair : font::adobeGlyphList ) {
+                    if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
+                        glyph = pPair.first;
+                        break;
+                    }
                 }
             }
         }
@@ -149,10 +159,24 @@ This is the MIT License
     // sent to the Renderer IN PAGE SPACE coordinates (which DOES
     // use the translation components of the CTM)
     //
+
+#if 1
+
+    XFORM identity{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+    FontManager::pIRenderer -> put_ToPageTransform((UINT_PTR)&identity);
+
+    XFORM xFormScaleOnly = *(XFORM *)pPSXform;
+    xFormScaleOnly.eDx = 0.0f;
+    xFormScaleOnly.eDy = 0.0f;
+
+    pMatrix -> concat(&xFormScaleOnly);
+
+#else
     XFORM xFormScaleOnly = *(XFORM *)pPSXform;
     xFormScaleOnly.eDx = 0.0f;
     xFormScaleOnly.eDy = 0.0f;
     FontManager::pIRenderer -> put_ToPageTransform((UINT_PTR)&xFormScaleOnly);
+#endif
 
     // Transform Glyph coordinates using current font matrix
     pMatrix -> concat(matrixStack.top());

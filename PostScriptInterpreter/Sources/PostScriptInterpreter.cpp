@@ -30,10 +30,9 @@ This is the MIT License
     IGraphicParameters *PostScriptInterpreter::pIGraphicParameters = NULL;
 
     std::function<void(void)> PostScriptInterpreter::beginPathAction;
+    std::list<std::function<void(void)>> PostScriptInterpreter::endRunActions;
 
     CRITICAL_SECTION PostScriptInterpreter::theQueueCriticalSection;
-
-    //LRESULT (__stdcall *PostScriptInterpreter::nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM) = NULL;
 
     HWND PostScriptInterpreter::hwndHost = NULL;
     HWND PostScriptInterpreter::hwndClient = NULL;
@@ -50,8 +49,8 @@ This is the MIT License
 
     HANDLE PostScriptInterpreter::hsemSized = INVALID_HANDLE_VALUE;
 
-    long PostScriptInterpreter::sideGutter = 32;
-    long PostScriptInterpreter::topGutter = 32;
+    long PostScriptInterpreter::sideGutter = NOMINAL_GUTTER;
+    long PostScriptInterpreter::topGutter = NOMINAL_GUTTER;
 
     HDC PostScriptInterpreter::hdcSurface = NULL;
 
@@ -90,6 +89,13 @@ This is the MIT License
 
     HRESULT rc = CoInitialize(NULL);
 
+    CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
+    pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
+    pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
+    pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
+
+    pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
+
     return;
     }
 
@@ -98,6 +104,22 @@ This is the MIT License
 
     if ( pJob )
         delete pJob;
+
+    cycle();
+
+    clearLog(hwndRendererLogContent);
+
+    if ( ! ( NULL == pIFontManager ) ) {
+        pIFontManager -> Release();
+        pIRenderer -> Release();
+        pIGraphicElements -> Release();
+        pIGraphicParameters -> Release();
+    }
+
+    pIFontManager = NULL;
+    pIRenderer = NULL;
+    pIGraphicElements = NULL;
+    pIGraphicParameters = NULL;
 
     if ( ! ( NULL == pIRendererNotifications ) )
         delete pIRendererNotifications;
@@ -125,8 +147,6 @@ This is the MIT License
     if ( ! ( NULL == pIDropTarget ) )
         delete pIDropTarget;
 
-    cycle();
-
     DestroyWindow(hwndClient);
     DestroyWindow(hwndCmdPane);
 
@@ -142,41 +162,7 @@ This is the MIT License
     }
 
 
-    HRESULT PostScriptInterpreter::connectServices() {
-
-    if ( ! ( NULL == pIFontManager ) )
-        return S_OK;
-
-    HRESULT rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
-    pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
-    pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
-    pIRenderer -> QueryInterface(IID_IGraphicParameters,reinterpret_cast<void **>(&pIGraphicParameters));
-
-    if ( ! ( logLevel::none == theRendererLogLevel ) )
-        pIRendererNotifications = new _IRendererNotifications(this,pIRenderer);
-
-    return rc;
-    }
-
-
     void PostScriptInterpreter::cycle() {
-
-    if ( ! ( NULL == pIFontManager ) ) {
-        pIFontManager -> Release();
-        pIRenderer -> Release();
-        pIGraphicElements -> Release();
-        pIGraphicParameters -> Release();
-    }
-
-    pIFontManager = NULL;
-    pIRenderer = NULL;
-    pIGraphicElements = NULL;
-    pIGraphicParameters = NULL;
-
-    if ( ! ( NULL == pIRendererNotifications ) )
-        delete pIRendererNotifications;
-
-    pIRendererNotifications = NULL;
 
     ReleaseDC();
 
@@ -190,7 +176,7 @@ This is the MIT License
 
     pageSizes.clear();
 
-    setWindowPanes(NULL);
+    pIFontManager -> Reset();
 
     return;
     }

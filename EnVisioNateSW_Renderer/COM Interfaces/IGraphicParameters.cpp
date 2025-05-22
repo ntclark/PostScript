@@ -256,10 +256,10 @@ This is the MIT License
 
     long hashCode = 0L;
     long part = 0L;
-    long n = (DWORD)strlen(pszLineSettings);
+    long n = (DWORD)strlen(pszLineSettings) - 40;
     char *psz = new char[n + 4];
     memset(psz,0,(n + 4) * sizeof(char));
-    strcpy(psz,pszLineSettings);
+    strcpy(psz,pszLineSettings + 39);
     char *p = psz;
     for ( long k = 0; k < n; k += 4 ) {
         memcpy(&part,p,4 * sizeof(char));
@@ -267,5 +267,6 @@ This is the MIT License
         p += 4;
     }
     delete [] psz;
+
     return hashCode;
     }

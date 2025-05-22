@@ -112,26 +112,16 @@ This is the MIT License
 
     if ( ! ( NULL == pCharStrings ) && FontType::type42 == fontType ) {
         DWORD cb = 0;
-        for ( long k = 0; k < pCharStrings -> size(); k++ ) {
-            object *pStr = pCharStrings -> retrieve(k);
+        for ( long k = 0; k < pCharStrings -> size(); k++ ) 
+            cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
 
+        char *pszCharStrings = (char *)CoTaskMemAlloc(cb + 1);
 
-            // At some point I changed the "key" to be that from the CharStrings dictionary key
-            // I think originally it was the "index", k
-            //cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 6 + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
-            cb += 4 + 6 + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
-        }
-
-        uint8_t *pszCharStrings = (uint8_t *)CoTaskMemAlloc(cb + 1);
-
-        memset(pszCharStrings,0,(cb + 1) * sizeof(uint8_t));
-        uint8_t *pszEnd = pszCharStrings + cb;
+        memset(pszCharStrings,0,(cb + 1) * sizeof(char));
+        char *pszEnd = pszCharStrings + cb;
         cb = 0L;
         for ( long k = 0; k < pCharStrings -> size(); k++ ) {
-            object *pStr = pCharStrings -> retrieve(k);
-            char *psz = pCharStrings -> retrieve(k) -> Contents();
-            //cb += sprintf((char *)(pszCharStrings + cb),"%s:%04d;%s",pCharStrings -> retrieveKey(k),(uint16_t)strlen(psz),psz);
-            cb += sprintf((char *)(pszCharStrings + cb),"%04d:%04d;%s",k + 1,(uint16_t)strlen(psz),psz);
+            cb += sprintf(pszCharStrings + cb,"%s;%s",pCharStrings -> retrieveKey(k),pCharStrings -> retrieve(k) -> Contents());
             cb++;
         }
 

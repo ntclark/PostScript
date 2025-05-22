@@ -139,6 +139,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     downScale(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> downScale),
                     xForm(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> toPageSpace),
                     scaleXForm(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> scaleXForm),
+                    hasXForm(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> hasXForm),
                     hasScale(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> hasScale),
                     hasDownScale(pp -> pParent -> pGraphicsStateManager -> parametersStack.top() -> hasDownScale) {}
 
@@ -180,6 +181,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 XFORM scaleXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
                 GraphicElements *pParent{NULL};
                 boolean hasDownScale{false};
+                boolean hasXForm{false};
                 boolean hasScale{false};
                 POINTF vertex{0.0f,0.0f};
 
@@ -196,7 +198,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         vertex.x /= downScale;
                         vertex.y /= downScale;
                     }
-                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&vertex,&vertex);
                     if ( hasScale ) 
                         pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
@@ -222,7 +225,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         vertex.x /= downScale;
                         vertex.y /= downScale;
                     }
-                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&vertex,&vertex);
                     if ( hasScale ) 
                         pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
@@ -249,6 +253,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     return;
                 }
                 void transform() {
+
                     if ( hasDownScale ) {
                         arcSegment.point.x /= downScale;
                         arcSegment.point.y /= downScale;
@@ -256,14 +261,16 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         arcSegment.size.height /= downScale;
                     }
 
-                    pParent -> transformPoint(&xForm,&arcSegment.point,&arcSegment.point);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&arcSegment.point,&arcSegment.point);
                     if ( hasScale ) 
                         pParent -> transformPoint(&scaleXForm,&arcSegment.point,&arcSegment.point);
                     arcSegment.point.x += origin.x;
                     arcSegment.point.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&arcSegment.point,&arcSegment.point);
 
-                    pParent -> scalePoint(&xForm,&arcSegment.size.width,&arcSegment.size.height);
+                    if ( hasXForm )
+                        pParent -> scalePoint(&xForm,&arcSegment.size.width,&arcSegment.size.height);
                     if ( hasScale )
                         pParent -> scalePoint(&scaleXForm,&arcSegment.size.width,&arcSegment.size.height);
                     pParent -> scalePoint(&pParent -> toDeviceSpace,&arcSegment.size.width,&arcSegment.size.height);
@@ -298,14 +305,16 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         ellipseSegment.radiusX /= downScale;
                         ellipseSegment.radiusY /= downScale;
                     }
-                    pParent -> transformPoint(&xForm,&ellipseSegment.point,&ellipseSegment.point);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&ellipseSegment.point,&ellipseSegment.point);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&ellipseSegment.point,&ellipseSegment.point);
                     ellipseSegment.point.x += origin.x;
                     ellipseSegment.point.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&ellipseSegment.point,&ellipseSegment.point);
 
-                    pParent -> scalePoint(&xForm,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
+                    if ( hasXForm )
+                        pParent -> scalePoint(&xForm,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
                     if ( hasScale )
                         pParent -> scalePoint(&scaleXForm,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
                     pParent -> scalePoint(&pParent -> toDeviceSpace,&ellipseSegment.radiusX,&ellipseSegment.radiusY);
@@ -345,28 +354,32 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         bezierSegment.point3.x /= downScale;
                         bezierSegment.point3.y /= downScale;
                     }
-                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&vertex,&vertex);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
                     vertex.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&vertex,&vertex);
 
-                    pParent -> transformPoint(&xForm,&bezierSegment.point1,&bezierSegment.point1);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&bezierSegment.point1,&bezierSegment.point1);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&bezierSegment.point1,&bezierSegment.point1);
                     bezierSegment.point1.x += origin.x;
                     bezierSegment.point1.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&bezierSegment.point1,&bezierSegment.point1);
 
-                    pParent -> transformPoint(&xForm,&bezierSegment.point2,&bezierSegment.point2);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&bezierSegment.point2,&bezierSegment.point2);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&bezierSegment.point2,&bezierSegment.point2);
                     bezierSegment.point2.x += origin.x;
                     bezierSegment.point2.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&bezierSegment.point2,&bezierSegment.point2);
 
-                    pParent -> transformPoint(&xForm,&bezierSegment.point3,&bezierSegment.point3);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&bezierSegment.point3,&bezierSegment.point3);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&bezierSegment.point3,&bezierSegment.point3);
                     bezierSegment.point3.x += origin.x;
@@ -405,21 +418,24 @@ int Mx3Inverse(double *pSource,double *pTarget);
                         quadraticBezierSegment.point2.x /= downScale;
                         quadraticBezierSegment.point2.y /= downScale;
                     }
-                    pParent -> transformPoint(&xForm,&vertex,&vertex);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&vertex,&vertex);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&vertex,&vertex);
                     vertex.x += origin.x;
                     vertex.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&vertex,&vertex);
 
-                    pParent -> transformPoint(&xForm,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
                     quadraticBezierSegment.point1.x += origin.x;
                     quadraticBezierSegment.point1.y += origin.y;
                     pParent -> transformPoint(&pParent -> toDeviceSpace,&quadraticBezierSegment.point1,&quadraticBezierSegment.point1);
 
-                    pParent -> transformPoint(&xForm,&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
+                    if ( hasXForm )
+                        pParent -> transformPoint(&xForm,&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     if ( hasScale )
                         pParent -> transformPoint(&scaleXForm,&quadraticBezierSegment.point2,&quadraticBezierSegment.point2);
                     quadraticBezierSegment.point2.x += origin.x;
@@ -694,6 +710,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     downScale = rhs.downScale;
                     toPageSpace = rhs.toPageSpace;
                     scaleXForm = rhs.scaleXForm;
+                    hasXForm = rhs.hasXForm;
                     hasScale = rhs.hasScale;
                     hasDownScale = rhs.hasDownScale;
                     return;
@@ -711,6 +728,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 FLOAT downScale{1.0f};
                 XFORM toPageSpace{1.0,0.0,0.0,1.0,0.0,0.0};
                 XFORM scaleXForm{1.0,0.0,0.0,1.0,0.0,0.0};
+                boolean hasXForm{false};
                 boolean hasScale{false};
                 boolean hasDownScale{false};
             };

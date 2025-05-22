@@ -11,11 +11,16 @@
         pIOleObject_HTML -> Release();
     }
 
-    if ( ! ( NULL == pIOleInPlaceObject_HTML ) )
+    if ( ! ( NULL == pIOleInPlaceObject_HTML ) ) 
         pIOleInPlaceObject_HTML -> Release();
 
     if ( ! ( NULL == pIPostScript ) )
         pIPostScript -> Release();
+
+    delete pIOleInPlaceFrame_HTML_Host;
+    delete pIOleInPlaceSite_HTML_Host;
+    delete pIOleClientSite_HTML_Host;
+    delete pIOleDocumentSite_HTML_Host;
 
     return;
     }

@@ -26,15 +26,9 @@ This is the MIT License
 
     int PostScriptInterpreter::initWindows() {
 
-    //
-    // Note that hwndHost is *external*, our client window will be embedded in the
-    // windows application that is hosting this object.
-    // 
-
     pIOleInPlaceSite -> GetWindow(&hwndHost);
 
     WNDCLASS gClass;
-
     memset(&gClass,0,sizeof(WNDCLASS));
 
     gClass.style = CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;

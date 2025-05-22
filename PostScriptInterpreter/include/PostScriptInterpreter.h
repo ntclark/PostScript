@@ -53,6 +53,7 @@ This is the MIT License
 #define POINTS_TO_PIXELS    2
 #define CMD_PANE_HEIGHT     96
 #define SPLITTER_WIDTH      6
+#define NOMINAL_GUTTER      32
 
 class job;
 
@@ -370,9 +371,6 @@ class job;
 
         job *currentJob() { return pJob; }
 
-        HRESULT ConnectServices() { return connectServices(); }
-        void Cycle() { cycle(); }
-
         POINTL activePageOrigin{0L,0L};
 
         static long SideGutter(long v = -LONG_MAX) { 
@@ -397,6 +395,7 @@ class job;
         static IGraphicParameters *pIGraphicParameters;
 
         static std::function<void(void)> beginPathAction;
+        static std::list<std::function<void(void)>> endRunActions;
 
         static HWND hwndPostScriptLogContent;
         static HWND hwndRendererLogContent;
@@ -464,14 +463,10 @@ class job;
 
         static void setWindowPanes(RECT *prcClient);
 
-        //static LRESULT (__stdcall *nativeHostFrameHandler)(HWND,UINT,WPARAM,LPARAM);
-
         static LRESULT CALLBACK clientWindowHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK cmdPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK logPaneHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
         static LRESULT CALLBACK splitterHandler(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
-
-        //static LRESULT CALLBACK hostFrameHandlerOveride(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
         static DWORD __stdcall processLog(DWORD_PTR dwCookie,BYTE *pBuffer,LONG bufferSize,LONG *pBytesReturned);
 

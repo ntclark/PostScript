@@ -251,3 +251,12 @@ Type42Font:
     pIFont_Current = pIFont;
     return S_OK;
     }
+
+
+    HRESULT FontManager::Reset() {
+    for ( font *pFont : managedFonts)
+        delete pFont;
+    managedFonts.clear();
+    pIFont_Current = NULL;
+    return S_OK;
+    }

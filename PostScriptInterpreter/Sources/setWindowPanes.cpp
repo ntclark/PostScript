@@ -115,7 +115,10 @@ This is the MIT License
 
     cxClient = rcHost.right - rcHost.left - cxPostScriptLogWindow - cxRendererLogWindow;
 
-    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClient,cyHost - CMD_PANE_HEIGHT,SWP_SHOWWINDOW);
+    cxClientWindow = cxClient;
+    cyClientWindow = cyHost - CMD_PANE_HEIGHT;
+
+    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClientWindow,cyClientWindow,SWP_SHOWWINDOW);
 
     RECT rcText{0,0,0,0};
     GetWindowRect(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),&rcText);
@@ -136,6 +139,8 @@ This is the MIT License
     HDC hdcFrame = ::GetDC(hwndHost);
     FillRect(hdcFrame,&rcRightEdge,(HBRUSH)(COLOR_3DFACE + 1));
     ::ReleaseDC(hwndHost,hdcFrame);
+
+    graphicsState::SetSurface(hwndClient,1);
 
     return;
     }

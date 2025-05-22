@@ -54,6 +54,8 @@ This is the MIT License
     if ( pJob )
         delete pJob;
 
+    pJob = NULL;
+
     HRESULT rc = S_OK;
     if ( ! ( NULL == pszFileName ) ) 
         rc = SetSource(pszFileName);
@@ -64,9 +66,14 @@ This is the MIT License
     if ( FALSE == autoStart )
         return S_OK;
 
-//_CrtSetBreakAlloc(281);
-
     pJob = new job(szCurrentPostScriptFile,hwndClient);
+
+    endRunActions.push_back( [=] {
+        delete pJob;
+        pJob = NULL;
+        cycle();
+        //setWindowPanes(NULL);
+    });
 
     pJob -> parseJob(NULL == hwndClient ? false : true);
 
@@ -80,6 +87,10 @@ This is the MIT License
     pJob = new job(NULL,NULL);
     WaitForSingleObject(pJob -> hsemIsInitialized,INFINITE);
     pJob -> execute(pszStream,pszStream + strlen(pszStream),"<unnamed>");
+    delete pJob;
+    pJob = NULL;
+    cycle();
+    setWindowPanes(NULL);
     return S_OK;
    }
 
