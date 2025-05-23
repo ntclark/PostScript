@@ -198,6 +198,8 @@
     psXForm = {1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
     gdiXForm = {scalePDF,0.0f,0.0f,-scalePDF,0.0f,(FLOAT)cyWindow};
 
+    pIRenderer ->put_ToDeviceTransform((UINT_PTR)&gdiXForm);
+
     ReleaseDC(hwndHost,hdc);
     return;
     }

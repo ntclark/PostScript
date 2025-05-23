@@ -51,6 +51,7 @@ HBITMAP hbmColorSwatch;
     return 0;
     }
 
+
     void setBitmap() {
     HDC hdc = GetDC(hwndDialog);
     HDC hdcTarget = CreateCompatibleDC(hdc);

@@ -120,7 +120,7 @@ This is the MIT License
 
     POINT ptStart{(int)currentUserSpacePoint.x,(int)currentUserSpacePoint.y};
 
-    if ( NULL == pPostScriptInterpreter -> HwndClient() ) {
+    if ( std::isnan(currentUserSpacePoint.x) ) {
         ptStart.x = -1;
         ptStart.y = -1;
     }

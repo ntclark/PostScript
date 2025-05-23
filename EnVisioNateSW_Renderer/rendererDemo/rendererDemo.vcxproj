@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dialogHandler.cpp" />
+    <ClCompile Include="drawGraphics.cpp" />
     <ClCompile Include="frameHandler.cpp" />
     <ClCompile Include="rendererDemo.cpp" />
   </ItemGroup>

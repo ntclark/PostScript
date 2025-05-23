@@ -14,7 +14,7 @@
 LRESULT CALLBACK frameHandler(HWND,UINT,WPARAM,LPARAM);
 LRESULT dialogHandler(HWND,UINT,WPARAM,LPARAM);
 
-void crossHairs(HDC hdc);
+void drawGraphics(HDC hdc);
 void drawText(HDC hdc,char *pszText,FLOAT x,FLOAT y,uint8_t flag);
 
 #ifdef DEFINE_DATA

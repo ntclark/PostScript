@@ -5,7 +5,7 @@
 
 /*
     rendererDemo is a very simple windows application to show how the 
-    EnVisioNateSW Renderer work so you can how to use it 
+    EnVisioNateSW Renderer work so you can see how to use it 
     easily in any of your own software.
 */
 
@@ -57,10 +57,10 @@
         HRESULT __stdcall LogNotification(UINT_PTR theStatus) {
 
             //
-            // Note that output these debug strings really 
+            // Note that outputing these debug strings really 
             // takes a major hit on performance. 
             // It's not the event itself, but writing to the VS output
-            // window. Doing other things here is probably oka
+            // window. Doing other things here is probably okay
 
             OutputDebugStringA((char *)theStatus);
             OutputDebugStringA("\n");
@@ -82,14 +82,16 @@
     /*
 
     NOTE: THE FONT MANAGER HAS IT'S OWN BUILT IN RENDERER BECAUSE WHEN YOU WANT TO RENDER FONTS 
-    WITHOUT OTHER GRAPHICS, THE CLIENT DOES NOT THEN NEED TO CREATE A RENDERER.
+    WITHOUT OTHER GRAPHICS, THE CLIENT WOULD NOT THEN NEED TO CREATE A RENDERER.
 
-    THIS MEANS THAT IF YOU HAVE FONTS MIXED WITH OTHER GRAPHICS, YOU WANT TO QUERY YOUR RENDERER
+    THIS MEANS THAT IF YOU HAVE FONTS MIXED WITH OTHER GRAPHICS, YOU WANT TO QUERY FOR YOUR RENDERER
     INTERFACE FROM THE FONT MANAGER.
 
     YOU CAN, IF YOU WANT, CREATE THE RENDERER SEPARATE FROM THE FONT MANAGER, BUT YOU WILL HAVE TO
     CALL RENDER ON THE FONT MANAGER'S RENDERER ANYWAY AT SOME POINT AND YOU WOULD HAVE TO
     GET THE IRENDERER INTRFACE FROM THE FONT MANAGER THEN ANYWAY.
+
+    (sorry about all the yelling)
     */
 
     rc = CoCreateInstance(CLSID_FontManager,NULL,CLSCTX_ALL,IID_IFontManager,reinterpret_cast<void **>(&pIFontManager));
@@ -97,7 +99,7 @@
     // Don't do this
     //rc = CoCreateInstance(CLSID_Renderer,NULL,CLSCTX_ALL,IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
 
-    // Do this
+    // Do this instead
     rc = pIFontManager -> QueryInterface(IID_IRenderer,reinterpret_cast<void **>(&pIRenderer));
 
     pIRenderer -> QueryInterface(IID_IGraphicElements,reinterpret_cast<void **>(&pIGraphicElements));
@@ -130,7 +132,7 @@
 
     pIFontManager -> LoadFont((char *)"Microsoft Sans Serif",0L,&pIFont);
 
-    pIFontManager -> ScaleFont(14.0);
+    pIFontManager -> ScaleFont(2.0);
 
     WNDCLASS gClass;
 
