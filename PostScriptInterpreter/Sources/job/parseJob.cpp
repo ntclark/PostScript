@@ -80,6 +80,7 @@ This is the MIT License
 
 
     unsigned int __stdcall job::executeThread(void *pvThis) {
+
     job *pThis = reinterpret_cast<job *>(pvThis);
 
     if ( ! ( INVALID_HANDLE_VALUE == pThis -> hsemIsInitialized ) )

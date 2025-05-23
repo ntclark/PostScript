@@ -100,7 +100,8 @@ This is the MIT License
     DWORD cbData = GetFontData(hdcTemp,/*0x66637474*/0L,0L,NULL,0L);
 
     if ( GDI_ERROR == cbData ) {
-        sprintf_s<1024>(FontManager::szFailureMessage,"The specified font (%s) is (probably) a TrueType or OpenType font, however, the GetFontData call returns failure on it",pFont -> InstalledFontName());
+        sprintf_s<1024>(FontManager::szFailureMessage,"The specified font (%s) is (probably) a TrueType or "
+                "OpenType font, however, the GetFontData call returns failure on it",pFont -> InstalledFontName());
         FireErrorNotification(FontManager::szFailureMessage);
         goto NonType42Font;
     }
@@ -218,9 +219,9 @@ Type42Font:
     }
 
 
-    HRESULT FontManager::RenderGlyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT FontManager::RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
     font *pFont = static_cast<font *>(pIFont_Current);
-    return pFont -> RenderGlyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
+    return pFont -> RenderGlyph(bGlyph,pGlyphData,pPSXform,pStartPoint,pEndPoint);
     }
 
 

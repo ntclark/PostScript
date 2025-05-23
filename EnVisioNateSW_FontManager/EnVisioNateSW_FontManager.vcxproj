@@ -164,7 +164,6 @@
     <Midl Include="COM Implementation\FontManager.odl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="adobeGlyphList.h" />
     <ClInclude Include="EnVisioNateSW_FontManager.h" />
     <ClInclude Include="font.h" />
     <ClInclude Include="FontManager.h" />

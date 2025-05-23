@@ -49,7 +49,7 @@ This is the MIT License
 
     RegisterClass(&gClass);
 
-    hwndClient = CreateWindowEx(WS_EX_CLIENTEDGE,"psInterpreterCanvas","",WS_CHILD,0,0,0,0,hwndHost,
+    hwndClient = CreateWindowEx(0*WS_EX_CLIENTEDGE,"psInterpreterCanvas","",WS_CHILD,0,0,0,0,hwndHost,
                                     NULL,NULL,reinterpret_cast<void *>(this));
 
     hwndVScroll = CreateWindowEx(0L,"SCROLLBAR","",WS_CHILD | WS_VISIBLE | SBS_VERT,0,0,

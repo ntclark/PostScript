@@ -25,24 +25,24 @@ This is the MIT License
 
 #define FT_CURVE_TAG_ON 0x01
 
-    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     if ( FontType::type3 == theFontType ) 
-        return drawType3Glyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
+        return drawType3Glyph(bGlyph,pPSXform,pStartPoint,pEndPoint);
 
     if ( ! ( FontType::type42 == theFontType ) )
         return E_UNEXPECTED;
 
-    return drawType42Glyph(bGlyph,pPSXform,pXformToDeviceSpace,pStartPoint,pEndPoint);
+    return drawType42Glyph(bGlyph,pGlyphData,pPSXform,pStartPoint,pEndPoint);
     }
 
 
-    HRESULT font::drawType3Glyph(unsigned short,UINT_PTR,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::drawType3Glyph(unsigned short,UINT_PTR,POINTF *pStartPoint,POINTF *pEndPoint) {
     return E_NOTIMPL;
     }
 
 
-    HRESULT font::drawType42Glyph(unsigned short bGlyph,UINT_PTR pPSXform,UINT_PTR pxxXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::drawType42Glyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     BYTE *pbGlyphData = NULL;
 
@@ -59,47 +59,29 @@ This is the MIT License
 
     uint16_t glyph = bGlyph;
 
-    if ( 0 < encodingTable.size() ) {
-        if ( ! ( encodingTable.end() == encodingTable.find((uint32_t)glyph) ) ) {
-            char *pszCharTableIndex = encodingTable[(uint32_t)glyph];
-            std::map<uint32_t,char *> *pCharStrings = &charStringsTable;
-            boolean found = false;
-            if ( 0 < charStringsTable.size() ) {
-                for ( std::pair<uint32_t,char *> pPair : charStringsTable ) {
-                    if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
-                        glyph = pPair.first;
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if ( ! found ) {
-                for ( std::pair<uint32_t,char *> pPair : font::adobeGlyphList ) {
-                    if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
-                        glyph = pPair.first;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     uint16_t glyphIndex;
 
-    get_GlyphIndex(glyph,&glyphIndex);
+    if ( NULL == pGlyphData ) {
 
-    pbGlyphData = getGlyphData(glyphIndex);
+        get_GlyphIndex(glyph,&glyphIndex);
 
-    if ( NULL == pbGlyphData ) {
-        if ( (long)glyph <= countGlyphs ) {
-            otLongHorizontalMetric pMetric =  pHorizontalMetricsTable -> pHorizontalMetrics[glyphIndex];
-            if ( ! ( NULL == pEndPoint ) ) {
-                pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * scaleFUnitsToPoints * PointSize();
-                pEndPoint -> y = pStartPoint -> y;
+        pbGlyphData = getGlyphData(glyphIndex);
+
+        if ( NULL == pbGlyphData ) {
+            if ( (long)glyph <= countGlyphs ) {
+                otLongHorizontalMetric pMetric =  pHorizontalMetricsTable -> pHorizontalMetrics[glyphIndex];
+                if ( ! ( NULL == pEndPoint ) ) {
+                    pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * scaleFUnitsToPoints * PointSize();
+                    pEndPoint -> y = pStartPoint -> y;
+                }
+                return S_OK;
             }
-            return S_OK;
+            return E_FAIL;
         }
-        return E_FAIL;
+
+    } else {
+        glyphIndex = 0;
+        pbGlyphData = (uint8_t *)pGlyphData;
     }
 
     otGlyphHeader glyphHeader{0};

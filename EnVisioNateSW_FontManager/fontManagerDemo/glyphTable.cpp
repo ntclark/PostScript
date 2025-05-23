@@ -63,7 +63,7 @@
 
         POINTF centerPoint{startPoint.x + extraWidthPoints,startPoint.y + extraHeightPoints};
 
-        pIFont -> RenderGlyph((unsigned short)p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&centerPoint,&endPoint);
+        pIFont -> RenderGlyph((unsigned short)p,NULL,(UINT_PTR)&psXForm,&centerPoint,&endPoint);
 
         endPoint.y = startPoint.y;
         endPoint.x = startPoint.x + fontDeltaXPoints;

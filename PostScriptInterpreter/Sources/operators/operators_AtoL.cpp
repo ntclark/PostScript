@@ -1604,8 +1604,6 @@ isNew = true;
     if ( isNew )
         pFontDirectory -> put(pFont -> fontName(),pFont);
 
-    pFont -> loadDictionary();
-
     push(pFont);
 
     return;

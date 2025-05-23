@@ -110,13 +110,21 @@ This is the MIT License
         if ( ! ( nName == pEntry -> NameSize() ) )
             continue;
         if ( 0 == strcmp(pEntry -> KeyString(),pszName) )
-            // Need to check this with a test
-{
-__debugbreak();
             return pEntry;
-}
     }
     return NULL;
+    }
+
+
+    long dictionary::retrieveIndex(char *pszName) {
+    long nName = (long)strlen(pszName);
+    for ( long k = 0; k < entries.size(); k++ ) {
+        if ( ! ( nName == entries[k] -> NameSize() ) )
+            continue;
+        if ( 0 == strcmp(entries[k] -> KeyString(),pszName) )
+            return k;
+    }
+    return -1L;
     }
 
 

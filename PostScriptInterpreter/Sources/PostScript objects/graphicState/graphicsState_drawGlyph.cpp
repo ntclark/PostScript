@@ -43,8 +43,6 @@ This is the MIT License
 
     drawType42Glyph(glyphIndex,&startPoint,&endPoint);
 
-    //pPSXformsStack -> untransformPoint(&endPoint,&endPoint);
-
     moveto(&endPoint);
 
     POINT ptStart{(int)startPoint.x,(int)startPoint.y};
@@ -224,10 +222,53 @@ __debugbreak();
     }
 
 
-    void graphicsState::drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
-    PostScriptInterpreter::pIFontManager -> RenderGlyph(bGlyph,
-                                        (UINT_PTR)pPSXformsStack -> CurrentTransform(),
-                                        (UINT_PTR)pageParameters::ToDeviceSpace(),
-                                            pStartPoint,pEndPoint);
+    void graphicsState::drawType42Glyph(uint16_t glyphIndex,POINTF *pStartPoint,POINTF *pEndPoint) {
+
+    font *pFont = CurrentFont();
+
+    if ( 0 < pFont -> pEncoding -> size() ) {
+        object *pGlyphName = pFont -> pEncoding -> getElement(glyphIndex);
+        if ( ! ( NULL == pGlyphName ) ) {
+            boolean found = false;
+            object *pGlyphIndex = pFont -> pCharStrings -> retrieve(pGlyphName -> Contents());
+            if ( ! ( NULL == pGlyphIndex ) ) {
+                found = true;
+                glyphIndex = pGlyphIndex -> IntValue();
+            }
+            if ( ! found ) {
+                char *pszCharTableIndex = pGlyphName -> Contents();
+                for ( std::pair<uint32_t,char *> pPair : font::adobeGlyphList ) {
+                    if ( 0 == strcmp(pszCharTableIndex,pPair.second) ) {
+                        glyphIndex = pPair.first;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    object *pGlyphDirObj = pFont -> retrieve("GlyphDirectory");
+
+    uint8_t *pbGlyphData = NULL;
+
+    if ( ! ( NULL == pGlyphDirObj ) ) {
+        dictionary *pGlyphDirectory = reinterpret_cast<dictionary *>(pGlyphDirObj);
+        char szIndex[16];
+        sprintf_s<16>(szIndex,"%d",glyphIndex);
+        object *pGlyphDataObj = pGlyphDirectory -> retrieve(szIndex);
+        if ( ! ( NULL == pGlyphDataObj ) ) {
+            binaryString *pGlyphData = reinterpret_cast<binaryString *>(pGlyphDataObj);
+            if ( 0 == pGlyphData -> length() ) 
+                return;
+            pbGlyphData = (uint8_t *)CoTaskMemAlloc(pGlyphData -> length());
+            memcpy(pbGlyphData,pGlyphData -> getData(),pGlyphData -> length());
+        }
+    }
+
+    PostScriptInterpreter::pIFontManager -> RenderGlyph(glyphIndex,(UINT_PTR)pbGlyphData,(UINT_PTR)pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint);
+
+    if ( ! ( NULL == pbGlyphData ) ) 
+        CoTaskMemFree(pbGlyphData);
+
     return;
     }

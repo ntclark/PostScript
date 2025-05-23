@@ -26,6 +26,7 @@ This is the MIT License
 #include "FontManager_i.c"
 #include "PostScript objects/font.h"
 #include "PostScript objects/binaryString.h"
+#include "adobeGlyphList.h"
 
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
@@ -45,11 +46,29 @@ This is the MIT License
     pCharStrings = reinterpret_cast<dictionary *>(retrieve("CharStrings"));
     pEncoding = reinterpret_cast<array *>(retrieve("Encoding"));
     object *pFontType = reinterpret_cast<dictionary *>(retrieve("FontType"));
-    if ( ! ( NULL == pFontType ) ) {
+    if ( ! ( NULL == pFontType ) )
         fontType = (FontType)pFontType -> IntValue();
-        pIFont -> put_FontType(fontType);
+
+    if ( FontType::type42 == fontType ) {
+        object *pObjSfnts = retrieve("sfnts");
+        if ( ! ( NULL == pObjSfnts) ) {
+            array *pSfnts = reinterpret_cast<array *>(pObjSfnts);
+            uint32_t arraySize = pSfnts -> size();
+            uint32_t cbData = 0;
+            for ( uint32_t k = 0; k < arraySize; k++ )
+                cbData += (uint32_t)reinterpret_cast<class binaryString *>(pSfnts -> getElement(k)) -> length();
+            uint8_t *pbData = (uint8_t *)CoTaskMemAlloc(cbData);
+            uint8_t *pbStart = pbData;
+            for ( uint32_t k = 0; k < arraySize; k++ ) {
+                uint32_t cb = (uint32_t)reinterpret_cast<class binaryString *>(pSfnts -> getElement(k)) -> length();
+                memcpy(pbData,reinterpret_cast<class binaryString *>(pSfnts -> getElement(k)) -> getData(),cb);
+                pbData += cb;
+            }
+            pIFont -> SetFontData(cbData,(UINT_PTR)pbStart);
+            CoTaskMemFree((void *)pbStart);
+        }
     }
-    loadDictionary();
+
     return;
     }
 
@@ -63,7 +82,6 @@ This is the MIT License
     dupCount = rhs.dupCount + 1;
     copyFrom(static_cast<dictionary *>(&rhs));
     PostScriptInterpreter::pIFontManager -> DuplicateFont(rhs.pIFont,(UINT_PTR)(void *)this,&pIFont);
-    loadDictionary();
     return;
     }
 
@@ -102,49 +120,6 @@ This is the MIT License
         pEncoding = new (pJob -> CurrentObjectHeap()) array(pJob,pJob -> pEncodingArrayLiteral -> Name(),256);
         pEncoding -> copyFrom(pJob -> pStandardEncoding);
         put(pJob -> pEncodingArrayLiteral -> Name(),pEncoding);
-    }
-
-    return;
-    }
-
-
-    void font::loadDictionary() {
-
-    if ( ! ( NULL == pCharStrings ) && FontType::type42 == fontType ) {
-        DWORD cb = 0;
-        for ( long k = 0; k < pCharStrings -> size(); k++ ) 
-            cb += (DWORD)strlen(pCharStrings -> retrieveKey(k)) + 2 + (DWORD)strlen(pCharStrings -> retrieve(k) -> Contents());
-
-        char *pszCharStrings = (char *)CoTaskMemAlloc(cb + 1);
-
-        memset(pszCharStrings,0,(cb + 1) * sizeof(char));
-        char *pszEnd = pszCharStrings + cb;
-        cb = 0L;
-        for ( long k = 0; k < pCharStrings -> size(); k++ ) {
-            cb += sprintf(pszCharStrings + cb,"%s;%s",pCharStrings -> retrieveKey(k),pCharStrings -> retrieve(k) -> Contents());
-            cb++;
-        }
-
-        pIFont -> SetCharStrings((UINT_PTR)pszCharStrings);
-
-        CoTaskMemFree(pszCharStrings);
-    }
-
-    if ( ! ( NULL == pEncoding ) && FontType::type42 == fontType ) {
-        DWORD cb = 0;
-        for ( long k = 0; k < pEncoding -> size(); k++ )
-            cb += 4 + 2 + (DWORD)strlen(pEncoding -> getElement(k) -> Contents());
-        char *pszEncoding = (char *)CoTaskMemAlloc(cb + 1);
-        memset(pszEncoding,0,(cb + 1) * sizeof(char));
-        cb = 0L;
-        for ( long k = 0; k < pEncoding -> size(); k++ ) {
-            cb += sprintf(pszEncoding + cb,"%04ld;%s",k,pEncoding -> getElement(k) -> Contents());
-            cb++;
-        }
-
-        pIFont -> SetEncoding((UINT_PTR)pszEncoding);
-
-        CoTaskMemFree(pszEncoding);
     }
 
     return;

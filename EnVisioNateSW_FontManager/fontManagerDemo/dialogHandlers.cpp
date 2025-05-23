@@ -122,7 +122,7 @@
         pIRenderer -> ClearRect(hdc,&rcFrame,WHITE);
 
         while ( *p ) {
-            pIFont -> RenderGlyph((unsigned short)*p,(UINT_PTR)&psXForm,(UINT_PTR)&gdiXForm,&startPoint,&endPoint);
+            pIFont -> RenderGlyph((unsigned short)*p,NULL,(UINT_PTR)&psXForm,&startPoint,&endPoint);
             startPoint = endPoint;
             p++;
         }

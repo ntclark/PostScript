@@ -23,12 +23,12 @@ This is the MIT License
 
 #include "EnVisioNateSW_FontManager.h"
 
-    HRESULT font::type42Load(BYTE *pbData) {
+    HRESULT font::type42Load(BYTE *pbData,boolean enforceRequiredTables) {
 
     tableDirectory.load(pbData);
 
     uint8_t missingTag[4];
-    if ( ! tableDirectory.allRequiredSupplied(missingTag) ) {
+    if ( ! tableDirectory.allRequiredSupplied(missingTag) && enforceRequiredTables ) {
         sprintf(FontManager::szFailureMessage,"font %s is invalid, it is missing the required table %c%c%c%c",InstalledFontName(),missingTag[0],missingTag[1],missingTag[2],missingTag[3]);
         FontManager::FireErrorNotification(FontManager::szFailureMessage);
         return NULL;
@@ -68,11 +68,13 @@ This is the MIT License
 
     pHorizHeadTable = new otHorizHeadTable(tableDirectory.table("hhea"));
 
-    pHorizontalMetricsTable = new otHorizontalMetricsTable(countGlyphs,pHorizHeadTable -> numberOfHMetrics,tableDirectory.table("hmtx"));
+    if ( 0 < countGlyphs )
+        pHorizontalMetricsTable = new otHorizontalMetricsTable(countGlyphs,pHorizHeadTable -> numberOfHMetrics,tableDirectory.table("hmtx"));
 
     if ( ! ( NULL == tableDirectory.table("vhea") ) ) {
         pVertHeadTable = new otVertHeadTable(tableDirectory.table("vhea"));
-        pVerticalMetricsTable = new otVerticalMetricsTable(countGlyphs,pVertHeadTable -> numOfLongVerMetrics,tableDirectory.table("vmtx"));
+        if ( 0 < countGlyphs )
+            pVerticalMetricsTable = new otVerticalMetricsTable(countGlyphs,pVertHeadTable -> numOfLongVerMetrics,tableDirectory.table("vmtx"));
     }
 
     if ( ! ( NULL == tableDirectory.table("os2") ) )
@@ -83,69 +85,74 @@ This is the MIT License
     if ( ! ( NULL == pOS2Table ) )
         scaleFUnitsToPoints = 1.0f / (float)(pOS2Table -> sTypoAscender - pOS2Table -> sTypoDescender);
 
-    otCmapTable theCmapTable(tableDirectory.table("cmap"));
+    if ( ! ( NULL == tableDirectory.table("cmap") ) ) {
 
-    boolean validPlatform = false;
+        otCmapTable theCmapTable(tableDirectory.table("cmap"));
 
-    for ( long k = 0; k < theCmapTable.numTables; k++ ) {
+        boolean validPlatform = false;
 
-        if ( ! ( 3 == theCmapTable.pEncodingRecords[k].platformID ) )
-            continue;
+        for ( long k = 0; k < theCmapTable.numTables; k++ ) {
 
-        if ( ! ( 0 == theCmapTable.pEncodingRecords[k].encodingID ) &&
-                ! ( 1 == theCmapTable.pEncodingRecords[k].encodingID ) && 
-                    ! ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) ) {
+            if ( ! ( 3 == theCmapTable.pEncodingRecords[k].platformID ) )
+                continue;
+
+            if ( ! ( 0 == theCmapTable.pEncodingRecords[k].encodingID ) &&
+                    ! ( 1 == theCmapTable.pEncodingRecords[k].encodingID ) && 
+                        ! ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) ) {
+                sprintf(FontManager::szFailureMessage,"font %s is invalid. only cmap platformID = 3 and encodingID = [0 | 1 | 10] is supported.",InstalledFontName());
+                FontManager::FireErrorNotification(FontManager::szFailureMessage);
+                return E_FAIL;
+            }
+
+            validPlatform = true;
+
+            BYTE *pLoad = (BYTE *)theCmapTable.pEncodingRecords[k].tableAddress;
+
+            uint16_t format;
+            BE_TO_LE_U16(pLoad,format)
+
+            pLoad -= sizeof(uint16_t);
+
+            if ( 0 == theCmapTable.pEncodingRecords[k].encodingID || 1 == theCmapTable.pEncodingRecords[k].encodingID ) {
+
+                if ( ! ( 4 == format ) ) {
+                    sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 4 is supported when encodingID = 1.",InstalledFontName());
+                    FontManager::FireErrorNotification(FontManager::szFailureMessage);
+                    return E_FAIL;
+                }
+
+                pCmapSubtableFormat4 = new otCmapSubtableFormat4(&pLoad);
+
+                pCmapSubtableFormat4 -> loadFormat4(&pLoad);
+
+            } else if ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) {
+
+                if ( ! ( 12 == format ) ) {
+                    sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 12 is supported WHEN encodingID = 10.",InstalledFontName());
+                    FontManager::FireErrorNotification(FontManager::szFailureMessage);
+                    return E_FAIL;
+                }
+
+                sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 12 is not implemented yet.",InstalledFontName());
+                FontManager::FireErrorNotification(FontManager::szFailureMessage);
+                return E_NOTIMPL;
+
+            }
+
+            break;
+
+        }
+
+        if ( ! validPlatform ) {
             sprintf(FontManager::szFailureMessage,"font %s is invalid. only cmap platformID = 3 and encodingID = [0 | 1 | 10] is supported.",InstalledFontName());
             FontManager::FireErrorNotification(FontManager::szFailureMessage);
             return E_FAIL;
         }
 
-        validPlatform = true;
-
-        BYTE *pLoad = (BYTE *)theCmapTable.pEncodingRecords[k].tableAddress;
-
-        uint16_t format;
-        BE_TO_LE_U16(pLoad,format)
-
-        pLoad -= sizeof(uint16_t);
-
-        if ( 0 == theCmapTable.pEncodingRecords[k].encodingID || 1 == theCmapTable.pEncodingRecords[k].encodingID ) {
-
-            if ( ! ( 4 == format ) ) {
-                sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 4 is supported when encodingID = 1.",InstalledFontName());
-                FontManager::FireErrorNotification(FontManager::szFailureMessage);
-                return E_FAIL;
-            }
-
-            pCmapSubtableFormat4 = new otCmapSubtableFormat4(&pLoad);
-
-            pCmapSubtableFormat4 -> loadFormat4(&pLoad);
-
-        } else if ( 10 == theCmapTable.pEncodingRecords[k].encodingID ) {
-
-            if ( ! ( 12 == format ) ) {
-                sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 12 is supported WHEN encodingID = 10.",InstalledFontName());
-                FontManager::FireErrorNotification(FontManager::szFailureMessage);
-                return E_FAIL;
-            }
-
-            sprintf(FontManager::szFailureMessage,"font %s is invalid. Only Cmap Subtable format 12 is not implemented yet.",InstalledFontName());
-            FontManager::FireErrorNotification(FontManager::szFailureMessage);
-            return E_NOTIMPL;
-
-        }
-
-        break;
-
     }
 
-    if ( ! validPlatform ) {
-        sprintf(FontManager::szFailureMessage,"font %s is invalid. only cmap platformID = 3 and encodingID = [0 | 1 | 10] is supported.",InstalledFontName());
-        FontManager::FireErrorNotification(FontManager::szFailureMessage);
-        return E_FAIL;
-    }
-
-    pPostTable = new otPostTable(tableDirectory.table("post"));
+    if ( ! ( NULL == tableDirectory.table("post") ) )
+        pPostTable = new otPostTable(tableDirectory.table("post"));
 
     isLoaded = true;
 

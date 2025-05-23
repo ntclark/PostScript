@@ -68,20 +68,19 @@ library FontManager {
         HRESULT ConcatMatrix(/*XFORM*/ UINT_PTR pXForm);
 
         HRESULT FontName(long cbName,char *szName);
+
         [propget] HRESULT FontCookie([out,retval] UINT_PTR *pCookie);
         [propget] HRESULT FontType([out,retval] enum FontType *pFontType);
-        [propput] HRESULT FontType([in] enum FontType fontType);
         [propget] HRESULT GlyphIndex(unsigned short charCode,[out,retval] unsigned short *pGlyphId);
 
-        HRESULT SetEncoding(UINT_PTR encoding);
-        HRESULT SetCharStrings(UINT_PTR charStrings);
+        HRESULT SetFontData(long cbData,UINT_PTR pSfntsData);
 
         [helpstring("Please remember to CoTaskMemFree the UINT_PTR values")]
         HRESULT GetCharacteristics(long cbName,char *pszName,long cbStyle,char *pszStyle,
                                     long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
                                     UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
-        HRESULT RenderGlyph(unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+        HRESULT RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,/*XFORM*/ UINT_PTR pPSXform,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
 
         HRESULT SaveState();
@@ -100,7 +99,7 @@ library FontManager {
 
         HRESULT ChooseFont(HDC hdc,IFont_EVNSW **ppIFont);
 
-        HRESULT RenderGlyph(unsigned short bGlyph,/*XFORM*/ UINT_PTR pPSXform,/*XFORM*/ UINT_PTR pXformToDeviceSpace,
+        HRESULT RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,/*XFORM*/ UINT_PTR pPSXform,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
 
         HRESULT ScaleFont(FLOAT scaleFactor);

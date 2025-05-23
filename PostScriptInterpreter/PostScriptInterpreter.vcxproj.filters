@@ -428,6 +428,9 @@
     <ClInclude Include="include\AdobeType1Fonts\type1Glyph.h">
       <Filter>Header Files\AdobeType1Fonts</Filter>
     </ClInclude>
+    <ClInclude Include="include\adobeGlyphList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Sources\COM Implementation\PostScriptInterpreter.odl">

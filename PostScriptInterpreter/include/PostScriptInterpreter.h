@@ -366,8 +366,8 @@ class job;
 
         void CommitCurrentPage(long pageWidthPoints,long pageHeightPoints);
 
-        static long ClientWindowHeight() { return cyClientWindow; }
-        static long ClientWindowWidth() { return cxClientWindow; }
+        static long ClientHeight() { return cyClientHeight; }
+        static long ClientWidth() { return cxClientWidth; }
 
         job *currentJob() { return pJob; }
 
@@ -386,6 +386,8 @@ class job;
             topGutter = v;
             return v; 
         }
+
+        std::map<size_t,HBITMAP> pageBitmaps;
 
         static char szErrorMessage[1024];
 
@@ -409,7 +411,6 @@ class job;
 
         void toggleLogVisibility(long itemId);
 
-        HRESULT connectServices();
         void cycle();
 
         IOleClientSite *pIOleClientSite{NULL};
@@ -436,7 +437,6 @@ class job;
 
         long pageNumber{0};
 
-        std::map<size_t,HBITMAP> pageBitmaps;
         std::map<size_t,SIZEL *> pageSizes;
 
         static HWND hwndHost;
@@ -458,8 +458,8 @@ class job;
 
         static HDC hdcSurface;
 
-        static long cyClientWindow;
-        static long cxClientWindow;
+        static long cyClientHeight;
+        static long cxClientWidth;
 
         static void setWindowPanes(RECT *prcClient);
 

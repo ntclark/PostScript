@@ -35,9 +35,6 @@ This is the MIT License
     long pageParameters::cxClient = 0L;
     long pageParameters::cyClient = 0L;
 
-    RECT pageParameters::rcPage{-1L,-1L,-1L,-1L};
-    RECT pageParameters::rcClient{-1L,-1L,-1L,-1L};
-
     void pageParameters::initialize() {
     memset(&toDeviceSpace,0,sizeof(XFORM));
     toDeviceSpace.eM11 = 1.0;
@@ -52,47 +49,38 @@ This is the MIT License
 
     if ( ! ( NULL == hwndSurface ) ) {
 
-        scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - 
+        scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientHeight() - 
                                         2 * PostScriptInterpreter::TopGutter() ) / (FLOAT)pageHeightPoints;
 
         long cxCurrent = 2 * PostScriptInterpreter::SideGutter() + 
                                     (long)(pageWidthPoints * scalePointsToPixels);
 
-        long cxMargin = PostScriptInterpreter::ClientWindowWidth() - (long)((scalePointsToPixels * (FLOAT)pageWidthPoints) / 2.0f);
+        long cxMargin = PostScriptInterpreter::ClientWidth() - (long)((scalePointsToPixels * (FLOAT)pageWidthPoints) / 2.0f);
 
-        if ( cxCurrent > PostScriptInterpreter::ClientWindowWidth() || cxMargin > 2 * NOMINAL_GUTTER ) {
-            long cxDelta = cxCurrent - PostScriptInterpreter::ClientWindowWidth() + 2 * NOMINAL_GUTTER;
+        if ( cxCurrent > PostScriptInterpreter::ClientWidth() || cxMargin > 2 * NOMINAL_GUTTER ) {
+            long cxDelta = cxCurrent - PostScriptInterpreter::ClientWidth() + 2 * NOMINAL_GUTTER;
             scalePointsToPixels = (FLOAT)(cxCurrent - cxDelta) / (FLOAT)pageWidthPoints;
-            cxMargin = PostScriptInterpreter::ClientWindowWidth() - (long)(scalePointsToPixels * (FLOAT)pageWidthPoints);
+            cxMargin = PostScriptInterpreter::ClientWidth() - (long)(scalePointsToPixels * (FLOAT)pageWidthPoints);
             PostScriptInterpreter::SideGutter(cxMargin / 2);
-            PostScriptInterpreter::TopGutter((long)(((FLOAT)PostScriptInterpreter::ClientWindowHeight() - 
+            PostScriptInterpreter::TopGutter((long)(((FLOAT)PostScriptInterpreter::ClientHeight() - 
                                                     scalePointsToPixels * (FLOAT)pageHeightPoints ) / 2.0f));
             if ( 0 > PostScriptInterpreter::TopGutter() ) {
-                scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - 2 * NOMINAL_GUTTER) / (FLOAT)pageHeightPoints;
+                scalePointsToPixels = (FLOAT)(PostScriptInterpreter::ClientHeight() - 2 * NOMINAL_GUTTER) / (FLOAT)pageHeightPoints;
                 PostScriptInterpreter::TopGutter(NOMINAL_GUTTER);
-                cxMargin = PostScriptInterpreter::ClientWindowWidth() - (long)(scalePointsToPixels * (FLOAT)pageWidthPoints);
+                cxMargin = PostScriptInterpreter::ClientWidth() - (long)(scalePointsToPixels * (FLOAT)pageWidthPoints);
                 PostScriptInterpreter::SideGutter(cxMargin / 2);
             }
 
         }
-        //if ( -1L == rcPage.left ) {
 
-            rcPage.left = PostScriptInterpreter::SideGutter();
-            rcPage.top = PostScriptInterpreter::TopGutter();
-
-            rcPage.right = rcPage.left + (long)(pageWidthPoints * scalePointsToPixels);
-            rcPage.bottom = rcPage.top + (long)(pageHeightPoints * scalePointsToPixels);
-
-            rcClient.left = 0;
-            rcClient.top = 0;
-            rcClient.right = PostScriptInterpreter::ClientWindowWidth();//rcPage.right - rcPage.left;
-            rcClient.bottom = PostScriptInterpreter::ClientWindowHeight();//(rcPage.bottom - rcPage.top);
-
-            HDC hdc = GetDC(hwndSurface);
-            FillRect(hdc,&rcClient,(HBRUSH)(COLOR_APPWORKSPACE + 1));
-            PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&pageParameters::rcPage,RGB(255,255,255));
-            ReleaseDC(hwndSurface,hdc);
-        //}
+        RECT rcClient{0,0,PostScriptInterpreter::ClientWidth() - GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::ClientHeight()};
+        HDC hdc = GetDC(hwndSurface);
+        FillRect(hdc,&rcClient,(HBRUSH)(COLOR_APPWORKSPACE + 1));
+        RECT rcPage{PostScriptInterpreter::SideGutter(),PostScriptInterpreter::TopGutter(),0,0};
+        rcPage.right = rcPage.left + (long)(scalePointsToPixels * (FLOAT)pageWidthPoints);
+        rcPage.bottom = rcPage.top + (long)(scalePointsToPixels * (FLOAT)pageHeightPoints);
+        PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&rcPage,RGB(255,255,255));
+        ReleaseDC(hwndSurface,hdc);
 
     }
 
@@ -100,8 +88,8 @@ This is the MIT License
     toDeviceSpace.eM12 = 0.0;
     toDeviceSpace.eM21 = 0.0;
     toDeviceSpace.eM22 = -scalePointsToPixels;
-    toDeviceSpace.eDx = (FLOAT)rcPage.left;
-    toDeviceSpace.eDy = (FLOAT)(PostScriptInterpreter::ClientWindowHeight() - rcPage.top);
+    toDeviceSpace.eDx = (FLOAT)PostScriptInterpreter::SideGutter();
+    toDeviceSpace.eDy = (FLOAT)(PostScriptInterpreter::ClientHeight() - PostScriptInterpreter::TopGutter());
 
     double inverse[3][3]{9 * 0.0};
     double theMatrix[3][3]{9 * 0.0};

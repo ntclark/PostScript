@@ -75,8 +75,6 @@ This is the MIT License
     pIGraphicElements = NULL;
     pIRenderer = NULL;
 
-    font::adobeGlyphList.clear();
-
     return;
     }
 

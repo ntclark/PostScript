@@ -22,7 +22,6 @@ This is the MIT License
 */
 
 #include "font.h"
-#include "adobeGlyphList.h"
 
     font::font(char *pszClientName) {
 
@@ -54,23 +53,10 @@ This is the MIT License
 
     cbFontData = rhs.cbFontData;
 
-    pbFontData = new BYTE[cbFontData];
-
-    memcpy(pbFontData,rhs.pbFontData,cbFontData);
-
-    if ( FontType::type42 == theFontType )
+    if ( FontType::type42 == theFontType ) {
+        pbFontData = new BYTE[cbFontData];
+        memcpy(pbFontData,rhs.pbFontData,cbFontData);
         type42Load(pbFontData);
-
-    for ( std::pair<uint32_t,char *> pPair : rhs.encodingTable ) {
-        char *pszCopy = new char[strlen(pPair.second) + 1];
-        strcpy(pszCopy,pPair.second);
-        encodingTable[pPair.first] = pszCopy;
-    }
-
-    for ( std::pair<uint32_t,char *> pPair : rhs.charStringsTable ) {
-        char *pszCopy = new char[strlen(pPair.second) + 1];
-        strcpy(pszCopy,pPair.second);
-        charStringsTable[pPair.first] = pszCopy;
     }
 
     return;
@@ -98,17 +84,10 @@ This is the MIT License
     fontScriptNames.clear();
     fontWeights.clear();
 
-    for ( std::pair<uint32_t,char *> pPair : charStringsTable )
-        delete [] pPair.second;
+    if ( ! ( NULL == pbFontData ) ) 
+        delete [] pbFontData;
 
-    charStringsTable.clear();
-
-    for ( std::pair<uint32_t,char *> pPair : encodingTable )
-        delete [] pPair.second;
-
-    encodingTable.clear();
-
-    delete [] pbFontData;
+    pbFontData = NULL;
 
 #if 0
     if ( ! ( NULL == pbFontData ) )

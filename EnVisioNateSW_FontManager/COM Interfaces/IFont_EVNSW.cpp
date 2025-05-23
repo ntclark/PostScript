@@ -23,8 +23,6 @@ This is the MIT License
 
 #include "FontManager.h"
 
-    long hashCode(char *szLineSettings);
-
 
     HRESULT font::QueryInterface(REFIID refIID,void **pvResult) {
 
@@ -152,12 +150,6 @@ This is the MIT License
     }
 
 
-    HRESULT font::put_FontType(FontType setFontType) {
-    theFontType = setFontType;
-    return S_OK;
-    }
-
-
     HRESULT font::get_GlyphIndex(uint16_t charCode,uint16_t *pResult) {
 
     if ( ! pResult )
@@ -184,17 +176,7 @@ This is the MIT License
     uint16_t startCode = pCmapSubtableFormat4 -> pStartCode[endCodeIndex];
 
     if ( charCode < startCode )
-{
-//OutputDebugStringA("wtf\n");
-//for ( uint16_t k = 0; 1; k++ ) {
-//char szX[32];
-//sprintf_s<32>(szX,"%d,%d\n", pCmapSubtableFormat4 -> pStartCode[k],pCmapSubtableFormat4 -> pEndCode[k]);
-//OutputDebugStringA(szX);
-//if ( 0xFFFF == pCmapSubtableFormat4 -> pEndCode[k] )
-//break;
-//}
         return S_OK;
-    }
 
     uint16_t idRangeOffset = pCmapSubtableFormat4 -> pIdRangeOffsets[endCodeIndex];
     uint16_t idDelta = pCmapSubtableFormat4 -> pIdDelta[endCodeIndex];
@@ -258,54 +240,19 @@ This is the MIT License
     }
 
 
-    HRESULT font::SetEncoding(UINT_PTR ptrData) {
+    HRESULT font::SetFontData(long cbSfntsData,UINT_PTR pSfntsData) {
 
-    for ( std::pair<uint32_t,char *> pPair : encodingTable )
-        delete [] pPair.second;
+    if ( NULL == pSfntsData )
+        return E_FAIL;
 
-    encodingTable.clear();
+    cbFontData = cbSfntsData;
+    pbFontData = new uint8_t[cbFontData];
 
-    char *pszEncoding = (char *)ptrData;
+    memcpy(pbFontData,(uint8_t *)pSfntsData,cbFontData);
 
-    char *p = pszEncoding;
-    while ( *p ) {
-        *(p + 4) = '\0';
-        uint32_t index = atol(p);
-        p += 5;
-        uint16_t n = (uint16_t)strlen(p);
-        char *psz = new char[n + 1];
-        strcpy(psz,p);
-        encodingTable[index] = psz;
-        p += strlen(p) + 1;
-    }
+    type42Load(pbFontData,false);
 
-    return S_OK;
-    }
-
-
-    HRESULT font::SetCharStrings(UINT_PTR ptrData) {
-
-    for ( std::pair<uint32_t,char *> pPair : charStringsTable )
-        delete [] pPair.second;
-
-    charStringsTable.clear();
-
-    char *pszCharStrings = (char *)ptrData;
-
-    char *p = pszCharStrings;
-    while ( *p ) {
-        char *pStart = p;
-        while ( ! ( ';' == *p ) )
-            p++;
-        *p = '\0';
-        uint16_t n = (uint16_t)(p - pStart);
-        char *psz = new char[n];
-        p++;
-        uint32_t index = atol(p);
-        p++;
-        charStringsTable[index] = psz;
-        p += strlen(p) + 1;
-    }
+    theFontType = FontType::type42;
 
     return S_OK;
     }
@@ -313,7 +260,8 @@ This is the MIT License
 
     HRESULT font::GetCharacteristics(long cbName,char *pszName,long cbStyle,char *pszStyle,
                                         long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
-                                        UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts) {
+                                        UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,
+                                        UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts) {
 
     font *pFont = static_cast<font *>(this);
 
@@ -392,12 +340,8 @@ This is the MIT License
 
 
     HRESULT font::RestoreState() {
-    if ( 1 == matrixStack.size() ) {
-        //matrixStack.top() -> identity();
-        //currentScale = 1.0f;
-        //PointSize(1.0f);
+    if ( 1 == matrixStack.size() ) 
         return S_OK;
-    }
     FLOAT scale = matrixStack.top() -> XForm() -> eM11;
     delete matrixStack.top();
     matrixStack.pop();
@@ -405,22 +349,4 @@ This is the MIT License
     PointSize(restoredScale * PointSize() / scale);
     currentScale = restoredScale;
     return S_OK;
-    }
-
-
-    long hashCode(char *szLineSettings) {
-    long hashCode = 0L;
-    long part = 0L;
-    long n = (DWORD)strlen(szLineSettings);
-    char *psz = new char[n + 4];
-    memset(psz,0,(n + 4) * sizeof(char));
-    strcpy(psz,szLineSettings);
-    char *p = psz;
-    for ( long k = 0; k < n; k += 4 ) {
-        memcpy(&part,p,4 * sizeof(char));
-        hashCode ^= part;
-        p += 4;
-    }
-    delete [] psz;
-    return hashCode;
     }

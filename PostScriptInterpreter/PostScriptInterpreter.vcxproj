@@ -304,6 +304,7 @@ regsvr32 /s "$(TargetPath)"
     <Midl Include="Sources\COM Implementation\PostScriptInterpreter.odl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\adobeGlyphList.h" />
     <ClInclude Include="include\AdobeType1Fonts\AdobeType1Fonts.h" />
     <ClInclude Include="include\AdobeType1Fonts\type1Glyph.h" />
     <ClInclude Include="include\ascii85.h" />

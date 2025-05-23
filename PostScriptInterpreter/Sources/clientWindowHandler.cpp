@@ -54,7 +54,7 @@ This is the MIT License
         PAINTSTRUCT ps;
         BeginPaint(hwnd,&ps);
         ps.rcPaint.right -= GetSystemMetrics(SM_CXVSCROLL);
-        //if ( 0 == pPostScriptInterpreter -> pageBitmaps.size() )
+        if ( 0 == pPostScriptInterpreter -> pageBitmaps.size() )
             FillRect(ps.hdc,&ps.rcPaint,(HBRUSH)(COLOR_APPWORKSPACE + 1));
         long y = windowTop;
         for ( std::pair<size_t,HBITMAP> pPair : pPostScriptInterpreter -> pageBitmaps ) {
@@ -73,21 +73,22 @@ This is the MIT License
     case WM_SIZE: {
         if ( 0 == HIWORD(lParam) )
             break;
-        if ( -1L == PostScriptInterpreter::cyClientWindow ) {
-            PostScriptInterpreter::cxClientWindow = LOWORD(lParam);
-            PostScriptInterpreter::cyClientWindow = HIWORD(lParam);
+        if ( -1L == PostScriptInterpreter::cyClientHeight ) {
+            PostScriptInterpreter::cxClientWidth = LOWORD(lParam);
+            PostScriptInterpreter::cyClientHeight = HIWORD(lParam);
         }
         SetWindowPos(hwndVScroll,HWND_TOP,LOWORD(lParam) - GetSystemMetrics(SM_CXVSCROLL),0,
-                                GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::cyClientWindow,0L);
+                                GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::cyClientHeight,0L);
         SCROLLINFO scrollInfo{0};
         scrollInfo.cbSize = sizeof(SCROLLINFO);
         scrollInfo.fMask = SIF_PAGE | SIF_RANGE;
-        scrollInfo.nPage = PostScriptInterpreter::cyClientWindow;
+        scrollInfo.nPage = PostScriptInterpreter::cyClientHeight;
         scrollInfo.nMin = 0;
         if ( 0 == pPostScriptInterpreter -> pageBitmaps.size() )
             scrollInfo.nMax = scrollInfo.nPage;
         else
-            scrollInfo.nMax = HIWORD(lParam);
+            scrollInfo.nMax = scrollInfo.nPage * (1 + (DWORD)pPostScriptInterpreter -> pageBitmaps.size());
+            //scrollInfo.nMax = HIWORD(lParam);
         SetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo,TRUE);
         }
         break;
@@ -193,12 +194,13 @@ This is the MIT License
 
         SetScrollInfo(hwndVScroll,SB_CTL,&scrollInfo,TRUE);
 
+        if ( ! ( INVALID_HANDLE_VALUE == hsemSized) ) 
+            ReleaseSemaphore(hsemSized,1,NULL);
+
         InvalidateRect(hwnd,NULL,TRUE);
 
-        if ( ! ( INVALID_HANDLE_VALUE == hsemSized) ) {
-            UpdateWindow(hwnd);
-            ReleaseSemaphore(hsemSized,1,NULL);
-        }
+        RedrawWindow(hwnd,NULL,NULL,RDW_UPDATENOW);
+
         }
         break;
 

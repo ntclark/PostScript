@@ -31,7 +31,6 @@ This is the MIT License
 #include "PostScript objects/matrix.h"
 
 class graphicsState;
-//class dictionary;
 
     class font : public dictionary {
 
@@ -57,8 +56,6 @@ class graphicsState;
 
         void gSave() { pIFont -> SaveState(); }
         void gRestore() { pIFont -> RestoreState(); }
-
-        void loadDictionary();
 
         virtual void copyFrom(dictionary *pSource);
 
@@ -86,5 +83,10 @@ class graphicsState;
         dictionary *pCharStrings{NULL};
         array *pEncoding{NULL};
         array *pSfntsArray{NULL};
+
+        static std::map<uint32_t,char *> adobeGlyphList;
+
+        friend class graphicsState;
+        friend class PostScriptInterpreter;
 
     };

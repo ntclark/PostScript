@@ -72,8 +72,17 @@ This is the MIT License
         delete pJob;
         pJob = NULL;
         cycle();
-        //setWindowPanes(NULL);
     });
+
+    for ( std::pair<size_t,HBITMAP> pPair : pageBitmaps )
+        DeleteObject(pPair.second);
+
+    pageBitmaps.clear();
+
+    for ( std::pair<size_t,SIZEL *> pPair : pageSizes )
+        delete [] pPair.second;
+
+    pageSizes.clear();
 
     pJob -> parseJob(NULL == hwndClient ? false : true);
 

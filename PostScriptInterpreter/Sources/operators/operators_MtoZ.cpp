@@ -100,8 +100,6 @@ This is the MIT License
 
     pFontDirectory -> put(pFont -> fontName(),pFont);
 
-    pFont -> loadDictionary();
-
     push(pFont);
 
     return;
@@ -1812,8 +1810,6 @@ This is the MIT License
     }
 
     currentGS() -> setFont(pFont);
-
-    pFont -> loadDictionary();
 
     return;
     }

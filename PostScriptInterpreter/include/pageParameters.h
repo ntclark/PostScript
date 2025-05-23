@@ -41,9 +41,6 @@ This is the MIT License
         static long cyClient;
         static long displayResolution;
 
-        static RECT rcPage;
-        static RECT rcClient;
-
         static FLOAT scalePointsToPixels;
 
         static XFORM toDeviceSpace;

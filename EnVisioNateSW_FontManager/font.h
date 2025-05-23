@@ -1058,18 +1058,18 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         STDMETHOD(Translate)(FLOAT translateX,FLOAT translateY);
         STDMETHOD(ConcatMatrix)(/*XFORM*/ UINT_PTR pXForm);
         STDMETHOD(FontName)(long cbName,char *szFontName);
+
         STDMETHOD(get_FontCookie)(UINT_PTR *ppCookie);
         STDMETHOD(get_FontType)(FontType *pFontType);
-        STDMETHOD(put_FontType)(FontType fontType);
         STDMETHOD(get_GlyphIndex)(unsigned short charCode,unsigned short *pGlyphId);
-        STDMETHOD(SetEncoding)(UINT_PTR encodingVector);
-        STDMETHOD(SetCharStrings)(UINT_PTR charStringsVector);
+
+        STDMETHOD(SetFontData)(long cbData,UINT_PTR pSfntsData);
+
         STDMETHOD(GetCharacteristics)(long cbName,char *pszName,long cbStyle,char *pszStyle,
                                         long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
                                         UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
-        STDMETHOD(RenderGlyph)(unsigned short bGlyph,
-                                UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,
+        STDMETHOD(RenderGlyph)(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,
                                 POINTF *pStartPoint,POINTF *pEndPoint);
 
         STDMETHOD(SaveState)();
@@ -1087,13 +1087,10 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
     private:
 
-        HRESULT drawType3Glyph(unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
-        HRESULT drawType42Glyph(unsigned short,UINT_PTR pPSXform,UINT_PTR pXformToDeviceSpace,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType3Glyph(unsigned short,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType42Glyph(unsigned short,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
 
-        void load(long countGlyphs);
-        void type3load();
-
-        HRESULT type42Load(BYTE *pbData = NULL);
+        HRESULT type42Load(BYTE *pbData = NULL,boolean enforceRequiredTables = false);
 
         char *fontName();
 
@@ -1156,9 +1153,6 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
         DWORD cbFontData{0L};
 
-        std::map<uint32_t,char *> encodingTable;
-        std::map<uint32_t,char *> charStringsTable;
-
         long dupCount{0L};
         UINT_PTR cookie{NULL};
 
@@ -1178,8 +1172,6 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         std::vector<char *> fontStyleNames;
         std::vector<char *> fontScriptNames;
         std::vector<int> fontWeights;
-
-        static std::map<uint32_t,char *> adobeGlyphList;
 
         friend class FontManager;
         friend class otSimpleGlyph;

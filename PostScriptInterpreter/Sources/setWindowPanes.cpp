@@ -25,6 +25,10 @@ This is the MIT License
 
 #include "job.h"
 
+    static long cxHostLast = -1L;
+    static long cyHostLast = -1L;
+    static long cxClientLast = -1L;
+
     void PostScriptInterpreter::setWindowPanes(RECT *prcClient) {
 
     RECT rcDialog{0,0,0,0};
@@ -43,6 +47,13 @@ This is the MIT License
 
     long cxClient = cxHost - (pPostScriptInterpreter -> logIsVisible ? pPostScriptInterpreter -> postScriptLogPaneWidth + SPLITTER_WIDTH : 0);
     cxClient -= (pPostScriptInterpreter -> rendererLogIsVisible ? pPostScriptInterpreter -> rendererLogPaneWidth + SPLITTER_WIDTH : 0);
+
+    if ( cxHostLast == cxHost && cyHostLast == cyHost && cxClientLast == cxClient ) 
+        return;
+
+    cxHostLast = cxHost;
+    cyHostLast = cyHost;
+    cxClientLast = cxClient;
 
     long cxPostScriptLogWindow = 0;
     long cxRendererLogWindow = 0;
@@ -115,10 +126,10 @@ This is the MIT License
 
     cxClient = rcHost.right - rcHost.left - cxPostScriptLogWindow - cxRendererLogWindow;
 
-    cxClientWindow = cxClient;
-    cyClientWindow = cyHost - CMD_PANE_HEIGHT;
+    cxClientWidth = cxClient;
+    cyClientHeight = cyHost - CMD_PANE_HEIGHT;
 
-    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClientWindow,cyClientWindow,SWP_SHOWWINDOW);
+    SetWindowPos(hwndClient,HWND_TOP,0,CMD_PANE_HEIGHT,cxClientWidth,cyClientHeight,SWP_SHOWWINDOW);
 
     RECT rcText{0,0,0,0};
     GetWindowRect(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_LOG_SHOW),&rcText);
@@ -140,7 +151,7 @@ This is the MIT License
     FillRect(hdcFrame,&rcRightEdge,(HBRUSH)(COLOR_3DFACE + 1));
     ::ReleaseDC(hwndHost,hdcFrame);
 
-    graphicsState::SetSurface(hwndClient,1);
+    graphicsState::SetSurface(hwndClient,pPostScriptInterpreter -> pageBitmaps.size());
 
     return;
     }

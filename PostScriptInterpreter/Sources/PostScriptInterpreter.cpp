@@ -58,8 +58,8 @@ This is the MIT License
     enum logLevel PostScriptInterpreter::theLogLevel = none;
     enum logLevel PostScriptInterpreter::theRendererLogLevel = none;
 
-    long PostScriptInterpreter::cyClientWindow = -1L;
-    long PostScriptInterpreter::cxClientWindow = -1L;
+    long PostScriptInterpreter::cyClientHeight = -1L;
+    long PostScriptInterpreter::cxClientWidth = -1L;
 
     char PostScriptInterpreter::szErrorMessage[1024];
 
@@ -105,7 +105,17 @@ This is the MIT License
     if ( pJob )
         delete pJob;
 
-    cycle();
+    pIFontManager -> Reset();
+
+    for ( std::pair<size_t,HBITMAP> pPair : pageBitmaps )
+        DeleteObject(pPair.second);
+
+    pageBitmaps.clear();
+
+    for ( std::pair<size_t,SIZEL *> pPair : pageSizes )
+        delete [] pPair.second;
+
+    pageSizes.clear();
 
     clearLog(hwndRendererLogContent);
 
@@ -158,23 +168,13 @@ This is the MIT License
     DestroyWindow(hwndRendererLogCmdPane);
     DestroyWindow(hwndRendererLogSplitter);
 
+    font::adobeGlyphList.clear();
+
     return;
     }
 
 
     void PostScriptInterpreter::cycle() {
-
-    ReleaseDC();
-
-    for ( std::pair<size_t,HBITMAP> pPair : pageBitmaps )
-        DeleteObject(pPair.second);
-
-    pageBitmaps.clear();
-
-    for ( std::pair<size_t,SIZEL *> pPair : pageSizes )
-        delete [] pPair.second;
-
-    pageSizes.clear();
 
     pIFontManager -> Reset();
 

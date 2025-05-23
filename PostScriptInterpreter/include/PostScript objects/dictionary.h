@@ -55,6 +55,7 @@ This is the MIT License
 
         object *retrieve(char *);
         object *retrieveKey(char *);
+        long retrieveIndex(char *);
 
         virtual char *ToString();
 

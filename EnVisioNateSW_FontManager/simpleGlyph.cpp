@@ -220,13 +220,14 @@ This is the MIT License
 
     long hmTableIndex = min(glyphIndex,pFont -> pHorizHeadTable -> numberOfHMetrics - 1);
 
-    otLongHorizontalMetric *pHorizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics + hmTableIndex;
-
-    advanceWidth = pHorizontalMetric -> advanceWidth;
-    advanceHeight = 0L;
-    leftSideBearing = pHorizontalMetric -> lsb;
-    if ( pFont -> pHeadTable -> flags & 0x0010 )
-        leftSideBearing = pGlyphHeader -> xMin;
+    if ( ! ( NULL == pFont -> pHorizontalMetricsTable ) ) {
+        otLongHorizontalMetric *pHorizontalMetric = pFont -> pHorizontalMetricsTable -> pHorizontalMetrics + hmTableIndex;
+        advanceWidth = pHorizontalMetric -> advanceWidth;
+        advanceHeight = 0L;
+        leftSideBearing = pHorizontalMetric -> lsb;
+        if ( pFont -> pHeadTable -> flags & 0x0010 )
+            leftSideBearing = pGlyphHeader -> xMin;
+    }
 
     long bearing_y = 0L;
 

@@ -57,8 +57,8 @@ This is the MIT License
     HDC hdcTarget = CreateCompatibleDC(hdcSurface);
 
     SIZEL *pSizel = new SIZEL;
-    pSizel -> cx = cxClientWindow;
-    pSizel -> cy = cyClientWindow;
+    pSizel -> cx = cxClientWidth;
+    pSizel -> cy = cyClientHeight;
 
     HBITMAP hbmPage = CreateCompatibleBitmap(hdcSurface,pSizel -> cx,pSizel -> cy);
 
@@ -71,7 +71,7 @@ This is the MIT License
 
     DeleteDC(hdcTarget);
 
-    activePageOrigin.y += cyClientWindow;
+    activePageOrigin.y += cyClientHeight;
 
     beginPathAction = [this]() { 
 
@@ -80,7 +80,7 @@ This is the MIT License
         if ( INVALID_HANDLE_VALUE == hsemSized )
             hsemSized = CreateSemaphore(NULL,0,1,NULL);
 
-        SetWindowPos(hwndClient,HWND_TOP,0,0,cxClientWindow,activePageOrigin.y + cyClientWindow,SWP_NOMOVE);
+        SetWindowPos(hwndClient,HWND_TOP,0,0,cxClientWidth,activePageOrigin.y + cyClientHeight,SWP_NOMOVE);
         PostMessage(hwndClient,WM_VSCROLL,MAKEWPARAM(SB_PAGEDOWN,0L),0L);
 
         WaitForSingleObject(hsemSized,INFINITE);
@@ -88,8 +88,6 @@ This is the MIT License
         hsemSized = INVALID_HANDLE_VALUE;
 
         graphicsState::SetSurface(hwndClient,(long)(pageBitmaps.size() + 1));
-
-        pIRenderer -> ClearRect(hdcSurface,&pageParameters::rcPage,RGB(255,255,255));
 
     };
 

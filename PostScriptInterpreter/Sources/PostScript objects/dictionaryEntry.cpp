@@ -25,14 +25,10 @@ This is the MIT License
 
 #include "PostScript objects/dictionaryEntry.h"
 
-    dictionaryEntry::dictionaryEntry(job *pJob,char *pszName,object *pObj) : 
-        object(pJob,pszName),
+    dictionaryEntry::dictionaryEntry(job *pJob,char *pszKeyName,object *pObj) : 
+        object(pJob,pszKeyName),
         pValue(pObj) {
     theObjectType = object::objectType::dictionaryEntryObject;
-
-if ( '[' == pszName[0] )
-printf("hello world");
-
-    pKeyObject = new (pJob -> CurrentObjectHeap()) class string(pJob,pszName,NULL);
-    nameSize = (long)strlen(pszName);
+    pKeyObject = new (pJob -> CurrentObjectHeap()) class string(pJob,pszKeyName,NULL);
+    nameSize = (long)strlen(pszKeyName);
     }
