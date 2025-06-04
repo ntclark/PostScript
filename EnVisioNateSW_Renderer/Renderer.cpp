@@ -38,7 +38,7 @@ This is the MIT License
 
     pGraphicsStateManager = new GraphicsStateManager(this);
 
-    D2D1_FACTORY_OPTIONS factoryOptions{D2D1_DEBUG_LEVEL_INFORMATION};
+    D2D1_FACTORY_OPTIONS factoryOptions{D2D1_DEBUG_LEVEL_NONE};//D2D1_DEBUG_LEVEL_ERROR};
 
     D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED,factoryOptions,&pID2D1Factory1);
 
@@ -50,6 +50,8 @@ This is the MIT License
 
 
     Renderer::~Renderer() {
+
+    shutdownRenderer();
 
     pID2D1Factory1 -> Release();
     pID2D1Factory1 = NULL;
@@ -66,17 +68,27 @@ This is the MIT License
 
     void Renderer::setupRenderer(HDC hdc,RECT *pDrawingRect) {
 
-    D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
-            D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,D2D1_ALPHA_MODE_IGNORE),
-            0,
-            0,
-            D2D1_RENDER_TARGET_USAGE_NONE,
-            D2D1_FEATURE_LEVEL_DEFAULT);
+    if ( hdc == hdcCurrent && 0 == memcmp(&rcCurrent,pDrawingRect,sizeof(RECT)) && ! ( NULL == pID2D1DCRenderTarget ) )
+        return;
 
-    HRESULT hr = pID2D1Factory1 -> CreateDCRenderTarget(&props, &pID2D1DCRenderTarget);
+    hdcCurrent = hdc;
+    memcpy(&rcCurrent,pDrawingRect,sizeof(RECT));
 
-    hr = pID2D1DCRenderTarget -> BindDC(hdc,pDrawingRect);
+    HRESULT rc = S_OK;
+
+    if ( NULL == pID2D1DCRenderTarget ) {
+
+        D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+                D2D1_RENDER_TARGET_TYPE_HARDWARE,
+                D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,D2D1_ALPHA_MODE_IGNORE),//D2D1_ALPHA_MODE_PREMULTIPLIED),
+                0,
+                0,
+                D2D1_RENDER_TARGET_USAGE_NONE,
+                D2D1_FEATURE_LEVEL_DEFAULT);
+
+        rc = pID2D1Factory1 -> CreateDCRenderTarget(&props, &pID2D1DCRenderTarget);
+        rc = pID2D1DCRenderTarget -> BindDC(hdc,pDrawingRect);
+    }
 
     pID2D1DCRenderTarget -> SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
@@ -139,14 +151,16 @@ This is the MIT License
         pID2D1StrokeStyle1 = NULL;
     }
 
-    pID2D1DCRenderTarget -> Release();
-    pID2D1DCRenderTarget = NULL;
+    if ( ! ( NULL == pID2D1DCRenderTarget ) ) {
+        pID2D1DCRenderTarget -> Release();
+        pID2D1DCRenderTarget = NULL;
+    }
 
     return;
     }
 
 
-    HRESULT Renderer::fillRender() {
+    HRESULT Renderer::fillRender(GraphicElements::path *pFirstPath) {
 
     if ( 0 < pIConnectionPoint -> CountConnections() ) {
         sprintf_s<1024>(Renderer::szLogMessage,"FILL Rendering the content.\n");
@@ -154,35 +168,18 @@ This is the MIT License
     }
 
     pID2D1DCRenderTarget -> BeginDraw();
-    pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
+
+    if ( pFirstPath -> isFillPath )
+        pID2D1DCRenderTarget -> FillGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush);
+    else
+        pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,
+                                                pGraphicsStateManager -> parametersStack.top() -> calculatedLineWidth,pID2D1StrokeStyle1);
+
     HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
 
     if ( ! ( S_OK == hr ) ) {
         OutputDebugStringA("THAT ERROR HAPPENED\n");
-        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s\n",__LINE__,__FUNCTION__);
-        pIConnectionPointContainer -> fire_StatusNotification(Renderer::szErrorMessage);
-        pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
-    }
-
-    return S_OK;
-    }
-
-
-    HRESULT Renderer::strokeRender() {
-
-    if ( 0 < pIConnectionPoint -> CountConnections() ) {
-        sprintf_s<1024>(Renderer::szLogMessage,"STROKE Rendering the content.");
-        pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
-    }
-
-    pID2D1DCRenderTarget -> BeginDraw();
-    pID2D1DCRenderTarget -> DrawGeometry(pID2D1PathGeometry,(ID2D1Brush *)pID2D1SolidColorBrush,
-                                            pGraphicsStateManager -> parametersStack.top() -> lineWidth,pID2D1StrokeStyle1);
-    HRESULT hr = pID2D1DCRenderTarget -> EndDraw(&tag1,&tag2);
-
-    if ( ! ( S_OK == hr ) ) {
-        OutputDebugStringA("THAT ERROR HAPPENED\n");
-        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s\n",__LINE__,__FUNCTION__);
+        sprintf(Renderer::szErrorMessage,"Error: The Direct2D error happened at line %d in %s\n",__LINE__ - 4,__FUNCTION__);
         pIConnectionPointContainer -> fire_StatusNotification(Renderer::szErrorMessage);
         pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szErrorMessage);
     }

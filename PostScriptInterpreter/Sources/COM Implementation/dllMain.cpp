@@ -68,8 +68,6 @@ This is the MIT License
   
     case DLL_PROCESS_DETACH:
         DeleteCriticalSection(&PostScriptInterpreter::theQueueCriticalSection);
-_CrtDumpMemoryLeaks();
-
         break;
   
     }
@@ -97,7 +95,7 @@ _CrtDumpMemoryLeaks();
 
     static Factory factory;
 
-    STDAPI DllCanUnloadNow(void) {
+    STDAPI DllCanUnloadNow() {
     return S_OK;
     }
 

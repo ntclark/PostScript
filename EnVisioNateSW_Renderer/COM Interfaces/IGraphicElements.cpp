@@ -23,8 +23,6 @@ This is the MIT License
 
 #include "Renderer.h"
 
-    HBITMAP getHBITMAPFromPixels(long cx,long cy,long bitsPerComponent,uint8_t *pBits);
-
     HRESULT Renderer::GraphicElements::QueryInterface(REFIID refIID,void **pvResult) {
 
     if ( ! pvResult )
@@ -66,9 +64,12 @@ This is the MIT License
 
     if ( ! ( NULL == pCurrentPath -> pLastPrimitive ) ) {
         if ( primitive::type::move == pCurrentPath -> pLastPrimitive -> theType ) {
-            // There are two consequetive moves, update the prior move with the new position
-            pCurrentPath -> pLastPrimitive -> vertex = currentPageSpacePoint;
-            return S_OK;
+            // There are two consequetive moves, delete the existing one
+            primitive *pPrior = pCurrentPath -> pLastPrimitive -> pPriorPrimitive;
+            if ( ! ( NULL == pPrior ) ) 
+                pPrior -> pNextPrimitive = NULL;
+            delete pCurrentPath -> pLastPrimitive;
+            pCurrentPath -> pLastPrimitive = pPrior;
         }
     } 
 
@@ -147,114 +148,6 @@ This is the MIT License
         NewPath();
     pCurrentPath -> addPrimitive(new quadraticBezierPrimitive(this,&priorCurrentPoint,&theSegment));
     return E_NOTIMPL;
-    }
-
-
-    HRESULT Renderer::GraphicElements::PostScriptImage(HDC hdc,HBITMAP hbmImage,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
-
-    if ( NULL == hbmImage )
-        return E_INVALIDARG;
-
-    FLOAT widthUserSpace = 1.0f;
-    FLOAT heightUserSpace = 1.0f;
-
-    XFORM *pXForm = (XFORM *)pPSCurrentCTM;
-
-    FLOAT xResult = pXForm -> eM11 * widthUserSpace + pXForm -> eM12 * heightUserSpace;
-    FLOAT yResult = pXForm -> eM21 * widthUserSpace + pXForm -> eM22 * heightUserSpace;
-
-    widthUserSpace = toDeviceSpace.eM11 * xResult + toDeviceSpace.eM12 * yResult;
-    heightUserSpace = toDeviceSpace.eM21 * xResult + toDeviceSpace.eM22 * yResult;
-
-    xResult = pXForm -> eDx;
-    yResult = pXForm -> eDy;
-
-    FLOAT xDeviceSpace = toDeviceSpace.eM11 * xResult + toDeviceSpace.eM12 * yResult + toDeviceSpace.eDx;
-    FLOAT yDeviceSpace = toDeviceSpace.eM21 * xResult + toDeviceSpace.eM22 * yResult + toDeviceSpace.eDy;
-
-    HDC hdcSource = CreateCompatibleDC(hdc);
-    SelectObject(hdcSource,hbmImage);
-
-    StretchBlt(hdc,(long)xDeviceSpace,(long)yDeviceSpace,(long)widthUserSpace,(long)heightUserSpace,
-                hdcSource,0,0,(long)width,(long)height,SRCCOPY);
-
-    return S_OK;
-    }
-
-
-    HRESULT Renderer::GraphicElements::PostScriptJpegImage(HDC hdc,UINT_PTR pJPEGData,long dataSize,UINT_PTR pPSCurrentCTM,FLOAT width,FLOAT height) {
-
-    if ( NULL == pJPEGData )
-        return E_INVALIDARG;
-
-    uint8_t *pbImage = getPixelsFromJpeg((uint8_t *)pJPEGData,dataSize,(long)width,(long)height);
-
-    HBITMAP hbmImage = getHBITMAPFromPixels((long)width,(long)-height,8,pbImage);
-
-    HRESULT rc = PostScriptImage(hdc,hbmImage,pPSCurrentCTM,width,height);
-
-    DeleteObject(hbmImage);
-
-    delete [] pbImage;
-
-    return rc;
-    }
-
-
-    HRESULT Renderer::GraphicElements::NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height) {
-
-    if ( NULL == hBitmap )
-        return E_INVALIDARG;
-
-    POINTF ptDevice{x0,y0};
-    transformPoint(&toDeviceSpace,&ptDevice,&ptDevice);
-
-    POINTF ptSize{width,height};
-    scalePoint(&toDeviceSpace,&ptSize.x,&ptSize.y);
-
-    HDC hdcSource = CreateCompatibleDC(hdc);
-    SelectObject(hdcSource,hBitmap);
-
-    long cb = GetObject(hBitmap,0,NULL);
-
-    BYTE *pBitmap = new BYTE[cb];
-    GetObject(hBitmap,cb,pBitmap);
-
-    BITMAPINFOHEADER *pHeader = (BITMAPINFOHEADER *)pBitmap;
-
-    SIZE sizeBM{pHeader -> biWidth,pHeader -> biHeight};
-
-    delete [] pBitmap;
-
-    if ( 0.0f == width || 0.0f == height ) {
-        ptSize.x = (FLOAT)sizeBM.cx;
-        ptSize.y = (FLOAT)sizeBM.cy;
-        BitBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,SRCCOPY);
-    } else
-        StretchBlt(hdc,(long)ptDevice.x,(long)ptDevice.y,(long)ptSize.x,(long)ptSize.y,hdcSource,0,0,sizeBM.cx,sizeBM.cy,SRCCOPY);
-
-    DeleteDC(hdcSource);
-
-    return S_OK;
-    }
-
-
-    HRESULT Renderer::GraphicElements::NonPostScriptJpegImage(HDC hdc,UINT_PTR pJpegData,long dataSize,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height) {
-
-    if ( NULL == pJpegData )
-        return E_INVALIDARG;
-
-    uint8_t *pbImage = getPixelsFromJpeg((uint8_t *)pJpegData,dataSize,(long)width,(long)height);
-
-    HBITMAP hbmImage = getHBITMAPFromPixels((long)width,(long)-height,8,pbImage);
-
-    HRESULT rc = NonPostScriptImage(hdc,hbmImage,x0,y0,width,height);
-
-    DeleteObject(hbmImage);
-
-    delete [] pbImage;
-
-    return S_OK;
     }
 
 

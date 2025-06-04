@@ -2007,7 +2007,8 @@ This is the MIT License
 
    The default value of the miter limit is 10.0.
 */
-   pop();
+
+   currentGS() -> setMiterLimit(pop() -> FloatValue());
    return;
    }
 

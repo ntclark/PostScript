@@ -24,7 +24,8 @@ This is the MIT License
 #include "Renderer.h"
 
 
-    FLOAT Renderer::GraphicParameters::defaultLineWidth = 1.0f;
+    FLOAT Renderer::GraphicParameters::defaultLineWidth = 0.0f;
+    FLOAT Renderer::GraphicParameters::defaultMiterLimit = 10.0f;
     D2D1_CAP_STYLE Renderer::GraphicParameters::defaultLineCap = D2D1_CAP_STYLE_ROUND;//D2D1_CAP_STYLE_FLAT;
     D2D1_LINE_JOIN Renderer::GraphicParameters::defaultLineJoin = D2D1_LINE_JOIN_MITER;
     D2D1_DASH_STYLE Renderer::GraphicParameters::defaultDashStyle = D2D1_DASH_STYLE_SOLID;
@@ -55,10 +56,18 @@ This is the MIT License
 
     HRESULT Renderer::GraphicParameters::put_LineWidth(FLOAT lw) {
     pParent -> pGraphicsStateManager -> parametersStack.top() -> lineWidth = lw; 
-    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
-        sprintf_s<1024>(Renderer::szLogMessage,"Set LineWidth: %5.2f",lw);
-        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+    //    sprintf_s<1024>(Renderer::szLogMessage,"Set LineWidth: %5.2f",lw);
+    //    pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //}
+    return S_OK;
     }
+
+
+    HRESULT Renderer::GraphicParameters::get_LineWidth(FLOAT *plw) {
+    if ( ! ( plw ) )
+        return E_POINTER;
+    *plw = pParent -> pGraphicsStateManager -> parametersStack.top() -> lineWidth;
     return S_OK;
     }
 
@@ -72,11 +81,11 @@ This is the MIT License
         break;
 
     case 1:
-        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_BEVEL;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_ROUND;
         break;
 
     case 2:
-        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_ROUND;
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin = D2D1_LINE_JOIN_BEVEL;
         break;
 
     case 3:
@@ -85,11 +94,19 @@ This is the MIT License
 
     }
 
-    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
-        sprintf_s<1024>(Renderer::szLogMessage,"Set LineJoin : %d",lj);
-        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+    //    sprintf_s<1024>(Renderer::szLogMessage,"Set LineJoin : %d",lj);
+    //    pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //}
+
+    return S_OK;
     }
 
+
+    HRESULT Renderer::GraphicParameters::get_LineJoin(long *plj) {
+    if ( ! ( plj ) )
+        return E_POINTER;
+    *plj = pParent -> pGraphicsStateManager -> parametersStack.top() -> lineJoin;
     return S_OK;
     }
 
@@ -102,18 +119,40 @@ This is the MIT License
         pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_FLAT;
         break;
     case 1:
-        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_SQUARE;
-        break;
-    case 2:
         pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_ROUND;
         break;
+    case 2:
+        pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap = D2D1_CAP_STYLE_SQUARE;
+        break;
     }
 
-    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
-        sprintf_s<1024>(Renderer::szLogMessage,"Set LineCap : %d",lc);
-        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+    //    sprintf_s<1024>(Renderer::szLogMessage,"Set LineCap : %d",lc);
+    //    pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //}
+
+    return S_OK;
     }
 
+
+    HRESULT Renderer::GraphicParameters::get_LineCap(long *plc) {
+    if ( ! ( plc ) )
+        return E_POINTER;
+    *plc = pParent -> pGraphicsStateManager -> parametersStack.top() -> lineCap;
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicParameters::put_MiterLimit(FLOAT ml) {
+    pParent -> pGraphicsStateManager -> parametersStack.top() -> miterLimit = ml;
+    return S_OK;
+    }
+
+
+    HRESULT Renderer::GraphicParameters::get_MiterLimit(FLOAT *pml) {
+    if ( ! ( pml ) )
+        return E_POINTER;
+    *pml = pParent -> pGraphicsStateManager -> parametersStack.top() -> miterLimit;
     return S_OK;
     }
 
@@ -167,19 +206,26 @@ This is the MIT License
 
     HRESULT Renderer::GraphicParameters::put_RGBColor(COLORREF color) {
     pParent -> pGraphicsStateManager -> parametersStack.top() -> rgbColor = color;
-    if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
-        FLOAT r = (FLOAT)GetRValue(color) / 255.0f;
-        FLOAT g = (FLOAT)GetGValue(color) / 255.0f;
-        FLOAT b = (FLOAT)GetBValue(color) / 255.0f;
-        sprintf_s<1024>(Renderer::szLogMessage,"Set RGBColor : %5.1f, %5.1f, %5.1f",r,g,b);
-        pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
-    }
-
+    //if ( 0 < pParent -> pIConnectionPoint -> CountConnections() ) {
+    //    FLOAT r = (FLOAT)GetRValue(color) / 255.0f;
+    //    FLOAT g = (FLOAT)GetGValue(color) / 255.0f;
+    //    FLOAT b = (FLOAT)GetBValue(color) / 255.0f;
+    //    sprintf_s<1024>(Renderer::szLogMessage,"Set RGBColor : %5.1f, %5.1f, %5.1f",r,g,b);
+    //    pParent -> pIConnectionPointContainer -> fire_LogNotification(Renderer::szLogMessage);
+    //}
     return S_OK;
     }
 
 
-    void Renderer::GraphicParameters::setParameters(char *pszLineSettings,boolean doFill) {
+    HRESULT Renderer::GraphicParameters::get_RGBColor(COLORREF *pColor) {
+    if ( ! pColor )
+        return E_POINTER;
+    *pColor = pParent -> pGraphicsStateManager -> parametersStack.top() -> rgbColor;
+    return S_OK;
+    }
+
+
+    void Renderer::GraphicParameters::setParameters(char *pszLineSettings) {
 
     values *pValues = pParent -> pGraphicsStateManager -> parametersStack.top();
     char szLDashes[128]{128 * '\0'};
@@ -193,9 +239,9 @@ This is the MIT License
     StringFromGUID2(pParent -> pGraphicsStateManager -> parametersStack.top() -> valuesId,szwGUID,64);
     WideCharToMultiByte(CP_ACP,0,szwGUID,-1,szGUID,64,NULL,NULL);
 
-    sprintf_s(pszLineSettings,256,"%s:%05.2f:%01d:%01d:%01d:%01d:%08ld:%c:%s",
-                    szGUID,(FLOAT)pValues -> lineWidth,pValues -> lineCap,pValues -> lineJoin,
-                            pValues -> lineDashStyle,pValues -> countDashSizes,pValues -> rgbColor,doFill ? '1' : '0',szLDashes);
+    sprintf_s(pszLineSettings,256,"%s:%05.2f:%05.2f:%01d:%01d:%01d:%01d:%08ld:%s",
+                    szGUID,pValues -> lineWidth,pValues -> miterLimit,pValues -> lineCap,pValues -> lineJoin,
+                            pValues -> lineDashStyle,pValues -> countDashSizes,pValues -> rgbColor,szLDashes);
 
     return;
     }
@@ -205,13 +251,12 @@ This is the MIT License
 
     values *pValues = pParent -> pGraphicsStateManager -> parametersStack.top();
 
-    char doFillChar;
     char szLDashes[128]{128 * '\0'};
 
     char *pStart = pszLineSettings + GUID_PRINT_LENGTH;
 
-    sscanf(pStart,"%05f:%01d:%01d:%01d:%01d:%08ld:%c:%s",&pValues -> lineWidth ,&pValues -> lineCap,&pValues -> lineJoin,
-                        &pValues -> lineDashStyle,&pValues -> countDashSizes,&pValues -> rgbColor,&doFillChar,szLDashes);
+    sscanf(pStart,"%05f:%05f:%01d:%01d:%01d:%01d:%08ld:%s",&pValues -> lineWidth ,&pValues -> miterLimit,&pValues -> lineCap,&pValues -> lineJoin,
+                        &pValues -> lineDashStyle,&pValues -> countDashSizes,&pValues -> rgbColor,szLDashes);
 
     char *pszDash = strtok(szLDashes,",");
 
@@ -223,13 +268,28 @@ This is the MIT License
     if ( ! ( NULL == pParent -> pID2D1StrokeStyle1 ) )
         pParent -> pID2D1StrokeStyle1 -> Release();
 
+    //
+    // line width is in units of PS user space
+    //
+    if ( 0.0f < pValues -> lineWidth ) {
+        XFORM *pToPageSpace = &pParent -> pGraphicsStateManager -> parametersStack.top() -> toPageSpace;
+        POINTF lw{pValues -> lineWidth,0.0f};
+        FLOAT dx = pToPageSpace -> eM11 * lw.x + pToPageSpace -> eM12 * lw.y;
+        FLOAT dy = pToPageSpace -> eM21 * lw.x + pToPageSpace -> eM22 * lw.y;
+        XFORM *pToDeviceSpace = &pParent -> pIGraphicElements -> toDeviceSpace;
+        FLOAT dxps = pToDeviceSpace -> eM11 * dx + pToDeviceSpace -> eM12 * dy;
+        FLOAT dyps = pToDeviceSpace -> eM21 * dx + pToDeviceSpace -> eM22 * dy;
+        pValues -> calculatedLineWidth = (FLOAT)sqrt(dxps*dxps + dyps*dyps);
+    } else
+        pValues -> calculatedLineWidth = 0.0f;
+
     HRESULT rc = pParent -> pID2D1Factory1 -> CreateStrokeStyle(
             D2D1::StrokeStyleProperties1(
                 pValues -> lineCap,
                 pValues -> lineCap,
                 D2D1_CAP_STYLE_FLAT,
                 pValues -> lineJoin,
-                10.0f,
+                pValues -> miterLimit,
                 pValues -> lineDashStyle,
                 pValues -> lineDashOffset,
                 D2D1_STROKE_TRANSFORM_TYPE_NORMAL ),//D2D1_STROKE_TRANSFORM_TYPE_FIXED),
@@ -250,9 +310,9 @@ This is the MIT License
     }
 
 
-    long Renderer::GraphicParameters::hashCode(char *pszLineSettings,boolean doFill) {
+    long Renderer::GraphicParameters::hashCode(char *pszLineSettings) {
 
-    setParameters(pszLineSettings,doFill);
+    setParameters(pszLineSettings);
 
     long hashCode = 0L;
     long part = 0L;

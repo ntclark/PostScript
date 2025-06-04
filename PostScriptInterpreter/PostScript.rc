@@ -104,8 +104,6 @@ BEGIN
 
 END
 
-
-ID_GLYPH_LIST   256 ".\\resources\glyphList.txt"
 ID_GS_PREP      256 ".\\resources\gsPrep.ps"
 ID_GS_INIT      256 ".\\resources\from gs\gs_init.ps"
 

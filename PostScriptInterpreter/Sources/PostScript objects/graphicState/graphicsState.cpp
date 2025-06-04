@@ -152,10 +152,22 @@ Beep(2000,200);
     theGDIParameters.setRGBColor(rgb);
     return;
     }
-    
+
+
+    void graphicsState::getRGBColor(COLORREF *pRGB) {
+    theGDIParameters.getRGBColor(pRGB);
+    return;
+    }
+
 
     void graphicsState::setRGBColor(FLOAT r,FLOAT g,FLOAT b) {
     theGDIParameters.setRGBColor(r,g,b);
+    return;
+    }
+
+
+    void graphicsState::getRGBColor(FLOAT *pR,FLOAT *pG,FLOAT *pB) {
+    theGDIParameters.getRGBColor(pR,pG,pB);
     return;
     }
 
@@ -174,6 +186,36 @@ Beep(2000,200);
 
     void graphicsState::setLineCap(long lc) {
     theGDIParameters.setLineCap(lc);
+    return;
+    }
+
+
+    void graphicsState::setMiterLimit(FLOAT ml) {
+    theGDIParameters.setMiterLimit(ml);
+    return;
+    }
+
+
+    void graphicsState::getLineWidth(FLOAT *plw) { 
+    theGDIParameters.getLineWidth(plw);
+    return;
+    }
+
+
+    void graphicsState::getLineJoin(long *plj) {
+    theGDIParameters.getLineJoin(plj);
+    return;
+    }
+
+
+    void graphicsState::getLineCap(long *plc) {
+    theGDIParameters.getLineCap(plc);
+    return;
+    }
+
+
+    void graphicsState::getMiterLimit(FLOAT *pml) {
+    theGDIParameters.getMiterLimit(pml);
     return;
     }
 

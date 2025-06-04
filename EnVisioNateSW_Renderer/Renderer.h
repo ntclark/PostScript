@@ -108,8 +108,13 @@ int Mx3Inverse(double *pSource,double *pTarget);
             STDMETHOD(CubicBezier)(FLOAT x0,FLOAT y0,FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2,FLOAT x3,FLOAT y3);
             STDMETHOD(QuadraticBezier)(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-            STDMETHOD(PostScriptImage)(HDC hdc,HBITMAP hbmImage,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
-            STDMETHOD(PostScriptJpegImage)(HDC hdc,UINT_PTR pJpegData,long dataSize,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+            STDMETHOD(PostScriptImage)(HDC hdc,UINT_PTR pbBits,UINT_PTR /*xForm*/ pImageXForm,UINT_PTR /*xForm*/ pPSCurrentCTM,long width,long height,long bitsPerComponent);
+
+            STDMETHOD(PostScriptJpegImage)(HDC hdc,UINT_PTR pJpegData,long dataSize,
+                                            UINT_PTR /*xForm*/ pImageXForm,UINT_PTR /*xForm*/ pPSCurrentCTM,long width,long height);
+
+            STDMETHOD(PostScriptStencilMask)(long cbMaskingBytes,UINT_PTR pbMaskingBytes,BOOL polarity,COLORREF currentColor,
+                                                UINT_PTR /*xForm*/ pImageXForm,UINT_PTR /*xForm*/ pPSCurrentCTM,long width,long height);
 
             STDMETHOD(NonPostScriptImage)(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
             STDMETHOD(NonPostScriptJpegImage)(HDC hdc,UINT_PTR pJpegData,long dataSize,FLOAT x0,FLOAT y0,FLOAT width,FLOAT height);
@@ -612,6 +617,52 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
             };
 
+            struct image {
+                image(HBITMAP hbm,long x,long y,long wp,long hp,long wi,long hi) :
+                    hBitmap(hbm),
+                    locPixels{x,y},
+                    widthImage(wi),
+                    heightImage(hi),
+                    widthPixels(wp),
+                    heightPixels(hp) {
+                }
+                POINTL locPixels{0,0};
+                long widthImage{0};
+                long heightImage{0};
+                long widthPixels{0};
+                long heightPixels{0};
+                HBITMAP hBitmap{NULL};
+                ~image() {
+                if ( ! ( NULL == hBitmap ) ) 
+                    DeleteObject(hBitmap);
+                }
+            };
+
+            struct imageMask {
+                imageMask(uint8_t *pb,COLORREF cc,long x,long y,long wp,long hp,long wi,long hi,boolean p) :
+                    locPixels{x,y},
+                    pbMaskingBytes(pb),
+                    currentColor(cc),
+                    widthImage(wi),
+                    heightImage(hi),
+                    widthPixels(wp),
+                    heightPixels(hp),
+                    polarity(p) {
+                }
+                ~imageMask() {
+                    delete [] pbMaskingBytes;
+                }
+                POINTL locPixels{0L,0L};
+                long widthImage{0};
+                long heightImage{0};
+                long widthPixels{0};
+                long heightPixels{0};
+                boolean polarity{true};
+                COLORREF currentColor{RGB(0,0,0)};
+                uint8_t *pbMaskingBytes{NULL};
+
+            };
+
             void addPath(path *p) {
                 if ( NULL == pFirstPath ) {
                     pFirstPath = p;
@@ -660,6 +711,9 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
             uint8_t *getPixelsFromJpeg(uint8_t *pJPEGData,long dataSize,long width,long height);
 
+            std::list<image *> images;
+            std::list<imageMask *> imageMasks;
+
             void scalePoint(XFORM *pXForm,FLOAT *px,FLOAT *py);
             void transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
             void transformPoint(XFORM *pXForm,D2D1_POINT_2F *ptIn,D2D1_POINT_2F *ptOut);
@@ -688,10 +742,17 @@ int Mx3Inverse(double *pSource,double *pTarget);
         private:
 
             STDMETHOD(put_LineWidth)(FLOAT lw);
+            STDMETHOD(get_LineWidth)(FLOAT *plw);
             STDMETHOD(put_LineJoin)(long lj);
+            STDMETHOD(get_LineJoin)(long *plj);
             STDMETHOD(put_LineCap)(long lc);
+            STDMETHOD(get_LineCap)(long *plc);
+            STDMETHOD(put_MiterLimit)(FLOAT ml);
+            STDMETHOD(get_MiterLimit)(FLOAT *pml);
+
             STDMETHOD(put_LineDash)(FLOAT *pValues,long countValues,FLOAT offset);
             STDMETHOD(put_RGBColor)(COLORREF rgb);
+            STDMETHOD(get_RGBColor)(COLORREF *pRGB);
 
             Renderer *pParent{NULL};
 
@@ -699,6 +760,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 values() {}
                 values(values &rhs) {
                     lineWidth = rhs.lineWidth;
+                    calculatedLineWidth = rhs.calculatedLineWidth;
+                    miterLimit = rhs.miterLimit;
                     lineCap = rhs.lineCap;
                     lineJoin = rhs.lineJoin;
                     lineDashStyle = rhs.lineDashStyle;
@@ -717,6 +780,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 }
                 GUID valuesId{GUID_NULL};
                 FLOAT lineWidth{defaultLineWidth};
+                FLOAT calculatedLineWidth{0.0f};
+                FLOAT miterLimit{defaultMiterLimit};
                 D2D1_CAP_STYLE lineCap{defaultLineCap};
                 D2D1_LINE_JOIN lineJoin{defaultLineJoin};
                 D2D1_DASH_STYLE lineDashStyle{defaultDashStyle};
@@ -733,12 +798,13 @@ int Mx3Inverse(double *pSource,double *pTarget);
                 boolean hasDownScale{false};
             };
 
-            long hashCode(char *pszLineSettings,boolean doFill);
+            long hashCode(char *pszLineSettings);
 
-            void setParameters(char *pszLineSettings,boolean doFill);
+            void setParameters(char *pszLineSettings);
             void resetParameters(char *pszLineSettings);
 
             static FLOAT defaultLineWidth;
+            static FLOAT defaultMiterLimit;
             static D2D1_CAP_STYLE defaultLineCap;
             static D2D1_LINE_JOIN defaultLineJoin;
             static D2D1_DASH_STYLE defaultDashStyle;
@@ -795,8 +861,10 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
         void closeSink();
 
-        HRESULT fillRender();
-        HRESULT strokeRender();
+        HRESULT fillRender(GraphicElements::path *pFirstPath);
+
+        HRESULT applyImage(HDC hdc,GraphicElements::image *);
+        HRESULT applyStencilMask(HDC hdc,GraphicElements::imageMask *);
 
         ID2D1Factory1 *pID2D1Factory1{NULL};
 
@@ -816,6 +884,9 @@ int Mx3Inverse(double *pSource,double *pTarget);
         boolean doRasterize{false};
         boolean lastRenderWasFilled{false};
         boolean renderLive{false};
+
+        HDC hdcCurrent{NULL};
+        RECT rcCurrent{0L,0L,0L,0L};
 
         static char szLogMessage[1024];
         static char szStatusMessage[1024];

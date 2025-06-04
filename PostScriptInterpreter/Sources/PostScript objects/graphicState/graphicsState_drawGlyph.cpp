@@ -172,10 +172,6 @@ This is the MIT License
 
     procedure *pBuildGlyph = reinterpret_cast<procedure *>(pJob -> pop());
 
-    //pJob -> push(CurrentFont());
-    //pJob -> push(pJob -> pEncodingArrayLiteral);
-    //pJob -> operatorGet();
-
 /*
     When a PostScript program tries to show a glyph from a Type 3 font, and the
     glyph is not already present in the font cache, the PostScript interpreter:
@@ -201,7 +197,7 @@ This is the MIT License
 
     // The BYTE bGlyph is the "index" into the Encoding array
 // I made a change above and it needs testing.
-__debugbreak();
+//__debugbreak();
 
     object *pCharacterName = CurrentFont() -> Encoding() -> getElement((uint16_t)bGlyph);
 
@@ -233,7 +229,7 @@ __debugbreak();
             object *pGlyphIndex = pFont -> pCharStrings -> retrieve(pGlyphName -> Contents());
             if ( ! ( NULL == pGlyphIndex ) ) {
                 found = true;
-                glyphIndex = pGlyphIndex -> IntValue();
+                glyphIndex = (uint16_t)pGlyphIndex -> IntValue();
             }
             if ( ! found ) {
                 char *pszCharTableIndex = pGlyphName -> Contents();
@@ -248,8 +244,7 @@ __debugbreak();
     }
 
     object *pGlyphDirObj = pFont -> retrieve("GlyphDirectory");
-
-    uint8_t *pbGlyphData = NULL;
+    font::IProvideGlyphData *pIProvideData = NULL;
 
     if ( ! ( NULL == pGlyphDirObj ) ) {
         dictionary *pGlyphDirectory = reinterpret_cast<dictionary *>(pGlyphDirObj);
@@ -260,15 +255,42 @@ __debugbreak();
             binaryString *pGlyphData = reinterpret_cast<binaryString *>(pGlyphDataObj);
             if ( 0 == pGlyphData -> length() ) 
                 return;
-            pbGlyphData = (uint8_t *)CoTaskMemAlloc(pGlyphData -> length());
-            memcpy(pbGlyphData,pGlyphData -> getData(),pGlyphData -> length());
+            pIProvideData = &font::ifmClient_ProvideGlyphData;
         }
     }
 
-    PostScriptInterpreter::pIFontManager -> RenderGlyph(glyphIndex,(UINT_PTR)pbGlyphData,(UINT_PTR)pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint);
-
-    if ( ! ( NULL == pbGlyphData ) ) 
-        CoTaskMemFree(pbGlyphData);
+    PostScriptInterpreter::pIFontManager -> RenderGlyph(glyphIndex,(UINT_PTR)pIProvideData,(UINT_PTR)pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint);
 
     return;
+    }
+
+
+    HRESULT font::IProvideGlyphData::GetGlyphData(unsigned short bGlyph,UINT_PTR *ppGlyphData) {
+
+    font *pFont = CurrentFont();
+
+    object *pGlyphDirObj = pFont -> retrieve("GlyphDirectory");
+
+    if ( NULL == pGlyphDirObj ) 
+        return E_FAIL;
+
+    dictionary *pGlyphDirectory = reinterpret_cast<dictionary *>(pGlyphDirObj);
+    char szIndex[16];
+    sprintf_s<16>(szIndex,"%d",bGlyph);
+    object *pGlyphDataObj = pGlyphDirectory -> retrieve(szIndex);
+
+    if ( NULL == pGlyphDataObj ) 
+        return E_FAIL;
+
+    class binaryString *pGlyphData = reinterpret_cast<class binaryString *>(pGlyphDataObj);
+    if ( 0 == pGlyphData -> length() ) 
+        return E_FAIL;
+
+    uint8_t *pbGlyphData = (uint8_t *)CoTaskMemAlloc(pGlyphData -> length() + 32);
+    memset(pbGlyphData,0,pGlyphData -> length() + 32);
+    memcpy(pbGlyphData,pGlyphData -> getData(),pGlyphData -> length());
+
+    *ppGlyphData = (UINT_PTR)pbGlyphData;
+
+    return S_OK;
     }

@@ -71,6 +71,7 @@ This is the MIT License
     endRunActions.push_back( [=] {
         delete pJob;
         pJob = NULL;
+        ReleaseDC();
         cycle();
     });
 

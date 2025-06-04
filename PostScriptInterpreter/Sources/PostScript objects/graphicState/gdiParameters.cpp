@@ -41,22 +41,30 @@ This is the MIT License
     void gdiParameters::setColor(colorSpace *pColorSpace) {
 
     if ( 0 == strcmp(pColorSpace -> pFamilyName -> Contents(),"DeviceGray") ) {
-        setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
+        setRGBColor(RGB((uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f),
+                        (uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f),
+                        (uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f)));
         return;
     }
 
     if ( 0 == strcmp(pColorSpace -> pFamilyName -> Name(),"DeviceRGB") )  {
-        setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(2) -> IntValue() * 255,pColorSpace -> getElement(3) -> IntValue() * 255));
+        setRGBColor(RGB((uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f),
+                        (uint8_t)(pColorSpace -> getElement(2) -> FloatValue() * 255.0f),
+                        (uint8_t)(pColorSpace -> getElement(3) -> FloatValue() * 255.0f)));
         return;
     }
 
     if ( 0 == strcmp(pColorSpace -> pFamilyName -> Name(),"Indexed") )  {
         if ( 0 == strcmp(pColorSpace -> pBaseName -> Contents(),"DeviceGray") ) {
-            setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(1) -> IntValue() * 255));
+            setRGBColor(RGB((uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f),
+                            (uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f),
+                            (uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f)));
             return;
         }
         if ( 0 == strcmp(pColorSpace -> pBaseName -> Name(),"DeviceRGB") ) {
-            setRGBColor(RGB(pColorSpace -> getElement(1) -> IntValue() * 255,pColorSpace -> getElement(2) -> IntValue() * 255,pColorSpace -> getElement(3) -> IntValue() * 255));
+            setRGBColor(RGB((uint8_t)(pColorSpace -> getElement(1) -> FloatValue() * 255.0f),
+                            (uint8_t)(pColorSpace -> getElement(2) -> FloatValue() * 255.0f),
+                            (uint8_t)(pColorSpace -> getElement(3) -> FloatValue() * 255.0f)));
             return;
         }
     }
@@ -74,13 +82,36 @@ This is the MIT License
     }
 
 
-    void gdiParameters::setRGBColor(COLORREF rgb) {
-    PostScriptInterpreter::pIGraphicParameters -> put_RGBColor(rgb);
+    void gdiParameters::getRGBColor(FLOAT *pR,FLOAT *pG,FLOAT *pB) {
+    COLORREF rgb;
+    PostScriptInterpreter::pIGraphicParameters -> get_RGBColor(&rgb);
+    FLOAT r = (FLOAT)GetRValue(rgb) / 255.0f;
+    FLOAT g = (FLOAT)GetGValue(rgb) / 255.0f;
+    FLOAT b = (FLOAT)GetBValue(rgb) / 255.0f;
+    return;
     }
 
 
-    void gdiParameters::setLineWidth(POINT_TYPE v) { 
+    void gdiParameters::setRGBColor(COLORREF rgb) {
+    PostScriptInterpreter::pIGraphicParameters -> put_RGBColor(rgb);
+    return;
+    }
+
+
+    void gdiParameters::getRGBColor(COLORREF *pRGB) {
+    PostScriptInterpreter::pIGraphicParameters -> get_RGBColor(pRGB);
+    return;
+    }
+
+
+    void gdiParameters::setLineWidth(FLOAT v) { 
     PostScriptInterpreter::pIGraphicParameters -> put_LineWidth(v);
+    return;
+    }
+
+
+    void gdiParameters::getLineWidth(FLOAT *pv) { 
+    PostScriptInterpreter::pIGraphicParameters -> get_LineWidth(pv);
     return;
     }
 
@@ -91,8 +122,32 @@ This is the MIT License
     }
 
 
+    void gdiParameters::getLineJoin(long *plj) {
+    PostScriptInterpreter::pIGraphicParameters -> get_LineJoin(plj);
+    return;
+    }
+
+
     void gdiParameters::setLineCap(long lc) {
     PostScriptInterpreter::pIGraphicParameters -> put_LineCap(lc);
+    return;
+    }
+
+
+    void gdiParameters::getLineCap(long *plc) {
+    PostScriptInterpreter::pIGraphicParameters -> get_LineCap(plc);
+    return;
+    }
+
+
+    void gdiParameters::setMiterLimit(FLOAT v) { 
+    PostScriptInterpreter::pIGraphicParameters -> put_MiterLimit(v);
+    return;
+    }
+
+
+    void gdiParameters::getMiterLimit(FLOAT *pv) { 
+    PostScriptInterpreter::pIGraphicParameters -> get_MiterLimit(pv);
     return;
     }
 

@@ -49,7 +49,7 @@ This is the MIT License
 
     void PostScriptInterpreter::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
-    if ( ! ( NULL == beginPathAction ) ) 
+    if ( ! ( NULL == beginPathAction ) )
         beginPathAction();
 
     graphicsState::RenderGeometry();

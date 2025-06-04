@@ -1071,6 +1071,55 @@ __debugbreak();
     return;
     }
 
+    void job::operatorCurrentlinecap() {
+/*
+    currentlinecap 
+        – currentlinecap int
+
+    returns the current value of the line cap parameter in the graphics state.
+
+    Errors: stackoverflow
+    See Also: setlinecap, stroke, currentlinejoin
+*/
+    long lc;
+    currentGS() -> getLineCap(&lc);
+    push(new (CurrentObjectHeap()) object(this,lc));
+    return;
+    }
+
+    void job::operatorCurrentlinejoin() {
+/*
+    currentlinejoin 
+        – currentlinejoin int
+
+    returns the current value of the line join parameter in the graphics state.
+
+    Errors: stackoverflow
+    See Also: setlinejoin, stroke, currentlinecap
+*/
+    long lj;
+    currentGS() -> getLineJoin(&lj);
+    push(new (CurrentObjectHeap()) object(this,lj));
+    return;
+    }
+
+    void job::operatorCurrentlinewidth() {
+/*
+    currentlinewidth 
+        – currentlinewidth num
+
+    returns the current value of the line width parameter in the graphics state.
+
+    Errors: stackoverflow
+    See Also: setlinewidth, stroke
+*/
+    FLOAT lw;
+    currentGS() -> getLineWidth(&lw);
+    push(new (CurrentObjectHeap()) object(this,lw));
+    return;
+    }
+
+
     void job::operatorCurrentmatrix() {
 /*
     currentmatrix 
@@ -1082,7 +1131,24 @@ __debugbreak();
 */
 
     currentGS() -> currentMatrix();
+    return;
+    }
 
+
+    void job::operatorCurrentmiterlimit() {
+
+/*
+    currentmiterlimit 
+        – currentmiterlimit num
+
+    returns the current value of the miter limit parameter in the graphics state.
+
+    Errors: stackoverflow
+    See Also: setmiterlimit, stroke
+*/
+    FLOAT lw;
+    currentGS() -> getMiterLimit(&lw);
+    push(new (CurrentObjectHeap()) object(this,lw));
     return;
     }
 
@@ -2936,19 +3002,8 @@ isNew = true;
 
 */
 
-    object *pDict = pop();
+    currentGS() -> imageMask();
 
-    if ( object::objectType::dictionaryObject == pDict -> ObjectType() ) 
-        return;
-
-    pop();
-    pop();
-    pop();
-    pop();
-
-    char szMessage[1024];
-    sprintf(szMessage,"A call to the unimplemented operator imagemask was made");
-    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_ErrorNotification(szMessage);
     return;
     }
 
@@ -3054,6 +3109,80 @@ isNew = true;
     char szMessage[1024];
     sprintf(szMessage,"A call to the unimplemented operator initclip was made");
     pPostScriptInterpreter -> pIConnectionPointContainer -> fire_ErrorNotification(szMessage);
+    return;
+    }
+
+    void job::operatorInitgraphics() {
+/*
+    initgraphics 
+        – initgraphics –
+
+
+    resets the following parameters of the current graphics state to their default values, as follows:
+
+        current transformation matrix (CTM)—default for device
+        current position (current point)—undefined
+        current path—empty
+        current clipping path—default for device
+        current color space—DeviceGray
+        current color—black
+        current line width—1 user space unit
+        current line cap—butt end caps
+        current line join—miter joins
+        current miter limit—10
+        current dash pattern—solid, unbroken lines
+
+    All other graphics state parameters are left unchanged. These include the current
+    output device, font parameter, stroke adjustment, clipping path stack, and all
+    device-dependent parameters. initgraphics affects only the graphics state, not the
+    contents of raster memory or the configuration of the current output device.
+    initgraphics is equivalent to the following code:
+
+        initmatrix
+        newpath
+        initclip
+        0 setgray
+        1 setlinewidth
+        0 setlinecap
+        0 setlinejoin
+        10 setmiterlimit
+        [ ] 0 setdash
+
+    There are few situations in which a PostScript program should invoke
+    initgraphics explicitly. A page description that invokes initgraphics 
+    usually produces incorrect results if it is embedded within another, 
+    composite page. A program requiring information about its initial 
+    graphics state should explicitly read and save that state at the 
+    beginning of the program rather than assume that the default state 
+    prevailed initially.
+
+    Errors: none
+    See Also: grestoreall
+
+*/
+    operatorInitmatrix();
+    operatorNewpath();
+    operatorInitclip();
+
+    push(new (CurrentObjectHeap()) object(this,(long)0));
+    operatorSetgray();
+
+    push(new (CurrentObjectHeap()) object(this,(FLOAT)1.0f));
+    operatorSetlinewidth();
+
+    push(new (CurrentObjectHeap()) object(this,(long)0));
+    operatorSetlinecap();
+
+    push(new (CurrentObjectHeap()) object(this,(long)0));
+    operatorSetlinejoin();
+
+    push(new (CurrentObjectHeap()) object(this,(long)10));
+    operatorSetmiterlimit();
+
+    push(new (CurrentObjectHeap()) array(this,"empty",(long)0));
+    push(new (CurrentObjectHeap()) object(this,(long)0));
+    operatorSetdash();
+
     return;
     }
 

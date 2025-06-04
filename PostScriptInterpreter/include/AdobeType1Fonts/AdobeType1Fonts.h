@@ -7,6 +7,26 @@
 
 #include "AdobeType1Fonts/type1Glyph.h"
 
+#if _DEBUG
+#include <crtdbg.h>
+
+    class memoryLeakTrigger {
+    public:
+
+        memoryLeakTrigger() {
+            _CrtSetBreakAlloc(209);
+        }
+        ~memoryLeakTrigger() {
+            _CrtDumpMemoryLeaks();
+        }
+
+    private:
+    boolean doMemoryLeaks{true};
+
+    };
+
+#endif
+
 class job;
 class font;
 class dictionary;

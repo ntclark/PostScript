@@ -45,6 +45,14 @@ This is the MIT License
 
     //PostMessage(hwndLog,EM_SETTEXTMODE,(WPARAM)TM_RICHTEXT,(LPARAM)0L);
 
+    if ( hwndLog == hwndPostScriptLogContent ) {
+        while ( ! theLogQueue.empty() ) {
+            delete theLogQueue.front();
+            theLogQueue.pop();
+        }
+        return 0;
+    }
+
     while ( ! theRendererLogQueue.empty() ) {
         delete theRendererLogQueue.front();
         theRendererLogQueue.pop();

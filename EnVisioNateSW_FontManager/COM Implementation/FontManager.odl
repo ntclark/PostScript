@@ -48,6 +48,14 @@ library FontManager {
     } FontType;
 
     [uuid(1FC20340-4355-4347-8A32-A82E2FB89891),
+      helpstring("EnVisioNateSW Font Manager interface the client provides when the Font Manager is going to need additional data. \n"
+                    "For example, glyph binary data in a PostScript GlyphDirectory dictionary"),
+      nonextensible,pointer_default(unique)] 
+    interface IFMClient_ProvideFontData {
+        HRESULT GetGlyphData(unsigned short bGlyph,UINT_PTR *ppGlyphData);
+    }
+
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89892),
       helpstring("EnVisioNateSW Font Interface: MIDL DOCUMENTATION DOES NOT DESCRIBEHOW TO OVERRIDE A SYSTEM INTERFACE"),
       nonextensible,pointer_default(unique)] 
     interface IFont_EVNSW : IUnknown {
@@ -80,14 +88,14 @@ library FontManager {
                                     long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
                                     UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
-        HRESULT RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,/*XFORM*/ UINT_PTR pPSXform,
+        HRESULT RenderGlyph(unsigned short bGlyph,UINT_PTR pIFMClient_ProvideFontData,/*XFORM*/ UINT_PTR pPSXform,
                                 POINTF *pStartPoint,POINTF *pNextPoint);
 
         HRESULT SaveState();
         HRESULT RestoreState();
     };
 
-    [uuid(1FC20340-4355-4347-8A32-A82E2FB89892),
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89893),
       helpstring("EnVisioNateSW Font Manager Interface"),
       nonextensible,pointer_default(unique)] 
 
@@ -114,7 +122,7 @@ library FontManager {
 
     };
 
-    [uuid(1FC20340-4355-4347-8A32-A82E2FB89893),
+    [uuid(1FC20340-4355-4347-8A32-A82E2FB89894),
       helpstring("EnVisioNateSW Font Manager Notifications Interface"),
       nonextensible,pointer_default(unique)] 
     

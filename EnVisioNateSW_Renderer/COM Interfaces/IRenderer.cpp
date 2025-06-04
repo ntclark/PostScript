@@ -81,183 +81,75 @@ This is the MIT License
 
     setupRenderer(hdc,pDrawingRect);
 
-    std::map<long,std::list<GraphicElements::path *> *> strokePathsMap;
-    std::map<long,std::list<GraphicElements::path *> *> fillPathsMap;
+    setupPathAndSink();
 
-    long fileOccurance = 0L;
-
-    std::vector<std::pair<long,long>> fillPathSorter;
-    std::vector<std::pair<long,long>> strokePathSorter;
-
-    //
-    // Place all paths into either the group of StrokePaths, or FillPaths
-    // Note that the "group", is a list of all paths that have a particular set
-    // of graphics parameters, i.e. the colors and linestyles
-    // the StrokePaths group also contains ClosePath paths
-    //
-
+    long oldHash = 0;
+    GraphicElements::path *pPrior = NULL;
     GraphicElements::path *p = pIGraphicElements -> pFirstPath;
+
+    boolean oldIsFillPath = p -> isFillPath;
 
     while ( ! ( NULL == p ) ) {
 
-        //
-        // This happens when there are no primitives in the path at all
-        // other than the initial newPath marker.
-        // I am not entirely sure this is okay, but I'll remove the
-        // path from any rendering
-        //
         if ( p -> pFirstPrimitive == p -> pLastPrimitive ) {
             p = p -> pNextPath;
             continue;
         }
 
-        if ( ! p -> isClosed() ) {
-            //
-            // This DOES happen, I notice when there's a newpath, a moveto, followed by the next newpath
-            // that is, an orphaned path
-            //
-            // Whether this is okay is still under scrutiny
-            //
-            sprintf(Renderer::szStatusMessage,"Warning: An unclosed path was encountered. All paths should "
-                                                    "be closed with ClosePath(), StrokePath(), or FillPath(). "
+        if ( ! ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ) && 
+                ! ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) && 
+                   ! ( GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType ) ) {
+            sprintf(Renderer::szStatusMessage,"Warning: There was an unclosed path.\n"
+                                                    "All paths must be closed with either of stroke, fill, or close.\n"
                                                     "This graphics element will not appear.");
             pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
             p = p -> pNextPath;
             continue;
         }
 
-        if ( p -> isFillPath ) {
-            if ( fillPathsMap.find(p -> hashCode) == fillPathsMap.end() ) {
-                fillPathsMap[p -> hashCode] = new std::list<GraphicElements::path *>();
-                fileOccurance++;
-                fillPathSorter.push_back(std::pair<long,long>(p -> hashCode,fileOccurance));
+        if ( ! ( oldHash == p -> hashCode) || ! ( oldIsFillPath == p -> isFillPath ) ) {
+            if ( 0 < oldHash ) {
+                closeSink();
+                fillRender(pPrior);
+                shutdownPathAndSink();
+                setupPathAndSink();
             }
-            fillPathsMap[p -> hashCode] -> push_back(p);
-        } else {
-            if ( strokePathsMap.find(p -> hashCode) == strokePathsMap.end() ) {
-                strokePathsMap[p -> hashCode] = new std::list<GraphicElements::path *>();
-                fileOccurance++;
-                strokePathSorter.push_back(std::pair<long,long>(p -> hashCode,fileOccurance));
-            }
-            strokePathsMap[p -> hashCode] -> push_back(p);
+            pIGraphicParameters -> resetParameters(p -> szLineSettings);
+            oldHash = p -> hashCode;
+            oldIsFillPath = p -> isFillPath;
+            pPrior = p;
         }
 
+        GraphicElements::path::pathAction pa = p -> apply(p -> isFillPath);
+
+        p -> clear();
 
         p = p -> pNextPath;
-    }
-
-    //
-    // Sort the FillPath group by their graphics parameters
-    //
-
-    std::sort(fillPathSorter.begin(), fillPathSorter.end(), [=](std::pair<long,long> &a, std::pair<long,long > &b) { return a.second < b.second; });
-
-    for ( std::pair<long,long> sortedPair : fillPathSorter ) {
-
-        std::list<GraphicElements::path *> *pList = fillPathsMap[sortedPair.first];
-
-        //
-        // Each path list in the map uses the same graphics parameters. 
-        // The graphics parameters only need to be applied at the beginning
-        // of emitting the path elements to the GeometrySink
-        //
-        pIGraphicParameters -> resetParameters(pList -> front() -> szLineSettings);
-
-        setupPathAndSink();
-
-        for ( GraphicElements::path *p : *pList ) {
-
-            //
-            // This cannot happen because this path is a fill path and it
-            // can only be in a list (in the FillPathMap) if it was closed
-            // with FillPath()
-            // But I keep it in just to be sure
-#if 1
-            if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ||
-                   GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType ) {
-                sprintf(Renderer::szStatusMessage,"Warning: There was a StrokePath(), or ClosePath(), "
-                                                        "command encountered in a path intended to be filled. "
-                                                        "This graphics element will not appear.");
-                pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
-                continue;
-            }
-
-            if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType )
-#endif
-                GraphicElements::path::pathAction pa = p -> apply(true);
-
-            p -> clear();
-
-        }
-
-        closeSink();
-
-        fillRender();
-
-        shutdownPathAndSink();
-
-        pList -> clear();
 
     }
 
-    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : fillPathsMap ) {
-        pPair.second -> clear();
-        delete pPair.second;
+    closeSink();
+
+    if ( ! ( NULL == pPrior ) )
+        fillRender(pPrior);
+
+    for ( GraphicElements::image *pImage: pIGraphicElements -> images ) {
+        applyImage(hdc,pImage);
+        delete pImage;
     }
 
-    fillPathsMap.clear();
+    pIGraphicElements -> images.clear();
 
-    std::sort(strokePathSorter.begin(), strokePathSorter.end(), [=](std::pair<long,long> &a, std::pair<long, long > &b) { return a.second < b.second; });
-
-    for ( std::pair<long,long> sortedPair : strokePathSorter ) {
-
-        std::list<GraphicElements::path *> *pList = strokePathsMap[sortedPair.first];
-
-        pIGraphicParameters -> resetParameters(pList -> front() -> szLineSettings);
-
-        setupPathAndSink();
-
-        for ( GraphicElements::path *p : *pList ) {
-
-#if 1
-
-            // As above, this shouldn't happen because it wouldn't be in the
-            // StrokePathMap;
-            if ( GraphicElements::primitive::type::fillPathMarker == p -> pLastPrimitive -> theType ) {
-                sprintf(Renderer::szStatusMessage,"Warning: There was a FillPath() command encountered in a path "
-                                                        "intended to be Stroked. "
-                                                        "This graphics element will not appear");
-                pIConnectionPointContainer -> fire_ErrorNotification(Renderer::szStatusMessage);
-                continue;
-            }
-
-            if ( GraphicElements::primitive::type::strokePathMarker == p -> pLastPrimitive -> theType ||
-                    GraphicElements::primitive::type::closePathMarker == p -> pLastPrimitive -> theType )
-#endif
-                GraphicElements::path::pathAction pa = p -> apply(false);
-
-            p -> clear();
-
-        }
-
-        closeSink();
-
-        strokeRender();
-
-        shutdownPathAndSink();
-
-        pList -> clear();
-
+    for ( GraphicElements::imageMask *pMask : pIGraphicElements -> imageMasks ) {
+        applyStencilMask(hdc,pMask);
+        delete pMask;
     }
 
-    for ( std::pair<long,std::list<GraphicElements::path *>*> pPair : strokePathsMap ) {
-        pPair.second -> clear();
-        delete pPair.second;
-    }
-
-    strokePathsMap.clear();
+    pIGraphicElements -> imageMasks.clear();
 
     pIGraphicElements -> clearPaths();
+
+    shutdownPathAndSink();
 
     shutdownRenderer();
 

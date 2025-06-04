@@ -23,7 +23,7 @@ This is the MIT License
 
 #include "font.h"
 
-    otCompositeGlyph::otCompositeGlyph(font *pFont,otGlyphHeader *ph,BYTE *pbInput) : 
+    otCompositeGlyph::otCompositeGlyph(font *pFont,otGlyphHeader *ph,BYTE *pbInput,IFMClient_ProvideFontData *pIProvideFontData) : 
         pGlyphHeader(ph),
         pbGlyphData(pbInput)
     {
@@ -33,12 +33,12 @@ This is the MIT License
     countComponents = 0;
 
     uint16_t theFlags;
-    uint16_t dummy;
+    uint16_t unUsed;
 
     do {
 
         BE_TO_LE_U16(pbInput,theFlags)
-        BE_TO_LE_U16(pbInput,dummy)
+        BE_TO_LE_U16(pbInput,unUsed)
 
         pbInput += sizeof(uint16_t);
 
@@ -47,8 +47,10 @@ This is the MIT License
 
         if ( theFlags & WE_HAVE_A_SCALE )
             pbInput += sizeof(uint16_t);
+
         else if ( theFlags & WE_HAVE_AN_X_AND_Y_SCALE )
             pbInput += 2 * sizeof(uint16_t);
+
         else if ( theFlags & WE_HAVE_A_TWO_BY_TWO )
             pbInput += 4 * sizeof(uint16_t);
 
@@ -140,8 +142,6 @@ This is the MIT License
     ppCompositeGlyphs = new otCompositeGlyph*[countComponents];
     ppGlyphGeometrys = new otGlyphGeometry*[countComponents];
 
-    //ppGlyphRecord = new componentGlyphRecord*[countComponents];
-
     countSimpleGlyphs = 0;
     countCompositeGlyphs = 0;
 
@@ -149,19 +149,26 @@ This is the MIT License
 
         componentGlyphRecord *pComponent = ppGlyphRecord[k];
 
-        BYTE *pbComponentGlyphData = pFont -> getGlyphData(pComponent -> glyphIndex);
+        BYTE *pbComponentGlyphData = NULL;
+
+        if ( NULL == pIProvideFontData )
+            pbComponentGlyphData = pFont -> getGlyphData(pComponent -> glyphIndex);
+        else {
+            UINT_PTR pUintPtr = NULL;
+            pIProvideFontData -> GetGlyphData(pComponent -> glyphIndex,&pUintPtr);
+            pbComponentGlyphData = (uint8_t *)pUintPtr;
+        }
 
         otGlyphHeader componentGlyphHeader{0};
-        componentGlyphHeader.load(pbComponentGlyphData);
 
-        //ppGlyphRecord[k] = pComponent;
+        componentGlyphHeader.load(pbComponentGlyphData);
 
         if ( 0 < componentGlyphHeader.contourCount ) {
             ppSimpleGlyphs[countSimpleGlyphs] = new otSimpleGlyph(pComponent -> glyphIndex,pFont,&componentGlyphHeader,pbComponentGlyphData);
             ppGlyphGeometrys[k] = static_cast<otGlyphGeometry *>(ppSimpleGlyphs[countSimpleGlyphs]);
             countSimpleGlyphs++;
         } else {
-            ppCompositeGlyphs[countCompositeGlyphs] = new otCompositeGlyph(pFont,&componentGlyphHeader,pbComponentGlyphData);
+            ppCompositeGlyphs[countCompositeGlyphs] = new otCompositeGlyph(pFont,&componentGlyphHeader,pbComponentGlyphData,NULL);
             ppGlyphGeometrys[k] = static_cast<otGlyphGeometry *>(ppCompositeGlyphs[countCompositeGlyphs]);
             countCompositeGlyphs++;
         }
@@ -171,6 +178,9 @@ This is the MIT License
         pointCount += ppGlyphGeometrys[k] -> PointCount();
 
         advanceWidth = max(advanceWidth,(int32_t)ppGlyphGeometrys[k] -> AdvanceWidth());
+
+        if ( ! ( NULL == pIProvideFontData ) )
+            CoTaskMemFree(pbComponentGlyphData);
 
     }
 

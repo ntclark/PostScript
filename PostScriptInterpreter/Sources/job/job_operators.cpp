@@ -50,7 +50,11 @@ This is the MIT License
     pSystemDict -> put("currentfile",&job::operatorCurrentfile);
     pSystemDict -> put("currentfont",&job::operatorCurrentfont);
     pSystemDict -> put("currentglobal",&job::operatorCurrentglobal);
+    pSystemDict -> put("currentlinecap",&job::operatorCurrentlinecap);
+    pSystemDict -> put("currentlinejoin",&job::operatorCurrentlinejoin);
+    pSystemDict -> put("currentlinewidth",&job::operatorCurrentlinewidth);
     pSystemDict -> put("currentmatrix",&job::operatorCurrentmatrix);
+    pSystemDict -> put("currentmiterlimit",&job::operatorCurrentmiterlimit);
     pSystemDict -> put("currentscreen",&job::operatorCurrentscreen);
     pSystemDict -> put("curveto",&job::operatorCurveto);
     pSystemDict -> put("cvi",&job::operatorCvi);
@@ -97,6 +101,7 @@ This is the MIT License
     pSystemDict -> put("imagemask",&job::operatorImagemask);
     pSystemDict -> put("index",&job::operatorIndex);
     pSystemDict -> put("initclip",&job::operatorInitclip);
+    pSystemDict -> put("initgraphics",&job::operatorInitgraphics);
     pSystemDict -> put("initmatrix",&job::operatorInitmatrix);
     pSystemDict -> put("ISOLatin1Encoding",&job::operatorISOLatin1Encoding);
     pSystemDict -> put("itransform",&job::operatorItransform);

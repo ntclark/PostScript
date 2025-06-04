@@ -34,6 +34,9 @@ This is the MIT License
     long pageParameters::displayResolution = 0L;
     long pageParameters::cxClient = 0L;
     long pageParameters::cyClient = 0L;
+    RECT pageParameters::rcClient{0L,0L,0L,0L};
+    RECT pageParameters::rcPage{0L,0L,0L,0L};
+
 
     void pageParameters::initialize() {
     memset(&toDeviceSpace,0,sizeof(XFORM));
@@ -73,10 +76,14 @@ This is the MIT License
 
         }
 
-        RECT rcClient{0,0,PostScriptInterpreter::ClientWidth() - GetSystemMetrics(SM_CXVSCROLL),PostScriptInterpreter::ClientHeight()};
+        rcClient.left = 0;
+        rcClient.top = 0;
+        rcClient.right = PostScriptInterpreter::ClientWidth() - GetSystemMetrics(SM_CXVSCROLL);
+        rcClient.bottom = PostScriptInterpreter::ClientHeight();
         HDC hdc = GetDC(hwndSurface);
         FillRect(hdc,&rcClient,(HBRUSH)(COLOR_APPWORKSPACE + 1));
-        RECT rcPage{PostScriptInterpreter::SideGutter(),PostScriptInterpreter::TopGutter(),0,0};
+        rcPage.left = PostScriptInterpreter::SideGutter();
+        rcPage.top = PostScriptInterpreter::TopGutter(),0,0;
         rcPage.right = rcPage.left + (long)(scalePointsToPixels * (FLOAT)pageWidthPoints);
         rcPage.bottom = rcPage.top + (long)(scalePointsToPixels * (FLOAT)pageHeightPoints);
         PostScriptInterpreter::pIRenderer -> ClearRect(hdc,&rcPage,RGB(255,255,255));
@@ -117,13 +124,15 @@ This is the MIT License
 
     PostScriptInterpreter::pIRenderer -> put_ToDeviceTransform((UINT_PTR)&toDeviceSpace);
 
+#if 0
+    PostScriptInterpreter::pIRenderer -> SetRenderLive(pPostScriptInterpreter -> GetDC(),&rcClient);
+#endif
+
     return;
     }
 
 
     void pageParameters::RenderGeometry() {
-    RECT rcDrawing;
-    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
-    PostScriptInterpreter::pIRenderer -> Render(pPostScriptInterpreter -> GetDC(),&rcDrawing);
+    PostScriptInterpreter::pIRenderer -> Render(pPostScriptInterpreter -> GetDC(),&rcClient);
     return;
     }

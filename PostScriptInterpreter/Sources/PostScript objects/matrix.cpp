@@ -87,6 +87,12 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
 
 
     XFORM *matrix::XForm() {
+    xForm.eM11 = a();
+    xForm.eM12 = b();
+    xForm.eM21 = c();
+    xForm.eM22 = d();
+    xForm.eDx = tx();
+    xForm.eDy = ty();
     return &xForm;
     }
 

@@ -50,7 +50,11 @@ This is the MIT License
         void operatorCurrentfile();
         void operatorCurrentfont();
         void operatorCurrentglobal();
+        void operatorCurrentlinecap();
+        void operatorCurrentlinejoin();
+        void operatorCurrentlinewidth();
         void operatorCurrentmatrix();
+        void operatorCurrentmiterlimit();
         void operatorCurrentscreen();
         void operatorCurveto();
         void operatorCvi();
@@ -97,6 +101,7 @@ This is the MIT License
         void operatorImagemask();
         void operatorIndex();
         void operatorInitclip();
+        void operatorInitgraphics();
         void operatorInitmatrix();
         void operatorISOLatin1Encoding();
         void operatorItransform();

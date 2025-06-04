@@ -25,7 +25,7 @@ This is the MIT License
 
 #define FT_CURVE_TAG_ON 0x01
 
-    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pvIProvideFontData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     if ( FontType::type3 == theFontType ) 
         return drawType3Glyph(bGlyph,pPSXform,pStartPoint,pEndPoint);
@@ -33,7 +33,7 @@ This is the MIT License
     if ( ! ( FontType::type42 == theFontType ) )
         return E_UNEXPECTED;
 
-    return drawType42Glyph(bGlyph,pGlyphData,pPSXform,pStartPoint,pEndPoint);
+    return drawType42Glyph(bGlyph,reinterpret_cast<IFMClient_ProvideFontData *>(pvIProvideFontData),pPSXform,pStartPoint,pEndPoint);
     }
 
 
@@ -42,26 +42,16 @@ This is the MIT License
     }
 
 
-    HRESULT font::drawType42Glyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
-
-    BYTE *pbGlyphData = NULL;
-
-    /*
-    By definition, glyph index zero points to the “missing character” glyph, 
-    which is the glyph that is displayed if a character is not found in the 
-    font’s 'cmap' table. A missing character is commonly represented by a 
-    blank box or a space. If the font does not contain an outline for this
-    glyph, then the first and second offsets should have the same value. 
-    This also applies to any other glyphs without an outline, such as the 
-    glyph for the space character: if a glyph has no outline or instructions, 
-    then loca[n] = loca[n+1].
-    */
+    HRESULT font::drawType42Glyph(unsigned short bGlyph,IFMClient_ProvideFontData *pIProvideFontData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
 
     uint16_t glyph = bGlyph;
-
     uint16_t glyphIndex;
+    BYTE *pbGlyphData = NULL;
 
-    if ( NULL == pGlyphData ) {
+if ( 3 == bGlyph )
+printf("hello world");
+
+    if ( NULL == pIProvideFontData ) {
 
         get_GlyphIndex(glyph,&glyphIndex);
 
@@ -80,8 +70,10 @@ This is the MIT License
         }
 
     } else {
-        glyphIndex = 0;
-        pbGlyphData = (uint8_t *)pGlyphData;
+        glyphIndex = bGlyph;
+        UINT_PTR pUintPtr = NULL;
+        pIProvideFontData -> GetGlyphData(bGlyph,&pUintPtr);
+        pbGlyphData = (uint8_t *)pUintPtr;
     }
 
     otGlyphHeader glyphHeader{0};
@@ -94,7 +86,7 @@ This is the MIT License
     otGlyphGeometry *pGlyphGeometry = NULL;
 
     if ( 0 > glyphHeader.contourCount ) {
-        pCompositeGlyph = new otCompositeGlyph(this,&glyphHeader,pbGlyphData);
+        pCompositeGlyph = new otCompositeGlyph(this,&glyphHeader,pbGlyphData,pIProvideFontData);
         pGlyphGeometry = static_cast<otGlyphGeometry *>(pCompositeGlyph);
     } else {
         pSimpleGlyph = new otSimpleGlyph(glyphIndex,this,&glyphHeader,pbGlyphData);
@@ -289,6 +281,9 @@ CaptureBezier:
 
     if ( ! ( NULL == pCompositeGlyph ) )
         delete pCompositeGlyph;
+
+    if ( ! ( NULL == pIProvideFontData ) ) 
+        CoTaskMemFree(pbGlyphData);
 
     return S_OK;
     }

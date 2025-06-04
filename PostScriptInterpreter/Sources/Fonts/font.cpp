@@ -28,6 +28,8 @@ This is the MIT License
 #include "PostScript objects/binaryString.h"
 #include "adobeGlyphList.h"
 
+    font::IProvideGlyphData font::ifmClient_ProvideGlyphData;
+
     font::font(job *pj,char *pszName) :
         dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE)
     {

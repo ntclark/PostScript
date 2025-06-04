@@ -43,11 +43,6 @@ This is the MIT License
     }
 
     dictionary *pSourceDictionary = reinterpret_cast<dictionary *>(pSource);
-    matrix *pMatrix = reinterpret_cast<matrix *>(pSourceDictionary -> retrieve("ImageMatrix"));
-    object *pBitsPerComponent = pSourceDictionary -> retrieve("BitsPerComponent");
-    object *pHeight = pSourceDictionary -> retrieve("Height");
-    object *pWidth = pSourceDictionary -> retrieve("Width");
-    array *pDecodeArray = reinterpret_cast<array *>(pSourceDictionary -> retrieve("Decode"));
 
     if ( ! ( 1 == pSourceDictionary -> retrieve("ImageType") -> IntValue() ) ) {
         char szMessage[1024];
@@ -55,6 +50,32 @@ This is the MIT License
         throw notimplemented(szMessage);
         return;
     }
+
+    if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
+        PostScriptInterpreter::beginPathAction();
+
+    object *pMatrixObj = pSourceDictionary -> retrieve("ImageMatrix");
+
+    XFORM imageXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+    XFORM *pImageXForm = NULL;
+
+    if ( object::objectType::objTypeMatrix == pMatrixObj -> ObjectType() )
+        pImageXForm = reinterpret_cast<matrix *>(pMatrixObj) -> XForm();
+    else {
+        array *pArray = reinterpret_cast<array *>(pMatrixObj);
+        imageXForm.eM11 = pArray -> getElement(A) -> FloatValue();
+        imageXForm.eM12 = pArray -> getElement(B) -> FloatValue();
+        imageXForm.eM21 = pArray -> getElement(C) -> FloatValue();
+        imageXForm.eM22 = pArray -> getElement(D) -> FloatValue();
+        imageXForm.eDx = pArray -> getElement(TX) -> FloatValue();
+        imageXForm.eDy = pArray -> getElement(TY) -> FloatValue();
+        pImageXForm = &imageXForm;
+    }
+
+    object *pBitsPerComponent = pSourceDictionary -> retrieve("BitsPerComponent");
+    object *pHeight = pSourceDictionary -> retrieve("Height");
+    object *pWidth = pSourceDictionary -> retrieve("Width");
+    array *pDecodeArray = reinterpret_cast<array *>(pSourceDictionary -> retrieve("Decode"));
 
     uint32_t cbData = 0;
     uint8_t *pbImage = NULL;
@@ -67,21 +88,17 @@ This is the MIT License
 
     pbImage = pFilter -> getBinaryData(&cbData,NULL);
 
-    uint8_t bitsPerComponent = (uint8_t)pBitsPerComponent -> IntValue();
-    uint16_t width = (uint16_t)pWidth -> IntValue();
-    uint16_t height = (uint16_t)pHeight -> IntValue();
-
-    HBITMAP hbmResult = NULL;
+    long bitsPerComponent = (long)pBitsPerComponent -> IntValue();
+    long width = (long)pWidth -> IntValue();
+    long height = (long)pHeight -> IntValue();
 
     uint8_t *pbRGBImage = getBitmapBits(pbImage,cbData,width,height,bitsPerComponent,pDecodeArray);
 
-    hbmResult = getHBITMAPFromPixels(width,height,8,pbRGBImage);
+    PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbRGBImage,
+                                                (UINT_PTR)pImageXForm,(UINT_PTR)pPSXformsStack -> CurrentTransform(),
+                                                    width,height,bitsPerComponent);
 
-    renderImage(hbmResult,width,height);
-
-    DeleteObject(hbmResult);
-
-    delete [] pbRGBImage;
+    CoTaskMemFree(pbRGBImage);
 
     pFilter -> releaseData();
 
@@ -97,7 +114,7 @@ This is the MIT License
     object *pIsMultiSource = pJob -> pop();
     object *pSource = pJob -> pop();
 
-    matrix *pMatrix = reinterpret_cast<matrix *>(pJob -> pop());
+    object *pMatrixObj = pJob -> pop();
     object *pBitsPerComponent = pJob -> pop();
     object *pHeight = pJob -> pop();
     object *pWidth = pJob -> pop();
@@ -105,6 +122,22 @@ This is the MIT License
     uint32_t cbData;
     BYTE *pbImage = NULL;
     class filter *pFilter = NULL;
+
+    XFORM imageXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+    XFORM *pImageXForm = NULL;
+
+    if ( object::objectType::objTypeMatrix == pMatrixObj -> ObjectType() )
+        pImageXForm = reinterpret_cast<matrix *>(pMatrixObj) -> XForm();
+    else {
+        array *pArray = reinterpret_cast<array *>(pMatrixObj);
+        imageXForm.eM11 = pArray -> getElement(A) -> FloatValue();
+        imageXForm.eM12 = pArray -> getElement(B) -> FloatValue();
+        imageXForm.eM21 = pArray -> getElement(C) -> FloatValue();
+        imageXForm.eM22 = pArray -> getElement(D) -> FloatValue();
+        imageXForm.eDx = pArray -> getElement(TX) -> FloatValue();
+        imageXForm.eDy = pArray -> getElement(TY) -> FloatValue();
+        pImageXForm = &imageXForm;
+    }
 
     if ( object::objectType::filter == pSource -> ObjectType() ) {
         pFilter = reinterpret_cast<class filter *>(pSource);
@@ -115,39 +148,39 @@ This is the MIT License
     }
 
     if ( ! ( 3 == pCountColorComponents -> IntValue() ) ) {
+        pFilter -> releaseData();
         throw notimplemented("Error: Only 3 component colorimage objects are currently implemented.");
         return;
     }
 
     if ( reinterpret_cast<booleanObject *>(pIsMultiSource) -> is() ) {
+        pFilter -> releaseData();
         throw notimplemented("Error: Multi datasources for the colorimage operator are not implemented.");
         return;
     }
 
-    uint16_t width = (uint16_t)pWidth -> IntValue();
-    uint16_t height = (uint16_t)pHeight -> IntValue();
+    if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
+        PostScriptInterpreter::beginPathAction();
+
+    long width = pWidth -> IntValue();
+    long height = pHeight -> IntValue();
 
     if ( pFilter -> IsDCTDecode() ) {
-        if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
-            PostScriptInterpreter::beginPathAction();
         PostScriptInterpreter::pIGraphicElements -> PostScriptJpegImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbImage,cbData,
-                                                        (UINT_PTR)pPSXformsStack -> CurrentTransform(),(FLOAT)width,(FLOAT)height);
+                                                        (UINT_PTR)pImageXForm,(UINT_PTR)pPSXformsStack -> CurrentTransform(),width,height);
+        pFilter -> releaseData();
         return;
     }
 
-    uint8_t bitsPerComponent = (uint8_t)pBitsPerComponent -> IntValue();
-
-    colorSpace *pColorSpace = getColorSpace();
+    long bitsPerComponent = (long)pBitsPerComponent -> IntValue();
 
     uint8_t *pbRGBImage = getBitmapBits(pbImage,cbData,width,height,bitsPerComponent,NULL);
 
-    HBITMAP hbmResult = getHBITMAPFromPixels(width,height,bitsPerComponent,pbRGBImage);
+    PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbRGBImage,
+                                                (UINT_PTR)pImageXForm,(UINT_PTR)pPSXformsStack -> CurrentTransform(),
+                                                    width,height,bitsPerComponent);
 
-    renderImage(hbmResult,width,height);
-
-    DeleteObject(hbmResult);
-
-    delete [] pbRGBImage;
+    CoTaskMemFree(pbRGBImage);
 
     pFilter -> releaseData();
 
@@ -155,24 +188,100 @@ This is the MIT License
     }
 
 
-    void graphicsState::renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height) {
-    if ( ! ( NULL == PostScriptInterpreter::beginPathAction ) )
-        PostScriptInterpreter::beginPathAction();
-    PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),hbmResult,
-                                                (UINT_PTR)pPSXformsStack -> CurrentTransform(),(FLOAT)width,(FLOAT)height);
-    DeleteObject(hbmResult);
+    void graphicsState::imageMask() {
+
+    object *pDict = pJob -> pop();
+
+    object *pObjWidth = NULL;
+    object *pObjHeight = NULL;
+    object *pObjPolarity = NULL;
+    object *pObjMatrix = NULL;
+    object *pObjDataSrc = NULL;
+    object *pObjDecode = NULL;
+    object *pObjInterpolate = NULL;
+
+    if ( ! ( object::objectType::dictionaryObject == pDict -> ObjectType() ) ) {
+        pObjDataSrc = pDict;
+        pObjMatrix = pJob -> pop();
+        pObjPolarity = pJob -> pop();
+        pObjHeight = pJob -> pop();
+        pObjWidth = pJob -> pop();
+        char szMessage[1024];
+        sprintf_s<1024>(szMessage,"Error: Only language level 2 and above is supported for the image operator");
+        throw notimplemented(szMessage);
+        return;
+    } 
+
+    dictionary *pDictionary = reinterpret_cast<dictionary *>(pDict);
+
+    if ( ! ( 1 == pDictionary -> retrieve("ImageType") -> IntValue() ) ) {
+        char szMessage[1024];
+        sprintf_s<1024>(szMessage,"Error: Only image type 1 is currently implemented for Language Level 2 imageMask operator");
+        throw notimplemented(szMessage);
+        return;
+    }
+
+    pObjDataSrc = pDictionary -> retrieve("DataSource");
+    pObjMatrix = pDictionary -> retrieve("ImageMatrix");
+    pObjDecode = pDictionary -> retrieve("Decode");
+    pObjHeight = pDictionary -> retrieve("Height");
+    pObjWidth = pDictionary -> retrieve("Width");
+    pObjInterpolate = pDictionary -> retrieve("Interpolate");
+
+    XFORM imageXForm{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
+    XFORM *pImageXForm = NULL;
+
+    if ( object::objectType::objTypeMatrix == pObjMatrix -> ObjectType() )
+        pImageXForm = reinterpret_cast<matrix *>(pObjMatrix) -> XForm();
+    else {
+        array *pArray = reinterpret_cast<array *>(pObjMatrix);
+        imageXForm.eM11 = pArray -> getElement(A) -> FloatValue();
+        imageXForm.eM12 = pArray -> getElement(B) -> FloatValue();
+        imageXForm.eM21 = pArray -> getElement(C) -> FloatValue();
+        imageXForm.eM22 = pArray -> getElement(D) -> FloatValue();
+        imageXForm.eDx = pArray -> getElement(TX) -> FloatValue();
+        imageXForm.eDy = pArray -> getElement(TY) -> FloatValue();
+        pImageXForm = &imageXForm;
+    }
+
+    class filter *pFilter = reinterpret_cast<class filter *>(pObjDataSrc);
+
+    uint32_t cbData = 0;
+    uint8_t *pbImage = NULL;
+
+    pbImage = pFilter -> getBinaryData(&cbData,NULL);
+
+    uint8_t *pbImageRenderer = (uint8_t *)CoTaskMemAlloc(cbData);
+
+    memcpy(pbImageRenderer,pbImage,cbData);
+
+    array *pDecodeArray = reinterpret_cast<array *>(pObjDecode);
+
+    BOOL polarity = FALSE;
+    if ( 1 == pDecodeArray -> getElement(0) -> IntValue() )
+        polarity = TRUE;
+
+    COLORREF rgbColor;
+
+    getRGBColor(&rgbColor);
+colorSpace *pcp = getColorSpace();
+
+    long width = pObjWidth -> IntValue();
+    long height = pObjHeight -> IntValue(); 
+
+    PostScriptInterpreter::pIGraphicElements -> PostScriptStencilMask(cbData,(UINT_PTR)pbImageRenderer,polarity,rgbColor,
+                                                       (UINT_PTR)pImageXForm,(UINT_PTR)pPSXformsStack -> CurrentTransform(),width,height);
+
+    pFilter -> releaseData();
+
+    CoTaskMemFree(pbImageRenderer);
+
     return;
     }
 
 
-    void graphicsState::renderImage(HBITMAP hbmResult,object *pWidth,object *pHeight) {
-    renderImage(hbmResult,(uint16_t)pWidth -> IntValue(),(uint16_t)pHeight -> IntValue());
-    return;
-    }
-
-
-    uint8_t *graphicsState::getBitmapBits(uint8_t *pbImage,uint32_t cbData,uint16_t width,uint16_t height,
-                                            uint8_t bitsPerComponent,array *pDecodeArray) {
+    uint8_t *graphicsState::getBitmapBits(uint8_t *pbImage,long cbData,long width,long height,
+                                            long bitsPerComponent,array *pDecodeArray) {
 
     uint8_t *pbRGBImage = NULL;
 
@@ -211,7 +320,7 @@ This is the MIT License
             long stride = ((((width * 24) + 31) & ~31) >> 3);
             long padding = stride - widthBytes;
 
-            pbRGBImage = new uint8_t[stride * countRows];
+            pbRGBImage = (uint8_t *)CoTaskMemAlloc(stride * countRows);
 
             uint32_t compIndex = 1;
             uint16_t byteCount = 0;
@@ -292,7 +401,7 @@ This is the MIT License
 
     }
 
-    pbRGBImage = new uint8_t[cbData];
+    pbRGBImage = (uint8_t *)CoTaskMemAlloc(cbData);
 
     memcpy(pbRGBImage,pbImage,cbData);
 

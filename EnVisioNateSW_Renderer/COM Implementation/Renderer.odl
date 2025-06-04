@@ -87,8 +87,13 @@ library Renderer {
         [helpstring("Call move to before your first QuadraticBezier in a chain to set the startpoint")]
         HRESULT QuadraticBezier(FLOAT x1,FLOAT y1,FLOAT x2,FLOAT y2);
 
-        HRESULT PostScriptImage(HDC hdc,HBITMAP hBitmap,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
-        HRESULT PostScriptJpegImage(HDC hdc,UINT_PTR pJpegData,long dataSize,UINT_PTR /*xForm*/ pPSCurrentCTM,FLOAT width,FLOAT height);
+        HRESULT PostScriptImage(HDC hdc,UINT_PTR pbBits,UINT_PTR /*xForm*/ pImageXForm,UINT_PTR /*xForm*/ pPSCurrentCTM,long width,long height,long bitsPerComponent);
+
+        HRESULT PostScriptJpegImage(HDC hdc,UINT_PTR pJpegData,long dataSize,
+                                        UINT_PTR /*xForm*/ pImageXForm,UINT_PTR /*xForm*/ pPSCurrentCTM,long width,long height);
+
+        HRESULT PostScriptStencilMask(long cbMaskingBytes,UINT_PTR pbMaskingBytes,BOOL polarity,COLORREF currentColor,
+                                        UINT_PTR /*xform*/ pImageXForm,UINT_PTR /*xForm*/ pPSCurrentCTM,long width,long height);
 
         [helpstring("Pass 0.0 for width or height to display in native bitmap width.")]
         HRESULT NonPostScriptImage(HDC hdc,HBITMAP hBitmap,FLOAT x0,FLOAT y0,FLOAT displayWidth,FLOAT displayHeight);
@@ -107,11 +112,18 @@ library Renderer {
     interface IGraphicParameters : IUnknown {
 
         [propput] HRESULT LineWidth(FLOAT lw);
+        [propget] HRESULT LineWidth([out,retval] FLOAT *plw);
         [propput] HRESULT LineJoin(long lj);
+        [propget] HRESULT LineJoin([out,retval] long *plj);
         [propput] HRESULT LineCap(long lc);
+        [propget] HRESULT LineCap([out,retval] long *plc);
+        [propput] HRESULT MiterLimit(FLOAT ml);
+        [propget] HRESULT MiterLimit([out,retval] FLOAT *pml);
+
         [propput] HRESULT LineDash(FLOAT *pValues,long countValues,FLOAT offset);
 
         [propput] HRESULT RGBColor(COLORREF rgb);
+        [propget] HRESULT RGBColor([out,retval] COLORREF *pRGB);
 
     };
 

@@ -21,7 +21,6 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#define ID_GLYPH_LIST       1
 #define ID_GS_PREP          2
 #define ID_GS_INIT          3
 #define ID_GS_RESOURCES     4

@@ -97,7 +97,7 @@ This is the MIT License
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::closePathMarker));
 
     pCurrentPath -> isFillPath = false;
-    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,false);
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings);
 
     if ( ! pParent -> renderLive )
         return S_OK;
@@ -116,7 +116,7 @@ This is the MIT License
 
     pParent -> closeSink();
 
-    pParent -> strokeRender();
+    pParent -> fillRender(pCurrentPath);
 
     removePath(pCurrentPath);
 
@@ -162,7 +162,7 @@ This is the MIT License
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::strokePathMarker));
 
     pCurrentPath -> isFillPath = false;
-    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,false);
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings);
 
     if ( ! pParent -> renderLive )
         return S_OK;
@@ -181,7 +181,7 @@ This is the MIT License
 
     pParent -> closeSink();
 
-    pParent -> strokeRender();
+    pParent -> fillRender(pCurrentPath);
 
     removePath(pCurrentPath);
 
@@ -209,7 +209,7 @@ This is the MIT License
     pCurrentPath -> addPrimitive(new primitive(this,primitive::type::fillPathMarker));
 
     pCurrentPath -> isFillPath = true;
-    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings,true);
+    pCurrentPath -> hashCode = pParent -> pIGraphicParameters -> hashCode(pCurrentPath -> szLineSettings);
 
     if ( ! pParent -> renderLive ) {
         NewPath();
@@ -230,7 +230,7 @@ This is the MIT License
 
     pParent -> closeSink();
 
-    pParent -> fillRender();
+    pParent -> fillRender(pCurrentPath);
 
     removePath(pCurrentPath);
 

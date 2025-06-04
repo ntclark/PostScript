@@ -167,6 +167,7 @@
     <ClCompile Include="COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="COM Events\IEnumConnectionPoints.cpp" />
     <ClCompile Include="COM Events\IEnumerateConnections.cpp" />
+    <ClCompile Include="COM Interfaces\IGraphicElements_Images.cpp" />
     <ClCompile Include="COM Interfaces\IRenderer.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicElements.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicElements_Paths.cpp" />

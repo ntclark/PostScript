@@ -55,11 +55,11 @@ std::map<uint8_t,char *> AdobeType1Fonts::type1CharStringSubCommands {
     objectStack *AdobeType1Fonts::pOperandStack = NULL;
     type1Glyph *AdobeType1Fonts::pType1Glyph = NULL;
 
+#if _DEBUG
+    memoryLeakTrigger theDetector;
+#endif
 
     AdobeType1Fonts::~AdobeType1Fonts() {
-    //
-    // These maps leak memory I have no fucking clue why
-    ///
     type1CharStringCommands.erase(type1CharStringCommands.begin(),type1CharStringCommands.end());
     type1CharStringSubCommands.erase(type1CharStringSubCommands.begin(),type1CharStringSubCommands.end());
     return;

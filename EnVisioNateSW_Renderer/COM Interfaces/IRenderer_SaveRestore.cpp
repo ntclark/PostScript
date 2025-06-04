@@ -23,7 +23,6 @@ This is the MIT License
 
 #include "Renderer.h"
 
-
     HRESULT Renderer::SaveState() {
     return pGraphicsStateManager -> Save();
     }

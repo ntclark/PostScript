@@ -84,8 +84,8 @@ This is the MIT License
 
                 if ( DSC_DELIMITER[0] == pDelimiter[0] && DSC_DELIMITER[1] == pDelimiter[1] ) {
                     parseDSC(p,&pExecutionLevel -> pNext,&pExecutionLevel -> lineNumber);
+OutputDebugStringA(pDSCItems -> back() -> Contents());
                     pLogStart -= 2;
-
                 } else {
                     (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pExecutionLevel -> pNext,
                             &pExecutionLevel -> pNext,&pExecutionLevel -> lineNumber);

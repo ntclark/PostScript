@@ -289,7 +289,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="resources\glyphList.txt" />
     <Text Include="LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -444,6 +443,9 @@
     </None>
     <None Include="Sources\COM Events\Readme.md">
       <Filter>Source Files\COM Events</Filter>
+    </None>
+    <None Include="Sources\PostScript.def">
+      <Filter>Source Files\COM Implementation</Filter>
     </None>
   </ItemGroup>
 </Project>

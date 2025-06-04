@@ -117,6 +117,8 @@ This is the MIT License
 
     pageSizes.clear();
 
+    clearLog(hwndPostScriptLogContent);
+
     clearLog(hwndRendererLogContent);
 
     if ( ! ( NULL == pIFontManager ) ) {
@@ -168,7 +170,7 @@ This is the MIT License
     DestroyWindow(hwndRendererLogCmdPane);
     DestroyWindow(hwndRendererLogSplitter);
 
-    font::adobeGlyphList.clear();
+    font::adobeGlyphList.erase(font::adobeGlyphList.begin(),font::adobeGlyphList.end());
 
     return;
     }

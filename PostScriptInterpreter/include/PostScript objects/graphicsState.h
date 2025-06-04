@@ -107,16 +107,22 @@ This is the MIT License
 
         void filter();
         void image();
+        void imageMask();
         void colorImage();
-        void renderImage(HBITMAP hbmResult,object *pWidth,object *pHeight);
-        void renderImage(HBITMAP hbmResult,uint16_t width,uint16_t height);
 
         font *findFont(char *pszFontName);
 
         void setLineCap(long v);
         void setLineJoin(long v);
         void setLineWidth(FLOAT v);
+        void setMiterLimit(FLOAT v);
+
         void setLineDash(array *pArray,FLOAT offset);
+
+        void getLineCap(long *pV);
+        void getLineJoin(long *pV);
+        void getLineWidth(FLOAT *pV);
+        void getMiterLimit(FLOAT *pV);
 
         void setStrokeAdjustmentParameter(object *pBool);
 
@@ -125,7 +131,9 @@ This is the MIT License
 
         void setColor(colorSpace *);
         void setRGBColor(COLORREF rgb);
+        void getRGBColor(COLORREF *pRGB);
         void setRGBColor(FLOAT r,FLOAT g,FLOAT b);
+        void getRGBColor(FLOAT *pR,FLOAT *pG,FLOAT *pB);
 
         POINTF *CurrentPoint();
 
@@ -145,7 +153,7 @@ This is the MIT License
 
         boolean strokeAdjustmentParameter{true};
 
-        uint8_t *getBitmapBits(uint8_t *pbImage,uint32_t cbData,uint16_t width,uint16_t height,uint8_t bitsPerComponent,array *pDecodeArray);
+        uint8_t *getBitmapBits(uint8_t *pbImage,long cbData,long width,long height,long bitsPerComponent,array *pDecodeArray);
 
         GS_POINT currentUserSpacePoint POINT_TYPE_NAN_POINT;
 

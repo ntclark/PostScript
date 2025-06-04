@@ -69,6 +69,10 @@ class graphicsState;
 
         static font *scaleFont(FLOAT scaleFactor,font *pCopyFrom);
 
+        class IProvideGlyphData : IFMClient_ProvideFontData {
+            STDMETHOD(GetGlyphData)(unsigned short bGlyph,UINT_PTR *ppGlyphData);
+        } static ifmClient_ProvideGlyphData;
+
     private:
 
         void createDictionary();
@@ -82,7 +86,6 @@ class graphicsState;
         FontType fontType{FontType::typeUnspecified};
         dictionary *pCharStrings{NULL};
         array *pEncoding{NULL};
-        array *pSfntsArray{NULL};
 
         static std::map<uint32_t,char *> adobeGlyphList;
 

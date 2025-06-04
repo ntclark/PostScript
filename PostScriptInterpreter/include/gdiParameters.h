@@ -35,13 +35,21 @@ This is the MIT License
         void setLineCap(long v);
         void setLineJoin(long v);
         void setLineWidth(FLOAT v);
+        void setMiterLimit(FLOAT v);
         void setLineDash(FLOAT *pValues,long countValues,FLOAT offset);
+
+        void getLineCap(long *pv);
+        void getLineJoin(long *pv);
+        void getLineWidth(FLOAT *pv);
+        void getMiterLimit(FLOAT *pv);
 
         void setColorSpace(colorSpace *pColorSpace);
         colorSpace *getColorSpace();
 
         void setColor(colorSpace *pColorSpace);
         void setRGBColor(COLORREF rgb);
+        void getRGBColor(COLORREF *pRGB);
         void setRGBColor(FLOAT r,FLOAT g,FLOAT b);
+        void getRGBColor(FLOAT *pR,FLOAT *pG,FLOAT *pB);
 
     };

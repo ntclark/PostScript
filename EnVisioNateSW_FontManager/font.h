@@ -563,7 +563,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
     class otCompositeGlyph : public otGlyphGeometry {
     public:
 
-        otCompositeGlyph(font *pFont,otGlyphHeader *ph,BYTE *pb);
+        otCompositeGlyph(font *pFont,otGlyphHeader *ph,BYTE *pb,IFMClient_ProvideFontData *pvExternalGlyphData);
         ~otCompositeGlyph();
 
         // otGlyphGeometry
@@ -641,16 +641,18 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
     struct otHorizontalMetricsTable {
         otHorizontalMetricsTable(long cntGlyphs,long cntMetrics,BYTE *pb) {
-            pHorizontalMetrics = new otLongHorizontalMetric[cntGlyphs];
-            for ( long k = 0; k < cntMetrics; k++ ) {
+            long maxCount = max(cntGlyphs,cntMetrics);
+            pHorizontalMetrics = new otLongHorizontalMetric[maxCount];
+            long minCount = min(cntGlyphs,cntMetrics);
+            for ( long k = 0; k < minCount; k++ ) {
                 pHorizontalMetrics[k].load(pb);
                 pb += sizeof(otLongHorizontalMetric);
             }
-            if ( cntMetrics == cntGlyphs )
-                return;
-            for ( long k = 0; k < cntGlyphs - cntMetrics; k++ ) {
-                pHorizontalMetrics[cntMetrics + k].advanceWidth = pHorizontalMetrics[cntMetrics - 1].advanceWidth;
-                BE_TO_LE_16(pb,pHorizontalMetrics[cntMetrics + k].lsb)
+            //if ( cntMetrics == cntGlyphs )
+            //    return;
+            for ( long k = 0; k < maxCount - minCount; k++ ) {
+                pHorizontalMetrics[minCount + k].advanceWidth = pHorizontalMetrics[minCount - 1].advanceWidth;
+                BE_TO_LE_16(pb,pHorizontalMetrics[minCount + k].lsb)
             }
         }
         ~otHorizontalMetricsTable() {
@@ -673,16 +675,18 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
 
     struct otVerticalMetricsTable {
         otVerticalMetricsTable(long cntGlyphs,long cntMetrics,BYTE *pb) {
-            pVerticalMetrics = new otLongVerticalMetric[cntGlyphs];
-            for ( long k = 0; k < cntMetrics; k++ ) {
+            long maxCount = max(cntGlyphs,cntMetrics);
+            pVerticalMetrics = new otLongVerticalMetric[maxCount];
+            long minCount = min(cntGlyphs,cntMetrics);
+            for ( long k = 0; k < minCount; k++ ) {
                 pVerticalMetrics[k].load(pb);
                 pb += sizeof(otLongVerticalMetric);
             }
-            if ( cntMetrics == cntGlyphs )
-                return;
-            for ( long k = 0; k < cntGlyphs - cntMetrics; k++ ) {
-                pVerticalMetrics[cntMetrics + k].advanceHeight = pVerticalMetrics[cntMetrics - 1].advanceHeight;
-                BE_TO_LE_16(pb,pVerticalMetrics[cntMetrics + k].topSideBearing)
+            //if ( cntMetrics == cntGlyphs )
+            //    return;
+            for ( long k = 0; k < maxCount - minCount; k++ ) {
+                pVerticalMetrics[minCount + k].advanceHeight = pVerticalMetrics[minCount - 1].advanceHeight;
+                BE_TO_LE_16(pb,pVerticalMetrics[minCount + k].topSideBearing)
             }
         }
         otLongVerticalMetric *pVerticalMetrics;
@@ -1069,7 +1073,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
                                         long cbScript,char *pszScript,long *pFontWeight,FLOAT *pSize,
                                         UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
-        STDMETHOD(RenderGlyph)(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,
+        STDMETHOD(RenderGlyph)(unsigned short bGlyph,UINT_PTR pIFMClient_ProvideFontData,UINT_PTR pPSXform,
                                 POINTF *pStartPoint,POINTF *pEndPoint);
 
         STDMETHOD(SaveState)();
@@ -1088,7 +1092,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
     private:
 
         HRESULT drawType3Glyph(unsigned short,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
-        HRESULT drawType42Glyph(unsigned short,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType42Glyph(unsigned short,IFMClient_ProvideFontData *pIFMClient_ProvideFontData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
 
         HRESULT type42Load(BYTE *pbData = NULL,boolean enforceRequiredTables = false);
 

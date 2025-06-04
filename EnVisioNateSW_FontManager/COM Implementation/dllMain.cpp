@@ -69,7 +69,7 @@ This is the MIT License
     static Factory objectFactory;
 
     STDAPI DllCanUnloadNow(void) {
-    return S_FALSE;
+    return S_OK;
     }
 
 

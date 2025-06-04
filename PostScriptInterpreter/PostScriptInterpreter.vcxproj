@@ -295,7 +295,6 @@ regsvr32 /s "$(TargetPath)"
   </ItemGroup>
   <ItemGroup>
     <Text Include="LICENSE.txt" />
-    <Text Include="resources\glyphList.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PostScript.rc" />
@@ -355,6 +354,7 @@ regsvr32 /s "$(TargetPath)"
     <None Include="Readme.md" />
     <None Include="Sources\COM Events\Readme.md" />
     <None Include="Sources\COM Interfaces\Readme.md" />
+    <None Include="Sources\PostScript.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

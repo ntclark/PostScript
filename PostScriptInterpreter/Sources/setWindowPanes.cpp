@@ -151,7 +151,7 @@ This is the MIT License
     FillRect(hdcFrame,&rcRightEdge,(HBRUSH)(COLOR_3DFACE + 1));
     ::ReleaseDC(hwndHost,hdcFrame);
 
-    graphicsState::SetSurface(hwndClient,pPostScriptInterpreter -> pageBitmaps.size());
+    graphicsState::SetSurface(hwndClient,(long)pPostScriptInterpreter -> pageBitmaps.size());
 
     return;
     }

@@ -69,7 +69,7 @@ This is the MIT License
     IWICBitmap *pIBitmap = NULL;
     IWICBitmapLock *pILock = NULL;
 
-    WICRect rcLock = { 0, 0, (int)width, (int)height};
+    WICRect rcLock = { 0, 0, (int)abs(width), (int)abs(height)};
 
     hr = pIWICImagingFactory -> CreateBitmapFromSource(pIWICBitmapFrameDecode,WICBitmapCacheOnDemand,&pIBitmap);
 
@@ -116,7 +116,6 @@ This is the MIT License
     pOut -> eM12 = (FLOAT)theMatrixInverted[0][1];
     pOut -> eM21 = (FLOAT)theMatrixInverted[1][0];
     pOut -> eM22 = (FLOAT)theMatrixInverted[1][1];
-
     pOut -> eDx = (FLOAT)theMatrixInverted[0][2];
     pOut -> eDy = (FLOAT)theMatrixInverted[1][2];
 
