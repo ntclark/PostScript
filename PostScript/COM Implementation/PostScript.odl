@@ -1,4 +1,4 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
+// Copyright 2017 EnVisioNate LLC. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 [ 
    uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A5A),
-   helpstring("InnoVisioNate PostScript interpreter"), 
+   helpstring("EnVisioNate PostScript interpreter"), 
    lcid(0x0), 
    version(1.0)
 ] 

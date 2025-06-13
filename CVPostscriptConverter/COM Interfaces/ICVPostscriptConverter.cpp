@@ -72,7 +72,7 @@
 
         strcpy(pszStart,pLF);
 
-        *pSize -= pLF - pszStart;
+        *pSize -= (long)(pLF - pszStart);
 
         pszCurrent += 16;
 

@@ -12,11 +12,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "\0"
-            VALUE "CompanyName", "InnoVisioNate\0"
+            VALUE "CompanyName", "EnVisioNate\0"
             VALUE "FileDescription", "A COM object that can convert PS output from the CursiVision Print driver to PDF\0"
             VALUE "FileVersion", CV_PRODUCT_VERSION
             VALUE "InternalName", "CVPostscriptCOnverter.dll\0"
-            VALUE "LegalCopyright", "Copyright © 2009-2023 InnoVisioNate Inc.\0"
+            VALUE "LegalCopyright", "Copyright © 2009-2025 EnVisioNate LLC.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "CVPostscriptCOnverter.dll\0"
             VALUE "PrivateBuild", "\0"

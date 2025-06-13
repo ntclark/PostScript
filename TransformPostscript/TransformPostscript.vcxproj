@@ -93,17 +93,17 @@ if '$(BUILDER)' == 'JENKINS' (
 
 if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
-      echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-      copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      echo copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramFiles)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\EnVisioNate\CursiVision"
       )
    )
 )</Command>
@@ -128,17 +128,17 @@ if '$(BUILDER)' == 'JENKINS' (
 
 if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
-      echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-      copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      echo copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramFiles)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\EnVisioNate\CursiVision"
       )
    )
 )</Command>
@@ -167,17 +167,17 @@ if '$(BUILDER)' == 'JENKINS' (
 
 if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
-      echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-      copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      echo copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramFiles)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\EnVisioNate\CursiVision"
       )
    )
 )</Command>
@@ -206,17 +206,17 @@ if '$(BUILDER)' == 'JENKINS' (
 
 if '$(USERNAME)' == 'Nate' (
    if '$(PlatformTarget)' == 'x64' (
-      echo copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-      copy "$(TargetPath)" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+      echo copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramW6432)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\InnoVisioNate\CursiVision"
+         echo copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramW6432)\EnVisioNate\CursiVision"
       )
    )
    if '$(Platform)' == 'Win32' (
-      copy "$(TargetPath)" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+      copy "$(TargetPath)" "$(ProgramFiles)\EnVisioNate\CursiVision"
       if '$(Configuration)' == 'Debug' (
-         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\InnoVisioNate\CursiVision"
+         copy "$(OutDir)$(TargetName).pdb" "$(ProgramFiles)\EnVisioNate\CursiVision"
       )
    )
 )</Command>

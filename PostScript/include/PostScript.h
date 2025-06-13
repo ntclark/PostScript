@@ -1,4 +1,4 @@
-// Copyright 2017 InnoVisioNate Inc. All rights reserved.
+// Copyright 2017 EnVisioNate LLC. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@
 
 //#define DO_RTF
 #define PS_VERSION   3000L
-#define PRODUCT_NAME "InnoVisioNate PostScript interpreter"
+#define PRODUCT_NAME "EnVisioNate PostScript interpreter"
 
 #define DRAW_TEXT       0
 
