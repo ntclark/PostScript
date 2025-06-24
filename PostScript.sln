@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformPostscript", "Tran
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CVPostscriptConverter", "CVPostscriptConverter\CVPostscriptConverter.vcxproj", "{FCD3A238-382C-437E-B76D-BC2CA675225B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CV Ghostscript", "..\CursiVision gs\CV Ghostscript\CV Ghostscript.vcxproj", "{7BB784A7-35F9-4161-84C5-0B30DD3B9A5E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,19 +28,13 @@ Global
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Debug|Win32.Build.0 = Debug|Win32
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Debug|x64.ActiveCfg = Debug|x64
-		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Debug|x64.Build.0 = Debug|x64
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|Win32.ActiveCfg = Release|Win32
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|Win32.Build.0 = Release|Win32
 		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|x64.ActiveCfg = Release|x64
-		{5F63389A-7FEB-48CD-8463-1B11145C826B}.Release|x64.Build.0 = Release|x64
 		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Debug|x64.ActiveCfg = Debug|x64
 		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Release|Win32.ActiveCfg = Release|Win32
 		{FCD3A238-382C-437E-B76D-BC2CA675225B}.Release|x64.ActiveCfg = Release|x64
-		{7BB784A7-35F9-4161-84C5-0B30DD3B9A5E}.Debug|Win32.ActiveCfg = Debug|Win32
-		{7BB784A7-35F9-4161-84C5-0B30DD3B9A5E}.Debug|x64.ActiveCfg = Debug|x64
-		{7BB784A7-35F9-4161-84C5-0B30DD3B9A5E}.Release|Win32.ActiveCfg = Release|Win32
-		{7BB784A7-35F9-4161-84C5-0B30DD3B9A5E}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
