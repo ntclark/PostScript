@@ -40,7 +40,7 @@ This is the MIT License
 #define MY_EVENT_INTERFACE IID_IRendererNotifications
 #define MY_EVENT_CLASS IRendererNotifications
 
-#define GUID_PRINT_LENGTH 40
+#define GUID_PRINT_LENGTH 39
 
 int Mx3Inverse(double *pSource,double *pTarget);
 
@@ -618,19 +618,19 @@ int Mx3Inverse(double *pSource,double *pTarget);
             };
 
             struct image {
-                image(HBITMAP hbm,long x,long y,long wp,long hp,long wi,long hi) :
+                image(HBITMAP hbm,uint32_t x,uint32_t y,uint32_t wp,uint32_t hp,uint32_t wi,uint32_t hi) :
                     hBitmap(hbm),
-                    locPixels{x,y},
+                    locPixels{(long)x,(long)y},
                     widthImage(wi),
                     heightImage(hi),
                     widthPixels(wp),
                     heightPixels(hp) {
                 }
                 POINTL locPixels{0,0};
-                long widthImage{0};
-                long heightImage{0};
-                long widthPixels{0};
-                long heightPixels{0};
+                uint32_t widthImage{0};
+                uint32_t heightImage{0};
+                uint32_t widthPixels{0};
+                uint32_t heightPixels{0};
                 HBITMAP hBitmap{NULL};
                 ~image() {
                 if ( ! ( NULL == hBitmap ) ) 
@@ -639,8 +639,8 @@ int Mx3Inverse(double *pSource,double *pTarget);
             };
 
             struct imageMask {
-                imageMask(uint8_t *pb,COLORREF cc,long x,long y,long wp,long hp,long wi,long hi,boolean p) :
-                    locPixels{x,y},
+                imageMask(uint8_t *pb,COLORREF cc,uint32_t x,uint32_t y,uint32_t wp,uint32_t hp,uint32_t wi,uint32_t hi,boolean p) :
+                    locPixels{(long)x,(long)y},
                     pbMaskingBytes(pb),
                     currentColor(cc),
                     widthImage(wi),
@@ -653,10 +653,10 @@ int Mx3Inverse(double *pSource,double *pTarget);
                     delete [] pbMaskingBytes;
                 }
                 POINTL locPixels{0L,0L};
-                long widthImage{0};
-                long heightImage{0};
-                long widthPixels{0};
-                long heightPixels{0};
+                uint32_t widthImage{0};
+                uint32_t heightImage{0};
+                uint32_t widthPixels{0};
+                uint32_t heightPixels{0};
                 boolean polarity{true};
                 COLORREF currentColor{RGB(0,0,0)};
                 uint8_t *pbMaskingBytes{NULL};

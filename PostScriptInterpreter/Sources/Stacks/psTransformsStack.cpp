@@ -45,7 +45,6 @@ This is the MIT License
     matrix *pMatrix = new (pJob -> CurrentObjectHeap()) matrix(pJob);
     pMatrix -> copyFrom(back());
     push_back(pMatrix);
-    PostScriptInterpreter::pIRenderer -> SaveState();
     return;
     }
 
@@ -58,6 +57,5 @@ This is the MIT License
         return;
 }
     pop_back();
-    PostScriptInterpreter::pIRenderer -> RestoreState();
     return;
     }

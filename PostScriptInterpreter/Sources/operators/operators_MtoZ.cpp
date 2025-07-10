@@ -1152,6 +1152,42 @@ This is the MIT License
     restore
         save restore -
 
+    resets virtual memory (VM) to the state represented by the supplied save object—
+    in other words, the state at the time the corresponding save operator was executed. 
+    See Section 3.7, “Memory Management,” for a description of VM and the effects of 
+    save and restore.
+
+    If the current execution context supports job encapsulation and if save represents
+    the outermost saved VM state for this context, then objects in both local and
+    global VM revert to their saved state. If the current context does not support job
+    encapsulation or if save is not the outermost saved VM state for this context, then
+    only objects in local VM revert to their saved state; objects in global VM are 
+    undisturbed. Job encapsulation is described in Section 3.7.7, “Job Execution Environment.”
+
+    restore can reset VM to the state represented by any save object that is still valid,
+    not necessarily the one produced by the most recent save. After restoring VM,
+    restore invalidates its save operand along with any other save objects created more
+    recently than that one. That is, a VM snapshot can be used only once; to restore
+    the same environment repeatedly, it is necessary to do a new save each time.
+
+    restore does not alter the contents of the operand, dictionary, or execution stack,
+    except to pop its save operand. If any of these stacks contains composite objects
+    whose values reside in local VM and are newer than the snapshot being restored,
+    an invalidrestore error occurs. This restriction applies to save objects and, in
+    LanguageLevel 1, to name objects.
+
+    restore does alter the graphics state stack: it performs the equivalent of a
+    grestoreall and then removes the graphics state created by save from the graphics
+    state stack. restore also resets several per-context parameters to their state at the
+    time of save. These include:
+
+        • Array packing mode (see setpacking)
+        • VM allocation mode (see setglobal)
+        • Object output format (see setobjectformat)
+        • All user interpreter parameters (see setuserparams)
+
+    Errors: invalidrestore, stackunderflow, typecheck
+    See Also: save, grestoreall, vmstatus, startjob
 */
     save *pSave = reinterpret_cast<save *>(pop());
 
@@ -1400,7 +1436,9 @@ This is the MIT License
     state stack in a manner similar to gsave. This saved graphics state is restored by
     restore and grestoreall.
 */
+
     currentGS() -> save();
+
     return;
     }
 

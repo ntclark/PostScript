@@ -5,7 +5,7 @@
 
 /*
     rendererDemo is a very simple windows application to show how the 
-    EnVisioNateSW Renderer work so you can see how to use it 
+    EnVisioNateSW Renderer works so you can see how to use it 
     easily in any of your own software.
 */
 

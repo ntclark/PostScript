@@ -122,6 +122,7 @@ This is the MIT License
         strcpy(pszRemainder,p + strlen(pszTarget));
         sprintf(p,"%s%s",pszReplacement,pszRemainder);
         p = strstr(pszSource,pszTarget);
+        delete [] pszRemainder;
     }
 
     return;

@@ -94,11 +94,13 @@ This is the MIT License
 
     uint8_t *pbRGBImage = getBitmapBits(pbImage,cbData,width,height,bitsPerComponent,pDecodeArray);
 
-    PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbRGBImage,
-                                                (UINT_PTR)pImageXForm,(UINT_PTR)pPSXformsStack -> CurrentTransform(),
-                                                    width,height,bitsPerComponent);
+    if ( ! ( NULL == pbRGBImage ) ) {
+        PostScriptInterpreter::pIGraphicElements -> PostScriptImage(pPostScriptInterpreter -> GetDC(),(UINT_PTR)pbRGBImage,
+                                                    (UINT_PTR)pImageXForm,(UINT_PTR)pPSXformsStack -> CurrentTransform(),
+                                                        width,height,bitsPerComponent);
 
-    CoTaskMemFree(pbRGBImage);
+        CoTaskMemFree(pbRGBImage);
+    }
 
     pFilter -> releaseData();
 
@@ -264,7 +266,6 @@ This is the MIT License
     COLORREF rgbColor;
 
     getRGBColor(&rgbColor);
-colorSpace *pcp = getColorSpace();
 
     long width = pObjWidth -> IntValue();
     long height = pObjHeight -> IntValue(); 
@@ -283,7 +284,13 @@ colorSpace *pcp = getColorSpace();
     uint8_t *graphicsState::getBitmapBits(uint8_t *pbImage,long cbData,long width,long height,
                                             long bitsPerComponent,array *pDecodeArray) {
 
-    uint8_t *pbRGBImage = NULL;
+    //
+    // In all cases, a 24-bit RGB image will result
+    //
+
+    long widthBytes = 3 * width;
+    long stride = ((((width * 24) + 31) & ~31) >> 3);
+    long padding = stride - widthBytes;
 
     colorSpace *pColorSpace = getColorSpace();
 
@@ -297,6 +304,13 @@ colorSpace *pcp = getColorSpace();
 
         uint8_t *pbNext = pbImage;
         uint8_t *pbLast = pbImage + cbData;
+
+        uint8_t *pbRGBImage = NULL;
+
+        //
+        // NTC (07/01/2025): If the lookup value is NOT a binary string,
+        // pbRGBImage will be returned as NULL.
+        // I'll debug break when there's an example of this
 
         if ( object::valueType::binaryString == pLookup -> ValueType() ) {
 
@@ -313,21 +327,14 @@ colorSpace *pcp = getColorSpace();
             */
             uint8_t m = (uint8_t)pColorSpace -> ParameterCount();
 
-            uint32_t countColorEntries = cbData * 8 / bitsPerComponent;
-            uint32_t countRows = countColorEntries / width;
-
-            long widthBytes = 3 * width;
-            long stride = ((((width * 24) + 31) & ~31) >> 3);
-            long padding = stride - widthBytes;
-
-            pbRGBImage = (uint8_t *)CoTaskMemAlloc(stride * countRows);
+            pbRGBImage = (uint8_t *)CoTaskMemAlloc(stride * height);
 
             uint32_t compIndex = 1;
             uint16_t byteCount = 0;
 
             uint8_t *pbRGBTarget = pbRGBImage - 3;
 
-            for ( uint32_t row = 0; row < countRows; row++ ) {
+            while ( pbNext < pbLast ) {
 
                 uint16_t index;
 
@@ -394,23 +401,24 @@ colorSpace *pcp = getColorSpace();
                 compIndex++;
 
             }
-
         }
+#if _DEBUG
+        else
+            __debugbreak();
+#endif
 
         return pbRGBImage;
 
     }
 
-    pbRGBImage = (uint8_t *)CoTaskMemAlloc(cbData);
-
-    memcpy(pbRGBImage,pbImage,cbData);
+    uint8_t parameterCount = pColorSpace -> ParameterCount();
 
     if ( ! ( NULL == pDecodeArray ) ) {
 
         double tnm1 = pow(2,bitsPerComponent);
         uint8_t TwoNminus1 = (uint8_t)tnm1 - 1;
 
-        for ( long k = 0; k < pColorSpace -> ParameterCount(); k++ ) {
+        for ( long k = 0; k < parameterCount; k++ ) {
 
             // At some point, I believe I encountered a Decode array
             // smaller than required. The documentation does not say whether
@@ -420,20 +428,48 @@ colorSpace *pcp = getColorSpace();
             if ( 2 * k >= pDecodeArray -> size() )
                 break;
 
-            FLOAT dMin = pDecodeArray -> getElement(0 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
-            FLOAT dMax = pDecodeArray -> getElement(1 + 2 * k) -> OBJECT_POINT_TYPE_VALUE;
+            FLOAT dMin = pDecodeArray -> getElement(0 + 2 * k) -> FloatValue();
+            FLOAT dMax = pDecodeArray -> getElement(1 + 2 * k) -> FloatValue();
 
             if ( 0.0 == dMin && 1.0 == dMax )
                 continue;
-
+#if _DEBUG
+            // I would like to have an example of this situation.
+            __debugbreak();
+#endif
             FLOAT factor = (FLOAT)(dMax - dMin) / (FLOAT)TwoNminus1;
-            uint8_t *pbNext = pbRGBImage + k;
+            uint8_t *pbNext = pbImage + k;
             uint8_t *pbLast = pbNext + cbData;
             do {
                 *pbNext = (uint8_t)(dMin + ( (FLOAT)*pbNext * factor ) * TwoNminus1);
-                pbNext += pColorSpace -> ParameterCount();
+                pbNext += parameterCount;
             } while ( pbNext < pbLast );
         }
+
+    }
+
+    //
+    // In all cases, a 24-bit RGB image will result
+    //
+
+    uint32_t cbTotal = stride * labs(height);
+    uint8_t *pbRGBImage = (uint8_t *)CoTaskMemAlloc(cbTotal);
+
+    uint8_t *pbTarget = pbRGBImage;
+    uint8_t *pbSource = pbImage;
+    uint32_t widthSourceBytes = width * parameterCount;
+
+#if _DEBUG
+    if ( ! ( widthSourceBytes== widthBytes ) ) 
+            // I would like to have an example of this situation.
+        __debugbreak();
+#endif
+
+    for ( uint32_t row = 0; row < labs(height); row++ ) {
+        memcpy(pbTarget,pbSource,widthSourceBytes);
+        pbTarget += widthBytes;
+        pbTarget += padding;
+        pbSource += widthSourceBytes;
     }
 
     if ( 0 == strcmp(csFamily -> Contents(),"DeviceRGB") ) {

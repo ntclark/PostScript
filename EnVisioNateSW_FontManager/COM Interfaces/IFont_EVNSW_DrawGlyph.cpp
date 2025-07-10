@@ -48,9 +48,6 @@ This is the MIT License
     uint16_t glyphIndex;
     BYTE *pbGlyphData = NULL;
 
-if ( 3 == bGlyph )
-printf("hello world");
-
     if ( NULL == pIProvideFontData ) {
 
         get_GlyphIndex(glyph,&glyphIndex);
@@ -134,8 +131,6 @@ printf("hello world");
     // use the translation components of the CTM)
     //
 
-#if 1
-
     XFORM identity{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
     FontManager::pIRenderer -> put_ToPageTransform((UINT_PTR)&identity);
 
@@ -144,13 +139,6 @@ printf("hello world");
     xFormScaleOnly.eDy = 0.0f;
 
     pMatrix -> concat(&xFormScaleOnly);
-
-#else
-    XFORM xFormScaleOnly = *(XFORM *)pPSXform;
-    xFormScaleOnly.eDx = 0.0f;
-    xFormScaleOnly.eDy = 0.0f;
-    FontManager::pIRenderer -> put_ToPageTransform((UINT_PTR)&xFormScaleOnly);
-#endif
 
     // Transform Glyph coordinates using current font matrix
     pMatrix -> concat(matrixStack.top());
@@ -259,8 +247,6 @@ CaptureBezier:
         FontManager::pIGraphicElements -> LineTo((FLOAT)pPoints -> x,(FLOAT)pPoints -> y);
         currentPoint.x = pPoints -> x;
         currentPoint.y = pPoints -> y;
-
-        FontManager::pIGraphicElements -> ClosePath();
 
     }
 

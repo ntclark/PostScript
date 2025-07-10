@@ -76,8 +76,8 @@ HBITMAP getSampleImage(HDC hdc);
     //
     // However, right-handed coordinate systems,
     // which we are working with, are positive
-    // bottom to top. This "flips" the values
-    // when the Renderer does it's final 
+    // bottom to top. That negative value "flips" 
+    // the values when the Renderer does it's final 
     // transformation.
     //
     // The eDy value is also important,
@@ -103,6 +103,13 @@ HBITMAP getSampleImage(HDC hdc);
 
     pIGraphicParameters -> put_RGBColor(RGB(0,0,0));
 
+    //
+    // line width is in units of user space
+    // In our case, user space is 0 <-> 100
+    // so a lineWidth of 0.25/100 works
+    //
+    pIGraphicParameters -> put_LineWidth(0.25f);
+
     FLOAT x = 0.0f;
     FLOAT y = 0.0f;
 
@@ -122,30 +129,77 @@ HBITMAP getSampleImage(HDC hdc);
 
     char szTic[16];
 
+    // Note that mixing line graphics with text causes a degredation 
+    // in performance.
+    // Specifically, this is because text is always "fill" graphics, and 
+    // line graphics generally are not - AND - as "fill" or "no fill" switches,
+    // the system internally has to recreate the underlying graphics parameters
+    // which is slow
+    // I've repeated the following loop to allow you to see this
+
     do {
 
-        sprintf_s<16>(szTic,"%4.1f",x);
-
+#if 1
         pIGraphicElements -> MoveTo(x,xTicSize / 2.0f);
         pIGraphicElements -> LineToRelative(0.0f,-xTicSize);
         if ( useGrid )
             pIGraphicElements -> LineToRelative(0.0f,100.0f + xTicSize / 2.0f);
 
+#else
+        sprintf_s<16>(szTic,"%4.1f",x);
         pIGraphicElements -> StrokePath();
         drawText(hdc,(char *)szTic,x,-1.25f * xTicSize,DT_CENTER | DT_TOP);
+#endif
 
+#if 1
         pIGraphicElements -> MoveTo(-yTicSize / 2,y);
         pIGraphicElements -> LineToRelative(yTicSize,0.0f);
         if ( useGrid )
             pIGraphicElements -> LineToRelative(100.0f - yTicSize / 2.0f,0.0f);
-
+#else
         pIGraphicElements -> StrokePath();
         drawText(hdc,(char *)szTic,-yTicSize,y,DT_RIGHT | DT_VCENTER);
+#endif
 
         x += deltaX;
         y += deltaY;
 
     } while ( x <= 100.0f );
+
+    x = 0.0f;
+    y = 0.0f;
+
+    pIGraphicElements -> StrokePath();
+
+    do {
+
+#if 0
+        pIGraphicElements -> MoveTo(x,xTicSize / 2.0f);
+        pIGraphicElements -> LineToRelative(0.0f,-xTicSize);
+        if ( useGrid )
+            pIGraphicElements -> LineToRelative(0.0f,100.0f + xTicSize / 2.0f);
+
+#else
+        sprintf_s<16>(szTic,"%4.1f",x);
+        drawText(hdc,(char *)szTic,x,-1.25f * xTicSize,DT_CENTER | DT_TOP);
+#endif
+
+#if 0
+        pIGraphicElements -> MoveTo(-yTicSize / 2,y);
+        pIGraphicElements -> LineToRelative(yTicSize,0.0f);
+        if ( useGrid )
+            pIGraphicElements -> LineToRelative(100.0f - yTicSize / 2.0f,0.0f);
+#else
+        pIGraphicElements -> StrokePath();
+        drawText(hdc,(char *)szTic,-yTicSize,y,DT_RIGHT | DT_VCENTER);
+#endif
+
+        x += deltaX;
+        y += deltaY;
+
+    } while ( x <= 100.0f );
+
+    pIGraphicParameters -> put_LineWidth(0.5f);
 
     pIGraphicElements -> Circle(60.0f,20.0f,1.0f);
     pIGraphicElements -> StrokePath();
@@ -227,6 +281,7 @@ HBITMAP getSampleImage(HDC hdc);
     // Note that with a QuadraticBezier curve, it starts where the last primitive
     // left off. Therefore, you need to call MoveTo if you want the curve to start
     // elsewhere
+
     pIGraphicElements -> MoveTo(bezierPoints[0].x,bezierPoints[0].y);
     pIGraphicElements -> QuadraticBezier(bezierPoints[1].x,bezierPoints[1].y,bezierPoints[2].x,bezierPoints[2].y);
 

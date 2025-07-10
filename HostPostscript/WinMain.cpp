@@ -88,11 +88,11 @@ boolean useGSProperties = true;
         sprintf_s<1024>(szMessage,
             "Note that this project uses the Properties "
             "component developed by EnVisioNateSW.\n\n"
-            "The component is open source, however, to\n"
+            "That component is open source, however, to\n"
             "simplify your use of this project the binary\n"
-            "for that component is included in the \n"
+            "for it component is included in the \n"
             "Common Repository.\n\n"
-            "The component, however, needs to be registered.\n\n"
+            "However, it needs to be registered.\n\n"
             "To register it, in a DOS  prompt with\n"
             "administrative privileges, CD to the folder \n"
             "\"%s\\\"\n"
@@ -212,8 +212,13 @@ boolean useGSProperties = true;
     rc = pParsePSHost -> pIOleObject_HTML -> QueryInterface(IID_IOleInPlaceObject,reinterpret_cast<void **>(&pParsePSHost -> pIOleInPlaceObject_HTML));
     pParsePSHost -> pIOleObject_HTML -> SetClientSite(pParsePSHost -> pIOleClientSite_HTML_Host);
 
-    if ( 1 < argc )
+    if ( 1 < argc ) {
         pParsePSHost -> pIPostScript -> SetSource((char *)argv[1]);
+        if ( 2 < argc ) {
+            if ( 0 == _stricmp(argv[2],"parse") )
+                pParsePSHost -> pIPostScript -> Parse();
+        }
+    }
 
     SetWindowPos(pParsePSHost -> hwndFrame,HWND_TOP,rcFrame.left,rcFrame.top,rcFrame.right - rcFrame.left,rcFrame.bottom - rcFrame.top,SWP_SHOWWINDOW);
 

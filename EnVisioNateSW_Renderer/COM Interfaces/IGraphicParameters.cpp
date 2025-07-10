@@ -255,7 +255,7 @@ This is the MIT License
 
     char *pStart = pszLineSettings + GUID_PRINT_LENGTH;
 
-    sscanf(pStart,"%05f:%05f:%01d:%01d:%01d:%01d:%08ld:%s",&pValues -> lineWidth ,&pValues -> miterLimit,&pValues -> lineCap,&pValues -> lineJoin,
+    sscanf(pStart,"%06f:%05f:%01d:%01d:%01d:%01d:%08ld:%s",&pValues -> lineWidth ,&pValues -> miterLimit,&pValues -> lineCap,&pValues -> lineJoin,
                         &pValues -> lineDashStyle,&pValues -> countDashSizes,&pValues -> rgbColor,szLDashes);
 
     char *pszDash = strtok(szLDashes,",");
@@ -269,7 +269,7 @@ This is the MIT License
         pParent -> pID2D1StrokeStyle1 -> Release();
 
     //
-    // line width is in units of PS user space
+    // line width is in units of user space
     //
     if ( 0.0f < pValues -> lineWidth ) {
         XFORM *pToPageSpace = &pParent -> pGraphicsStateManager -> parametersStack.top() -> toPageSpace;

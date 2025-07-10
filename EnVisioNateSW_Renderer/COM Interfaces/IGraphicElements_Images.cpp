@@ -237,15 +237,20 @@ This is the MIT License
     }
 
 
+//#define DO_STRETCHBLT 1
+
     HRESULT Renderer::applyStencilMask(HDC hdc,GraphicElements::imageMask *pMask) {
 
     HDC hdcSource = CreateCompatibleDC(hdc);
     HBITMAP hbmSource = CreateBitmap(pMask -> widthImage,pMask -> heightImage,1,32,NULL);
     SelectObject(hdcSource,hbmSource);
 
-    StretchBlt(hdcSource,0,0,pMask -> widthImage,pMask -> heightImage,hdc,pMask -> locPixels.x,pMask -> locPixels.y,pMask -> widthPixels,pMask -> heightPixels,SRCCOPY);
+#if DO_STRETCHBLT
 
-    long padding = pMask -> widthImage % 8;
+    StretchBlt(hdcSource,0,0,pMask -> widthImage,pMask -> heightImage,hdc,
+                    pMask -> locPixels.x,pMask -> locPixels.y,pMask -> widthPixels,pMask -> heightPixels,SRCCOPY);
+
+    long padding = 8 - pMask -> widthImage % 8;
 
     uint8_t masks[]{0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 
@@ -278,6 +283,79 @@ This is the MIT License
     }
 
     BOOL rvx = StretchBlt(hdc,pMask -> locPixels.x,pMask -> locPixels.y,pMask -> widthPixels,pMask -> heightPixels,hdcSource,0,0,pMask -> widthImage,pMask -> heightImage,SRCCOPY);
+
+#else
+
+    BitBlt(hdcSource,0,0,pMask -> widthPixels,pMask -> heightPixels,hdc,pMask -> locPixels.x,pMask -> locPixels.y,SRCCOPY);
+
+    long padding = 8 - (pMask -> widthImage % 8);
+    if ( 8 == padding )
+        padding = 0;
+    uint32_t sampleStrideBits = pMask -> widthImage + padding;
+    uint32_t sampleStrideBytes = sampleStrideBits / 8;
+
+    uint32_t cellSize = (uint32_t)round((FLOAT)sampleStrideBits / (FLOAT)pMask -> widthPixels);
+
+    uint8_t masks[]{0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+
+    uint32_t countPixels = 0;
+
+    for ( uint32_t y = 0; y < pMask -> heightImage; y += cellSize )
+        for ( uint32_t x = 0; x < sampleStrideBits; x += cellSize )
+            countPixels++;
+
+    uint32_t countInCell = cellSize * cellSize;
+    boolean *pShowPixel = new boolean[countPixels];
+    memset(pShowPixel,0,countPixels * sizeof(boolean));
+
+    long targetIndex = 0;
+
+    for ( uint32_t y = 0; y < pMask -> heightImage; y += cellSize ) {
+
+        uint8_t maskIndex = 0;
+        uint32_t pbIndex = y * sampleStrideBytes;
+
+        for ( uint32_t x = 0; x < sampleStrideBits; x += cellSize ) {
+
+            uint32_t countOnes = 0;
+
+            for ( uint32_t k = 0; k < cellSize && (x + k) < pMask -> widthImage; k++ ) {
+
+                for ( uint32_t j = 0; j < cellSize && (y + j) < pMask -> heightImage; j++ ) {
+                    if ( pMask -> polarity == (pMask -> pbMaskingBytes[pbIndex + j * sampleStrideBytes] & masks[maskIndex]) )
+                        countOnes++;
+                }
+
+                maskIndex++;
+                if ( 8 == maskIndex ) {
+                    pbIndex++;
+                    maskIndex = 0;
+                }
+
+            }
+
+            pShowPixel[targetIndex++] = (countOnes > countInCell / 2) ? true : false;
+
+        }
+    }
+
+    targetIndex = 0;
+    long yPixel = -1;
+    for ( uint32_t y = 0; y < pMask -> heightImage; y += cellSize ) {
+        yPixel++;
+        long xPixel = -1;
+        for ( uint32_t x = 0; x < sampleStrideBits; x += cellSize ) {
+            xPixel++;
+            if ( pShowPixel[targetIndex++] )
+                SetPixel(hdcSource,xPixel,yPixel,pMask -> currentColor);
+        }
+    }
+
+    BOOL rvx = BitBlt(hdc,pMask -> locPixels.x,pMask -> locPixels.y,pMask -> widthPixels,pMask -> heightPixels,hdcSource,0,0,SRCCOPY);
+
+    delete [] pShowPixel;
+
+#endif
 
     DeleteObject(hbmSource);
     DeleteDC(hdcSource);
