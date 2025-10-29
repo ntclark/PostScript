@@ -258,7 +258,7 @@
    GetObject(currentFont,sizeof(LOGFONT),&logFont);
 
    if ( ! ( '\0' == szFamily[0] ))
-      strcpy(logFont.lfFaceName,szFamily);
+      strncpy(logFont.lfFaceName,szFamily,LF_FACESIZE);
 
 #if USE_ANISOTROPIC
    logFont.lfHeight = (long)fontSize;
