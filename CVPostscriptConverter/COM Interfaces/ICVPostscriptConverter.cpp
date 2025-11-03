@@ -33,6 +33,14 @@
         fclose(fX);
     }
 
+    char szOld[1024];
+    strcpy(szOld,pszPostscriptFileName);
+    char *px = strrchr(szOld,'.');
+    if ( ! ( NULL == px ) && 0 == _strnicmp(px,".ps",3) ) {
+        strcpy(px,".pdf");
+        DeleteFile(szOld);
+    }
+
     Initialize(gsInstance,pszPostscriptFileName);
 
     gsapi_exit(gsInstance);

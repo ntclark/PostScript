@@ -109,7 +109,7 @@
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>regsvr32 /c $(TargetPath)</Command>
+      <Command>regsvr32 /s /c $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -129,7 +129,7 @@
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>regsvr32 /c $(TargetPath)</Command>
+      <Command>regsvr32 /s /c $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -153,7 +153,7 @@
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>regsvr32 /c $(TargetPath)</Command>
+      <Command>regsvr32 /s /c $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -177,7 +177,7 @@
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>regsvr32 /c $(TargetPath)</Command>
+      <Command>regsvr32 /s /c $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
