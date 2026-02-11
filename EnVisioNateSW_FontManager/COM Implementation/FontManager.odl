@@ -89,7 +89,7 @@ library FontManager {
                                     UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
         HRESULT RenderGlyph(unsigned short bGlyph,UINT_PTR pIFMClient_ProvideFontData,/*XFORM*/ UINT_PTR pPSXform,
-                                POINTF *pStartPoint,POINTF *pNextPoint);
+                                POINTF *pStartPoint,POINTF *pNextPoint,[optional] POINTF *pStartPointPDF,[optional] POINTF *pEndPointPDF);
 
         HRESULT SaveState();
         HRESULT RestoreState();
@@ -108,7 +108,7 @@ library FontManager {
         HRESULT ChooseFont(HDC hdc,IFont_EVNSW **ppIFont);
 
         HRESULT RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,/*XFORM*/ UINT_PTR pPSXform,
-                                POINTF *pStartPoint,POINTF *pNextPoint);
+                                POINTF *pStartPoint,POINTF *pNextPoint,[optional] POINTF *pStartPointPDF,[optional] POINTF *pEndPointPDF);
 
         HRESULT ScaleFont(FLOAT scaleFactor);
 
@@ -133,7 +133,7 @@ library FontManager {
 
     [uuid(1FC20340-4355-4347-8A32-A82E2FB89899),
     helpstring("")]
-        coclass FontManager {
+    coclass FontManager {
         [default] interface IFontManager;
         [source] interface IFontManagerNotifications;
     };

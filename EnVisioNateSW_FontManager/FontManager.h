@@ -53,7 +53,7 @@ class font;
         STDMETHOD(ChooseFont)(HDC hdc,IFont_EVNSW **ppIFont);
 
         STDMETHOD(RenderGlyph)(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,
-                                POINTF *pStartPoint,POINTF *pEndPoint);
+                                POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF = NULL,POINTF *pEndPointPDF = NULL);
 
         STDMETHOD(ScaleFont)(FLOAT scaleFactor);
 

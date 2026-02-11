@@ -23,7 +23,6 @@ This is the MIT License
 
 #include "FontManager.h"
 
-
     HRESULT font::QueryInterface(REFIID refIID,void **pvResult) {
 
     if ( ! pvResult )

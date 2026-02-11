@@ -27,6 +27,8 @@ This is the MIT License
 
 #include "Renderer_i.c"
 
+    RendererNoWindow *Renderer::pIRendererNoWindow = NULL;
+
     char Renderer::szLogMessage[1024];
     char Renderer::szStatusMessage[1024];
     char Renderer::szErrorMessage[1024];

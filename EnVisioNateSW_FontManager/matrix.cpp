@@ -264,7 +264,25 @@ int Mx3Inverse(double *sourceMatrix,double *targetMatrix);
     }
 
 
+    void matrix::transformPoint(XFORM *pXForm,POINT *ptIn,POINT *ptOut) {
+    FLOAT x = (FLOAT)ptIn -> x;
+    FLOAT y = (FLOAT)ptIn -> y;
+    ptOut -> x = (long)(pXForm -> eM11 * x + pXForm -> eM12 * y + pXForm -> eDx);
+    ptOut -> y = (long)(pXForm -> eM21 * x + pXForm -> eM22 * y + pXForm -> eDy);
+    return;
+    }
+
+
     void matrix::unTransformPoint(POINTF *ptIn,POINTF *ptOut) {
+    XFORM xfZero{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
+    if ( 0 == memcmp(&xFormInverse,&xfZero,sizeof(XFORM)) )
+        invert();
+    transformPoint(&xFormInverse,ptIn,ptOut);
+    return;
+    }
+
+
+    void matrix::unTransformPoint(POINT *ptIn,POINT *ptOut) {
     XFORM xfZero{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
     if ( 0 == memcmp(&xFormInverse,&xfZero,sizeof(XFORM)) )
         invert();

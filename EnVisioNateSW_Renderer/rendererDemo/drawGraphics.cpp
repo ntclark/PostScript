@@ -336,7 +336,7 @@ HBITMAP getSampleImage(HDC hdc);
         startPoint.y -= pointSize * xFormToPoints.eM22 / 2.0f;
 
     while ( *p ) {
-        pIFont -> RenderGlyph((unsigned short)*p,NULL,(UINT_PTR)&xFormToPoints,&startPoint,&endPoint);
+        pIFont -> RenderGlyph((unsigned short)*p,NULL,(UINT_PTR)&xFormToPoints,&startPoint,&endPoint,NULL,NULL);
         startPoint = endPoint;
         p++;
     }

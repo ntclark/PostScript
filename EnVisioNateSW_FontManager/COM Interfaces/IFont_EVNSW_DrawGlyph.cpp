@@ -25,7 +25,8 @@ This is the MIT License
 
 #define FT_CURVE_TAG_ON 0x01
 
-    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pvIProvideFontData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::RenderGlyph(unsigned short bGlyph,UINT_PTR pvIProvideFontData,UINT_PTR pPSXform,
+                                POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF,POINTF *pEndPointPDF) {
 
     if ( FontType::type3 == theFontType ) 
         return drawType3Glyph(bGlyph,pPSXform,pStartPoint,pEndPoint);
@@ -33,7 +34,7 @@ This is the MIT License
     if ( ! ( FontType::type42 == theFontType ) )
         return E_UNEXPECTED;
 
-    return drawType42Glyph(bGlyph,reinterpret_cast<IFMClient_ProvideFontData *>(pvIProvideFontData),pPSXform,pStartPoint,pEndPoint);
+    return drawType42Glyph(bGlyph,reinterpret_cast<IFMClient_ProvideFontData *>(pvIProvideFontData),pPSXform,pStartPoint,pEndPoint,pStartPointPDF,pEndPointPDF);
     }
 
 
@@ -42,7 +43,8 @@ This is the MIT License
     }
 
 
-    HRESULT font::drawType42Glyph(unsigned short bGlyph,IFMClient_ProvideFontData *pIProvideFontData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT font::drawType42Glyph(unsigned short bGlyph,IFMClient_ProvideFontData *pIProvideFontData,UINT_PTR pPSXform,
+                                        POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF,POINTF *pEndPointPDF) {
 
     uint16_t glyph = bGlyph;
     uint16_t glyphIndex;
@@ -56,21 +58,42 @@ This is the MIT License
 
         if ( NULL == pbGlyphData ) {
             if ( (long)glyph <= countGlyphs ) {
+
                 otLongHorizontalMetric pMetric =  pHorizontalMetricsTable -> pHorizontalMetrics[glyphIndex];
-                if ( ! ( NULL == pEndPoint ) ) {
-                    pEndPoint -> x = pStartPoint -> x + pMetric.advanceWidth * scaleFUnitsToPoints * PointSize();
-                    pEndPoint -> y = pStartPoint -> y;
+
+                if ( ! ( NULL == pEndPoint ) )
+                    *pEndPoint = {pStartPoint -> x + pMetric.advanceWidth * scaleFUnitsToPoints * PointSize(),pStartPoint -> y};
+
+                matrix *pMatrix = NULL;
+
+                if ( ! ( NULL == pStartPointPDF ) ) {
+                    pMatrix = new matrix();
+                    *pStartPointPDF = *pStartPoint;
+                    pMatrix -> transformPoint((XFORM *)pPSXform,pStartPointPDF,pStartPointPDF);
                 }
+
+                if ( ! ( NULL == pEndPointPDF ) ) {
+                    if ( NULL == pMatrix )
+                        pMatrix = new matrix();
+                    *pEndPointPDF = {pStartPoint -> x + pMetric.advanceWidth * scaleFUnitsToPoints * PointSize(),pStartPoint -> y};
+                    pMatrix -> transformPoint((XFORM *)pPSXform,pEndPointPDF,pEndPointPDF);
+                }
+
+                if ( ! ( NULL == pMatrix ) )
+                    delete pMatrix;
+
                 return S_OK;
             }
             return E_FAIL;
         }
 
     } else {
+
         glyphIndex = bGlyph;
         UINT_PTR pUintPtr = NULL;
         pIProvideFontData -> GetGlyphData(bGlyph,&pUintPtr);
         pbGlyphData = (uint8_t *)pUintPtr;
+
     }
 
     otGlyphHeader glyphHeader{0};
@@ -95,6 +118,8 @@ This is the MIT License
 
     FontManager::pIRenderer -> SaveState();
 
+    XFORM *pXFormUserSpaceToPDF = (XFORM *)pPSXform;
+
     matrix *pMatrix = new matrix();
 
     // Transform glyph units to PAGE space
@@ -116,7 +141,11 @@ This is the MIT License
     // applied.
 
     POINTF ptStart{pStartPoint -> x,pStartPoint -> y};
-    pMatrix -> transformPoint((XFORM *)pPSXform,&ptStart,&ptStart);
+    pMatrix -> transformPoint(pXFormUserSpaceToPDF,&ptStart,&ptStart);
+
+    if ( ! ( NULL == pStartPointPDF ) ) 
+        *pStartPointPDF = ptStart;
+
     FontManager::pIRenderer -> put_Origin(ptStart);
     FontManager::pIRenderer -> put_DownScale(64.0f);
 
@@ -134,7 +163,7 @@ This is the MIT License
     XFORM identity{1.0f,0.0f,0.0f,1.0f,0.0f,0.0f};
     FontManager::pIRenderer -> put_ToPageTransform((UINT_PTR)&identity);
 
-    XFORM xFormScaleOnly = *(XFORM *)pPSXform;
+    XFORM xFormScaleOnly = *pXFormUserSpaceToPDF;
     xFormScaleOnly.eDx = 0.0f;
     xFormScaleOnly.eDy = 0.0f;
 
@@ -254,10 +283,48 @@ CaptureBezier:
     FontManager::pIRenderer -> RestoreState();
 
     if ( ! ( NULL == pEndPoint ) ) {
-        POINTF ptAdvance{pGlyphGeometry -> AdvanceWidth() * scaleFUnitsToPoints * PointSize(),0.0f};
-        XFORM *px = (XFORM *)pPSXform;
-        pEndPoint -> x = pStartPoint -> x + ptAdvance.x * px -> eM11;
-        pEndPoint -> y = pStartPoint -> y + ptAdvance.y * px -> eM22;
+        pEndPoint -> x = pStartPoint -> x + scaleFUnitsToPoints * (FLOAT)pGlyphGeometry -> AdvanceWidth() * PointSize();
+        pEndPoint -> y = pStartPoint -> y;
+    }
+
+    if ( ! ( NULL == pEndPointPDF ) ) {
+
+        POINT ptMax;
+        POINT ptMin;
+        if ( ! ( NULL == pCompositeGlyph ) ) {
+            ptMax = {pCompositeGlyph -> MaxY(),pCompositeGlyph -> MaxY()};
+            ptMin = {pCompositeGlyph -> MinY(),pCompositeGlyph -> MinY()};
+        } else {
+            ptMax = {pSimpleGlyph -> MaxY(),pSimpleGlyph -> MaxY()};
+            ptMin = {pSimpleGlyph -> MinY(),pSimpleGlyph -> MinY()};
+        }
+
+        POINTF advancePoint{scaleFUnitsToPoints * (FLOAT)pGlyphGeometry -> AdvanceWidth() * PointSize(),
+                                scaleFUnitsToPoints * (FLOAT)ptMax.y * PointSize()};
+
+        POINTF decendPoint{scaleFUnitsToPoints * (FLOAT)pGlyphGeometry -> AdvanceWidth() * PointSize(),
+                                scaleFUnitsToPoints * (FLOAT)ptMin.y * PointSize()};
+
+        // AdvanceWidth and ptMax.y are NOW in points however, PointSize is probably 1, the current font matrix should put it in 
+        // User Space, then they should be in the point size specified by the font
+
+        pMatrix -> transformPoint(matrixStack.top() -> XForm(),&advancePoint,&advancePoint);
+        pMatrix -> transformPoint(&xFormScaleOnly,&advancePoint,&advancePoint);
+
+        pMatrix -> transformPoint(matrixStack.top() -> XForm(),&decendPoint,&decendPoint);
+        pMatrix -> transformPoint(&xFormScaleOnly,&decendPoint,&decendPoint);
+
+        // advancePoint should now be the movement in actual PDF points
+
+        pStartPointPDF -> y += decendPoint.y;
+        *pEndPointPDF = *pStartPointPDF;
+        pEndPointPDF -> x += advancePoint.x;
+        pEndPointPDF -> y += advancePoint.y;
+
+        long deltaY = pEndPointPDF -> y - pStartPointPDF -> y;
+
+
+
     }
 
     delete pMatrix;

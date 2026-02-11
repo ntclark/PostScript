@@ -2875,6 +2875,12 @@ This is the MIT License
 
     POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
 
+    POINT ptStartPDF{0,0};
+    POINT ptEndPDF{0,0};
+
+    long maxY = -LONG_MAX;
+    long minY = LONG_MAX;
+
     for ( long k = 0; k < strSize; k++ ) {
 
         BYTE glyphIndex;
@@ -2883,7 +2889,13 @@ This is the MIT License
         else
             glyphIndex = pString -> get(k);
 
-        currentGS() -> drawTextChar(glyphIndex);
+        currentGS() -> drawTextChar(glyphIndex,false,0 == k ? &ptStartPDF : NULL,&ptEndPDF);
+
+        if ( ptEndPDF.y > maxY )
+            maxY = ptEndPDF.y;
+
+        if ( ptEndPDF.y < minY )
+            minY = ptEndPDF.y;
 
         object *pX = pNumberArray -> getElement(k);
 
@@ -2891,6 +2903,11 @@ This is the MIT License
 
         currentGS() -> moveto(currentPoint.x,currentPoint.y);
     }
+
+    ptEndPDF.y = maxY;
+    ptStartPDF.y = minY;
+
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStartPDF,&ptEndPDF,pObject -> Contents());
 
     return;
     }
@@ -2934,6 +2951,12 @@ This is the MIT License
 
     POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
 
+    POINT ptStartPDF{0,0};
+    POINT ptEndPDF{0,0};
+
+    long maxY = -LONG_MAX;
+    long minY = LONG_MAX;
+
     for ( long k = 0; k < strSize; k += 2 ) {
 
         BYTE glyphIndex;
@@ -2942,7 +2965,13 @@ This is the MIT License
         else
             glyphIndex = pString -> get(k);
 
-        currentGS() -> drawTextChar(glyphIndex);
+        currentGS() -> drawTextChar(glyphIndex,false,0 == k ? &ptStartPDF : NULL,&ptEndPDF);
+
+        if ( ptEndPDF.y > maxY )
+            maxY = ptEndPDF.y;
+
+        if ( ptEndPDF.y < minY )
+            minY = ptEndPDF.y;
 
         object *pX = pNumberArray -> getElement(k);
         currentPoint.x += pX -> FloatValue();
@@ -2951,6 +2980,11 @@ This is the MIT License
 
         currentGS() -> moveto(currentPoint.x,currentPoint.y);
     }
+
+    ptEndPDF.y = maxY;
+    ptStartPDF.y = minY;
+
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStartPDF,&ptEndPDF,pObject -> Contents());
 
     return;
     }
@@ -2986,6 +3020,12 @@ This is the MIT License
 
     POINTF currentPoint{currentGS() -> CurrentPoint() -> x,currentGS() -> CurrentPoint() -> y};
 
+    POINT ptStartPDF{0,0};
+    POINT ptEndPDF{0,0};
+
+    long minY = LONG_MAX;
+    long maxY = -LONG_MAX;
+
     for ( long k = 0; k < strSize; k++ ) {
 
         BYTE glyphIndex;
@@ -2994,7 +3034,13 @@ This is the MIT License
         else
             glyphIndex = pString -> get(k);
 
-        currentGS() -> drawTextChar(glyphIndex);
+        currentGS() -> drawTextChar(glyphIndex,false,0 == k ? &ptStartPDF : NULL,&ptEndPDF);
+
+        if ( ptEndPDF.y > maxY )
+            maxY = ptEndPDF.y;
+
+        if ( ptEndPDF.y < minY )
+            minY = ptEndPDF.y;
 
         object *pY = pNumberArray -> getElement(k);
         currentPoint.y += pY -> FloatValue();
@@ -3002,6 +3048,11 @@ This is the MIT License
         currentGS() -> moveto(currentPoint.x,currentPoint.y);
 
     }
+
+    ptEndPDF.y = maxY;
+    ptStartPDF.y = minY;
+
+    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStartPDF,&ptEndPDF,pObject -> Contents());
 
     return;
     }

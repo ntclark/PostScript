@@ -219,9 +219,10 @@ Type42Font:
     }
 
 
-    HRESULT FontManager::RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint) {
+    HRESULT FontManager::RenderGlyph(unsigned short bGlyph,UINT_PTR pGlyphData,UINT_PTR pPSXform,
+                                        POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF,POINTF *pEndPointPDF) {
     font *pFont = static_cast<font *>(pIFont_Current);
-    return pFont -> RenderGlyph(bGlyph,pGlyphData,pPSXform,pStartPoint,pEndPoint);
+    return pFont -> RenderGlyph(bGlyph,pGlyphData,pPSXform,pStartPoint,pEndPoint,pStartPointPDF,pEndPointPDF);
     }
 
 

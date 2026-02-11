@@ -228,3 +228,10 @@ This is the MIT License
 
     return S_OK;
     }
+
+
+    HRESULT PostScriptInterpreter::SetNoGraphicsRendering() {
+    noGraphicsRendering = true;
+    pIRenderer = (IRenderer *)pIRenderer -> SetNoGraphicsRendering();
+    return S_OK;
+    }

@@ -26,6 +26,9 @@ This is the MIT License
 
     HDC PostScriptInterpreter::GetDC() {
 
+    if ( noGraphicsRendering )
+        return NULL;
+
     if ( ! ( NULL == hdcSurface ) )
         return hdcSurface;
 
@@ -36,6 +39,9 @@ This is the MIT License
 
 
     void PostScriptInterpreter::ReleaseDC() {
+
+    if ( noGraphicsRendering )
+        return;
 
     if ( NULL == hdcSurface )
         return;
@@ -49,8 +55,15 @@ This is the MIT License
 
     void PostScriptInterpreter::CommitCurrentPage(long pageWidthPoints,long pageHeightPoints) {
 
+    POINT pageDimensions{pageWidthPoints,pageHeightPoints};
+
+    pIConnectionPointContainer -> fire_PageShown(&pageDimensions);
+
     if ( ! ( NULL == beginPathAction ) )
         beginPathAction();
+
+    if ( noGraphicsRendering )
+        return;
 
     graphicsState::RenderGeometry();
 

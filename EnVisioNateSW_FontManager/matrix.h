@@ -65,7 +65,9 @@ This is the MIT License
 
         void transformPoint(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
         void transformPointInPlace(XFORM *pXForm,POINTF *ptIn,POINTF *ptOut);
+        void transformPoint(XFORM *pXForm,POINT *ptIn,POINT *ptOut);
         void unTransformPoint(POINTF *ptIn,POINTF *ptOut);
+        void unTransformPoint(POINT *ptIn,POINT *ptOut);
         void unTransformPointInPlace(POINTF *ptIn,POINTF *ptOut);
 
         static void transformPoints(XFORM *pXForm,GS_POINT *pPoints,uint16_t pointCount);

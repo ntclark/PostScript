@@ -70,7 +70,7 @@ This is the MIT License
     }
 
 
-    void PostScriptInterpreter::_IConnectionPointContainer::fire_RenderChar(POINT *pPoint,char theChar) {
+    void PostScriptInterpreter::_IConnectionPointContainer::fire_RenderChar(POINT *pPointStartPDF,POINT *pPointEndPDF,char theChar) {
     IEnumConnections* pIEnum;
     CONNECTDATA connectData;
     pParent -> pIConnectionPoints[0] -> EnumConnections(&pIEnum);
@@ -78,14 +78,14 @@ This is the MIT License
     while ( 1 ) {
         if ( pIEnum -> Next(1, &connectData, NULL) ) break;
         IPostScriptInterpreterEvents * pClient = reinterpret_cast<IPostScriptInterpreterEvents *>(connectData.pUnk);
-        pClient -> RenderChar(pPoint,theChar);
+        pClient -> RenderChar(pPointStartPDF,pPointEndPDF,theChar);
     }
     static_cast<IUnknown*>(pIEnum) -> Release();
     return;
     }
 
 
-    void PostScriptInterpreter::_IConnectionPointContainer::fire_RenderString(POINT *pPoint,char *pszString) {
+    void PostScriptInterpreter::_IConnectionPointContainer::fire_RenderString(POINT *pPointStartPDF,POINT *pPointEndPDF,char *pszString) {
     IEnumConnections* pIEnum;
     CONNECTDATA connectData;
     pParent -> pIConnectionPoints[0] -> EnumConnections(&pIEnum);
@@ -93,7 +93,22 @@ This is the MIT License
     while ( 1 ) {
         if ( pIEnum -> Next(1, &connectData, NULL) ) break;
         IPostScriptInterpreterEvents * pClient = reinterpret_cast<IPostScriptInterpreterEvents *>(connectData.pUnk);
-        pClient -> RenderString(pPoint,pszString);
+        pClient -> RenderString(pPointStartPDF,pPointEndPDF,pszString);
+    }
+    static_cast<IUnknown*>(pIEnum) -> Release();
+    return;
+    }
+
+
+    void PostScriptInterpreter::_IConnectionPointContainer::fire_PageShown(POINT *pPageDimensionsPDF) {
+    IEnumConnections* pIEnum;
+    CONNECTDATA connectData;
+    pParent -> pIConnectionPoints[0] -> EnumConnections(&pIEnum);
+    if ( ! pIEnum ) return;
+    while ( 1 ) {
+        if ( pIEnum -> Next(1, &connectData, NULL) ) break;
+        IPostScriptInterpreterEvents * pClient = reinterpret_cast<IPostScriptInterpreterEvents *>(connectData.pUnk);
+        pClient -> PageShown(pPageDimensionsPDF);
     }
     static_cast<IUnknown*>(pIEnum) -> Release();
     return;

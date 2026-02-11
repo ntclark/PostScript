@@ -86,6 +86,8 @@ class job;
         STDMETHOD(GetPeristableProperties)(UINT_PTR *pProperties,long *pSize);
         STDMETHOD(SetPeristableProperties)(UINT_PTR pProperties);
 
+        STDMETHOD(SetNoGraphicsRendering)();
+
         // IOleObject 
 
         class _IOleObject : public IOleObject {
@@ -174,8 +176,9 @@ class job;
         STDMETHOD(FindConnectionPoint)(REFIID riid,IConnectionPoint **);
         STDMETHOD(EnumConnectionPoints)(IEnumConnectionPoints **);
 
-        void fire_RenderChar(POINT *pPoint,char theCar);
-        void fire_RenderString(POINT *pPoint,char *pszString);
+        void fire_RenderChar(POINT *pPointStartPDF,POINT *pPointEndPDF,char theCar);
+        void fire_RenderString(POINT *pPointStartPDF,POINT *pPointEndPDF,char *pszString);
+        void fire_PageShown(POINT *pPageDimensionsPDF);
         void fire_ErrorNotification(char *pszErrorString);
 
         private:
@@ -361,6 +364,8 @@ class job;
 
         HWND HwndClient() { return hwndClient; }
 
+        boolean IsNoGraphicsRendering() { return noGraphicsRendering; }
+
         HDC GetDC();
         void ReleaseDC();
 
@@ -427,6 +432,7 @@ class job;
         long rendererLogPaneWidth{256L};
         boolean logIsVisible{false};
         boolean rendererLogIsVisible{false};
+        boolean noGraphicsRendering{false};
 
         char szCurrentPostScriptFile[MAX_PATH];
 

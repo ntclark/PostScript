@@ -398,7 +398,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         int16_t xMin;           // Minimum x for coordinate data.
         int16_t yMin;           // Minimum y for coordinate data.
         int16_t xMax;           // Maximum x for coordinate data.
-        int16_t yMax;
+        int16_t yMax;           // Maximum y for coordinate data.
         void load(BYTE *pb) {
             BE_TO_LE_16(pb,contourCount)
             BE_TO_LE_16(pb,xMin)
@@ -527,6 +527,11 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         POINT *PointFirst(uint16_t contourIndex) { return pPointFirst[contourIndex]; }
         uint32_t AdvanceWidth() { return advanceWidth; }
 
+        long MaxX() { return pGlyphHeader -> xMax; }
+        long MaxY() { return pGlyphHeader -> yMax; }
+        long MinX() { return pGlyphHeader -> xMin; }
+        long MinY() { return pGlyphHeader -> yMin; }
+
     private:
 
         otGlyphHeader *pGlyphHeader{NULL};
@@ -577,6 +582,11 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
         uint8_t *FlagsFirst(uint16_t contourIndex) { return pFlagsFirst[contourIndex]; }
         POINT *PointFirst(uint16_t contourIndex) { return pPointFirst[contourIndex]; }
         uint32_t AdvanceWidth() { return advanceWidth; }
+
+        long MaxX() { return pGlyphHeader -> xMax; }
+        long MaxY() { return pGlyphHeader -> yMax; }
+        long MinX() { return pGlyphHeader -> xMin; }
+        long MinY() { return pGlyphHeader -> yMin; }
 
     private:
 
@@ -1074,7 +1084,7 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
                                         UINT_PTR *pAvailableFonts,UINT_PTR *pAvailableNames,UINT_PTR *pAvailableStyles,UINT_PTR *pAvailableScripts);
 
         STDMETHOD(RenderGlyph)(unsigned short bGlyph,UINT_PTR pIFMClient_ProvideFontData,UINT_PTR pPSXform,
-                                POINTF *pStartPoint,POINTF *pEndPoint);
+                                POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF = NULL,POINTF *pEndPointPDF = NULL);
 
         STDMETHOD(SaveState)();
         STDMETHOD(RestoreState)();
@@ -1092,7 +1102,8 @@ y = (FLOAT)v + (FLOAT)frac / 16384.0;   \
     private:
 
         HRESULT drawType3Glyph(unsigned short,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
-        HRESULT drawType42Glyph(unsigned short,IFMClient_ProvideFontData *pIFMClient_ProvideFontData,UINT_PTR pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
+        HRESULT drawType42Glyph(unsigned short,IFMClient_ProvideFontData *pIFMClient_ProvideFontData,UINT_PTR pPSXform,
+                                    POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF = NULL,POINTF *pEndPointPDF = NULL);
 
         HRESULT type42Load(BYTE *pbData = NULL,boolean enforceRequiredTables = false);
 

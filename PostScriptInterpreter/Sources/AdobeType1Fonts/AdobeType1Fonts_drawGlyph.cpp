@@ -26,7 +26,7 @@ This is the MIT License
     AdobeType1Fonts adobeType1Fonts;
 
     void AdobeType1Fonts::drawGlyph(font *pFont,uint16_t bGlyph,
-                                        XFORM *pPSXForm,POINTF *pStartPoint,POINTF *pEndPoint) {
+                                        XFORM *pPSXForm,POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF,POINTF *pEndPointPDF) {
 
 /*
     In contrast, Type 1 font programs implicitly reference a special
@@ -115,6 +115,9 @@ This is the MIT License
 
     matrix::transformPoint(pPSXForm,&sp);
 
+    if ( ! ( NULL == pStartPointPDF ) )
+        *pStartPointPDF = sp;
+
     pIRenderer -> put_Origin(sp);
 
     pIRenderer -> put_ToPageTransform((UINT_PTR)&glyphSpaceToPageSpace);
@@ -142,6 +145,15 @@ This is the MIT License
         matrix::transformPoint(&glyphSpaceToUserSpace,&delta);
         pEndPoint -> x = pStartPoint -> x + delta.x;
         pEndPoint -> y = pStartPoint -> y + delta.y;
+    }
+
+    if ( ! ( NULL == pEndPointPDF ) ) {
+        POINTF delta{pType1Glyph -> leftSideBearing[0] + pType1Glyph -> characterWidth[0],
+                        pType1Glyph -> leftSideBearing[1]};
+        matrix::transformPoint(&glyphSpaceToUserSpace,&delta);
+        POINTF ep{pStartPoint -> x + delta.x,pStartPoint -> y + delta.y};
+        matrix::transformPoint(pPSXForm,&ep);
+        *pEndPointPDF = ep;
     }
 
     pIRenderer -> RestoreState();

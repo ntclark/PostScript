@@ -44,6 +44,47 @@ This is the MIT License
 
 int Mx3Inverse(double *pSource,double *pTarget);
 
+class Renderer;
+
+    class RendererNoWindow : public IRenderer {
+    public:
+
+        RendererNoWindow(Renderer *pmr) : pMainRenderer(pmr) {};
+
+        //   IUnknown
+
+        STDMETHOD (QueryInterface)(REFIID riid,void **ppv);
+        STDMETHOD_ (ULONG, AddRef)();
+        STDMETHOD_ (ULONG, Release)();
+
+        // IRenderer
+
+        HRESULT __stdcall put_ToDeviceTransform(UINT_PTR /*XFORM */ pToDeviceSpaceXForm);
+        HRESULT __stdcall put_ToPageTransform(UINT_PTR /*XFORM*/ pXForm);
+        HRESULT __stdcall put_ScaleTransform(UINT_PTR /*XFORM*/ pScaleXForm);
+        HRESULT __stdcall put_DownScale(FLOAT ds);
+        HRESULT __stdcall put_Origin(POINTF ptOrigin);
+
+        HRESULT __stdcall SetRenderLive(HDC hdc,RECT *pDrawingRect);
+        HRESULT __stdcall UnSetRenderLive();
+        HRESULT __stdcall Render(HDC hdc,RECT *pDrawingRect);
+
+        HRESULT __stdcall Discard();
+        HRESULT __stdcall ClearRect(HDC hdc,RECT *pREct,COLORREF theColor);
+        HRESULT __stdcall WhereAmI(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
+
+        HRESULT __stdcall SaveState();
+        HRESULT __stdcall RestoreState();
+
+        UINT_PTR __stdcall SetNoGraphicsRendering();
+
+    private:
+
+        Renderer *pMainRenderer{NULL};
+
+    };
+
+
     class Renderer : public IRenderer {
     public:
 
@@ -60,22 +101,24 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
         // IRenderer
 
-        STDMETHOD(put_ToDeviceTransform)(UINT_PTR /*XFORM */ pToDeviceSpaceXForm);
-        STDMETHOD(put_ToPageTransform)(UINT_PTR /*XFORM*/ pXForm);
-        STDMETHOD(put_ScaleTransform)(UINT_PTR /*XFORM*/ pScaleXForm);
-        STDMETHOD(put_DownScale)(FLOAT ds);
-        STDMETHOD(put_Origin)(POINTF ptOrigin);
+        HRESULT __stdcall put_ToDeviceTransform(UINT_PTR /*XFORM */ pToDeviceSpaceXForm);
+        HRESULT __stdcall put_ToPageTransform(UINT_PTR /*XFORM*/ pXForm);
+        HRESULT __stdcall put_ScaleTransform(UINT_PTR /*XFORM*/ pScaleXForm);
+        HRESULT __stdcall put_DownScale(FLOAT ds);
+        HRESULT __stdcall put_Origin(POINTF ptOrigin);
 
-        STDMETHOD(SetRenderLive)(HDC hdc,RECT *pDrawingRect);
-        STDMETHOD(UnSetRenderLive)();
-        STDMETHOD(Render)(HDC hdc,RECT *pDrawingRect);
+        HRESULT __stdcall SetRenderLive(HDC hdc,RECT *pDrawingRect);
+        HRESULT __stdcall UnSetRenderLive();
+        HRESULT __stdcall Render(HDC hdc,RECT *pDrawingRect);
 
-        STDMETHOD(Discard)();
-        STDMETHOD(ClearRect)(HDC hdc,RECT *pREct,COLORREF theColor);
-        STDMETHOD(WhereAmI)(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
+        HRESULT __stdcall Discard();
+        HRESULT __stdcall ClearRect(HDC hdc,RECT *pREct,COLORREF theColor);
+        HRESULT __stdcall WhereAmI(long xPixels,long yPixels,FLOAT *pX,FLOAT *pY);
 
-        STDMETHOD(SaveState)();
-        STDMETHOD(RestoreState)();
+        HRESULT __stdcall SaveState();
+        HRESULT __stdcall RestoreState();
+
+        UINT_PTR __stdcall SetNoGraphicsRendering();
 
         // IGraphicElements
 
@@ -720,6 +763,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
 
             Renderer *pParent{NULL};
 
+            friend class RendererNoWindow;
             friend class Renderer;
 
         } *pIGraphicElements{NULL};
@@ -848,6 +892,7 @@ int Mx3Inverse(double *pSource,double *pTarget);
             GUID initialGUID{GUID_NULL};
 
             friend class Renderer;
+            friend class RendererNoWindow;
             friend class GraphicElements;
             friend class GraphicParameters;
 
@@ -888,10 +933,13 @@ int Mx3Inverse(double *pSource,double *pTarget);
         HDC hdcCurrent{NULL};
         RECT rcCurrent{0L,0L,0L,0L};
 
+        static RendererNoWindow *pIRendererNoWindow;
+
         static char szLogMessage[1024];
         static char szStatusMessage[1024];
         static char szErrorMessage[1024];
 
+        friend class RendererNoWindow;
         friend class GraphicElements;
         friend class GraphicParameters;
 

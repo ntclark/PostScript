@@ -45,7 +45,8 @@ class objectStack;
         static void executeEExec(class file *pFileObject);
 
         static void drawGlyph(font *pCurrentFont,uint16_t bGlyph,
-                                XFORM *pPSXform,POINTF *pStartPoint,POINTF *pEndPoint);
+                                XFORM *pPSXform,POINTF *pStartPoint,POINTF *pEndPoint,
+                                    POINTF *pStartPointPDF = NULL,POINTF *pEndPointPDF = NULL);
 
         static AdobeType1Fonts *pAdobeType1Fonts;
 

@@ -25,34 +25,41 @@ This is the MIT License
 
 #include "pageParameters.h"
 
-    void graphicsState::drawTextChar(BYTE glyphIndex) {
+    void graphicsState::drawTextChar(BYTE glyphIndex,boolean emitEvent,POINT *pStartPDFResult,POINT *pEndPDFResult) {
 
     POINTF startPoint{currentUserSpacePoint.x,currentUserSpacePoint.y};
     POINTF endPoint;
 
+    POINTF startPointPDF{0.0f,0.0f};
+    POINTF endPointPDF{0.0f,0.0f};
+
     if ( FontType::type1 == CurrentFont() -> TheFontType() ) {
-        drawType1Glyph(glyphIndex,&startPoint,&endPoint);
-        moveto(endPoint.x,endPoint.y);
-        return;
+
+        drawType1Glyph(glyphIndex,&startPoint,&endPoint,&startPointPDF,&endPointPDF);
+        moveto(&endPoint);
+
+    } else if ( FontType::type3 == CurrentFont() -> TheFontType() ) {
+
+        drawType3Glyph(glyphIndex,&startPointPDF,&endPointPDF);
+
+    } else {
+
+        drawType42Glyph(glyphIndex,&startPoint,&endPoint,&startPointPDF,&endPointPDF);
+        moveto(&endPoint);
+
     }
 
-    if ( FontType::type3 == CurrentFont() -> TheFontType() ) {
-        drawType3Glyph(glyphIndex);
-        return;
-    }
+    POINT ps{(long)startPointPDF.x,(long)startPointPDF.y};
+    POINT pe{(long)endPointPDF.x,(long)endPointPDF.y};
 
-    drawType42Glyph(glyphIndex,&startPoint,&endPoint);
+    if ( emitEvent )
+        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderChar(&ps,&pe,(char)glyphIndex);
 
-    moveto(&endPoint);
+    if ( pStartPDFResult )
+        *pStartPDFResult = ps;
 
-    POINT ptStart{(int)startPoint.x,(int)startPoint.y};
-
-    if ( NULL == pPostScriptInterpreter -> HwndClient() ) {
-        ptStart.x = -1;
-        ptStart.y = -1;
-    }
-
-    pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderChar(&ptStart,(char)glyphIndex);
+    if ( pEndPDFResult )
+        *pEndPDFResult = pe;
 
     return;
     }
@@ -77,6 +84,12 @@ This is the MIT License
     POINTF startPoint{currentUserSpacePoint.x,currentUserSpacePoint.y};
     POINTF endPoint{0.0f,0.0f};
 
+    POINTF startPointPDF{0.0f,0.0f};
+    POINTF endPointPDF{0.0f,0.0f};
+
+    long maxY = -LONG_MAX;
+    long minY = LONG_MAX;
+
     if ( FontType::type1 == CurrentFont() -> TheFontType() || 
             FontType::type3 == CurrentFont() -> TheFontType() ) {
 
@@ -89,21 +102,27 @@ This is the MIT License
             else
                 glyphIndex = pString -> get(k);
 
-            if ( FontType::type1 == CurrentFont() -> TheFontType() ) {
-                drawType1Glyph(glyphIndex,&startPoint,&endPoint);
-                startPoint = endPoint;
-            } else
-                drawType3Glyph(glyphIndex);
+            if ( FontType::type1 == CurrentFont() -> TheFontType() )
+                drawType1Glyph(glyphIndex,&startPoint,&endPoint,0 == k ? &startPointPDF : NULL,&endPointPDF);
+            else {
+                drawType3Glyph(glyphIndex,0 == k ? &startPointPDF : NULL,&endPointPDF);
+                endPoint = {currentUserSpacePoint.x,currentUserSpacePoint.y};
+            }
+
+            if ( endPointPDF.y > maxY )
+                maxY = endPointPDF.y;
+
+            if ( endPointPDF.y < minY )
+                minY = endPointPDF.y;
+
+            startPoint = endPoint;
 
         }
 
         if ( FontType::type1 == CurrentFont() -> TheFontType() ) 
             moveto(endPoint.x,endPoint.y);
 
-        return;
-    }
-
-    for ( long k = 0; k < strSize; k++ ) {
+    } else for ( long k = 0; k < strSize; k++ ) {
 
         BYTE glyphIndex;
 
@@ -112,46 +131,41 @@ This is the MIT License
         else
             glyphIndex = pString -> get(k);
 
-        drawType42Glyph(glyphIndex,&startPoint,&endPoint);
+        drawType42Glyph(glyphIndex,&startPoint,&endPoint,0 == k ? &startPointPDF : NULL,&endPointPDF);
+
+        if ( endPointPDF.y > maxY ) 
+            maxY = endPointPDF.y;
+
+        if ( endPointPDF.y < minY )
+            minY = endPointPDF.y;
 
         startPoint = endPoint;
 
     }
 
-    POINT ptStart{(int)currentUserSpacePoint.x,(int)currentUserSpacePoint.y};
+    endPointPDF.y = maxY;
+    startPointPDF.y = minY;
 
-    if ( std::isnan(currentUserSpacePoint.x) ) {
-        ptStart.x = -1;
-        ptStart.y = -1;
-    }
+    POINT ps{(long)startPointPDF.x,startPointPDF.y};
+    POINT pe{(long)endPointPDF.x,(long)endPointPDF.y};
 
     if ( ! ( NULL == pBinary ) )
-        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pBinary -> Contents());
+        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ps,&pe,pBinary -> Contents());
     else
-        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ptStart,pString -> Contents());
+        pPostScriptInterpreter -> pIConnectionPointContainer -> fire_RenderString(&ps,&pe,pString -> Contents());
 
     return;
     }
 
 
-    void graphicsState::drawType1Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint) {
-#if 0
-    RECT rcDrawing;
-    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
-    PostScriptInterpreter::pIRenderer -> SetRenderLive(pPostScriptInterpreter -> GetDC(),&rcDrawing);
-#endif
+    void graphicsState::drawType1Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPointPDF,POINTF *pEndPointPDF) {
     AdobeType1Fonts::drawGlyph(CurrentFont(),bGlyph,
-                                pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint);
-#if 0
-    RECT rcDrawing;
-    GetClientRect(pPostScriptInterpreter -> HwndClient(),&rcDrawing);
-    PostScriptInterpreter::pIRenderer -> Render(pPostScriptInterpreter -> GetDC(),&rcDrawing);
-#endif
+                                pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint,pStartPointPDF,pEndPointPDF);
     return;
     }
 
 
-    void graphicsState::drawType3Glyph(uint16_t bGlyph) {
+    void graphicsState::drawType3Glyph(uint16_t bGlyph,POINTF *pStartPDF,POINTF *pEndPDF) {
 
     pJob -> push(CurrentFont());
     pJob -> operatorBegin();
@@ -196,8 +210,6 @@ This is the MIT License
 */
 
     // The BYTE bGlyph is the "index" into the Encoding array
-// I made a change above and it needs testing.
-//__debugbreak();
 
     object *pCharacterName = CurrentFont() -> Encoding() -> getElement((uint16_t)bGlyph);
 
@@ -210,7 +222,17 @@ This is the MIT License
 
     pPSXformsStack -> concat(CurrentFont() -> getFontMatrix());
 
+    if ( ! ( NULL == pStartPDF ) ) {
+        POINTF ps{currentUserSpacePoint.x,currentUserSpacePoint.y};
+        matrix::transformPoint(pPSXformsStack -> CurrentTransform(),&ps,pStartPDF);
+    }
+
     pJob -> executeProcedure(pBuildGlyph);
+
+    if ( ! ( NULL == pEndPDF ) ) {
+        POINTF ps{currentUserSpacePoint.x,currentUserSpacePoint.y};
+        matrix::transformPoint(pPSXformsStack -> CurrentTransform(),&ps,pEndPDF);
+    }
 
     pPSXformsStack -> gRestore();
 
@@ -218,7 +240,7 @@ This is the MIT License
     }
 
 
-    void graphicsState::drawType42Glyph(uint16_t glyphIndex,POINTF *pStartPoint,POINTF *pEndPoint) {
+    void graphicsState::drawType42Glyph(uint16_t glyphIndex,POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPDF,POINTF *pEndPDF) {
 
     font *pFont = CurrentFont();
 
@@ -259,7 +281,8 @@ This is the MIT License
         }
     }
 
-    PostScriptInterpreter::pIFontManager -> RenderGlyph(glyphIndex,(UINT_PTR)pIProvideData,(UINT_PTR)pPSXformsStack -> CurrentTransform(),pStartPoint,pEndPoint);
+    PostScriptInterpreter::pIFontManager -> RenderGlyph(glyphIndex,(UINT_PTR)pIProvideData,(UINT_PTR)pPSXformsStack -> CurrentTransform(),
+            pStartPoint,pEndPoint,pStartPDF,pEndPDF);
 
     return;
     }

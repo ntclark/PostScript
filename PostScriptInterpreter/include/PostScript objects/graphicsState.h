@@ -86,12 +86,12 @@ This is the MIT License
         font *makeFont(matrix *pMatix,font *pCopyFrom);
         font *scaleFont(FLOAT scaleFactor,font *pCopyFrom);
 
-        void drawTextChar(BYTE bGlyph);
+        void drawTextChar(BYTE bGlyph,boolean emitEvent = true,POINT *ptStartPDF = NULL,POINT *ptEndPDF = NULL);
         void drawTextString();
 
-        void drawType1Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
-        void drawType3Glyph(uint16_t bGlyph);
-        void drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEendPoint);
+        void drawType1Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPDF = NULL,POINTF *pEndPDF = NULL);
+        void drawType3Glyph(uint16_t bGlyph,POINTF *pStartPDF = NULL,POINTF *pEndPDF = NULL);
+        void drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPDF = NULL,POINTF *pEndPDF = NULL);
 
         void setCacheDevice();
 

@@ -47,18 +47,21 @@ library PostScriptInterpreter {
       HRESULT GetPeristableProperties(UINT_PTR *pProperties,long *pSize);
       HRESULT SetPeristableProperties(UINT_PTR pProperties);
 
+      HRESULT SetNoGraphicsRendering();
+
    };
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6C)] 
    interface IPostScriptInterpreterTakeText {
-      HRESULT TakeText(RECT *pLocationPDF,char *pszText);
+      HRESULT TakeText(RECT *pLocationPDF,RECT *pEndLocationPDF,char *pszText);
    };
 
 
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6D) ]
    interface IPostScriptInterpreterEvents : IUnknown {
-       HRESULT RenderChar(POINT *pPoint,char theChar);
-       HRESULT RenderString(POINT *pPoint,char *pszString);
+       HRESULT RenderChar(POINT *pPointStartPDF,POINT *pPointEndPDF,char theChar);
+       HRESULT RenderString(POINT *pPointStartPDF,POINT *pPointEndPDF,char *pszString);
+       HRESULT PageShown(POINT *pPageDimentsionsPDF);
        HRESULT ErrorNotification(UINT_PTR pszError);
    };
 

@@ -172,6 +172,7 @@
     <ClCompile Include="COM Interfaces\IGraphicElements.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicElements_Paths.cpp" />
     <ClCompile Include="COM Interfaces\IGraphicParameters.cpp" />
+    <ClCompile Include="COM Interfaces\IRendererNoWindow.cpp" />
     <ClCompile Include="COM Interfaces\IRenderer_SaveRestore.cpp" />
     <ClCompile Include="COM Interfaces\IUnknown.cpp" />
     <ClCompile Include="dllmain.cpp" />

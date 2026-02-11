@@ -60,6 +60,8 @@ library Renderer {
         HRESULT SaveState();
         HRESULT RestoreState();
 
+        UINT_PTR SetNoGraphicsRendering();
+
     };
 
     [uuid(CC9F95CD-24F1-450A-8883-02B5314B1C82),

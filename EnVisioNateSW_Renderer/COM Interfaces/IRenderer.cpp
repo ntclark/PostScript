@@ -197,3 +197,10 @@ This is the MIT License
 
     return S_OK;
     }
+
+
+    UINT_PTR Renderer::SetNoGraphicsRendering() {
+    if ( NULL == pIRendererNoWindow )
+        pIRendererNoWindow = new RendererNoWindow(this);
+    return reinterpret_cast<UINT_PTR>(pIRendererNoWindow);
+    }

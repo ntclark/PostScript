@@ -32,13 +32,17 @@
 
         // IPostScriptInterpreterEvents
 
-        HRESULT __stdcall RenderChar(POINT *pPoint,char c) {
-            printf("Character at %d,%d: %c\n",pPoint -> x,pPoint -> y,c);
+        HRESULT __stdcall RenderChar(POINT *pStartPoint,POINT *pEndPoint,char c) {
+            printf("Character at: %d-%d, width: %d, height: %d: %c\n",pStartPoint -> x,pStartPoint -> y,pEndPoint -> x - pStartPoint -> x,pEndPoint -> y - pStartPoint -> y,c);
             return S_OK;
         }
 
-        HRESULT __stdcall RenderString(POINT *pPoint,char *pszString) {
-            printf("String at %d,%d: %s\n",pPoint -> x,pPoint -> y,pszString);
+        HRESULT __stdcall RenderString(POINT *pStartPoint,POINT *pEndPoint,char *pszString) {
+            printf("String at: %d-%d, width: %d, height: %d: %s\n",pStartPoint -> x,pStartPoint -> y,pEndPoint -> x - pStartPoint -> x,pEndPoint -> y - pStartPoint -> y,pszString);
+            return S_OK;
+        }
+
+        HRESULT __stdcall PageShown(POINT *) {
             return S_OK;
         }
 

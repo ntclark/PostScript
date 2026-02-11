@@ -75,6 +75,9 @@
     <ClCompile Include="COM Interfaces\IGraphicElements_Images.cpp">
       <Filter>Source Files\COM Interfaces</Filter>
     </ClCompile>
+    <ClCompile Include="COM Interfaces\IRendererNoWindow.cpp">
+      <Filter>Source Files\COM Interfaces</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
