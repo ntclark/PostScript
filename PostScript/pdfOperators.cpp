@@ -832,8 +832,24 @@ Same as G but used for nonstroking operations.
    number representing a scale factor. There is no initial value for either font or size; they 
    shall be specified explicitly by using Tf before any text is shown.
 */
+
+/*
+    NTC: 02-06-2026
+    As a ramification of the note in font_FontFile.cpp, near line 220, a IRS 1040, and others ?
+    specifies a font with no setting for charsetOffset which presumably is an invalid font
+    or there is some default for it that I don't know about.
+    In any case, when this happens I get a stack underflow on the operand stack - which NOW 
+    I return a NULL from pop() and do NOT rais the exception.
+
+    This would be easier to debug when and if I use the second generation font renderer in
+    CursiVision
+*/
    object *pfSize = pop();
+   if ( NULL == pfSize )
+      return;
    object *pfKey = pop();
+   if ( NULL == pfKey )
+      return;
    graphicsStateStack.current() -> setFont(pfKey -> Contents(),pfSize -> FloatValue());
    return;
    }

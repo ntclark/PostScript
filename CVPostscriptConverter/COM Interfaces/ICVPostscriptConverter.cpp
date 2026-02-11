@@ -3,6 +3,7 @@
 
     void replacePSCode(char *pbPS,long *pSize);
 
+
     BOOL CVPostscriptConverter::ConvertToPDF(char *pszPostscriptFileName) {
 
     FILE *fX = fopen(pszPostscriptFileName,"rb");
@@ -47,6 +48,25 @@
     gsapi_delete_instance(gsInstance);
 
     delete [] pbFile;
+
+    return TRUE;
+    }
+
+
+    BOOL CVPostscriptConverter::ConvertToPS(char *pszPDFFileName) {
+
+    char szOld[1024];
+    strcpy(szOld,pszPDFFileName);
+    char *px = strrchr(szOld,'.');
+    if ( ! ( NULL == px ) && 0 == _strnicmp(px,".pdf",4) ) {
+        strcpy(px,".ps");
+        DeleteFile(szOld);
+    }
+
+    Initialize(gsInstance,pszPDFFileName);
+
+    gsapi_exit(gsInstance);
+    gsapi_delete_instance(gsInstance);
 
     return TRUE;
     }

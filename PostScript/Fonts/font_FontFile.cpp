@@ -3,29 +3,16 @@
 
 #include "Fonts\font.h"
 
-   void font::FontFile(PdfDictionary *pDescriptorDictionary) {
+    void font::FontFile(PdfDictionary *pDescriptorDictionary) {
 
-   if ( ! pDescriptorDictionary ) 
-      return;
+    if ( ! pDescriptorDictionary ) 
+        return;
 
-   if ( pDescriptorDictionary -> Object("FontFile1") ) {
+    if ( pDescriptorDictionary -> Object("FontFile3") ) 
+        FontFile3(pDescriptorDictionary -> Object("FontFile3"));
 
-   } else {
-
-      if ( pDescriptorDictionary -> Object("FontFile2") ) {
-
-      } else {
-
-         if ( pDescriptorDictionary -> Object("FontFile3") ) {
-            FontFile3(pDescriptorDictionary -> Object("FontFile3"));
-         }
-
-      }
-
-   }
-
-   return;
-   }
+    return;
+    }
 
 
    void font::FontFile3(PdfObject *pFontFile) {
@@ -222,7 +209,7 @@ be preceded by up to a maximum of 48 operands.
 
    }
 
-   if ( ! ( -1L == charStringsOffset ) ) {
+   if ( ! ( -LONG_MAX == charStringsOffset ) ) {
       pCharStringsIndex = new INDEX(pFontData + charStringsOffset);
       pSID = new long[pCharStringsIndex -> objectCount];
    }
@@ -234,6 +221,7 @@ be preceded by up to a maximum of 48 operands.
    // Setting the value to 0, as in the case of = -1L, just causes a postscript
    // operand stack underflow.
    //
+
    if ( -1L == charsetOffset ) //|| -LONG_MAX == charsetOffset ) 
       charsetOffset = 0L;
 
@@ -243,7 +231,7 @@ be preceded by up to a maximum of 48 operands.
 
    } else if ( 2 == charsetOffset ) {
 
-   } else {
+   } else if ( ! ( -LONG_MAX == charsetOffset ) ) {
 
       BYTE *pCharsets = pFontData + charsetOffset;
 
@@ -260,10 +248,8 @@ be preceded by up to a maximum of 48 operands.
 
       } else if ( 1 == (long)p[0] ) {
 
-printf("\nhello world");
       } else if ( 2 == (long)p[0] ) {
 
-printf("\nhello world");
       }
 
    }

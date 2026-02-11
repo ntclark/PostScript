@@ -28,7 +28,10 @@
 
     CoCreateInstance(CLSID_CVPostscriptConverter,NULL,CLSCTX_ALL,IID_ICVPostscriptConverter,reinterpret_cast<void **>(&pICVPostscriptConverter));
 
-    pICVPostscriptConverter -> ConvertToPDF(argv[argc - 1]);
+    if ( 3 == argc )
+        pICVPostscriptConverter -> ConvertToPS(argv[argc - 2]);
+    else
+        pICVPostscriptConverter -> ConvertToPDF(argv[argc - 1]);
 
     pICVPostscriptConverter -> Release();
 

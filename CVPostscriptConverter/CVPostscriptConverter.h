@@ -26,6 +26,7 @@
         // ICVPostscriptConverter
 
         BOOL __stdcall ConvertToPDF(char *pszPostscriptFileName);
+        BOOL __stdcall ConvertToPS(char *pszPDFFileName);
 
     private:
 
@@ -38,6 +39,7 @@
 
 extern "C" {
     int __stdcall Initialize(void *instance,char *pszPostscriptFileName);
+    int __stdcall InitializeToPS(void *instance, char *pszPostscriptFileName);
     void __stdcall newInterpreter(void **,void *);
     void __stdcall gsapi_delete_instance(void *);
     void __stdcall gsapi_exit(void *);
@@ -45,15 +47,11 @@ extern "C" {
 }
 
 #ifdef DEFINE_DATA
-
    OLECHAR wstrModuleName[256];
    HMODULE hModule = NULL;
    char szModuleName[MAX_PATH];
-
 #else
-
    extern OLECHAR wstrModuleName[];
    extern HMODULE hModule;
    extern char szModuleName[];
-
 #endif

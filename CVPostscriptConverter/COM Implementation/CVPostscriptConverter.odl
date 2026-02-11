@@ -18,6 +18,7 @@ library CVPostscriptConverter {
     interface ICVPostscriptConverter : IUnknown {
 
         BOOL ConvertToPDF(char *pszPostscriptFilename);
+        BOOL ConvertToPS(char *pszPDFFileName);
 
     }
 
