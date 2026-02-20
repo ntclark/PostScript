@@ -575,6 +575,49 @@ This is the MIT License
     return;
     }
 
+
+    void job::operatorBitshift() {
+/*
+    bitshift 
+        int1 shift bitshift int2
+
+    shifts the binary representation of int1 left by shift bits and returns the result. 
+    Bits shifted out are lost; bits shifted in are 0. If shift is negative, 
+    a right shift by –shift bits is performed. 
+
+    This operation produces an arithmetically correct result only
+    for positive values of int1. Both int1 and shift must be integers.
+
+    Examples
+        7 3 bitshift -> 56
+        142 –3 bitshift -> 17
+
+    Errors: stackunderflow, typecheck
+    See Also: and, or, xor, not
+
+*/
+
+    object *pAmount = pop();
+    object *pSource = pop();
+
+    short int1 = (short)pSource -> IntValue();
+    short int2 = (short)pAmount -> IntValue();
+
+    short result = 0;
+    if ( 0 < int2 )
+        result = int1 << int2;
+    else
+        result = int1 >> -int2;
+
+    if ( object::valueType::integer == pSource -> ValueType() && object::valueType::integer == pAmount -> ValueType() )
+        push(new (CurrentObjectHeap()) object(this,(long)result));
+    else
+        throw new typecheck("bitshift: both operands must be integers");
+
+    return;
+    }
+
+
     void job::operatorCleartomark() {
 /*
     cleartomark 
@@ -954,6 +997,32 @@ This is the MIT License
     }
 
 
+    void job::operatorCount() {
+
+/*
+    count 
+        any1 … anyn count any1 … anyn n
+
+    counts the number of items on the operand stack and pushes this count on the
+    operand stack.
+    Examples
+        clear count -> 0
+        clear 1 2 3 count -> 1 2 3 3
+
+    Errors: stackoverflow
+    See Also: counttomark
+
+*/
+
+    char szNumber[16];
+    sprintf_s<16>(szNumber,"%ld",pOperandStack -> size());
+
+    push(new (CurrentObjectHeap()) object(this,szNumber));
+
+    return;
+    }
+
+
     void job::operatorCountdictstack() {
 /*
     countdictstack 
@@ -993,6 +1062,30 @@ This is the MIT License
     push(new (CurrentObjectHeap()) object(this,count));
 
     entries.clear();
+
+    return;
+    }
+
+
+    void job::operatorCurrentblackgeneration() {
+    /*
+    currentblackgeneration 
+        – currentblackgeneration proc
+
+    returns the current black-generation function in the graphics state.
+
+    Errors: stackoverflow
+    See Also: setblackgeneration, setundercolorremoval
+
+    */
+
+    /*
+    In PostScript and general color printing workflows, the default black generation 
+    (currentblackgeneration) function in the graphics state is typically 
+    set to { } (an empty procedure) or {pop 0}. 
+    */
+
+    push(new (CurrentObjectHeap()) procedure(this,"{ pop 0 }",(char *)NULL,NULL));
 
     return;
     }
@@ -1215,6 +1308,29 @@ __debugbreak();
     pPostScriptInterpreter -> queueLog(true,"NOT IMPLEMENTED: currentscreen");
     pPostScriptInterpreter -> queueLog(true,"\n");
    
+    return;
+    }
+
+
+    void job::operatorCurrentundercolorremoval() {
+    /*
+    currentundercolorremoval
+        – currentundercolorremoval proc
+
+    returns the current undercolor-removal function in the graphics state.
+
+    Errors: stackoverflow
+    See Also: setundercolorremoval, setblackgeneration
+    */
+
+    /*
+    The default undercolor removal (UCR) function in PostScript (Level 2 and 3) 
+    is typically a procedure that returns zero (specifically, { pop 0 } or a 
+    similar function that ignores the input CMY values and results in no undercolor removal). 
+    */
+
+    push(new (CurrentObjectHeap()) procedure(this, (char *)"{}", (char*)NULL, NULL));
+
     return;
     }
 
@@ -1567,9 +1683,10 @@ if ( 0 > theValue ) {
 
     top() -> theExecutableAttribute = object::executableAttribute::executable;
 
+#if 0
     if ( object::objectType::objTypeArray == top() -> ObjectType() )
         push(new (CurrentObjectHeap()) procedure(reinterpret_cast<array *>(pop())));
-
+#endif
     return;
     }
 
@@ -2661,7 +2778,8 @@ isNew = true;
 
    default: {
         char szMessage[1024];
-        sprintf_s<1024>(szMessage,"%s: Line: %ld. The source object type (%d) for forall does not appear to be a array, packedarray, dict, or string",__FUNCTION__,__LINE__,pSource -> ObjectType());
+        sprintf_s<1024>(szMessage,"%s: Input line: %ld. The source object type (%d) for forall does not appear to be an array, packedarray, dict, or string",
+                            __FUNCTION__,0 < inputLineNumberSize ? inputLineNumber : -1L,pSource -> ObjectType());
         throw new typecheck(szMessage);
         }
         break;
@@ -2669,6 +2787,33 @@ isNew = true;
 
     return;
     }
+
+
+    void job::operatorGcheck() {
+    /*
+    gcheck 
+        any gcheck bool
+
+    returns true if the operand is a simple object, or if it is composite and its value resides in global VM. 
+
+    It returns false if the operand is composite and its value resides in local VM. 
+
+    In other words, gcheck returns true if its operand could legally be
+    stored as an element of another object in global VM. 
+
+    See Section 3.7.2, "Local and Global VM."
+
+    Errors: stackunderflow
+
+    */
+
+    pop();
+
+    push(pTrueConstant);
+
+    return;
+    }
+
 
     void job::operatorGe() {
 /*
@@ -2802,6 +2947,72 @@ isNew = true;
 
     return;
     }
+
+    
+    void job::operatorGetinterval() {
+
+/*
+    getinterval 
+        array index count getinterval subarray
+        packedarray index count getinterval subarray
+        string index count getinterval substring
+
+    creates a new array, packed array, or string object whose value consists of some
+    subsequence of the original array, packed array, or string. The subsequence 
+    consists of count elements starting at the specified index in the original object. 
+    The elements in the subsequence are shared between the original and new objects 
+        (see Section 3.3.1, "Simple and Composite Objects").
+
+    The returned subarray or substring is an ordinary array, packed array, or string
+    object whose length is count and whose elements are indexed starting at 0. The
+    element at index 0 in the result is the same as the element at index in the original
+    object.
+
+    getinterval requires index to be a valid index in the original object and count to be
+    a nonnegative integer such that index + count is not greater than the length of the
+    original object.
+
+    Examples
+        [9 8 7 6 5] 1 3 getinterval -> [8 7 6]
+        (abcde) 1 3 getinterval-> (bcd)
+        (abcde) 0 0 getinterval -> ( ) % An empty string
+
+    Errors: invalidaccess, rangecheck, stackunderflow, typecheck
+    See Also: get, putinterval 
+*/
+
+    object *pCount = pop();
+    object *pIndex = pop();
+    object *pSource = pop();
+
+    if ( ! ( pCount -> ValueType() == object::valueType::integer ) )
+        throw new typecheck("getInterval: count must be an integer");
+
+    long count = pCount -> IntValue();
+
+    if ( ! ( pIndex -> ValueType() == object::valueType::integer ) )
+        throw new typecheck("getInterval: index must be an integer");
+
+    long index = pIndex -> IntValue();
+
+    if ( pSource -> ObjectType() == object::objectType::objTypeArray ) {
+        array *pArray = new (CurrentObjectHeap()) array(this,count);
+        array *pSourceArray = reinterpret_cast<array *>(pSource);
+        for ( long k = 0; k < count; k++ )
+            pArray -> putElement(k,pSourceArray -> getElement(k + index));
+        push(pArray);
+    } else {
+        char *pszSource = reinterpret_cast<string *>(pSource) -> Contents();
+        char *pszResult = new char[count];
+        for ( long k = 0; k < count; k++ )
+            pszResult[k] = pszSource[k + index];
+        push(new (CurrentObjectHeap()) string(this,pszResult));
+        delete [] pszResult;
+    }
+
+    return;
+    }
+
 
     void job::operatorGrestore() {
 /*
@@ -3078,6 +3289,33 @@ isNew = true;
 
     return;
     }
+
+
+    void job::operatorIdiv() {
+/*
+    idiv 
+        int1 int2 idiv quotient
+
+    divides int1 by int2 and returns the integer part of the quotient, with any fractional
+    part discarded. Both operands of idiv must be integers and the result is an integer.
+
+    Examples
+        3 2 idiv -> 1
+        4 2 idiv -> 2
+        -5 2 idiv -> -2
+
+    Errors: stackunderflow, typecheck, undefinedresult
+    See Also: div, add, mul, sub, mod, cvi
+
+*/
+    object *pInt2 = pop();
+    object *pInt1 = pop();
+
+    push(new (CurrentObjectHeap()) object(this,pInt1 -> IntValue() / pInt2 -> IntValue()));
+
+    return;
+    }
+
 
     void job::operatorIdtransform() {
 /*
@@ -3447,6 +3685,10 @@ isNew = true;
         length = reinterpret_cast<dictionary *>(pItem) -> size();
         break;
 
+    case object::objectType::literal:
+        length = strlen(reinterpret_cast<literal *>(pItem) -> Contents());
+        break;
+
     case object::objectType::atom: {
 
         switch ( pItem -> ValueType() ) {
@@ -3468,7 +3710,7 @@ isNew = true;
 
         default: 
             char szError[1024];
-            sprintf(szError,"File: %s, Line: %d, in operator length: object = %s, the type is (%s,%s) invalid",__FILE__,__LINE__,pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
+            sprintf(szError,"Operator: length, Input Line: %ld object = %s, the type is (%s,%s) ",inputLineNumber,pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
             throw new typecheck(szError);
         }
         }
@@ -3476,7 +3718,7 @@ isNew = true;
 
     default: {
         char szError[1024];
-        sprintf(szError,"File: %s, Line: %d in operator length: object = %s, the type is (%s,%s) invalid",__FILE__,__LINE__,pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
+        sprintf(szError,"Operator: length, Input Line: %ld object = %s, the type is (%s,%s)",inputLineNumber,pItem -> Name(),pItem -> TypeName(),pItem -> ValueTypeName());
         throw new typecheck(szError);
         }
 

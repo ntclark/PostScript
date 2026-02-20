@@ -76,6 +76,9 @@ class job;
 
         // IPostScript
 
+        STDMETHOD(get_LineNumberGeneration)(BOOL *pIsDoingLineNumberGeneration);
+        STDMETHOD(put_LineNumberGeneration)(BOOL doLineNumberGeneration);
+
         STDMETHOD(SetSource)(char *pszFileName);
         STDMETHOD(Parse)(char *pszFileName = NULL,BOOL autoStart = TRUE);
         STDMETHOD(ParseText)(char *pszPDFText);
@@ -433,8 +436,10 @@ class job;
         boolean logIsVisible{false};
         boolean rendererLogIsVisible{false};
         boolean noGraphicsRendering{false};
+        boolean generateLineNumbers{false};
 
         char szCurrentPostScriptFile[MAX_PATH];
+        char szWorkingFile[MAX_PATH];
 
         long persistLogLevel{0};
         long persistRendererLogLevel{0};
@@ -504,8 +509,8 @@ class job;
     char psCollectionDelimiters[][8] = { "[","]","<<",">>","{","}",0};
     long psCollectionDelimiterLength[] = { 1,  1,   2,   2,  1,  1,0};
 
-    char psDelimiters[][8] =   {"%%","%","(","/","<","<~",0};
-    long psDelimiterLength[] = {  2,  1,  1,  1,  1,   2,0};
+    char psDelimiters[][8] =   {"%%","%","(","//","/","<","<~",0};
+    long psDelimiterLength[] = {  2,  1,  1,   2,  1,  1,   2,0};
 
     char psOtherDelimiters[][8] = {"]",0};
     char pszDelimiters[] = {"%%%(/<~{"};

@@ -116,12 +116,25 @@ This is the MIT License
 
 
     void graphicsState::setCacheDevice() {
+    /*
+    This is not implemented
+    */
     object *pUpperRightY = pJob -> pop();
     object *pUpperRightX = pJob -> pop();
     object *pLowerLeftY = pJob -> pop();
     object *pLowerLeftX = pJob -> pop();
     object *pWidthY = pJob -> pop();
     object *pWidthX = pJob -> pop();
+    return;
+    }
+
+
+    void graphicsState::setCharWidth() {
+    /*
+    This is not implemented
+    */
+    object *pWX = pJob -> pop();
+    object *pWY = pJob -> pop();
     return;
     }
 

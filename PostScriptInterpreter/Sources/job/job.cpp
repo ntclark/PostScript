@@ -32,7 +32,7 @@ This is the MIT License
     size_t job::currentlyAllocatedHeap = 0L;
     job::executionLevel *job::pRootExecutionLevel = NULL;
 
-    job::job(char *pszFileName,HWND hwndSurf) : hwndSurface(hwndSurf) {
+    job::job(char *pszFileName,HWND hwndSurf,long ils) : hwndSurface(hwndSurf),inputLineNumberSize(ils) {
 
     initializeHeap();
 
@@ -105,7 +105,7 @@ This is the MIT License
     nameTypeMap[object::objectType::procedure][object::valueType::string] = pStringType;
     nameTypeMap[object::objectType::procedure][object::valueType::executableProcedure] = pPackedArrayType;
     nameTypeMap[object::objectType::objTypeMatrix][object::valueType::container] = pArrayType;
-    nameTypeMap[object::objectType::dictionaryObject][object::valueType::string] = pDictType;
+    nameTypeMap[object::objectType::dictionaryObject][object::valueType::container] = pDictType;
     nameTypeMap[object::objectType::objTypeArray][object::valueType::container] = pArrayType;
     nameTypeMap[object::objectType::number][object::valueType::integer] = pIntegerType;
     nameTypeMap[object::objectType::number][object::valueType::radix] = pIntegerType;
@@ -131,6 +131,7 @@ This is the MIT License
     tokenProcedures[std::hash<std::string>()(HEX_STRING_DELIMITER_BEGIN)] = &job::parseHexString;
     tokenProcedures[std::hash<std::string>()(HEX85_DELIMITER_BEGIN)] = &job::parseHex85String;
     tokenProcedures[std::hash<std::string>()(LITERAL_DELIMITER)] = &job::parseLiteralName;
+    tokenProcedures[std::hash<std::string>()(RESOLVE_NOW_DELIMITER)] = &job::parseResolveNowString;
 
     antiDelimiters[std::hash<std::string>()(DSC_DELIMITER)] = "";
     antiDelimiters[std::hash<std::string>()(COMMENT_DELIMITER)] = "";
@@ -287,6 +288,8 @@ This is the MIT License
     void *job::CurrentObjectHeap() {
     return pCurrentHeap;
     }
+
+
     void job::resolve() {
 
     object *pTop = top();
@@ -309,7 +312,7 @@ This is the MIT License
     char *p = pszObjectName;
     boolean isNumeric = true;
     while ( *p ) {
-        if ( ! isdigit(*p) && ! ( '.' == *p ) && ! ( '-' == *p ) ) {
+        if ( ! ( '-' == *p ) && ! ( '.' == *p ) && ! isdigit(*p) ) {
             isNumeric = false;
             break;
         }

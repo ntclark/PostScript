@@ -34,6 +34,7 @@ This is the MIT License
 #include "PostScript objects/string.h"
 #include "PostScript objects/binaryString.h"
 #include "PostScript objects/constantString.h"
+#include "PostScript objects/resolveNowString.h"
 
 #include "PostScript objects/directExec.h"
 #include "PostScript objects/dictionary.h"

@@ -21,8 +21,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-        void operatorStdout();
+    // Unimplemented, only stubbed
+        void operatorCurrentcolortransfer();
+        void operatorCurrenthalftone();
 
+        void operatorStdout();
         void operatorAbs();
         void operatorAdd();
         void operatorAload();
@@ -34,6 +37,7 @@ This is the MIT License
         void operatorAstore();
         void operatorAwidthshow();
         void operatorBegin();
+        void operatorBitshift();
         void operatorBind();
         void operatorCleartomark();
         void operatorClip();
@@ -43,8 +47,10 @@ This is the MIT License
         void operatorConcat();
         void operatorCopy();
         void operatorCos();
+        void operatorCount();
         void operatorCountdictstack();
         void operatorCounttomark();
+        void operatorCurrentblackgeneration();
         void operatorCurrentcolorspace();
         void operatorCurrentdict();
         void operatorCurrentfile();
@@ -56,6 +62,7 @@ This is the MIT License
         void operatorCurrentmatrix();
         void operatorCurrentmiterlimit();
         void operatorCurrentscreen();
+        void operatorCurrentundercolorremoval();
         void operatorCurveto();
         void operatorCvi();
         void operatorCvn();
@@ -89,11 +96,14 @@ This is the MIT License
         void operatorFlush();
         void operatorFor();
         void operatorForall();
+        void operatorGcheck();
         void operatorGe();
         void operatorGet();
+        void operatorGetinterval();
         void operatorGrestore();
         void operatorGsave();
         void operatorGt();
+        void operatorIdiv();
         void operatorIdtransform();
         void operatorIf();
         void operatorIfelse();
@@ -129,6 +139,8 @@ This is the MIT License
         void operatorNewpath();
         void operatorNoaccess();
         void operatorNot();
+        void operatorOr();
+        void operatorPackedarray();
         void operatorPop();
         void operatorPrint();
         void operatorProduct();
@@ -154,8 +166,10 @@ This is the MIT License
         void operatorSave();
         void operatorScale();
         void operatorScalefont();
+        void operatorSearch();
         void operatorSelectfont();
         void operatorSetcachedevice();
+        void operatorSetcharwidth();
         void operatorSetcmykcolor();
         void operatorSetcolor();
         void operatorSetcolorspace();
@@ -190,6 +204,8 @@ This is the MIT License
         void operatorVmstatus();
         void operatorWhere();
         void operatorWidthshow();
+        void operatorXcheck();
+        void operatorXor();
         void operatorXshow();
         void operatorXyshow();
         void operatorYshow();

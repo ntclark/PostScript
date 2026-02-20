@@ -322,7 +322,7 @@ This is the MIT License
 
    object *pObject = pop();
 
-   while ( object::objectType::mark != pObject -> ObjectType() ) {
+   while ( ! ( object::objectType::mark == pObject -> ObjectType() ) ) {
       entries.insert(entries.end(),pObject);
       pObject = pop();
    }
@@ -520,25 +520,116 @@ This is the MIT License
     return;
     }
 
+    void job::operatorOr() {
+/*
+    or 
+        bool1 bool2 or bool3
+        int1 int2 or int3
+
+    returns the logical disjunction of the operands if they are boolean. If the operands
+    are integers, or returns the bitwise “inclusive or” of their binary representations.
+
+    Examples
+        true true or -> true % A complete truth table
+        true false or -> true
+        false true or -> true
+        false false or -> false
+        17 5 or -> 21
+        Errors: stackunderflow, t
+*/
+
+    object *pOperand2 = pop();
+    object *pOperand1 = pop();
+
+    if ( pOperand1 -> ObjectType() == object::objectType::logical && pOperand2 -> ObjectType() == object::objectType::logical ) {
+
+        if ( pOperand1 == pTrueConstant || pOperand2 == pTrueConstant ) 
+            push(pTrueConstant);
+        else
+            push(pFalseConstant);
+
+        return;
+
+    }
+
+    long int1 = pOperand1 -> IntValue();
+    long int2 = pOperand2 -> IntValue();
+
+    char szNumber[32];
+    sprintf_s<32>(szNumber,"%ld",int1 | int2);
+
+__debugbreak();
+
+    push(new (CurrentObjectHeap()) string(this,szNumber));
+
+    return;
+    }
+
+
    void job::operatorPop() {
    pop();
    return;
    }
 
-   void job::operatorPrint() {
-/*
-   print
-      string print –
 
-   writes the characters of string to the standard output file (see Section 3.8, “File Input
-   and Output”). This operator provides the simplest means of sending text to
-   an application or an interactive user. Note that print is a file operator; it has nothing
-   to do with painting glyphs for characters on the current page (see show) or
-   with sending the current page to a raster output device (see showpage).
+    void job::operatorPackedarray() {
+/*
+    packedarray
+        any0 ... anyn - 1 n packedarray packedarray
+
+    creates a packed array object of length n containing the objects any0 through
+    anyn-1 as elements. packedarray first removes the nonnegative integer n from the
+    operand stack. It then removes that number of objects from the operand stack,
+    creates a packed array containing those objects as elements, and finally pushes the
+    resulting packed array object on the operand stack.
+
+    The resulting object has a type of packedarraytype, a literal attribute, 
+    and readonly access. In all other respects, its behavior is identical to that of an ordinary
+    array object.
+
+    The packed array is allocated in local or global VM according to the current VM
+    allocation mode. An invalidaccess error occurs if the packed array is in global VM
+    and any of the objects any0 through anyn - 1 are in local VM 
+    (see Section 3.7.2, "Local and Global VM")
+
+    Errors: invalidaccess, rangecheck, stackunderflow, typecheck, VMerror
+    See Also: aload
+
 */
-   operatorStdout();
-   return;
-   }
+
+    object *pCount = pop();
+
+    if ( ! ( pCount -> ValueType() == object::valueType::integer ) )
+        throw new typecheck("packedarray: The count parameter must be an integer");
+
+    long n = pCount -> IntValue();
+    array *pTarget = new (CurrentObjectHeap()) array(this,n);
+
+    for ( long k = 0; k < n; k++ )
+        pTarget -> putElement(n - k - 1,pop());
+
+    push(pTarget);
+
+    return;
+    }
+
+
+    void job::operatorPrint() {
+/*
+    print
+        string print –
+
+    writes the characters of string to the standard output file (see Section 3.8, “File Input
+    and Output”). This operator provides the simplest means of sending text to
+    an application or an interactive user. Note that print is a file operator; it has nothing
+    to do with painting glyphs for characters on the current page (see show) or
+    with sending the current page to a raster output device (see showpage).
+*/
+
+    operatorStdout();
+
+    return;
+    }
 
     void job::operatorProduct() {
 /*
@@ -631,7 +722,7 @@ This is the MIT License
 
     if ( NULL == pIndex -> Contents() ) {
         char szMessage[256];
-        sprintf_s<256>(szMessage,"%s: Line: %ld. The index value may not have been initialized",__FUNCTION__,__LINE__);
+        sprintf_s<256>(szMessage,"Operator put: Input Line: %ld. The index value may not have been initialized",inputLineNumber);
         throw new syntaxerror(szMessage);
     }
 
@@ -666,7 +757,7 @@ This is the MIT License
             string *pString = reinterpret_cast<string *>(pTarget);
             if ( NULL == pValue -> Contents() ) {
                 char szMessage[256];
-                sprintf_s<256>(szMessage,"%s: Line: %ld. The value may not have been initialized",__FUNCTION__,__LINE__);
+                sprintf_s<256>(szMessage,"Operator put: Input Line: %ld. The value may not have been initialized",inputLineNumber);
                 throw new syntaxerror(szMessage);
             }
             pString -> put((long)pIndex -> IntValue(),(BYTE)(pValue -> Contents()[0]));
@@ -675,7 +766,7 @@ This is the MIT License
 
     default: {
         char szMessage[256];
-        sprintf_s<256>(szMessage,"%s: Line: %ld. The target object type (%d) does not appear to be array, dict, or string",__FUNCTION__,__LINE__,pTarget -> ObjectType());
+        sprintf_s<256>(szMessage,"Operator put: Input Line: %ld. The target object type (%d) does not appear to be array, dict, or string",inputLineNumber,pTarget -> ObjectType());
         throw new typecheck(szMessage);
         }
         break;
@@ -1521,6 +1612,47 @@ This is the MIT License
     return;
     }
 
+
+    void job::operatorSearch() {
+/*
+    search 
+        string seek search 
+            post match pre true (if found)
+            string false (if not found)
+
+    looks for the first occurrence of the string seek within string and 
+    returns the results of this search on the operand stack. 
+    The topmost result is a boolean value that indicates whether 
+    the search succeeded. If search finds a subsequence of string
+    whose elements are equal to the elements of seek, it splits 
+    string into three segments: pre, the portion of string preceding the
+    match; match, the portion of string that matches seek; and post, the
+    remainder of string. It then pushes the string objects post, match, 
+    and pre on the operand stack,followed by the boolean value true. 
+
+    All three of these strings are substrings sharing intervals of the value 
+    of the original string.If search does not find a match, it pushes the 
+    original string followed by false.
+
+    Examples
+        (abbc) (ab) search -> (bc) (ab) () true
+        (abbc) (bb) search -> (c) (bb) (a) true
+        (abbc) (bc) search -> ( ) (bc) (ab) true
+        (abbc) (B) search -> (abbc) false
+
+    Errors: invalidaccess, stackoverflow, stackunderflow, typecheck
+    See Also: anchorsearch, token
+*/
+
+    object *pSeek = pop();
+    object *pSearch = pop();
+
+#error HERE IS WHERE I LEFT OFF
+
+    return;
+    }
+
+
     void job::operatorSelectfont() {
 /*
     selectfont 
@@ -1625,6 +1757,35 @@ This is the MIT License
 
     return;
     }
+
+    void job::operatorSetcharwidth() {
+
+    /*
+    setcharwidth 
+        wx wy setcharwidth –
+
+    is similar to setcachedevice, but it passes only width information to the PostScript
+    interpreter’s font machinery and it declares that the glyph being defined is not to
+    be placed in the font cache.
+
+    setcharwidth is useful in the unusual case of defining glyphs that incorporate two
+    or more specific opaque colors, such as opaque black and opaque white. Most
+    glyphs have no inherent color, but are painted with the current color within the
+    glyph’s outline, leaving the area outside unpainted (transparent).
+    
+    Another use of setcharwidth is in defining glyphs that intentionally change their
+    behavior based on the environment in which they execute. Such glyphs must not
+    be cached, because that would subvert the intended variable behavior.
+
+    Errors: stackunderflow, typecheck, undefined
+    See Also: setcachedevice, setcachedevice2
+*/
+
+    currentGS() -> setCharWidth();
+
+    return;
+    }
+
 
     void job::operatorSetcmykcolor() {
 /*
@@ -2840,6 +3001,54 @@ This is the MIT License
     return;
     }
 
+
+    void job::operatorXcheck() {
+/*
+    xcheck 
+        any xcheck bool
+
+    tests whether the operand has the executable or the literal attribute, returning true
+    if it is executable or false if it is literal. This has nothing to do with the object’s
+    access attribute (for example, execute-only). See Section 3.3.2, “Attributes of Objects.”
+
+    Errors: stackunderflow
+    See Also: cvx, cvlit
+*/
+
+    if ( pop() -> theExecutableAttribute == object::executableAttribute::executable )
+        push(pTrueConstant);
+    else
+        push(pFalseConstant);
+
+    return;
+    }
+
+
+    void job::operatorXor() {
+/*
+    xor 
+        bool1 bool2 xor bool3
+        int1 int2 xor int3
+
+    returns the logical “exclusive or” of the operands if they are boolean. If the operands are 
+    integers, xor returns the bitwise “exclusive or” of their binary representations.
+
+    Examples
+        true true xor -> false % A complete truth table
+        true false xor -> true
+        false true xor -> true
+        false false xor -> false
+        7 3 xor -> 4
+        12 3 xor -> 15
+
+    Errors: stackunderflow, typecheck
+    See Also: or, and, not
+
+*/
+    return;
+    }
+
+
     void job::operatorXshow() {
 /*
     xshow 
@@ -3023,8 +3232,8 @@ This is the MIT License
     POINT ptStartPDF{0,0};
     POINT ptEndPDF{0,0};
 
-    long minY = LONG_MAX;
     long maxY = -LONG_MAX;
+    long minY = LONG_MAX;
 
     for ( long k = 0; k < strSize; k++ ) {
 

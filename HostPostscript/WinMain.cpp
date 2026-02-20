@@ -205,6 +205,8 @@ boolean useGSProperties = true;
 
     rc = CoCreateInstance(CLSID_PostScriptInterpreter,NULL,CLSCTX_ALL,IID_IPostScriptInterpreter,reinterpret_cast<void **>(&pParsePSHost -> pIPostScript));
 
+    pParsePSHost -> pIPostScript -> put_LineNumberGeneration(TRUE);
+
     if ( 0 < cbPostScriptProperties )
         pParsePSHost -> pIPostScript -> SetPeristableProperties((UINT_PTR)postScriptPropertiesBlob);
 

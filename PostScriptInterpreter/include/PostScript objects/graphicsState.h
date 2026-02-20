@@ -94,6 +94,7 @@ This is the MIT License
         void drawType42Glyph(uint16_t bGlyph,POINTF *pStartPoint,POINTF *pEndPoint,POINTF *pStartPDF = NULL,POINTF *pEndPDF = NULL);
 
         void setCacheDevice();
+        void setCharWidth();
 
         void initialize();
 

@@ -282,6 +282,12 @@
     <ClCompile Include="Sources\setWindowPanes.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\resolveNowString.cpp">
+      <Filter>Source Files\PostScript objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\operators\operators_Not_Implemented_OnlyStubbed.cpp">
+      <Filter>Source Files\operators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PostScript.rc">
@@ -429,6 +435,9 @@
     </ClInclude>
     <ClInclude Include="include\adobeGlyphList.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\resolveNowString.h">
+      <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

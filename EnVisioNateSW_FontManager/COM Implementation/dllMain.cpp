@@ -129,7 +129,7 @@ This is the MIT License
 
     RegCreateKeyEx(clsidHandle,"InprocServer32",0,NULL,REG_OPTION_NON_VOLATILE,KEY_ALL_ACCESS,NULL,&keyHandle,&disposition);
     RegSetValueEx(keyHandle,NULL,0,REG_SZ,(BYTE *)szModuleName,(DWORD)strlen(szModuleName));
-    RegSetValueEx(keyHandle,"ThreadingModel",0,REG_SZ,(BYTE *)"Both",4);
+    RegSetValueEx(keyHandle,"ThreadingModel",0,REG_SZ,(BYTE *)"Both",5);
 
     RegCreateKeyEx(clsidHandle,"LocalServer",0,NULL,REG_OPTION_NON_VOLATILE,KEY_ALL_ACCESS,NULL,&keyHandle,&disposition);
     RegSetValueEx(keyHandle,NULL,0,REG_SZ,(BYTE *)szModuleName,(DWORD)strlen(szModuleName));

@@ -21,15 +21,14 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#pragma once
+#include "job.h"
+#include "PostScript objects\resolveNowString.h"
 
-    class objectStack : public std::deque<object *,containerAllocator<object *>> {
-    public:
+    resolveNowString::resolveNowString(job *pJob,char *pStart,char *pEnd) : 
+        string(pJob,pStart,pEnd,object::valueType::resolveNowString) {
+    theExecutableAttribute = object::executableAttribute::executable;
+    }
 
-        object *top();
-        object *pop();
-        void push(object *);
-
-        object *peekPrior();
-
-    };
+    resolveNowString::~resolveNowString() {
+    return;
+    }

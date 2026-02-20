@@ -251,6 +251,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\logPaneHandler.cpp" />
     <ClCompile Include="Sources\operators\operators_AtoL.cpp" />
     <ClCompile Include="Sources\operators\operators_MtoZ.cpp" />
+    <ClCompile Include="Sources\operators\operators_Not_Implemented_OnlyStubbed.cpp" />
     <ClCompile Include="Sources\PostScript objects\array.cpp" />
     <ClCompile Include="Sources\PostScript objects\binaryString.cpp" />
     <ClCompile Include="Sources\PostScript objects\booleanObject.cpp" />
@@ -279,6 +280,7 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\PostScript objects\object.cpp" />
     <ClCompile Include="Sources\PostScript objects\pattern.cpp" />
     <ClCompile Include="Sources\PostScript objects\procedure.cpp" />
+    <ClCompile Include="Sources\PostScript objects\resolveNowString.cpp" />
     <ClCompile Include="Sources\PostScript objects\resource.cpp" />
     <ClCompile Include="Sources\PostScript objects\save.cpp" />
     <ClCompile Include="Sources\PostScript objects\string.cpp" />
@@ -337,6 +339,7 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\PostScript objects\object.h" />
     <ClInclude Include="include\PostScript objects\pattern.h" />
     <ClInclude Include="include\PostScript objects\procedure.h" />
+    <ClInclude Include="include\PostScript objects\resolveNowString.h" />
     <ClInclude Include="include\PostScript objects\resource.h" />
     <ClInclude Include="include\PostScript objects\save.h" />
     <ClInclude Include="include\PostScript objects\string.h" />

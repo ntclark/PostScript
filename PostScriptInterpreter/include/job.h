@@ -22,6 +22,7 @@ This is the MIT License
 */
 
 #pragma once
+#pragma warning(disable: 6031)
 
 #include <string>
 #include <deque>
@@ -44,8 +45,8 @@ This is the MIT License
     class job {
     public:
 
-        job(char *pszFileName,HWND hwndSurface);
-        job() : job(NULL,NULL) {}
+        job(char *pszFileName,HWND hwndSurface,long inputLineNumberSize);
+        job() : job(NULL,NULL,0) {}
 
         ~job();
 
@@ -57,9 +58,9 @@ This is the MIT License
         long executeObject();
         void executeProcedure(procedure *);
 
-        void parseProcedure(procedure *,char *pStart,char **ppEnd,long *pLineNumber);
+        void parseProcedure(procedure *,char *pStart,char **ppEnd);
         void bindProcedure(procedure *pProcedure);
-        void parseProcedureString(char *pStart,char **ppEnd,long *pLineNumber);
+        void parseProcedureString(char *pStart,char **ppEnd);
 
         void RequestQuit() { executionStack.top() -> quitRequested = true; }
 
@@ -82,9 +83,10 @@ This is the MIT License
         object* top() { 
             if ( 0 == pOperandStack -> size() )
                 return NULL;
-            return pOperandStack -> top(); 
+            return pOperandStack -> top();
         }
         object* pop() { return pOperandStack -> pop(); }
+        object* peekPrior() { return pOperandStack -> peekPrior(); }
         void push(object *pObject) { pOperandStack -> push(pObject); }
 
         graphicsState *currentGS();
@@ -116,15 +118,16 @@ This is the MIT License
 
         long getPageCount(char *pszFileName);
 
-        void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd,long *pLineNumber);
+        void parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd);
         void parseBinary(char *pszEndDelimiter,char *pStart,char **ppEnd);
         char *parseObject(char *pStart,char **pEnd);
-        void parseDSC(char *pStart,char **ppEnd,long *pLineNumber);
-        void parseComment(char *pStart,char **ppEnd,long *pLineNumber);
-        void parseString(char *pStart,char **ppEnd,long *pLineNumber);
-        void parseHexString(char *pStart,char **ppEnd,long *pLineNumber);
-        void parseHex85String(char *pStart,char **ppEnd,long *pLineNumber);
-        void parseLiteralName(char *apStart,char **ppEnd,long *pLineNumber);
+        void parseDSC(char *pStart,char **ppEnd);
+        void parseComment(char *pStart,char **ppEnd);
+        void parseString(char *pStart,char **ppEnd);
+        void parseHexString(char *pStart,char **ppEnd);
+        void parseHex85String(char *pStart,char **ppEnd);
+        void parseLiteralName(char *apStart,char **ppEnd);
+        void parseResolveNowString(char *pStart,char **ppEnd);
 
         struct executionLevel {
             executionLevel(char *pBegin,char *pe,char *pszFileName) : 
@@ -139,7 +142,6 @@ This is the MIT License
             char *pEnd{NULL};
             boolean quitRequested{false};
             boolean fileClosed{false};
-            long lineNumber{0L};
             char szCurrentFile[MAX_PATH]{0};
         };
 
@@ -147,7 +149,7 @@ This is the MIT License
 
         static executionLevel *pRootExecutionLevel;
 
-        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd,long *pLineNumber)> tokenProcedures;
+        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
         std::map<size_t,char *> antiDelimiters;
         std::map<size_t,name *,std::less<size_t>,containerAllocator<name *>> *pValidNames{NULL};
 
@@ -227,8 +229,11 @@ This is the MIT License
 
         long saveCount{0L};
         long inputLineNumber{0L};
+        long inputLineNumberSize{0L};
         long procedureDefinitionLevel{0L};
         long countPages{0L};
+
+        char szLNFormat[16]{16*'\0'};
 
         char *collectionDelimiterPeek(char *,char **);
         char *delimiterPeek(char *,char **);

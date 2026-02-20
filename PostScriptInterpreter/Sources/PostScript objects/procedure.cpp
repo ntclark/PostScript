@@ -25,7 +25,7 @@ This is the MIT License
 
 #include "job.h"
 
-    procedure::procedure(job *pj,char *pStart,char *pEnd,char **ppEnd,long *pLineNumber) :
+    procedure::procedure(job *pj,char *pStart,char *pEnd,char **ppEnd) :
         isBound(false),pszStringRepresentation(NULL),
         object(pj,NULL,object::objectType::procedure,object::valueType::executableProcedure,
                 object::valueClassification::composite,object::executableAttribute::executable)
@@ -34,7 +34,7 @@ This is the MIT License
     if ( NULL == pStart )
         return;
 
-    pJob -> parseProcedure(this,pStart,ppEnd,pLineNumber);
+    pJob -> parseProcedure(this,pStart,ppEnd);
 
     long n = 0L;
     if ( NULL == ppEnd ) {
@@ -53,13 +53,11 @@ This is the MIT License
     return;
     }
 
-    procedure::procedure(job *pj,char *pStart,char *pEnd,long *pLineNumber) : procedure(pj,pStart,pEnd,NULL,pLineNumber) {}
+    procedure::procedure(job *pj,char *pStart,char *pEnd) : procedure(pj,pStart,pEnd,NULL) {}
 
-    procedure::procedure(job *pj,long *pLineNumber) : procedure(pj,NULL,NULL,NULL,pLineNumber) {}
+    procedure::procedure(job *pj) : procedure(pj,NULL,NULL,NULL) {}
 
-    procedure::procedure(job *pj) : procedure(pj,NULL,NULL,NULL,NULL) {}
-
-    procedure::procedure(job *pj,char *pStart,char **ppEnd,long *pLineNumber) : procedure(pj,pStart,NULL,ppEnd,pLineNumber) {}
+    procedure::procedure(job *pj,char *pStart,char **ppEnd) : procedure(pj,pStart,NULL,ppEnd) {}
 
     procedure::procedure(array *pArray) : procedure(pArray -> Job()) {
 

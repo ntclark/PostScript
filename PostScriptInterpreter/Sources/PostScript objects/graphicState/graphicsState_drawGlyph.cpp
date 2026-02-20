@@ -87,8 +87,8 @@ This is the MIT License
     POINTF startPointPDF{0.0f,0.0f};
     POINTF endPointPDF{0.0f,0.0f};
 
-    long maxY = -LONG_MAX;
-    long minY = LONG_MAX;
+    FLOAT maxY = -FLT_MAX;
+    FLOAT minY = FLT_MAX;
 
     if ( FontType::type1 == CurrentFont() -> TheFontType() || 
             FontType::type3 == CurrentFont() -> TheFontType() ) {
@@ -146,7 +146,7 @@ This is the MIT License
     endPointPDF.y = maxY;
     startPointPDF.y = minY;
 
-    POINT ps{(long)startPointPDF.x,startPointPDF.y};
+    POINT ps{(long)startPointPDF.x,(long)startPointPDF.y};
     POINT pe{(long)endPointPDF.x,(long)endPointPDF.y};
 
     if ( ! ( NULL == pBinary ) )

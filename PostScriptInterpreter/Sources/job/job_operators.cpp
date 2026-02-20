@@ -21,8 +21,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-    pSystemDict -> put("=",&job::operatorStdout);
+    // Unimplemented, only stubbed
+    pSystemDict -> put("currentcolortransfer",&job::operatorCurrentcolortransfer);
+    pSystemDict -> put("currenthalftone",&job::operatorCurrenthalftone);
 
+    pSystemDict -> put("=",&job::operatorStdout);
     pSystemDict -> put("abs",&job::operatorAbs);
     pSystemDict -> put("add",&job::operatorAdd);
     pSystemDict -> put("aload",&job::operatorAload);
@@ -35,6 +38,7 @@ This is the MIT License
     pSystemDict -> put("awidthshow",&job::operatorAwidthshow);
     pSystemDict -> put("begin",&job::operatorBegin);
     pSystemDict -> put("bind",&job::operatorBind);
+    pSystemDict -> put("bitshift",&job::operatorBitshift);
     pSystemDict -> put("cleartomark",&job::operatorCleartomark);
     pSystemDict -> put("clip",&job::operatorClip);
     pSystemDict -> put("closefile",&job::operatorClosefile);
@@ -43,8 +47,10 @@ This is the MIT License
     pSystemDict -> put("concat",&job::operatorConcat);
     pSystemDict -> put("copy",&job::operatorCopy);
     pSystemDict -> put("cos",&job::operatorCos);
+    pSystemDict -> put("count",&job::operatorCount);
     pSystemDict -> put("countdictstack",&job::operatorCountdictstack);
     pSystemDict -> put("counttomark",&job::operatorCounttomark);
+    pSystemDict -> put("currentblackgeneration",&job::operatorCurrentblackgeneration);
     pSystemDict -> put("currentcolorspace",&job::operatorCurrentcolorspace);
     pSystemDict -> put("currentdict",&job::operatorCurrentdict);
     pSystemDict -> put("currentfile",&job::operatorCurrentfile);
@@ -56,6 +62,7 @@ This is the MIT License
     pSystemDict -> put("currentmatrix",&job::operatorCurrentmatrix);
     pSystemDict -> put("currentmiterlimit",&job::operatorCurrentmiterlimit);
     pSystemDict -> put("currentscreen",&job::operatorCurrentscreen);
+    pSystemDict -> put("currentundercolorremoval",&job::operatorCurrentundercolorremoval);
     pSystemDict -> put("curveto",&job::operatorCurveto);
     pSystemDict -> put("cvi",&job::operatorCvi);
     pSystemDict -> put("cvn",&job::operatorCvn);
@@ -89,11 +96,14 @@ This is the MIT License
     pSystemDict -> put("flush",&job::operatorFlush);
     pSystemDict -> put("for",&job::operatorFor);
     pSystemDict -> put("forall",&job::operatorForall);
+    pSystemDict -> put("gcheck",&job::operatorGcheck);
     pSystemDict -> put("ge",&job::operatorGe);
     pSystemDict -> put("get",&job::operatorGet);
+    pSystemDict -> put("getinterval",&job::operatorGetinterval);
     pSystemDict -> put("grestore",&job::operatorGrestore);
     pSystemDict -> put("gsave",&job::operatorGsave);
     pSystemDict -> put("gt",&job::operatorGt);
+    pSystemDict -> put("idiv",&job::operatorIdiv);
     pSystemDict -> put("idtransform",&job::operatorIdtransform);
     pSystemDict -> put("if",&job::operatorIf);
     pSystemDict -> put("ifelse",&job::operatorIfelse);
@@ -129,6 +139,8 @@ This is the MIT License
     pSystemDict -> put("newpath",&job::operatorNewpath);
     pSystemDict -> put("noaccess",&job::operatorNoaccess);
     pSystemDict -> put("not",&job::operatorNot);
+    pSystemDict -> put("or",&job::operatorOr);
+    pSystemDict -> put("packedarray",&job::operatorPackedarray);
     pSystemDict -> put("pop",&job::operatorPop);
     pSystemDict -> put("print",&job::operatorPrint);
     pSystemDict -> put("product",&job::operatorProduct);
@@ -154,8 +166,10 @@ This is the MIT License
     pSystemDict -> put("save",&job::operatorSave);
     pSystemDict -> put("scale",&job::operatorScale);
     pSystemDict -> put("scalefont",&job::operatorScalefont);
+    pSystemDict -> put("search",&job::operatorSearch);
     pSystemDict -> put("selectfont",&job::operatorSelectfont);
     pSystemDict -> put("setcachedevice",&job::operatorSetcachedevice);
+    pSystemDict -> put("setcharwidth",&job::operatorSetcharwidth);
     pSystemDict -> put("setcmykcolor",&job::operatorSetcmykcolor);
     pSystemDict -> put("setcolor",&job::operatorSetcolor);
     pSystemDict -> put("setcolorspace",&job::operatorSetcolorspace);
@@ -190,6 +204,8 @@ This is the MIT License
     pSystemDict -> put("vmstatus",&job::operatorVmstatus);
     pSystemDict -> put("where",&job::operatorWhere);
     pSystemDict -> put("widthshow",&job::operatorWidthshow);
+    pSystemDict -> put("xcheck",&job::operatorXcheck);
+    pSystemDict -> put("xor",&job::operatorXor);
     pSystemDict -> put("xshow",&job::operatorXshow);
     pSystemDict -> put("xyshow",&job::operatorXyshow);
     pSystemDict -> put("yshow",&job::operatorYshow);

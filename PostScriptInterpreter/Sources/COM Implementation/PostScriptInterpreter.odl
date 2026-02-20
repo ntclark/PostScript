@@ -37,6 +37,9 @@ library PostScriptInterpreter {
    [uuid(AC9B7C38-86E1-4c17-8BE2-897AA5535A6B)] 
    interface IPostScriptInterpreter : IUnknown {
 
+      [propget] HRESULT LineNumberGeneration([out,retval] BOOL *pIsDoingLineNumberGeneration);
+      [propput] HRESULT LineNumberGeneration(BOOL doLineNumberGeneration);
+
       HRESULT SetSource(char *pszFileName);
       HRESULT Parse([defaultvalue(NULL)]char *pszFileName,[defaultvalue(TRUE)] BOOL autoStart);
       HRESULT ParseText(char *pszText);

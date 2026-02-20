@@ -24,6 +24,20 @@ This is the MIT License
 #include "PostScriptInterpreter.h"
 #include "job.h"
 
+    HRESULT PostScriptInterpreter::put_LineNumberGeneration(BOOL boolValue) {
+    generateLineNumbers = boolValue;
+    return S_OK;
+    }
+
+
+    HRESULT PostScriptInterpreter::get_LineNumberGeneration(BOOL *pBoolValue) {
+    if ( NULL == pBoolValue )
+        return E_POINTER;
+    *pBoolValue = generateLineNumbers;
+    return S_OK;
+    }
+
+
     HRESULT PostScriptInterpreter::SetSource(char *pszFileName) {
 
     struct _stat fstat;
@@ -40,7 +54,27 @@ This is the MIT License
         return E_FAIL;
     }
 
-    strcpy(szCurrentPostScriptFile,pszFileName);
+    if ( ! ( szCurrentPostScriptFile == pszFileName ) )
+        strcpy(szCurrentPostScriptFile,pszFileName);
+
+    if ( generateLineNumbers ) {
+        char szPS[4096];
+        strcpy(szWorkingFile,_tempnam(NULL,NULL));
+char *px = strrchr(szWorkingFile,'\\');
+if ( NULL == px )
+px = strrchr(szWorkingFile,'/');
+strcpy(px + 1,"testing.ps");
+
+        FILE *fInput = fopen(pszFileName,"rt");
+        FILE *fOutput = fopen(szWorkingFile,"wt");
+        long lineNumber = 0L;
+        while ( fgets(szPS,4096,fInput) ) {
+            fprintf(fOutput,"%08ld%s",++lineNumber,szPS);
+        }
+        fclose(fInput);
+        fclose(fOutput);
+    } else
+        strcpy(szWorkingFile,pszFileName);
 
     if ( ! ( NULL == hwndCmdPane ) )
         SetWindowText(GetDlgItem(hwndCmdPane,IDDI_CMD_PANE_ACTIVE_FILE),szCurrentPostScriptFile);
@@ -57,7 +91,8 @@ This is the MIT License
     pJob = NULL;
 
     HRESULT rc = S_OK;
-    if ( ! ( NULL == pszFileName ) ) 
+
+    if ( ! ( NULL == pszFileName ) )
         rc = SetSource(pszFileName);
 
     if ( ! ( S_OK == rc ) )
@@ -66,13 +101,18 @@ This is the MIT License
     if ( FALSE == autoStart )
         return S_OK;
 
-    pJob = new job(szCurrentPostScriptFile,hwndClient);
+    pJob = new job(szWorkingFile,hwndClient,generateLineNumbers ? 8 : 0);
 
     endRunActions.push_back( [=] {
         delete pJob;
         pJob = NULL;
         ReleaseDC();
         cycle();
+Beep(2000,200);
+#if 0
+        if ( generateLineNumbers )
+            DeleteFile(szWorkingFile);
+#endif
     });
 
     for ( std::pair<size_t,HBITMAP> pPair : pageBitmaps )
@@ -94,7 +134,7 @@ This is the MIT License
     HRESULT PostScriptInterpreter::ParseText(char *pszStream) {
     if ( pJob )
         delete pJob;
-    pJob = new job(NULL,NULL);
+    pJob = new job(NULL,NULL,0);
     WaitForSingleObject(pJob -> hsemIsInitialized,INFINITE);
     pJob -> execute(pszStream,pszStream + strlen(pszStream),"<unnamed>");
     delete pJob;

@@ -411,7 +411,7 @@ This is the MIT License
 
     }
 
-    uint8_t parameterCount = pColorSpace -> ParameterCount();
+    uint8_t parameterCount = (uint8_t)pColorSpace -> ParameterCount();
 
     if ( ! ( NULL == pDecodeArray ) ) {
 

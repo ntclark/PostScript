@@ -80,17 +80,18 @@ This is the MIT License
             string = 102,
             constantString = 103,
             binaryString = 104,
-            character = 105,
-            integer = 106,
-            real = 107,
-            radix = 108,
-            trueOrFalse = 109,
-            arrayMark = 110,
-            dictionaryMark = 111,
-            procedureMark = 112,
-            genericMark = 113,
-            executableProcedure = 114,
-            executableOperator = 115
+            resolveNowString = 105,
+            character = 106,
+            integer = 107,
+            real = 108,
+            radix = 109,
+            trueOrFalse = 110,
+            arrayMark = 111,
+            dictionaryMark = 112,
+            procedureMark = 113,
+            genericMark = 114,
+            executableProcedure = 115,
+            executableOperator = 116
         };
 
         enum executableAttribute {

@@ -321,10 +321,6 @@ CaptureBezier:
         pEndPointPDF -> x += advancePoint.x;
         pEndPointPDF -> y += advancePoint.y;
 
-        long deltaY = pEndPointPDF -> y - pStartPointPDF -> y;
-
-
-
     }
 
     delete pMatrix;

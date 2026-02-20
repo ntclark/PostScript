@@ -23,23 +23,31 @@ This is the MIT License
 
 #include "job.h"
 
-   void objectStack::push(object *pObject) {
-   push_back(pObject);
-   return;
-   }
+    void objectStack::push(object *pObject) {
+    push_back(pObject);
+    return;
+    }
 
 
-   object *objectStack::top() {
-   if ( 0 == size() ) 
-      throw stackunderflow("");
-   return back();
-   }
+    object *objectStack::top() {
+    if ( 0 == size() ) 
+        throw stackunderflow("");
+    return back();
+    }
 
 
-   object *objectStack::pop() {
-   if ( 0 == size() ) 
-      throw stackunderflow("There was an underflow in the PostScript operand stack");
-   object *pObject = top();
-   pop_back();
-   return pObject;
-   }
+    object *objectStack::pop() {
+    if ( 0 == size() ) 
+        throw stackunderflow("There was an underflow in the PostScript operand stack");
+    object *pObject = top();
+    pop_back();
+    return pObject;
+    }
+
+
+    object *objectStack::peekPrior() {
+    if ( 0 == size() )
+        return NULL;
+    std::deque<object *,containerAllocator<object *>>::iterator it = end();
+    return *(it - 2);
+    }

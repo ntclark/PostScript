@@ -23,6 +23,7 @@ This is the MIT License
 
 #include "job.h"
 
+
     long job::parseJob(bool useThread) {
 
     pPostScriptInterpreter -> clearLog(PostScriptInterpreter::hwndPostScriptLogContent);
@@ -301,7 +302,7 @@ This is the MIT License
     static char result[32];
     memset(result,0,sizeof(result));
     ADVANCE_THRU_WHITE_SPACE(pStart)
-    if ( ! pStart )
+    if ( NULL == pStart )
         return NULL;
     *ppEnd = pStart;
     for ( long k = 0; 1; k++ ) {
@@ -330,7 +331,7 @@ This is the MIT License
     static char result[32];
     memset(result,0,sizeof(result));
     ADVANCE_THRU_WHITE_SPACE(pStart)
-    if ( ! pStart )
+    if ( NULL == pStart )
         return NULL;
     for ( long k = 0; 1; k++ ) {
         if ( '\0' == psDelimiters[k][0] )
@@ -351,168 +352,4 @@ This is the MIT License
         }
     }
     return NULL;
-    }
-
-
-    void job::parseLiteralName(char *pStart,char **pEnd,long *pLineNumber) {
-    char *p = pStart;
-    ADVANCE_THRU_WHITE_SPACE(p)
-    char *pBegin = p;
-    ADVANCE_TO_END(p)
-    push(new (CurrentObjectHeap()) literal(this,pBegin,p));
-    ADVANCE_THRU_WHITE_SPACE(p)
-    *pEnd = p;
-    return;
-    }
-
-
-    char * job::parseObject(char *pStart,char **pEnd) {
-    static long wheelIndex = -1L;
-    static char result[32][MAX_PATH];
-
-    wheelIndex++;
-    if ( 32 == wheelIndex )
-        wheelIndex = 0;
-
-    memset(result[wheelIndex],0,MAX_PATH * sizeof(char));
-    char *p = pStart;
-    ADVANCE_THRU_WHITE_SPACE(p)
-    char *pBegin = p;
-    p++;
-    ADVANCE_TO_END(p)
-    *pEnd = p;
-    strncpy(result[wheelIndex],(char *)pBegin,p - pBegin);
-    return result[wheelIndex];
-    }
-
-
-    void job::parseProcedureString(char *pStart,char **ppEnd,long *pLineNumber) {
-
-    char *p = pStart;
-    char *pNext = p;
-    long depth = 1L;
-
-    do {
-
-        ADVANCE_THRU_WHITE_SPACE(p)
-
-        if ( '\0' == *p )
-            break;
-
-        char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
-
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == *pCollectionDelimiter ) {
-            depth++;
-            p = pNext;
-            continue;
-        }
-
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_END[0] == *pCollectionDelimiter ) {
-            depth--;
-            if ( 0 == depth ) {
-                *ppEnd = pNext;
-                return;
-            }
-            p = pNext;
-            continue;
-        }
-
-        p++;
-
-    } while ( ! ( '\0' == p ) );
-
-    *ppEnd = NULL;
-
-    return;
-    }
-
-
-    void job::parseDSC(char *pStart,char **ppEnd,long *pLineNumber) {
-    char *p = pStart;
-    ADVANCE_THRU_END_OF_LINE(p,pLineNumber)
-    *ppEnd = p;
-    pDSCItems -> push_back(new (CurrentObjectHeap()) dscItem(this,pStart,*ppEnd));
-    return;
-    }
-
-
-    void job::parseComment(char *pStart,char **ppEnd,long *pLineNumber) {
-    char *p = pStart;
-    ADVANCE_THRU_END_OF_LINE(p,pLineNumber)
-    *ppEnd = p;
-    pComments -> push_back(new (CurrentObjectHeap()) comment(this,pStart,*ppEnd));
-    return;
-    }
-
-
-    void job::parseString(char *pStart,char **ppEnd,long *pLineNumber) {
-
-    char *p = pStart;
-    *ppEnd = NULL;
-
-    parse(STRING_DELIMITER_BEGIN,STRING_DELIMITER_END,p,ppEnd,pLineNumber);
-
-    if ( *ppEnd ) {
-        push(new (CurrentObjectHeap()) constantString(this,p,*ppEnd));
-        *ppEnd = *ppEnd + 1;
-    }
-
-    return;
-    }
-
-
-    void job::parseHexString(char *pStart,char **ppEnd,long *pLineNumber) {
-    char *p = pStart;
-    *ppEnd = NULL;
-
-    parse(HEX_STRING_DELIMITER_BEGIN,HEX_STRING_DELIMITER_END,p,ppEnd,pLineNumber);
-
-    if ( ! *ppEnd ) 
-        return;
-
-    char c = **ppEnd;
-    **ppEnd = '\0';
-
-    long n = (DWORD)strlen((char *)p) + 1;
-    char *pszNew = new char[n];
-    memset(pszNew,0,n * sizeof(char));
-    long k = 0; 
-    long cbString = 0;
-    while ( k < n ) {
-        if ( 0x0D == p[k] || 0x0A == p[k] ) {
-            k++;
-            continue;
-        }
-        pszNew[cbString++] = p[k];
-        k++;
-    }
-
-    cbString--;
-
-    DWORD dwFlags = 0L;
-    DWORD dwCount = 0L;
-
-    CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,NULL,&dwCount,NULL,&dwFlags);
-
-    BYTE *pbDecoded = new BYTE[dwCount];
-
-    memset(pbDecoded,0,dwCount * sizeof(BYTE));
-
-    CryptStringToBinaryA(pszNew,cbString,CRYPT_STRING_HEX,pbDecoded,&dwCount,NULL,&dwFlags);
-
-    push(new (CurrentObjectHeap()) binaryString(this,"<binary>",pbDecoded,dwCount));
-
-    delete [] pbDecoded;
-    delete [] pszNew;
-
-    **ppEnd = c;
-    *ppEnd = *ppEnd + 1;
-
-    return;
-    }
-
-
-    void job::parseHex85String(char *pStart,char **pEnd,long *pLineNumber) {
-MessageBox(NULL,"Not implemented","Not implemented",MB_OK);
-    return;
     }

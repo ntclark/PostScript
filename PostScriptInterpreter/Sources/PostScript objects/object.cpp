@@ -383,6 +383,8 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
         return "font";
     case resource:
         return "resource";
+    case literal:
+        return "literal";
     default: {
         char szMessage[256];
         sprintf_s<256>(szMessage,"Note: TypeName is not implemented for type %d",theObjectType);

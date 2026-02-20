@@ -34,9 +34,8 @@ class array;
    class procedure : public object {
    public:
 
-      procedure(job *p,char *pStart,char *pEnd,long *pLineNumber);
-      procedure(job *p,char *pStart,char **ppEnd,long *pLineNumber);
-      procedure(job *p,long *pLineNumber);
+      procedure(job *p,char *pStart,char *pEnd);
+      procedure(job *p,char *pStart,char **ppEnd);
       procedure(job *p);
       procedure(array *pArray);
 
@@ -56,7 +55,7 @@ class array;
 
    private:
 
-      procedure(job *pj,char *pStart,char *pEnd,char **ppEnd,long *pLineNumber);
+      procedure(job *pj,char *pStart,char *pEnd,char **ppEnd);
 
       bool isBound{false};
       std::vector<object *,containerAllocator<object *>> entries;

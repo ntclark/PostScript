@@ -23,13 +23,15 @@ This is the MIT License
 
 #pragma once
 
-    class objectStack : public std::deque<object *,containerAllocator<object *>> {
-    public:
+#include "PostScript objects/string.h"
 
-        object *top();
-        object *pop();
-        void push(object *);
+   class resolveNowString : public string {
+   public:
 
-        object *peekPrior();
+      resolveNowString(job *pJob,char *pStart,char *pEnd);
 
-    };
+      virtual ~resolveNowString();
+
+   private:
+
+   };
