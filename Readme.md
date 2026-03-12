@@ -1,4 +1,7 @@
 
+## Note: the most recent branch is gen3 - it is a work in progress so it is not quite ready.
+### gen2 has been in use for quite a while - you might try that one first. Thanks
+
 # Software quality is my passion
 
 >### Before I get into that, you may be looking for build instructions
