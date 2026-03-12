@@ -21,38 +21,15 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#pragma once
+#include "job.h"
+#include "PostScript objects/dctFilter.h"
 
-#include <stdio.h>
-#include <stdint.h>
+    /*
+    (Page 85)
+    DCTDecode (none) Decompresses DCT-encoded data, producing image sample data that
+    approximate the original data. 
+    */
 
-#include "PostScript objects/object.h"
-
-    class file : public object {
-    public:
-
-        file(job *pJob,char *pszName);
-
-        virtual uint8_t *getBinaryData(uint32_t *pcbSize);
-
-        virtual void releaseData() { 
-            if ( ! ( NULL == pbData ) ) 
-                delete [] pbData; 
-        }
-
-        virtual void operatorReadstring(object *pString);
-
-    protected:
-
-        uint8_t *pbData{NULL};
-
-    private:
-
-        FILE *fileHandle{NULL};
-        char szFileName[MAX_PATH];
-        long currentSeek{0L};
-
-        static char szEndDelimiter[8];
-
-        friend class job;
-    };
+    dctFilter::dctFilter(job *pj,filter *pDataSource) :
+        filter(pj,pszKindDCT,pDataSource) 
+    {}

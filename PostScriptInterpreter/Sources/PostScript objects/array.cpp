@@ -26,14 +26,14 @@ This is the MIT License
 #include "job.h"
 
     array::array(job *pj,char *pszName) :
-        array(pj,pszName,0,NULL) 
+        array(pj,pszName,(long)0,NULL) 
     {
     return;
     }
 
 
     array::array(job *pj,char *pszName,char *pszValues) :
-        array(pj,pszName,0,pszValues) 
+        array(pj,pszName,(long)0,pszValues) 
     {
     return;
     }
@@ -67,6 +67,18 @@ This is the MIT License
     }
 
     return;
+    }
+
+
+    array::array(job *pj,char *pszName,char *pszStart,char *pszEnd) :
+        array(pj,pszName,(long)0,NULL)
+    {
+    long n = (long)(pszEnd - pszStart);
+
+    pszStringRepresentation = (char *)allocate(n * sizeof(char));
+    memset(pszStringRepresentation,0,n * sizeof(char));
+
+    strncpy(pszStringRepresentation,pszStart,n - 1);
     }
 
 

@@ -58,9 +58,9 @@ This is the MIT License
         long executeObject();
         void executeProcedure(procedure *);
 
-        void parseProcedure(procedure *,char *pStart,char **ppEnd);
         void bindProcedure(procedure *pProcedure);
-        void parseProcedureString(char *pStart,char **ppEnd);
+
+        void parseCollectionString(char *pszDelimiterBegin,char *pszDelimiterEnd,char *pStart,char **ppEnd);
 
         void RequestQuit() { executionStack.top() -> quitRequested = true; }
 
@@ -68,11 +68,13 @@ This is the MIT License
             while ( ' ' == *(executionStack.top() -> pNext) )
                 executionStack.top() -> pNext++;
         }
+
         char *currentInput() { 
             if ( executionStack.top() -> pNext == executionStack.top() -> pEnd )
                 return NULL;
             return executionStack.top() -> pNext;
         }
+
         void setCurrentInput(char *pInput) { 
             if ( pInput < executionStack.top() -> pEnd )
                 executionStack.top() -> pNext = pInput;
@@ -129,6 +131,10 @@ This is the MIT License
         void parseLiteralName(char *apStart,char **ppEnd);
         void parseResolveNowString(char *pStart,char **ppEnd);
 
+        void parseProcedure(char *pStart,char **ppEnd);
+        void parseDictionary(char *pStart,char **ppEnd);
+        void parseArray(char *pStart,char **ppEnd);
+
         struct executionLevel {
             executionLevel(char *pBegin,char *pe,char *pszFileName) : 
                 pStart(pBegin),pNext(pBegin),pEnd(pe) {
@@ -149,9 +155,10 @@ This is the MIT License
 
         static executionLevel *pRootExecutionLevel;
 
-        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenProcedures;
+        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> tokenParsers;
         std::map<size_t,char *> antiDelimiters;
         std::map<size_t,name *,std::less<size_t>,containerAllocator<name *>> *pValidNames{NULL};
+        std::map<size_t,void (__thiscall job::*)(char *pStart,char **ppEnd)> collectionParsers;
 
         std::list<comment *,containerAllocator<comment *>> *pComments{NULL};
         std::list<dscItem *,containerAllocator<dscItem *>> *pDSCItems{NULL};
@@ -257,4 +264,6 @@ This is the MIT License
         friend class font;
         friend class name;
         friend class file;
+        friend class filter;
+        friend class subFileFilter;
    };

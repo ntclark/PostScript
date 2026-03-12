@@ -184,6 +184,11 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
     return pszContents;
     }
 
+    uint8_t *object::Contents(uint8_t *pbNewContents,uint32_t cbSize) {
+    pszContents = (char *)allocate(cbSize + 1);
+    memcpy(pszContents,pbNewContents,cbSize);
+    return (uint8_t *)pszContents;
+    }
 
     char *object::Name(char *pszNewName) {
 
@@ -438,4 +443,10 @@ MessageBox(NULL,"Big Problem","Out of object space",MB_OK | MB_TOPMOST);
 
     char *object::ToString() {
     return Contents();
+    }
+
+    bool object::IsString() {
+    return ( object::valueType::string == ValueType() || 
+        object::valueType::constantString == ValueType() ||
+        object::valueType::binaryString == ValueType() );
     }

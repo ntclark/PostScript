@@ -157,6 +157,7 @@ This is the MIT License
     pSystemDict -> put("rectstroke",&job::operatorRectstroke);
     pSystemDict -> put("render",&job::operatorRender);
     pSystemDict -> put("repeat",&job::operatorRepeat);
+    pSystemDict -> put("resourcestatus",&job::operatorResourcestatus);
     pSystemDict -> put("restore",&job::operatorRestore);
     pSystemDict -> put("rlineto",&job::operatorRlineto);
     pSystemDict -> put("rmoveto",&job::operatorRmoveto);

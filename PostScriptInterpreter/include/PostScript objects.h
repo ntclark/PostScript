@@ -42,6 +42,12 @@ This is the MIT License
 
 #include "PostScript objects/file.h"
 #include "PostScript objects/filter.h"
+#include "PostScript objects/subFileFilter.h"
+#include "PostScript objects/ascii85Filter.h"
+#include "PostScript objects/dctFilter.h"
+#include "PostScript objects/runLengthFilter.h"
+#include "PostScript objects/lzwFilter.h"
+#include "PostScript objects/fileFilter.h"
 
 #include "PostScript objects/save.h"
 #include "PostScript objects/graphicsState.h"

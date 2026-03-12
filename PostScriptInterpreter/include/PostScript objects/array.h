@@ -45,6 +45,7 @@ class job;
         array(job *pJob,char *pszName,long initialCount);
         array(job *pJob,long initialCount);
         array(job *pJob,char *pszName,long initialCount,char *pszValues);
+        array(job *pJob,char *pszName,char *pszStart,char *pszEnd);
 
         void insert(object *);
 
@@ -68,6 +69,10 @@ class job;
     protected:
 
         std::map<long,object *,std::less<long>,containerAllocator<object *>> entries;
+
+    private:
+
+        char *pszStringRepresentation{NULL};
 
         friend class job;
     };

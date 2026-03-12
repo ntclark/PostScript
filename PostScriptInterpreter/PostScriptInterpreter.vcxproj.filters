@@ -61,6 +61,12 @@
     <Filter Include="Source Files\Windows">
       <UniqueIdentifier>{e9aebb3e-83a8-4f39-ab7f-5ae378d2d7ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\PostScript objects\filters">
+      <UniqueIdentifier>{51e08488-be62-4fd8-b292-32793ef224dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PostScript objects\filters">
+      <UniqueIdentifier>{fdd87577-8ff6-4456-9cd4-6acd716df8b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\PostScriptInterpreter.cpp">
@@ -186,9 +192,6 @@
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_filter.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\PostScript objects\filter.cpp">
-      <Filter>Source Files\PostScript objects</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\operators\operators_AtoL.cpp">
       <Filter>Source Files\operators</Filter>
     </ClCompile>
@@ -210,9 +213,6 @@
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_paths.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\runLengthEncodeDecode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\PostScript objects\graphicState\gdiParameters.cpp">
       <Filter>Source Files\PostScript objects\graphicsState</Filter>
     </ClCompile>
@@ -221,9 +221,6 @@
     </ClCompile>
     <ClCompile Include="Sources\Stacks\psTransformsStack.cpp">
       <Filter>Source Files\Stacks</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\ascii85.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\mathUtils.cpp">
       <Filter>Source Files\Common</Filter>
@@ -287,6 +284,33 @@
     </ClCompile>
     <ClCompile Include="Sources\operators\operators_Not_Implemented_OnlyStubbed.cpp">
       <Filter>Source Files\operators</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filters\subFileFlter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filters\dctFilter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filters\ascii85Filter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filters\runLengthFilter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filters\fileFilter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\PostScript objects\filters\lzwFilter.cpp">
+      <Filter>Source Files\PostScript objects\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="lzw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\job\parseCollections.cpp">
+      <Filter>Source Files\job</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -382,12 +406,6 @@
     <ClInclude Include="include\PostScript objects\file.h">
       <Filter>Header Files\PostScript objects</Filter>
     </ClInclude>
-    <ClInclude Include="include\PostScript objects\filter.h">
-      <Filter>Header Files\PostScript objects</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ascii85.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\gdiParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -438,6 +456,30 @@
     </ClInclude>
     <ClInclude Include="include\PostScript objects\resolveNowString.h">
       <Filter>Header Files\PostScript objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\filter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\subFileFilter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\ascii85Filter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\dctFilter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\runLengthFilter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\fileFilter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PostScript objects\lzwFilter.h">
+      <Filter>Header Files\PostScript objects\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\include\parsing.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

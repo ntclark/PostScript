@@ -29,18 +29,21 @@ This is the MIT License
     class filter : public file {
     public:
 
-        filter(job *pj,char *pszFilterName,object *pDataSource,char *pszEndDelimiter);
+        filter(job *pj,char *pszKind,filter *pDataSource);
 
-        void setSource(object *pFilterSource);
+        virtual uint8_t *getBinaryData(uint32_t *pcbSize);
 
-        virtual uint8_t *getBinaryData(uint32_t *pcbSize,char *pszEndDelimiter);
+        virtual boolean IsDCTDecode() { return false; }
 
-        boolean IsDCTDecode() { return isDCTDecode; }
+        static char *pszKindAscii85;
+        static char *pszKindRunLength;
+        static char *pszKindSubFile;
+        static char *pszKindDCT;
+        static char *pszKindLZW;
+        static char *pszKindFile;
 
-    private:
+    protected:
 
-        object *pDataSource{NULL};
-        char szSourceEndDelimiter[8];
-        char szFilterName[64];
-        boolean isDCTDecode{false};
+        filter *pDataSource{NULL};
+
     };

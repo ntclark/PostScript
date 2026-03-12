@@ -26,6 +26,10 @@ This is the MIT License
 //
 // On entry, pStart is positioned just past the beginning delimiter
 //
+// However, on return *ppEnd points TO the delimiter. This means the 
+// caller needs to advance ppEnd after this call depending on the
+// delimiter passed in (1 or 2 characters)
+
     void job::parse(char *pszBeginDelimiter,char *pszEndDelimiter,char *pStart,char **ppEnd) {
 
     long n = 0;
@@ -212,25 +216,46 @@ This is the MIT License
 
 
     void job::parseHexString(char *pStart,char **ppEnd) {
-    char *p = pStart;
+
     *ppEnd = NULL;
 
-    parse(HEX_STRING_DELIMITER_BEGIN,HEX_STRING_DELIMITER_END,p,ppEnd);
+    parse(HEX_STRING_DELIMITER_BEGIN,HEX_STRING_DELIMITER_END,pStart,ppEnd);
 
     if ( ! *ppEnd ) 
         return;
 
+    char *p = pStart;
     char c = **ppEnd;
     **ppEnd = '\0';
 
     long n = (DWORD)strlen((char *)p) + 1;
-    char *pszNew = new char[n];
-    memset(pszNew,0,n * sizeof(char));
     long k = 0; 
     long cbString = 0;
+
     while ( k < n ) {
         if ( 0x0D == p[k] || 0x0A == p[k] ) {
-            k++;
+            while ( 0x0D == p[k] || 0x0A == p[k] )
+                k++;
+            if ( 0 < inputLineNumberSize )
+                k += inputLineNumberSize;
+            continue;
+        }
+        cbString++;
+        k++;
+    }
+
+    n = cbString;
+    char *pszNew = new char[n];
+    memset(pszNew,0,n * sizeof(char));
+    k = 0; 
+    cbString = 0;
+
+    while ( k < n ) {
+        if ( 0x0D == p[k] || 0x0A == p[k] ) {
+            while ( 0x0D == p[k] || 0x0A == p[k] )
+                k++;
+            if ( 0 < inputLineNumberSize )
+                k += inputLineNumberSize;
             continue;
         }
         pszNew[cbString++] = p[k];
@@ -256,7 +281,8 @@ This is the MIT License
     delete [] pszNew;
 
     **ppEnd = c;
-    *ppEnd = *ppEnd + 1;
+
+    *ppEnd += 1;
 
     return;
     }
@@ -301,79 +327,10 @@ MessageBox(NULL,"Not implemented","Not implemented",MB_OK);
 
 
     void job::parseResolveNowString(char *pStart,char **ppEnd) {
-
-    char *p = pStart;
     *ppEnd = NULL;
-
-    // This seemingly orphaned call is so that ppEnd is set properly
-    // It could (should) be made in the object constructor if *ppEnd is '\0';
-
     parseObject(pStart,ppEnd);
-
-    push(new (CurrentObjectHeap()) resolveNowString(this,p,*ppEnd));
-
-    return;
-    }
-
-
-    void job::parseProcedureString(char *pStart,char **ppEnd) {
-
-    // This function merely defines the beginning and end of the procedure string,
-    // it does not create any objects or manipulate the operand stack.
-
-    char *p = pStart;
-    char *pNext = p;
-    long depth = 1L;
-
-    do {
-
-        ADVANCE_THRU_WHITE_SPACE(p)
-
-        if ( '\0' == *p )
-            break;
-
-        if ( 0x0A == p[0] || 0x0D == p[0] ) {
-            while ( 0x0A == *p || 0x0D == *p ) 
-                p++;
-            if ( 0 < inputLineNumberSize ) {
-                sscanf(p,szLNFormat,&inputLineNumber);
-                p += inputLineNumberSize;
-            }
-            continue;
-        }
-
-        char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
-
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == *pCollectionDelimiter ) {
-            depth++;
-            p = pNext;
-            continue;
-        }
-
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_END[0] == *pCollectionDelimiter ) {
-            depth--;
-            if ( 0 == depth ) {
-                *ppEnd = pNext;
-                return;
-            }
-            p = pNext;
-            continue;
-        }
-
-        char *pStringDelimiter = delimiterPeek(p,&pNext);
-
-        if ( ! ( NULL == pStringDelimiter ) && STRING_DELIMITER_BEGIN[0] == *pStringDelimiter ) {
-            parse(STRING_DELIMITER_BEGIN,STRING_DELIMITER_END,p + 1,&pNext);
-            p = pNext + 1;
-            continue;
-        }
-
-        p++;
-
-    } while ( ! ( '\0' == p ) );
-
-    *ppEnd = NULL;
-
+    push(new (CurrentObjectHeap()) resolveNowString(this,pStart,*ppEnd));
+    push(resolve(pop() -> Name()));
     return;
     }
 

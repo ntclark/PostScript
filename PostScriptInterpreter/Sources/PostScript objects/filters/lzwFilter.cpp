@@ -21,38 +21,31 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#pragma once
+#include "job.h"
+#include "PostScript objects/lzwFilter.h"
 
-#include <stdio.h>
-#include <stdint.h>
+    /*
+    LZWDecode Filter (page 131)
+        source /LZWDecode filter
+        source dictionary /LZWDecode filter
+    
+    The LZWDecode filter decodes data that is encoded in a Lempel-Ziv-Welch compressed format. 
+    See the description of the LZWEncode filter for details of the format and a 
+    description of the filter parameters. 
+    */
 
-#include "PostScript objects/object.h"
+    lzwFilter::lzwFilter(job *pj,filter *pDataSource) :
+        filter(pj,pszKindLZW,pDataSource) 
+    { 
+    }
 
-    class file : public object {
-    public:
+    uint8_t *lzwFilter::getBinaryData(uint32_t *pcbSize) {
 
-        file(job *pJob,char *pszName);
+    if ( NULL == pDataSource )
+        return NULL;
 
-        virtual uint8_t *getBinaryData(uint32_t *pcbSize);
+    uint32_t cbSource;
 
-        virtual void releaseData() { 
-            if ( ! ( NULL == pbData ) ) 
-                delete [] pbData; 
-        }
+    uint8_t *pbInput = pDataSource -> getBinaryData(&cbSource);
 
-        virtual void operatorReadstring(object *pString);
-
-    protected:
-
-        uint8_t *pbData{NULL};
-
-    private:
-
-        FILE *fileHandle{NULL};
-        char szFileName[MAX_PATH];
-        long currentSeek{0L};
-
-        static char szEndDelimiter[8];
-
-        friend class job;
-    };
+    }

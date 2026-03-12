@@ -139,7 +139,7 @@ regsvr32 /s "$(TargetPath)"
       <ModuleDefinitionFile>Sources\PostScript.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>WS2_32.lib;crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lzwdecode.lib;WS2_32.lib;crypt32.lib;rpcrt4.lib;comctl32.lib;shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -218,12 +218,12 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="$(GSYSTEM_HOME)\Common\Utils\getHBITMAPFromPixels.cpp" />
     <ClCompile Include="$(GSYSTEM_HOME)\Common\source\utilities.cpp" />
     <ClCompile Include="include\AdobeType1Fonts\type1Glyph.cpp" />
+    <ClCompile Include="lzw.cpp" />
     <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts.cpp" />
     <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_drawGlyph.cpp" />
     <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_operators12.cpp" />
     <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_encryption.cpp" />
     <ClCompile Include="Sources\AdobeType1Fonts\AdobeType1Fonts_operators.cpp" />
-    <ClCompile Include="Sources\ascii85.cpp" />
     <ClCompile Include="Sources\cmdPaneHandler.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPoint.cpp" />
     <ClCompile Include="Sources\COM Events\IConnectionPointContainer.cpp" />
@@ -246,6 +246,7 @@ regsvr32 /s "$(TargetPath)"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Sources\job\parse.cpp" />
+    <ClCompile Include="Sources\job\parseCollections.cpp" />
     <ClCompile Include="Sources\job\parseJob.cpp" />
     <ClCompile Include="Sources\job\parseJob_execute.cpp" />
     <ClCompile Include="Sources\logPaneHandler.cpp" />
@@ -261,6 +262,12 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\PostScript objects\dictionaryEntry.cpp" />
     <ClCompile Include="Sources\PostScript objects\file.cpp" />
     <ClCompile Include="Sources\PostScript objects\filter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filters\ascii85Filter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filters\dctFilter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filters\fileFilter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filters\lzwFilter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filters\runLengthFilter.cpp" />
+    <ClCompile Include="Sources\PostScript objects\filters\subFileFlter.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\gdiParameters.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_images.cpp" />
     <ClCompile Include="Sources\PostScript objects\graphicState\graphicsState_filter.cpp" />
@@ -288,7 +295,6 @@ regsvr32 /s "$(TargetPath)"
     <ClCompile Include="Sources\CommitCurrentPage.cpp" />
     <ClCompile Include="Sources\initWindows.cpp" />
     <ClCompile Include="Sources\logHandling.cpp" />
-    <ClCompile Include="Sources\runLengthEncodeDecode.cpp" />
     <ClCompile Include="Sources\setWindowPanes.cpp" />
     <ClCompile Include="Sources\Stacks\dictionaryStack.cpp" />
     <ClCompile Include="Sources\Stacks\objectStack.cpp" />
@@ -305,10 +311,10 @@ regsvr32 /s "$(TargetPath)"
     <Midl Include="Sources\COM Implementation\PostScriptInterpreter.odl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Common\include\parsing.h" />
     <ClInclude Include="include\adobeGlyphList.h" />
     <ClInclude Include="include\AdobeType1Fonts\AdobeType1Fonts.h" />
     <ClInclude Include="include\AdobeType1Fonts\type1Glyph.h" />
-    <ClInclude Include="include\ascii85.h" />
     <ClInclude Include="include\CentralEuropeanEncoding.h" />
     <ClInclude Include="include\error.h" />
     <ClInclude Include="include\gdiParameters.h" />
@@ -319,20 +325,24 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\pointType.h" />
     <ClInclude Include="include\PostScript objects.h" />
     <ClInclude Include="include\PostScript objects\array.h" />
+    <ClInclude Include="include\PostScript objects\ascii85Filter.h" />
     <ClInclude Include="include\PostScript objects\binaryString.h" />
     <ClInclude Include="include\PostScript objects\comment.h" />
     <ClInclude Include="include\PostScript objects\constantString.h" />
     <ClInclude Include="include\PostScript objects\booleanObject.h" />
     <ClInclude Include="include\PostScript objects\colorSpace.h" />
     <ClInclude Include="include\PostScript objects\containerAllocator.h" />
+    <ClInclude Include="include\PostScript objects\dctFilter.h" />
     <ClInclude Include="include\PostScript objects\dictionary.h" />
     <ClInclude Include="include\PostScript objects\dictionaryEntry.h" />
     <ClInclude Include="include\PostScript objects\directExec.h" />
     <ClInclude Include="include\PostScript objects\file.h" />
+    <ClInclude Include="include\PostScript objects\fileFilter.h" />
     <ClInclude Include="include\PostScript objects\filter.h" />
     <ClInclude Include="include\PostScript objects\font.h" />
     <ClInclude Include="include\PostScript objects\graphicsState.h" />
     <ClInclude Include="include\PostScript objects\literal.h" />
+    <ClInclude Include="include\PostScript objects\lzwFilter.h" />
     <ClInclude Include="include\PostScript objects\mark.h" />
     <ClInclude Include="include\PostScript objects\matrix.h" />
     <ClInclude Include="include\PostScript objects\name.h" />
@@ -341,9 +351,11 @@ regsvr32 /s "$(TargetPath)"
     <ClInclude Include="include\PostScript objects\procedure.h" />
     <ClInclude Include="include\PostScript objects\resolveNowString.h" />
     <ClInclude Include="include\PostScript objects\resource.h" />
+    <ClInclude Include="include\PostScript objects\runLengthFilter.h" />
     <ClInclude Include="include\PostScript objects\save.h" />
     <ClInclude Include="include\PostScript objects\string.h" />
     <ClInclude Include="include\PostScript objects\dscItem.h" />
+    <ClInclude Include="include\PostScript objects\subFileFilter.h" />
     <ClInclude Include="include\PostScriptInterpreter.h" />
     <ClInclude Include="include\logHandling.h" />
     <ClInclude Include="include\resourceIdentifiers.h" />

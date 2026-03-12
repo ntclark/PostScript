@@ -722,7 +722,7 @@ __debugbreak();
 
     if ( NULL == pIndex -> Contents() ) {
         char szMessage[256];
-        sprintf_s<256>(szMessage,"Operator put: Input Line: %ld. The index value may not have been initialized",inputLineNumber);
+        sprintf_s<256>(szMessage,"put: Input Line: %ld. The index value may not have been initialized",inputLineNumber);
         throw new syntaxerror(szMessage);
     }
 
@@ -730,11 +730,11 @@ __debugbreak();
 
     case object::objectType::objTypeArray:
         reinterpret_cast<array *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
-        break;
+        return;
 
     case object::objectType::dictionaryObject:
         reinterpret_cast<dictionary *>(pTarget) -> put(pIndex -> Name(),pValue);
-        break;
+        return;
 
 #if 0
     case object::objectType::font:
@@ -744,7 +744,7 @@ __debugbreak();
 
     case object::objectType::procedure:
         reinterpret_cast<procedure *>(pTarget) -> putElement(pIndex -> IntValue(),pValue);
-        break;
+        return;
 
 #if 0
     case object::objectType::objTypeMatrix:
@@ -761,16 +761,17 @@ __debugbreak();
                 throw new syntaxerror(szMessage);
             }
             pString -> put((long)pIndex -> IntValue(),(BYTE)(pValue -> Contents()[0]));
-            break;
+            return;
         }
 
     default: {
         char szMessage[256];
-        sprintf_s<256>(szMessage,"Operator put: Input Line: %ld. The target object type (%d) does not appear to be array, dict, or string",inputLineNumber,pTarget -> ObjectType());
+        sprintf_s<256>(szMessage,"put: Input Line: %ld. The target object type (%d) does not appear to be array, dict, or string",inputLineNumber,pTarget -> ObjectType());
         throw new typecheck(szMessage);
         }
         break;
     }
+
     return;
     }
 
@@ -985,7 +986,6 @@ __debugbreak();
     However, the communication channel may usurp certain control characters; see Section 3.8, “File Input and Output.”
 
     Errors: invalidaccess, ioerror, rangecheckk, stackunderflow, typecheck
-
     See Also: read, readhexstring, readline
 */
 
@@ -995,68 +995,17 @@ __debugbreak();
     uint32_t strSize = (uint32_t)pString -> length();
 
     if ( 0 == strSize ) {
-        throw new rangecheck("A zero length string was passed to readstring");
+        char szMessage[128];
+        sprintf_s<128>(szMessage,"readstring: Input line %ld: A zero length string was passed to readstring",inputLineNumber);
+        throw new rangecheck(szMessage);
         return;
     }
 
-    uint8_t *pbContents = new uint8_t[strSize + 1];
-    pbContents[strSize] = '\0';
-
-/*
-    Each use of RD is followed by exactly one blank
-    character followed by a sequence of binary bytes that are the
-    charstring contents.
-*/
-    currentInputFlushSpace();
-
-    uint32_t countRead = 0;
-
-    while ( countRead < strSize ) {
-        if ( NULL == currentInput() )
-            break;
-        pbContents[countRead] = (uint8_t)*currentInput();
-        setCurrentInput(currentInput() + 1);
-        countRead++;
-    }
-
-    /*
-
-    page 65 of Adobe Type 1 Font Format states:
-
-        When this encoded and encrypted charstring is expressed in
-        binary form, it is ready for inclusion in a Type 1 font program.
-        The charstring would be inserted in the CharStrings dictionary as
-        follows:
-
-        /C 41 RD ~41~binary~bytes~ ND
-
-        SOMEWHERE I saw a reference to the first, or first few bytes, in the 
-        string indicating it is binary and should be decrypted.
-        Can't find that again. In any case, I will assume that if
-        executionStack.size is > 0, it means that an Adobe type1 font
-        program is being read, and that charstrings are encrypted
-        but still keep them encrypted until point of use
-    */
-
-    object *pTarget = NULL;
-
-    if ( 0 == executionStack.size() )
-        pTarget = new (CurrentObjectHeap()) string(this,(char *)pbContents);
-    else
-        pTarget = new (CurrentObjectHeap()) binaryString(this,NULL,pbContents,countRead);
-
-    push(pTarget);
-
-    delete [] pbContents;
-
-    if ( countRead == strSize )
-        push(pTrueConstant);
-    else
-        // Need a test for this which is an eexec or readstring at end of the input
-        push(pFalseConstant);
+    pFile -> operatorReadstring(pString);
 
     return;
     }
+
 
     void job::operatorRcheck() {
 /*
@@ -1237,6 +1186,59 @@ __debugbreak();
 
     return;
     }
+
+
+    void job::operatorResourcestatus() {
+
+/*
+    resourcestatus 
+        key category resourcestatus 
+            status size true (if resource exists)
+            false (if not)
+
+    returns status information about a named resource instance. category is a name
+    object that identifies a resource category, such as Font (see Section 3.9.2, 
+    “Resource Categories”). key is a name or string object that identifies the 
+    resource instance. (Names and strings are interchangeable; keys of other types 
+    are permitted but are not recommended.)
+
+    If the named resource instance exists, either defined in virtual memory or available 
+    from some external source, resourcestatus returns status, size, and the value
+    true; otherwise, it returns false. Unlike findresource, resourcestatus never loads a
+    resource instance into virtual memory.
+
+    status is an integer with the following meanings:
+        0 Defined in VM by an explicit defineresource; not subject to automatic removal
+        1 Defined in VM by a previous execution of findresource; subject to automatic removal
+        2 Not currently defined in VM, but available from external storage
+
+    size is an integer giving the estimated VM consumption of the resource instance in
+    bytes. This information may not be available for certain resources; if the size is
+    unknown, -1 is returned. Usually, resourcestatus can obtain the size of a status 1
+    or 2 resource (derived from the %%VMusage: comment in the resource file), but it
+    has no general way to determine the size of a status 0 resource. See Section 3.9.4,
+
+    "Resources as Files" for an explanation of how the size is determined. A size value
+    of 0 is returned for implicit resources, whose instances do not occupy VM.
+    If the current VM allocation mode is local, resourcestatus considers both local
+    and global resource definitions, in that order (see defineresource). However, if
+    the current VM allocation mode is global, only global resource definitions are 
+    visible to resourcestatus. Resource instances in external storage are visible without
+    regard to the current VM allocation mode.
+
+    If the specified resource category does not exist, an undefined error occurs.
+
+    Errors: stackoverflow, stackunderflow, typecheck, undefined
+    See Also: defineresource, undefineresource, findresource, resourceforall
+*/
+
+    pop();
+    pop();
+    push(pFalseConstant);
+
+    return;
+    }
+
 
     void job::operatorRestore() {
 /*
@@ -1647,7 +1649,45 @@ __debugbreak();
     object *pSeek = pop();
     object *pSearch = pop();
 
-#error HERE IS WHERE I LEFT OFF
+    if ( ! pSeek -> IsString() || ! pSearch -> IsString() ) {
+        throw new typecheck("search: both operands must be strings");
+        return;
+    }
+
+    char *p = strstr(pSearch -> Contents(),pSeek -> Contents());
+
+    if ( ! ( NULL == p ) ) {
+        long n = (long)(p - pSearch -> Contents());
+        char *pszPre = "";
+        if ( 0 < n ) {
+            pszPre = new char[n + 1];
+            pszPre[n] = '\0';
+            strncpy(pszPre,pSearch -> Contents(),n);
+        }
+        object *pPre = new (CurrentObjectHeap()) string(this,pszPre);
+        if ( 0 < n )
+            delete [] pszPre;
+        n = (long)strlen(pSeek -> Contents());
+        char *pszMatch = new char[n + 1];
+        pszMatch[n] = '\0';
+        strncpy(pszMatch,pSeek -> Contents(),n);
+        object *pMatch = new (CurrentObjectHeap()) string(this,pszMatch);
+        delete [] pszMatch;
+        char *pszPost = p + n;
+        if ( '\0' == *pszPost )
+            pszPost = "";
+        object *pPost = new (CurrentObjectHeap()) string(this,pszPost);
+
+        push(pPost);
+        push(pMatch);
+        push(pPre);
+        push(pTrueConstant);
+        return;
+    }
+
+    push(pSearch);
+    push(pFalseConstant);
+    return;
 
     return;
     }

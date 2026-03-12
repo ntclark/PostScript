@@ -31,38 +31,39 @@ class array;
 #include "PostScript objects/object.h"
 #include "PostScript objects/containerAllocator.h"
 
-   class procedure : public object {
-   public:
+    class procedure : public object {
+    public:
 
-      procedure(job *p,char *pStart,char *pEnd);
-      procedure(job *p,char *pStart,char **ppEnd);
-      procedure(job *p);
-      procedure(array *pArray);
+        procedure(job *p);
+        procedure(job *p,char *pszName,char *pszStart,char *pszEnd);
+        procedure(job *p,char *pszStringRepresentation);
+        procedure(array *pArray);
+        procedure(dictionary *pDictionary);
 
-      virtual char *Contents(char *pszContents = NULL);
+        virtual char *Contents(char *pszContents = NULL);
 
-      void insert(object *);
+        void insert(object *);
 
-      virtual void putElement(long index,object *pObject);
+        virtual void putElement(long index,object *pObject);
 
-      char *ToString();
-      void clear();
+        char *ToString();
+        void clear();
 
-      void execute();
-      void bind();
+        void execute();
+        void bind();
 
-      bool IsBound() { return isBound; };
+        bool IsBound() { return isBound; };
 
-   private:
+    private:
 
-      procedure(job *pj,char *pStart,char *pEnd,char **ppEnd);
+        static char szNullProcedure[32];
 
-      bool isBound{false};
-      std::vector<object *,containerAllocator<object *>> entries;
-      char *pszStringRepresentation{NULL};
-      procedure *pContainingProcedure{NULL};
+        bool isBound{false};
+        std::vector<object *,containerAllocator<object *>> entries;
+        char *pszStringRepresentation{NULL};
+        procedure *pContainingProcedure{NULL};
 
-      friend class job;
+        friend class job;
 
    };
    

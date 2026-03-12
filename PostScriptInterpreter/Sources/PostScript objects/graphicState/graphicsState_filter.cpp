@@ -25,60 +25,86 @@ This is the MIT License
 
     void graphicsState::filter() {
 
-    //datasrc dict param1 … paramn filtername 
-    //datatgt dict param1 … paramn filtername 
-
     object *pFilterName = pJob -> pop();
 
-    if ( 0 == strcmp(pFilterName -> Contents(),"DCTDecode") ) {
-
-        /*
-        (Page 85)
-        DCTDecode (none) Decompresses DCT-encoded data, producing image sample data that
-        approximate the original data. 
-        */
-        object *pDataSource = pJob -> pop();
-
-        class filter *pFilter = new (pJob -> CurrentObjectHeap()) class filter(pJob,pFilterName -> Contents(),pDataSource,NULL);
-
-        pJob -> push(pFilter);
-
-        return;
-
-    } 
-
-    if ( 0 == strcmp(pFilterName -> Contents(),"ASCII85Decode") ) {
-
-        /*
-        (Page 85)
-        ASCII85Decode (none) Decodes ASCII base-85 data, producing the original binary data.
-        */
-        object *pDataSource = pJob -> pop();
-
-        class filter *pFilter = new (pJob -> CurrentObjectHeap()) class filter(pJob,pFilterName -> Contents(),pDataSource,"~>");
-
-        pJob -> push(pFilter);
-
-        return;
-
-    } 
-
-    if ( 0 == strcmp(pFilterName -> Contents(),"RunLengthDecode") ) {
-
+    if ( 0 == strcmp(pFilterName -> Contents(),filter::pszKindSubFile) ) {
+    
         /*
         (Page 86)
-        RunLengthDecode (none) Decompresses data encoded in the run-length encoding format, producing the original data. 
+        SubFileDecode count, string
+
+        Passes all data through, without any modification. This permits an
+        arbitrary data source (procedure or string) to be treated as an input
+        file. Optionally, this filter detects an end-of-data marker in the source
+        data stream, treating the preceding data as a subfile. 
+
+        ALSO
+
+        PostScript Language Reference Third Edition page(151)
+
+        SubFileDecode Filter
+            source EODCount EODString /SubFileDecode filter
+            source dictionary EODCount EODString /SubFileDecode filter
+            source dictionary /SubFileDecode filter (LanguageLevel 3)
+
+        More information in subFileFilter.cpp
+
         */
 
-        object *pDataSource = pJob -> pop();
+        object *pFilterString = pJob -> pop();
+        object *pFilterCount = NULL;
+        object *pFilterDataSource = NULL;
+        object *pFilterDictionary = NULL;
 
-        class filter *pFilter = new (pJob -> CurrentObjectHeap()) class filter(pJob,pFilterName -> Contents(),pDataSource,"~>");
+        boolean isLanguageLevel3 = object::objectType::dictionaryObject == pFilterString -> ObjectType();
+
+        if ( ! isLanguageLevel3 ) {
+            pFilterCount = pJob -> pop();
+            pFilterDataSource = pJob -> pop();
+            if ( object::objectType::dictionaryObject == pFilterDataSource -> ObjectType() ) {
+                pFilterDictionary = pFilterDataSource;
+                pFilterDataSource = pJob -> pop();
+            }
+        } else {
+            pFilterDictionary = pFilterString;
+            pFilterDataSource = pJob -> pop();
+        }
+
+        subFileFilter *pFilter = new (pJob -> CurrentObjectHeap()) subFileFilter(pJob,pFilterDataSource,pFilterString,pFilterCount,pFilterDictionary,isLanguageLevel3);
 
         pJob -> push(pFilter);
 
         return;
+    }
 
+    object *pds = pJob -> pop();
+
+    class filter *pDataSource = NULL;
+
+    if ( object::objectType::file == pds -> ObjectType() ) 
+        pDataSource = new (pJob -> CurrentObjectHeap()) fileFilter(pJob);
+    else
+        pDataSource = reinterpret_cast<class filter *>(pds);
+
+    if ( 0 == strcmp(pFilterName -> Contents(),filter::pszKindDCT) ) {
+        pJob -> push(new (pJob -> CurrentObjectHeap()) dctFilter(pJob,pDataSource));
+        return;
     } 
+
+    if ( 0 == strcmp(pFilterName -> Contents(),filter::pszKindAscii85) ) {
+        pJob -> push(new (pJob -> CurrentObjectHeap()) ascii85Filter(pJob,pDataSource));
+        return;
+    } 
+
+    if ( 0 == strcmp(pFilterName -> Contents(),filter::pszKindRunLength) ) {
+        pJob -> push(new (pJob -> CurrentObjectHeap()) runLengthFilter(pJob,pDataSource));
+        return;
+    } 
+
+    if ( 0 == strcmp(pFilterName -> Contents(),filter::pszKindLZW) ) {
+        pJob -> push(new (pJob -> CurrentObjectHeap()) lzwFilter(pJob,pDataSource));
+        return;
+    }
 
     char szMessage[1024];
     sprintf_s<1024>(szMessage,"The standard filter %s is not implemented",pFilterName -> Contents());

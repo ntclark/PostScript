@@ -46,7 +46,7 @@ This is the MIT License
 
 
     object *objectStack::peekPrior() {
-    if ( 0 == size() )
+    if ( 2 > size() )
         return NULL;
     std::deque<object *,containerAllocator<object *>>::iterator it = end();
     return *(it - 2);

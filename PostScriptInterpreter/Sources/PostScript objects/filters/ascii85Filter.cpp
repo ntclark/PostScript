@@ -21,9 +21,28 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScriptInterpreter.h"
+#include "job.h"
+#include "PostScript objects/ascii85Filter.h"
 
-    uint32_t decodeASCII85(uint8_t *pbInput,uint32_t cbSource,uint8_t **ppbResult) {
+    /*
+    (Page 85)
+    ASCII85Decode (none) Decodes ASCII base-85 data, producing the original binary data.
+    */
+
+    ascii85Filter::ascii85Filter(job *pj,filter *pDataSource) :
+        filter(pj,pszKindAscii85,pDataSource) 
+    { 
+    }
+
+
+    uint8_t *ascii85Filter::getBinaryData(uint32_t *pcbSize) {
+
+    if ( NULL == pDataSource )
+        return NULL;
+
+    uint32_t cbSource;
+
+    uint8_t *pbInput = pDataSource -> getBinaryData(&cbSource);
 
     uint8_t *pbStart = new uint8_t[cbSource + 4];
 
@@ -161,9 +180,11 @@ This is the MIT License
 
     }
 
-    *ppbResult = new uint8_t[outIndex];
+    pbData = new uint8_t[outIndex];
 
-    memcpy(*ppbResult,pbTemp,outIndex * sizeof(uint8_t));
+    *pcbSize = outIndex;
+
+    memcpy(pbData,pbTemp,outIndex * sizeof(uint8_t));
 
     for ( int32_t k = 0; k < (int32_t)toDelete.size(); k++ )
         delete [] toDelete[k];
@@ -172,5 +193,7 @@ This is the MIT License
 
     delete [] pbTemp;
 
-    return outIndex - padding;
+    pDataSource -> releaseData();
+
+    return pbData;
     }

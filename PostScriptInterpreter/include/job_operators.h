@@ -157,6 +157,7 @@ This is the MIT License
         void operatorRectstroke();
         void operatorRender();
         void operatorRepeat();
+        void operatorResourcestatus();
         void operatorRestore();
         void operatorRlineto();
         void operatorRmoveto();

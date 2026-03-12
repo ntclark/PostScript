@@ -524,7 +524,7 @@ This is the MIT License
 
     if ( ! ( object::objectType::dictionaryObject == pObj -> ObjectType() ) && ! ( object::objectType::font == pObj -> ObjectType() ) ) {
         char szMessage[1024];
-        sprintf(szMessage,"%s Line: %d: object %s is not a dictionary",__FUNCTION__,__LINE__,pObj -> Name());
+        sprintf(szMessage,"begin: Input line: %ld: object %s is not a dictionary",inputLineNumber,pObj -> Name());
         throw new typecheck(szMessage);
         return;
     }
@@ -787,7 +787,7 @@ This is the MIT License
         break;
     default:
         char szMessage[1024];
-        sprintf(szMessage,"operator begin: object %s is not a matrix or array",pMatrixOrArray -> Name());
+        sprintf(szMessage,"concat: Input line: %ld object %s is not a matrix or array",inputLineNumber,pMatrixOrArray -> Name());
         throw new typecheck(szMessage);
         return;
     }
@@ -885,6 +885,7 @@ This is the MIT License
 
     dictionary *pTargetDictionary = NULL;
     array *pTargetArray = NULL;
+    string *pTargetString = NULL;
 
     switch ( pTargetObject -> ObjectType() ) {
     case object::objectType::dictionaryObject:
@@ -903,11 +904,21 @@ This is the MIT License
         pTargetArray = static_cast<array *>(reinterpret_cast<matrix *>(pTargetObject));
         break;
 
+    case object::objectType::atom: {
+        if ( pTargetObject -> IsString() )
+            pTargetString = reinterpret_cast<string *>(pTargetObject);
+        else {
+            char szMessage[1024];
+            sprintf(szMessage,"copy: Input line %ld target object %s is not a dictionary, font, string, or array",inputLineNumber,pTargetObject -> Name());
+            throw new typecheck(szMessage);
+        }
+        }
+        break;
+
     default: {
         char szMessage[1024];
-        sprintf(szMessage,"operator copy: target object %s is not a dictionary, font, or array",pTargetObject -> Name());
+        sprintf(szMessage,"copy: Input line %ld target object %s is not a dictionary, font, string, or array",inputLineNumber,pTargetObject -> Name());
         throw new typecheck(szMessage);
-        __debugbreak();
         }
         return;
     }
@@ -915,6 +926,7 @@ This is the MIT License
     dictionary *pSourceDictionary = NULL;
     procedure *pSourceProcedure = NULL;
     array *pSourceArray = NULL;
+    string *pSourceString = NULL;
 
     switch ( pSourceObject -> ObjectType() ) {
     case object::objectType::dictionaryObject:
@@ -933,28 +945,28 @@ This is the MIT License
         pSourceArray = reinterpret_cast<array *>(pSourceObject);
         break;
 
+    case object::objectType::atom: {
+        if ( pSourceObject -> IsString() )
+            pSourceString = reinterpret_cast<string *>(pSourceObject);
+        else {
+            char szMessage[1024];
+            sprintf(szMessage,"copy: Input line %ld source object %s is not a dictionary, font, string, or array",inputLineNumber,pTargetObject -> Name());
+            throw new typecheck(szMessage);
+        }
+        }
+        break;
+
     default: {
         char szMessage[1024];
-        sprintf(szMessage,"operator copy: source object %s is not a dictionary, font, or array",pSourceObject -> Name());
+        sprintf(szMessage,"copy: Input line %ld source object %s is not a dictionary, font, string, or array",inputLineNumber,pSourceObject -> Name());
         throw new typecheck(szMessage);
-        __debugbreak();
         }
         return;
     }
 
     if ( ! ( NULL == pTargetArray ) && ! ( NULL == pSourceProcedure ) ) {
-        //
-        // I am pretty sure that the procedure entries are copied
-        // into the elements of the array, rather than the
-        // procedure added to the array.
-        // But I don't know why I had the latter in practice until now
-        // 
-#if 1
         for ( object *pEntry : pSourceProcedure -> entries )
             pTargetArray -> putElement(pTargetArray -> size(),pEntry);
-#else
-        pTargetArray -> putElement(pTargetArray -> size(),pSourceProcedure);
-#endif
         push(pTargetArray);
         return;
     }
@@ -962,6 +974,12 @@ This is the MIT License
     if ( ! ( NULL == pTargetArray ) && ! ( NULL == pSourceArray ) ) {
         pTargetArray -> copyFrom(pSourceArray);
         push(pTargetArray);
+        return;
+    }
+
+    if ( ! ( NULL == pTargetString ) && ! ( NULL == pSourceString) ) {
+        pTargetString -> Contents(pSourceString -> Contents());
+        push(pTargetString);
         return;
     }
 
@@ -1015,7 +1033,7 @@ This is the MIT License
 */
 
     char szNumber[16];
-    sprintf_s<16>(szNumber,"%ld",pOperandStack -> size());
+    sprintf_s<16>(szNumber,"%ld",(long)pOperandStack -> size());
 
     push(new (CurrentObjectHeap()) object(this,szNumber));
 
@@ -1085,7 +1103,9 @@ This is the MIT License
     set to { } (an empty procedure) or {pop 0}. 
     */
 
-    push(new (CurrentObjectHeap()) procedure(this,"{ pop 0 }",(char *)NULL,NULL));
+    char *ppEnd = NULL;
+    (this ->* collectionParsers[std::hash<std::string>()((char *)PROC_DELIMITER_BEGIN)])(procedure::szNullProcedure + 1,&ppEnd);
+    //push(new (CurrentObjectHeap()) procedure(this,"{ pop 0 }",(char *)NULL,NULL));
 
     return;
     }
@@ -1329,7 +1349,9 @@ __debugbreak();
     similar function that ignores the input CMY values and results in no undercolor removal). 
     */
 
-    push(new (CurrentObjectHeap()) procedure(this, (char *)"{}", (char*)NULL, NULL));
+    char *ppEnd = NULL;
+    (this ->* collectionParsers[std::hash<std::string>()((char *)PROC_DELIMITER_BEGIN)])(procedure::szNullProcedure + 1,&ppEnd);
+    //push(new (CurrentObjectHeap()) procedure(this, (char *)"{}", (char*)NULL, NULL));
 
     return;
     }
@@ -1413,15 +1435,15 @@ __debugbreak();
 
     object *pTop = pop();
 
-    long n = (DWORD)strlen(pTop -> Name()) + 2;
+    //long n = (DWORD)strlen(pTop -> Name()) + 2;
 
-    char *pszTemp = new char[n];
+    //char *pszTemp = new char[n];
 
-    sprintf(pszTemp,"/%s",pTop -> Name());
+    //sprintf(pszTemp,"/%s",pTop -> Name());
 
-    push(new (CurrentObjectHeap()) string(this,pszTemp));
+    push(new (CurrentObjectHeap()) name(this,pTop -> Contents()));
 
-    delete [] pszTemp;
+    //delete [] pszTemp;
 
     return;
     }
@@ -2279,10 +2301,28 @@ isNew = true;
     that operator should have created something like a procedure.
 
     */
+
     object *pObject = top();
 
     if ( ! ( object::executableAttribute::executable == pObject -> theExecutableAttribute ) )
         return;
+
+    if ( object::objectType::objTypeArray == pObject -> ObjectType() )
+        pObject = new (CurrentObjectHeap()) procedure(reinterpret_cast<array *>(pObject));
+
+    /*
+    exec Operator: The exec operator takes an object from the operand stack and executes it. 
+    This is typically used for executable objects like procedures (executable arrays), 
+    files, or names. 
+    If you pass a dictionary to exec, it will likely result in an error or undefined behavior, 
+    as the standard interpreter expects an executable type. 
+    The intended way to "execute" the contents of a dictionary's scope is through begin
+
+    NEVERTHELESS - I FOUND AN EXMPLE PS PROGRAM THAT DOES EXECUTE A DICTIONARY !?!?
+    */
+
+    if ( object::objectType::dictionaryObject == pObject -> ObjectType() )
+        pObject = new (CurrentObjectHeap()) procedure(reinterpret_cast<dictionary *>(pObject));
 
     for ( long k = 0; k < 2; k++ ) {
 
@@ -2494,7 +2534,6 @@ isNew = true;
     
     Errors: invalidaccess, ioerror, limitcheck, rangecheck, stackunderflow,
     typecheck, undefined
-
     See Also: file, closefile, resourceforall
 
 */
@@ -2629,13 +2668,34 @@ isNew = true;
 
         if ( NULL == pFont ) {
             char szMessage[1024];
-            sprintf(szMessage,"%s Line: %d, operator: findResource. The font resource %s was not found",__FUNCTION__,__LINE__,pKey -> Name());
+            sprintf(szMessage,"findresource: Input line: %ld, The font resource %s was not found",inputLineNumber,pKey -> Name());
             throw new undefinedresource(szMessage);
         }
 
         push(pFont);
         return;
 
+    }
+
+    if ( 0 == strcmp(pCategory -> Name(),"Encoding") ) {
+
+        if ( 0 == strcmp(pKey -> Name(),"StandardEncoding") ) {
+            push(pStandardEncoding);
+            return;
+        }
+
+        if ( 0 == strcmp(pKey -> Name(),"ISOLatin1Encoding") ) {
+            push(pISOLatin1Encoding);
+            return;
+        }
+
+        if ( NULL == font::CurrentFont() ) {
+            char szMessage[1024];
+            sprintf(szMessage,"findresource: Input line: %ld, The font resource %s was not found",inputLineNumber,pKey -> Name());
+            throw new undefinedresource(szMessage);
+        }
+        push(font::CurrentFont() -> Encoding());
+        return;
     }
 
     boolean categoryExists = false;
@@ -2650,7 +2710,7 @@ isNew = true;
     }
 
     char szMessage[1024];
-    sprintf_s<1024>(szMessage,"%s: Line: %d: findresource error for key: %s and category: %s",__FUNCTION__,__LINE__,pKey -> Contents(),pCategory -> Contents());
+    sprintf_s<1024>(szMessage,"findresource: Input Line: %ld: error for key: %s and category: %s",inputLineNumber,pKey -> Contents(),pCategory -> Contents());
 
     if ( ! categoryExists ) 
         throw new undefined(szMessage);
@@ -2908,30 +2968,30 @@ isNew = true;
         object *pObject = pDictionary -> retrieve(pIndex -> Name());
         if ( NULL == pObject ) {
             char szError[1024];
-            sprintf(szError,"operator get: cannot find %s in font or dictionary %s (type: %s)",pIndex -> Name(),pDictionary -> Name(),pDictionary -> TypeName());
+            sprintf(szError,"get: Input line %ld: cannot find %s in font or dictionary %s (type: %s)",inputLineNumber,pIndex -> Name(),pDictionary -> Name(),pDictionary -> TypeName());
             throw new undefined(szError);
         }
         push(pObject);
         }
-        break;
+        return;
 
     case object::objectType::atom: {
         switch ( pSource -> ValueType() ) {
         case object::valueType::constantString:
             push(new (CurrentObjectHeap()) object(this,(long)reinterpret_cast<constantString *>(pSource) -> get(pIndex -> IntValue())));
-            break;
+            return;
 
         case object::valueType::string:
             push(new (CurrentObjectHeap()) object(this,(long)reinterpret_cast<string *>(pSource) -> get(pIndex -> IntValue())));
-            break;
+            return;
 
         case object::valueType::binaryString:
             push(new (CurrentObjectHeap()) object(this,(long)reinterpret_cast<binaryString *>(pSource) -> get(pIndex -> IntValue())));
-            break;
+            return;
 
         default:
             char szError[1024];
-            sprintf(szError,"operator get: typecheck: source object %s is not string, but is a %s",pSource -> Name(),pSource -> ValueTypeName());
+            sprintf(szError,"get: Input line %ld: source object %s is not string, but is a %s",inputLineNumber,pSource -> Name(),pSource -> ValueTypeName());
             throw new typecheck(szError);
         }
 
@@ -2939,7 +2999,7 @@ isNew = true;
 
     default: {
         char szError[1024];
-        sprintf(szError,"operator get: typecheck: source object %s has an invalid type (%s)",pSource -> Name(),pSource -> ValueTypeName());
+        sprintf(szError,"get: Input line %ld: source object %s has an invalid type (%s)",inputLineNumber,pSource -> Name(),pSource -> ValueTypeName());
         throw new typecheck(szError);
         }
 
@@ -3557,13 +3617,16 @@ isNew = true;
     object *pDictObject = pop();
     dictionary *pDictionary = NULL;
 
+if ( 8509 == inputLineNumber )
+printf("hello world");
+
     if ( object::objectType::dictionaryObject == pDictObject -> ObjectType() ) 
         pDictionary = reinterpret_cast<dictionary *>(pDictObject);
     else if ( object::objectType::font == pDictObject -> ObjectType() )
         pDictionary = static_cast<dictionary *>(reinterpret_cast<font *>(pDictObject));
     else {
        char szMessage[1024];
-        sprintf(szMessage,"operator begin: object %s is not a dictionary",pDictObject -> Name());
+        sprintf(szMessage,"known: Input line: %ld object %s is not a dictionary",inputLineNumber,pDictObject -> Name());
         throw new typecheck(szMessage);
         return;
     }
@@ -3673,6 +3736,7 @@ isNew = true;
     long length = 0L;
 
     switch ( pItem -> ObjectType() ) {
+
     case object::objectType::objTypeArray:
         length = reinterpret_cast<array *>(pItem) -> size();
         break;
@@ -3686,7 +3750,7 @@ isNew = true;
         break;
 
     case object::objectType::literal:
-        length = strlen(reinterpret_cast<literal *>(pItem) -> Contents());
+        length = (long)strlen(reinterpret_cast<literal *>(pItem) -> Contents());
         break;
 
     case object::objectType::atom: {
@@ -3782,7 +3846,7 @@ isNew = true;
         push(pKey);
 #endif
         char szMessage[1024];
-        sprintf_s<1024>(szMessage,"%s,Line: %d. key %s is undefined",__FUNCTION__,__LINE__,pKey -> Name());
+        sprintf_s<1024>(szMessage,"load Input line: %ld. key %s is undefined",inputLineNumber,pKey -> Name());
         throw new undefined(szMessage);
     }
 

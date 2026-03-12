@@ -44,6 +44,7 @@ This is the MIT License
         dictionary(job *,long initialSize);
         dictionary(job *,char *pszName);
         dictionary(job *,char *pszName,long initialSize);
+        dictionary(job *,char *pszName,char *pszStart,char *pszEnd);
 
         void put(char *pszKey,char *);
         void put(char *pszKey,object *);
@@ -79,6 +80,7 @@ This is the MIT License
         long entryCount{0};
 
         static long countAutoCreated;
+        char *pszStringRepresentation{NULL};
 
     friend class dictionaryStack;
     friend class job;

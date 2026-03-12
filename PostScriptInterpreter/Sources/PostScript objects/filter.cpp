@@ -21,65 +21,28 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include "PostScript objects/filter.h"
+#include "job.h"
 
-#include "ascii85.h"
+    char *filter::pszKindAscii85 = "ASCII85Decode";
+    char *filter::pszKindRunLength = "RunLengthDecode";
+    char *filter::pszKindSubFile = "SubFileDecode";
+    char *filter::pszKindDCT = "DCTDecode";
+    char *filter::pszKindLZW = "LZWDecode";
+    char *filter::pszKindFile = "inputFile";
 
-    int32_t runLengthDecode(uint8_t *pbInput,int32_t cbInput,uint8_t **ppbOutput);
-
-    filter::filter(job *pJob,char *pszFilterName,object *pSource,char *pszEOD) :
-        file(pJob,pszFilterName),
+    filter::filter(job *pJob,char *pszKind,filter *pSource) :
+        file(pJob,pszKind),
         pDataSource(pSource)
     {
     theObjectType = object::objectType::filter;
-    memset(szSourceEndDelimiter,0,sizeof(szSourceEndDelimiter));
-    if ( ! ( NULL == pszEOD ) )
-        strcpy(szSourceEndDelimiter,pszEOD);
-    strcpy(szFilterName,pszFilterName);
     return;
     }
 
 
-    uint8_t *filter::getBinaryData(uint32_t *pcbSize,char *pszEndDelimiter) {
+    uint8_t *filter::getBinaryData(uint32_t *pcbSize) {
 
     if ( NULL == pDataSource )
-        return NULL;
+        return file::getBinaryData(pcbSize);
 
-    uint8_t *pbSource = NULL;
-
-    *pcbSize = 0L;
-
-    if ( object::objectType::file == pDataSource -> ObjectType() ) 
-        pbSource = reinterpret_cast<file *>(pDataSource) -> getBinaryData(pcbSize,szSourceEndDelimiter);
-
-    else if ( object::objectType::filter == pDataSource -> ObjectType() )
-        pbSource = reinterpret_cast<filter *>(pDataSource) -> getBinaryData(pcbSize,szSourceEndDelimiter);
-
-    else 
-        return NULL;
-
-    if ( 0 == _stricmp(szFilterName,"ASCII85Decode") ) {
-        pbData = NULL;
-        *pcbSize = decodeASCII85(pbSource,(int32_t)*pcbSize,&pbData);
-        reinterpret_cast<file *>(pDataSource) -> releaseData();
-        if ( 0 == *pcbSize ) {
-            sprintf_s(PostScriptInterpreter::szErrorMessage,1024,"There was an invalid block of data for ASCII85Decode");
-            pPostScriptInterpreter -> pIConnectionPointContainer -> fire_ErrorNotification(PostScriptInterpreter::szErrorMessage);
-        }
-        return pbData;
-    }
-
-    if ( 0 == _stricmp(szFilterName,"DCTDecode") ) {
-        isDCTDecode = true;
-        return pbSource;
-    }
-
-    if ( 0 == _stricmp(szFilterName,"RunLengthDecode") ) {
-        pbData = NULL;
-        *pcbSize = runLengthDecode(pbSource,(int32_t)*pcbSize, &pbData);
-        reinterpret_cast<file *>(pDataSource) -> releaseData();
-        return pbData;
-    }
-
-    return NULL;
+    return pDataSource -> getBinaryData(pcbSize);
     }

@@ -125,13 +125,17 @@ This is the MIT License
     nameTypeMap[object::objectType::dscItem][object::valueType::valueTypeUnspecified] = pDSCItem;
     nameTypeMap[object::objectType::comment][object::valueType::valueTypeUnspecified] = pComment;
 
-    tokenProcedures[std::hash<std::string>()(DSC_DELIMITER)] = &job::parseDSC;
-    tokenProcedures[std::hash<std::string>()(COMMENT_DELIMITER)] = &job::parseComment;
-    tokenProcedures[std::hash<std::string>()(STRING_DELIMITER_BEGIN)] = &job::parseString;
-    tokenProcedures[std::hash<std::string>()(HEX_STRING_DELIMITER_BEGIN)] = &job::parseHexString;
-    tokenProcedures[std::hash<std::string>()(HEX85_DELIMITER_BEGIN)] = &job::parseHex85String;
-    tokenProcedures[std::hash<std::string>()(LITERAL_DELIMITER)] = &job::parseLiteralName;
-    tokenProcedures[std::hash<std::string>()(RESOLVE_NOW_DELIMITER)] = &job::parseResolveNowString;
+    tokenParsers[std::hash<std::string>()(DSC_DELIMITER)] = &job::parseDSC;
+    tokenParsers[std::hash<std::string>()(COMMENT_DELIMITER)] = &job::parseComment;
+    tokenParsers[std::hash<std::string>()(STRING_DELIMITER_BEGIN)] = &job::parseString;
+    tokenParsers[std::hash<std::string>()(HEX_STRING_DELIMITER_BEGIN)] = &job::parseHexString;
+    tokenParsers[std::hash<std::string>()(HEX85_DELIMITER_BEGIN)] = &job::parseHex85String;
+    tokenParsers[std::hash<std::string>()(LITERAL_DELIMITER)] = &job::parseLiteralName;
+    tokenParsers[std::hash<std::string>()(RESOLVE_NOW_DELIMITER)] = &job::parseResolveNowString;
+
+    collectionParsers[std::hash<std::string>()(PROC_DELIMITER_BEGIN)] = &job::parseProcedure;
+    collectionParsers[std::hash<std::string>()(DICTIONARY_DELIMITER_BEGIN)] = &job::parseDictionary;
+    collectionParsers[std::hash<std::string>()(ARRAY_DELIMITER_BEGIN)] = &job::parseArray;
 
     antiDelimiters[std::hash<std::string>()(DSC_DELIMITER)] = "";
     antiDelimiters[std::hash<std::string>()(COMMENT_DELIMITER)] = "";
@@ -245,7 +249,7 @@ This is the MIT License
 
     nameTypeMap.clear();
 
-    tokenProcedures.clear();
+    tokenParsers.clear();
 
     antiDelimiters.clear();
 

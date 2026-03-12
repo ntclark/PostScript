@@ -25,6 +25,7 @@ This is the MIT License
 
 #include <windows.h>
 #include <float.h>
+#include <stdint.h>
 
 #include "pointType.h"
 
@@ -134,6 +135,7 @@ This is the MIT License
         virtual char *Name(char *pszNewName = NULL);
 
         virtual char *Contents(char *pszContents = NULL);
+        virtual uint8_t *Contents(uint8_t *pbContents,uint32_t cb);
 
         char *TypeName();
         char *ValueTypeName();
@@ -149,6 +151,8 @@ This is the MIT License
         void SetExecutableAttribute(executableAttribute ea) { theExecutableAttribute = ea; }
         void SetExecuteOnly(bool v) { isExecuteOnly = v; };
         bool IsExecuteOnly() { return isExecuteOnly; };
+
+        bool IsString();
 
         enum objectType ObjectType() { return theObjectType; };
         enum valueType ValueType( enum valueType vt = invalidValueType ) 

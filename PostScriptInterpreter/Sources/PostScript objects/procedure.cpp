@@ -25,39 +25,28 @@ This is the MIT License
 
 #include "job.h"
 
-    procedure::procedure(job *pj,char *pStart,char *pEnd,char **ppEnd) :
-        isBound(false),pszStringRepresentation(NULL),
-        object(pj,NULL,object::objectType::procedure,object::valueType::executableProcedure,
+    char procedure::szNullProcedure[]{"{ pop 0 }"};
+
+    procedure::procedure(job *pj,char *pszName,char *pszStart,char *pszEnd) :
+        isBound(false),
+        object(pj,pszName,object::objectType::procedure,object::valueType::executableProcedure,
                 object::valueClassification::composite,object::executableAttribute::executable)
     {
-
-    if ( NULL == pStart )
+    if ( NULL == pszStart )
         return;
 
-    pJob -> parseProcedure(this,pStart,ppEnd);
-
-    long n = 0L;
-    if ( NULL == ppEnd ) {
-        if ( NULL == pEnd )
-            n = (DWORD)strlen(pStart);
-        else
-            n = (long)(pEnd - pStart);
-    } else
-        n = (long)(*ppEnd - pStart);
+    long n = (long)(pszEnd - pszStart);
 
     pszStringRepresentation = (char *)allocate(n * sizeof(char));
     memset(pszStringRepresentation,0,n * sizeof(char));
 
-    strncpy(pszStringRepresentation,pStart,n - 1);
-
+    strncpy(pszStringRepresentation,pszStart,n - 1);
     return;
     }
 
-    procedure::procedure(job *pj,char *pStart,char *pEnd) : procedure(pj,pStart,pEnd,NULL) {}
 
     procedure::procedure(job *pj) : procedure(pj,NULL,NULL,NULL) {}
 
-    procedure::procedure(job *pj,char *pStart,char **ppEnd) : procedure(pj,pStart,NULL,ppEnd) {}
 
     procedure::procedure(array *pArray) : procedure(pArray -> Job()) {
 
@@ -69,6 +58,37 @@ This is the MIT License
         else
             pJob -> pop();
         insert(pObj);
+    }
+
+    return;
+    }
+
+
+    procedure::procedure(dictionary *pDictionary) : procedure(pDictionary -> Job()) {
+
+    for ( long k = 0; k < pDictionary -> size(); k++ ) {
+
+        object *pValue = pDictionary -> retrieve(k);
+        char *pKey = pDictionary -> retrieveKey(k);
+
+        object *pKeyObject = new (pJob -> CurrentObjectHeap()) object(pJob,pKey);
+
+        pJob -> push(pKeyObject);
+        if ( pJob -> seekDefinition() ) 
+            pKeyObject= pJob -> pop();
+        else
+            pJob -> pop();
+
+        insert(pKeyObject);
+
+        pJob -> push(pValue);
+        if ( pJob -> seekDefinition() ) 
+            pValue= pJob -> pop();
+        else
+            pJob -> pop();
+
+        insert(pValue);
+
     }
 
     return;

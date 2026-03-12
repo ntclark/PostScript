@@ -21,11 +21,27 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 This is the MIT License
 */
 
-#include <stdint.h>
-#include <memory.h>
-#include <Windows.h>
+#include "job.h"
+#include "PostScript objects/runLengthFilter.h"
 
-    int32_t runLengthDecode(uint8_t *pbInput, int32_t cbInput, uint8_t **ppbOutput) {
+    /*
+    (Page 86)
+    RunLengthDecode (none) Decompresses data encoded in the run-length encoding format, producing the original data. 
+    */
+
+    runLengthFilter::runLengthFilter(job *pj,filter *pDataSource) :
+        filter(pj,pszKindRunLength,pDataSource) 
+    {}
+
+
+    uint8_t *runLengthFilter::getBinaryData(uint32_t *pcbSize) {
+
+    if ( NULL == pDataSource )
+        return NULL;
+
+    uint32_t cbSource;
+
+    uint8_t *pbSource = pDataSource -> getBinaryData(&cbSource);
 
     /*
     3.3.4 RunLengthDecode Filter
@@ -51,8 +67,8 @@ This is the MIT License
 
     long cbTotal = 0;
 
-    uint8_t *pbNext = pbInput;
-    uint8_t *pbEnd = pbInput + cbInput;
+    uint8_t *pbNext = pbSource;
+    uint8_t *pbEnd = pbSource + cbSource;
 
     do {
 
@@ -69,13 +85,15 @@ This is the MIT License
 
     } while ( pbNext < pbEnd );
 
-    *ppbOutput = new uint8_t[cbTotal];
+    *pcbSize = cbTotal;
 
-    memset(*ppbOutput,0,cbTotal);
+    pbData = new uint8_t[cbTotal];
 
-    pbNext = pbInput;
+    memset(pbData,0,cbTotal);
 
-    uint8_t *pbTarget = *ppbOutput;
+    pbNext = pbSource;
+
+    uint8_t *pbTarget = pbData;
 
     do {
 
@@ -96,5 +114,7 @@ This is the MIT License
 
     } while ( pbNext < pbEnd );
 
-    return cbTotal;
+    pDataSource -> releaseData();
+
+    return pbData;
     }

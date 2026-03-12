@@ -23,8 +23,6 @@ This is the MIT License
 
 #include "job.h"
 
-    static char szNullProcedure[]{"{ pop 0 }"};
-
     // Unimplemented, only stubbed
 
     // ( Not all such operators are in this file yet)
@@ -47,15 +45,11 @@ This is the MIT License
     See Also: setcolortransfer, settransfer, currenttransfer
     */
 
-    procedure *pRedProc = new (CurrentObjectHeap()) procedure(this,szNullProcedure,(char *)NULL,NULL);
-    procedure *pGreenProc = new (CurrentObjectHeap()) procedure(this,szNullProcedure,(char *)NULL,NULL);
-    procedure *pBlueProc = new (CurrentObjectHeap()) procedure(this,szNullProcedure,(char *)NULL,NULL);
-    procedure *pGrayProc = new (CurrentObjectHeap()) procedure(this,szNullProcedure,(char *)NULL,NULL);
-
-    push(pRedProc);
-    push(pGreenProc);
-    push(pBlueProc);
-    push(pGrayProc);
+    char *ppEnd = NULL;
+    (this ->* collectionParsers[std::hash<std::string>()((char *)PROC_DELIMITER_BEGIN)])(procedure::szNullProcedure + 1,&ppEnd);
+    (this ->* collectionParsers[std::hash<std::string>()((char *)PROC_DELIMITER_BEGIN)])(procedure::szNullProcedure + 1,&ppEnd);
+    (this ->* collectionParsers[std::hash<std::string>()((char *)PROC_DELIMITER_BEGIN)])(procedure::szNullProcedure + 1,&ppEnd);
+    (this ->* collectionParsers[std::hash<std::string>()((char *)PROC_DELIMITER_BEGIN)])(procedure::szNullProcedure + 1,&ppEnd);
 
     return;
     }

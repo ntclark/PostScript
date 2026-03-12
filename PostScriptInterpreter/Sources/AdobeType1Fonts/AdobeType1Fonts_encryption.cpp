@@ -27,7 +27,8 @@ This is the MIT License
 
     uint32_t cbData = 0;
 
-    uint8_t *pbData = pFileObject -> getBinaryData(&cbData,"cleartomark");
+Beep(2000,200);
+    uint8_t *pbData = pFileObject -> getBinaryData(&cbData);//,"cleartomark");
 
     uint8_t *pbTemp = new uint8_t[cbData];NULL;
     memset(pbTemp,0,cbData * sizeof(uint8_t));

@@ -86,7 +86,7 @@ This is the MIT License
     else
         pFilter = reinterpret_cast<class filter *>(pSourceDictionary -> retrieve("DataSource"));
 
-    pbImage = pFilter -> getBinaryData(&cbData,NULL);
+    pbImage = pFilter -> getBinaryData(&cbData);
 
     long bitsPerComponent = (long)pBitsPerComponent -> IntValue();
     long width = (long)pWidth -> IntValue();
@@ -143,7 +143,7 @@ This is the MIT License
 
     if ( object::objectType::filter == pSource -> ObjectType() ) {
         pFilter = reinterpret_cast<class filter *>(pSource);
-        pbImage = pFilter -> getBinaryData(&cbData,NULL);
+        pbImage = pFilter -> getBinaryData(&cbData);
     } else {
         throw notimplemented("colorimage for a datasource that is not a filter is not implemented");
         return;
@@ -251,7 +251,7 @@ This is the MIT License
     uint32_t cbData = 0;
     uint8_t *pbImage = NULL;
 
-    pbImage = pFilter -> getBinaryData(&cbData,NULL);
+    pbImage = pFilter -> getBinaryData(&cbData);
 
     uint8_t *pbImageRenderer = (uint8_t *)CoTaskMemAlloc(cbData);
 

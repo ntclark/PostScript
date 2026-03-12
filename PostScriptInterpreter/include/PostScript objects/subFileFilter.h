@@ -23,36 +23,24 @@ This is the MIT License
 
 #pragma once
 
-#include <stdio.h>
 #include <stdint.h>
+#include "PostScript Objects/filter.h"
 
-#include "PostScript objects/object.h"
-
-    class file : public object {
+    class subFileFilter : public filter {
     public:
 
-        file(job *pJob,char *pszName);
+        // SubFileFilter may not have the same file based input (I think)
+        subFileFilter(job *pj,object *pDataSource,object *pString,object *pCount,object *pDictionary,boolean isLanguageLevel3);
 
         virtual uint8_t *getBinaryData(uint32_t *pcbSize);
-
-        virtual void releaseData() { 
-            if ( ! ( NULL == pbData ) ) 
-                delete [] pbData; 
-        }
-
         virtual void operatorReadstring(object *pString);
-
-    protected:
-
-        uint8_t *pbData{NULL};
 
     private:
 
-        FILE *fileHandle{NULL};
-        char szFileName[MAX_PATH];
-        long currentSeek{0L};
+        boolean isLanguageLevel3{false};
 
-        static char szEndDelimiter[8];
+        uint32_t byteCount{0};
+        uint32_t currentByte{0};
+        object *pFilterString{NULL};
 
-        friend class job;
     };

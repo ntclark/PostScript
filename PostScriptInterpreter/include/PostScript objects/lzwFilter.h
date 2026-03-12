@@ -20,8 +20,14 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 This is the MIT License
 */
-#include "PostScriptInterpreter.h"
 
-uint32_t decodeASCII85(uint8_t *pbBytes,uint32_t cbSource,uint8_t **ppResult);
+#pragma once
 
+#include <stdint.h>
+#include "PostScript Objects/filter.h"
 
+    class lzwFilter : public filter {
+    public:
+        lzwFilter(job *pj,filter *pDataSource);
+        virtual uint8_t *getBinaryData(uint32_t *pcbSize);
+    };

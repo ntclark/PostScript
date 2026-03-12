@@ -28,10 +28,9 @@ This is the MIT License
 
     dictionary::dictionary(job *pj,char *pszName,long initialSize) :
         entryCount(0L),
-        object(pj,pszName,object::objectType::dictionaryObject,object::valueType::container,object::valueClassification::composite)
+        object(pj,pszName,object::objectType::dictionaryObject,object::valueType::container,object::valueClassification::composite,object::executableAttribute::executable)
     {
     entries.reserve(initialSize);
-    //pJob -> dictionarysToClear.push_back(&entries);
     return;
     }
 
@@ -42,6 +41,18 @@ This is the MIT License
 
     dictionary::dictionary(job *pj,long initialSize) :
         dictionary(pj,NULL,initialSize) { }
+
+
+    dictionary::dictionary(job *pj,char *pszName,char *pszStart,char *pszEnd) : 
+        dictionary(pj,pszName,DEFAULT_DICTIONARY_SIZE) 
+    {
+    long n = (long)(pszEnd - pszStart);
+
+    pszStringRepresentation = (char *)allocate(n * sizeof(char));
+    memset(pszStringRepresentation,0,n * sizeof(char));
+
+    strncpy(pszStringRepresentation,pszStart,n - 1);
+    }
 
 
     void dictionary::put(char *pszKey,object *pValue) {

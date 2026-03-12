@@ -59,8 +59,6 @@ This is the MIT License
         if ( '\0' == *p )
             break;
 
-if ( 412 == inputLineNumber )
-printf("hello world");
         if ( 0x0A == p[0] || 0x0D == p[0] ) {
             pExecutionLevel-> pNext = p;
             while ( 0x0A == *pExecutionLevel -> pNext || 0x0D == *pExecutionLevel -> pNext )
@@ -85,61 +83,22 @@ printf("hello world");
             pDelimiter = (char *)delimiterPeek(p,&pExecutionLevel -> pNext);
 
             if ( ! ( NULL == pDelimiter ) ) {
-
                 pLogStart = pExecutionLevel -> pNext;
-
-                if ( DSC_DELIMITER[0] == pDelimiter[0] && DSC_DELIMITER[1] == pDelimiter[1] ) {
-                    parseDSC(p,&pExecutionLevel -> pNext);
-                    pLogStart -= 2;
-                } else {
-                    (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pExecutionLevel -> pNext,
-                            &pExecutionLevel -> pNext);
-                    pLogStart--;
-                    if ( RESOLVE_NOW_DELIMITER[0] == pDelimiter[0] && RESOLVE_NOW_DELIMITER[1] == pDelimiter[1] )
-                        push(resolve(pop() -> Name()));
-                }
-
+                (this ->* tokenParsers[std::hash<std::string>()((char *)pDelimiter)])(pExecutionLevel -> pNext,&pExecutionLevel -> pNext);
+                pLogStart--;
                 pPostScriptInterpreter -> queueLog(true,pLogStart,pExecutionLevel -> pNext);
-
                 ADVANCE_THRU_WHITE_SPACE(pExecutionLevel -> pNext)
-
                 p = pExecutionLevel -> pNext;
-
                 continue;
-
             }
 
         }
 
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == pCollectionDelimiter[0] ) {
-
+        if ( ! ( NULL == pCollectionDelimiter ) ) {
             pLogStart = pExecutionLevel -> pNext - 1;
-
-            char *pProcedureEnd = NULL;
-            parseProcedureString(pExecutionLevel -> pNext,&pProcedureEnd);
-            pPostScriptInterpreter -> queueLog(true,pLogStart,pProcedureEnd);
-
-            try {
-
-            push(new (CurrentObjectHeap()) procedure(this,pExecutionLevel -> pNext,pProcedureEnd));
-
-            object *pName = peekPrior();
-
-            if ( ! ( NULL == pName ) && object::objectType::literal == pName -> ObjectType() )
-                top() -> Name(pName -> Contents());
-
-            } catch ( nonPostscriptException *ex ) {
-                pPostScriptInterpreter -> queueLog(true,ex -> Message(),NULL,true);
-            } catch ( PStoPDFException *pe ) {
-                char szMessage[1024];
-                sprintf(szMessage,"\n\nA %s exception occurred: %s\n",pe -> ExceptionName(),pe -> Message());
-                pPostScriptInterpreter -> queueLog(true,szMessage,NULL,true);
-            }
-
-            ADVANCE_THRU_WHITE_SPACE(pProcedureEnd)
-
-            pExecutionLevel -> pNext = pProcedureEnd;
-            p = pProcedureEnd;
+            (this ->* collectionParsers[std::hash<std::string>()((char *)pCollectionDelimiter)])(pExecutionLevel -> pNext,&pExecutionLevel -> pNext);
+            ADVANCE_THRU_WHITE_SPACE(pExecutionLevel -> pNext)
+            p = pExecutionLevel -> pNext;
             continue;
         }
 
@@ -211,82 +170,4 @@ printf("hello world");
         executionStack.top() -> quitRequested = true;
 
     return 0;
-    }
-
-
-    void job::parseProcedure(procedure *pProcedure,char *pStart,char **ppEnd) {
-
-    char *p = pStart;
-    char *pNext = p;
-
-    do {
-
-        if ( '\0' == *p )
-            break;
-
-        ADVANCE_THRU_WHITE_SPACE(p)
-
-        if ( 0x0A == p[0] || 0x0D == p[0] ) {
-            while ( 0x0A == *p || 0x0D == *p ) 
-                p++;
-            if ( 0 < inputLineNumberSize ) {
-                sscanf(p,szLNFormat,&inputLineNumber);
-                p += inputLineNumberSize;
-            }
-            continue;
-        }
-
-        char *pCollectionDelimiter = collectionDelimiterPeek(p,&pNext);
-
-        char *pDelimiter = NULL;
-
-        if ( NULL == pCollectionDelimiter )
-            pDelimiter = (char *)delimiterPeek(p,&pNext);
-
-        if ( ! ( NULL == pDelimiter ) ) {
-            (this ->* tokenProcedures[std::hash<std::string>()((char *)pDelimiter)])(pNext,&pNext);
-            if ( ! ( DSC_DELIMITER[0] == *pDelimiter ) && ! ( COMMENT_DELIMITER[0] == *pDelimiter ) )
-                pProcedure -> insert(pop());
-            p = pNext;
-            continue;
-        }
-
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_BEGIN[0] == *pCollectionDelimiter ) {
-            char *pProcedureEnd = NULL;
-            parseProcedureString(pNext,&pProcedureEnd);
-            procedure *pInnerProcedure = new (CurrentObjectHeap()) procedure(this,pNext,pProcedureEnd);
-            pInnerProcedure -> pContainingProcedure = pProcedure;
-            pProcedure -> insert(pInnerProcedure);
-            pNext = pProcedureEnd;
-            p = pProcedureEnd;
-            continue;
-        }
-
-        if ( ! ( NULL == pCollectionDelimiter ) && PROC_DELIMITER_END[0] == *pCollectionDelimiter ) {
-            if ( ! ( NULL == ppEnd ) )
-                *ppEnd = pNext;
-            return;
-        }
-
-        object *po = NULL;
-
-        if ( ! ( NULL == pCollectionDelimiter ) ) {
-            po = new (CurrentObjectHeap()) object(this,pCollectionDelimiter);
-            push(po);
-            resolve();
-            po = pop();
-            p = pNext;
-        } else 
-            po = new (CurrentObjectHeap()) object(this,parseObject(p,&p));
-
-        po -> HandyIdentifier((long)pProcedure -> entries.size());
-
-        pProcedure -> insert(po);
-
-    } while ( ! ( '\0' == p ) );
-
-    if ( ! ( NULL == ppEnd ) )
-        *ppEnd = NULL;
-
-    return;
     }
