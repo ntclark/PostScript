@@ -177,6 +177,14 @@ This is the MIT License
     “Syntax,” and of array construction in Section 3.6, “Overview of Basic Operators.”
 */
     push(new (CurrentObjectHeap()) mark(this,object::valueType::arrayMark));
+
+    if ( 0 == inputLineNumberSize )
+        return;
+
+    char szName[32];
+    sprintf_s<32>(szName,"%ld",inputLineNumber);
+    top() -> Name(szName);
+
     return;
     }
 
@@ -216,12 +224,19 @@ This is the MIT License
 
     object *pObject = pop();
 
-    while ( object::objectType::mark != pObject -> ObjectType() ) {
+    while ( ! ( object::objectType::mark == pObject -> ObjectType() ) ) {
         entries.insert(entries.end(),pObject);
         pObject = pop();
     }
 
-    array *pArray = new (CurrentObjectHeap()) array(this,"auto");
+    char szName[32]{32*'\0'};
+
+    if ( 0 < inputLineNumberSize )
+        sprintf_s<32>(szName,"Array: %s",top() -> Name());
+    else
+        sprintf_s<32>(szName, "auto");
+
+    array *pArray = new (CurrentObjectHeap()) array(this,szName);
 
     for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
         pArray -> insert(*it);
@@ -239,6 +254,14 @@ This is the MIT License
     pushes a mark object on the operand stack (the same as the mark and [ operators).
 */
     push(new (CurrentObjectHeap()) mark(this,object::valueType::dictionaryMark));
+
+    if ( 0 == inputLineNumberSize )
+        return;
+
+    char szName[32];
+    sprintf_s<32>(szName,"%ld",inputLineNumber);
+    top() -> Name(szName);
+
     return;
     }
 
@@ -287,7 +310,14 @@ This is the MIT License
         toInsertKeys.push_back(pop());
     }
 
-    dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,"inline",(long)toInsertValues.size());
+    char szName[32]{32*'\0'};
+
+    if ( 0 < inputLineNumberSize )
+        sprintf_s<32>(szName,"Dict: %s",top() -> Name());
+    else
+        sprintf_s<32>(szName,"inline");
+
+    dictionary *pDict = new (CurrentObjectHeap()) dictionary(this,szName,(long)toInsertValues.size());
 
     for ( long k = (long)toInsertValues.size() - 1; k > -1; k-- ) 
         pDict -> put(toInsertKeys[k] -> Name(),toInsertValues[k]);
@@ -303,39 +333,41 @@ This is the MIT License
     }
 
 
-   void job::operatorMarkProcedureBegin() {
+    void job::operatorMarkProcedureBegin() {
 /*
-   { 
-      – { mark
+    { 
+        – { mark
 
-   (documentation does not specifically provide this description)
+    (documentation does not specifically provide this description)
 */
 
-   push(new (CurrentObjectHeap()) mark(this,object::valueType::procedureMark));
+    push(new (CurrentObjectHeap()) mark(this,object::valueType::procedureMark));
 
-   return;
-   }
+    return;
+    }
 
-   void job::operatorMarkProcedureEnd() {
 
-   std::list<object *,containerAllocator<object *>> entries;
+    void job::operatorMarkProcedureEnd() {
 
-   object *pObject = pop();
+    std::list<object *,containerAllocator<object *>> entries;
 
-   while ( ! ( object::objectType::mark == pObject -> ObjectType() ) ) {
-      entries.insert(entries.end(),pObject);
-      pObject = pop();
-   }
+    object *pObject = pop();
 
-   procedure *pProcedure = new (CurrentObjectHeap()) procedure(this);
+    while ( ! ( object::objectType::mark == pObject -> ObjectType() ) ) {
+        entries.insert(entries.end(),pObject);
+        pObject = pop();
+    }
 
-   for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
-      pProcedure -> insert(*it);
+    procedure *pProcedure = new (CurrentObjectHeap()) procedure(this);
 
-   push(pProcedure);
+    for ( std::list<object *>::reverse_iterator it = entries.rbegin(); it != entries.rend(); it++ ) 
+        pProcedure -> insert(*it);
 
-   return;
-   }
+    push(pProcedure);
+
+    return;
+    }
+
 
     void job::operatorMatrix() {
 /*
@@ -381,31 +413,33 @@ This is the MIT License
     return;
     }
 
-   void job::operatorMul() {
-/*
-   mul 
-      num1 num2 mul product
 
-   returns the product of num1 and num2. If both operands are integers and the result
-   is within integer range, the result is an integer; otherwise, the result is a real
-   number.
+    void job::operatorMul() {
+/*
+    mul 
+        num1 num2 mul product
+
+    returns the product of num1 and num2. If both operands are integers and the result
+    is within integer range, the result is an integer; otherwise, the result is a real
+    number.
 */
-   object *p2 = pop();
-   object *p1 = pop();
+    object *p2 = pop();
+    object *p1 = pop();
    
-   if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
-      push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() * p2 -> IntValue()));
-   else {
-      double v1 = p1 -> FloatValue();
-      if ( object::valueType::integer == p1 -> ValueType() )
-         v1 = (double)p1 -> IntValue();
-      double v2 = p2 -> FloatValue();
-      if ( object::valueType::integer == p2 -> ValueType() )
-         v2 = (double)p2 -> IntValue();
-      push(new (CurrentObjectHeap()) object(this,v1 * v2));
-   }
-   return;
-   }
+    if ( object::valueType::integer == p1 -> ValueType() && object::valueType::integer == p2 -> ValueType() )
+        push(new (CurrentObjectHeap()) object(this,p1 -> IntValue() * p2 -> IntValue()));
+    else {
+        double v1 = p1 -> FloatValue();
+        if ( object::valueType::integer == p1 -> ValueType() )
+            v1 = (double)p1 -> IntValue();
+        double v2 = p2 -> FloatValue();
+        if ( object::valueType::integer == p2 -> ValueType() )
+            v2 = (double)p2 -> IntValue();
+        push(new (CurrentObjectHeap()) object(this,v1 * v2));
+    }
+    return;
+    }
+
 
     void job::operatorNe() {
 /*
@@ -430,22 +464,24 @@ This is the MIT License
     return;
     }
 
-   void job::operatorNeg() {
-/*
-   neg 
-      num1 neg num2  
 
-   returns the negative of num1. The type of the result is the same as the type of num1
-   unless num1 is the smallest (most negative) integer, in which case the result is a
-   real number.
+    void job::operatorNeg() {
+/*
+    neg 
+        num1 neg num2  
+
+    returns the negative of num1. The type of the result is the same as the type of num1
+    unless num1 is the smallest (most negative) integer, in which case the result is a
+    real number.
 */
-   object *p = pop();
-   if ( object::valueType::integer == p -> ValueType() )
-      push(new (CurrentObjectHeap()) object(this,-1 * p -> IntValue()));
-   else
-      push(new (CurrentObjectHeap()) object(this,-1.0 * p -> FloatValue()));
-   return;
-   }
+    object *p = pop();
+    if ( object::valueType::integer == p -> ValueType() )
+        push(new (CurrentObjectHeap()) object(this,-1 * p -> IntValue()));
+    else
+        push(new (CurrentObjectHeap()) object(this,-1.0 * p -> FloatValue()));
+    return;
+    }
+
 
     void job::operatorNewpath() {
 /*
@@ -459,8 +495,8 @@ This is the MIT License
     return;
     }
 
-    void job::operatorNoaccess() {
 
+    void job::operatorNoaccess() {
 /*
     noaccess 
         array noaccess array

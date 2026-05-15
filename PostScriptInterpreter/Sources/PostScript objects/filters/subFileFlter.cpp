@@ -38,7 +38,6 @@ This is the MIT License
             byteCount = pfc -> IntValue();
         }
 
-        getBinaryData(NULL);
     }
 
 

@@ -38,7 +38,6 @@ class array;
         procedure(job *p,char *pszName,char *pszStart,char *pszEnd);
         procedure(job *p,char *pszStringRepresentation);
         procedure(array *pArray);
-        procedure(dictionary *pDictionary);
 
         virtual char *Contents(char *pszContents = NULL);
 

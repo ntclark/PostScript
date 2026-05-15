@@ -2311,24 +2311,33 @@ isNew = true;
         pObject = new (CurrentObjectHeap()) procedure(reinterpret_cast<array *>(pObject));
 
     /*
-    exec Operator: The exec operator takes an object from the operand stack and executes it. 
-    This is typically used for executable objects like procedures (executable arrays), 
-    files, or names. 
-    If you pass a dictionary to exec, it will likely result in an error or undefined behavior, 
-    as the standard interpreter expects an executable type. 
-    The intended way to "execute" the contents of a dictionary's scope is through begin
+    From google (03/16/2026)
 
-    NEVERTHELESS - I FOUND AN EXMPLE PS PROGRAM THAT DOES EXECUTE A DICTIONARY !?!?
+    In PostScript, executing a dictionary (using the exec operator on a dictionary object) 
+    means pushing that dictionary onto the dictionary stack, making it the current 
+    working dictionary for name lookups, and then immediately executing the next object in the stream
+
+    //??!! What do you mean the "next" object in the stream !?!?! To be precise, you 
+    // probably mean the prior object in the stream !!!!!
+    // Also, the fact that you probabl POP the dictionary off the dictionary stack
+    // is omitted !?!? Artifical intelligence may be handy - but the bullshit
+    // documentation practices that humans also follow are evident within it (AI)
     */
 
-    if ( object::objectType::dictionaryObject == pObject -> ObjectType() )
-        pObject = new (CurrentObjectHeap()) procedure(reinterpret_cast<dictionary *>(pObject));
+    boolean isDictionary = false;
+    if ( object::objectType::dictionaryObject == pObject -> ObjectType() ) {
+        isDictionary = true;
+        operatorBegin();
+        pObject = top();
+    }
 
     for ( long k = 0; k < 2; k++ ) {
 
         if ( object::objectType::procedure == pObject -> ObjectType() ) {
             pop();
             reinterpret_cast<procedure *>(pObject) -> execute();
+            if ( isDictionary )
+                operatorEnd();
             return;
         }
 
@@ -2337,6 +2346,8 @@ isNew = true;
             directExec *pDirectExec = reinterpret_cast<directExec *>(pObject);
             void (__thiscall job::*pOperator)() = pDirectExec -> Operator();
             (this ->* pOperator)();
+            if ( isDictionary )
+                operatorEnd();
             return;
         }
 
@@ -2345,6 +2356,9 @@ isNew = true;
         pObject = top();
 
     }
+
+    if ( isDictionary )
+        operatorEnd();
 
     return;
     }

@@ -75,13 +75,21 @@ This is the MIT License
         if ( 0 == strncmp(pExecutionLevel -> pNext,"terminate",9) )
             break;
 
+        // [ ] << >> { }
         char *pCollectionDelimiter = collectionDelimiterPeek(p,&pExecutionLevel -> pNext);
         char *pDelimiter = NULL;
 
+        if ( ! ( NULL == pCollectionDelimiter ) && *pCollectionDelimiter == PROC_DELIMITER_BEGIN[0] ) {
+            pLogStart = pExecutionLevel -> pNext - 1;
+            (this ->* collectionParsers[std::hash<std::string>()((char *)pCollectionDelimiter)])(pExecutionLevel -> pNext,&pExecutionLevel -> pNext);
+            ADVANCE_THRU_WHITE_SPACE(pExecutionLevel -> pNext)
+            p = pExecutionLevel -> pNext;
+            continue;
+        }
+
+        // %% % ( // / < <~
         if ( NULL == pCollectionDelimiter ) {
-
             pDelimiter = (char *)delimiterPeek(p,&pExecutionLevel -> pNext);
-
             if ( ! ( NULL == pDelimiter ) ) {
                 pLogStart = pExecutionLevel -> pNext;
                 (this ->* tokenParsers[std::hash<std::string>()((char *)pDelimiter)])(pExecutionLevel -> pNext,&pExecutionLevel -> pNext);
@@ -91,15 +99,6 @@ This is the MIT License
                 p = pExecutionLevel -> pNext;
                 continue;
             }
-
-        }
-
-        if ( ! ( NULL == pCollectionDelimiter ) ) {
-            pLogStart = pExecutionLevel -> pNext - 1;
-            (this ->* collectionParsers[std::hash<std::string>()((char *)pCollectionDelimiter)])(pExecutionLevel -> pNext,&pExecutionLevel -> pNext);
-            ADVANCE_THRU_WHITE_SPACE(pExecutionLevel -> pNext)
-            p = pExecutionLevel -> pNext;
-            continue;
         }
 
         pLogStart = pExecutionLevel -> pNext;

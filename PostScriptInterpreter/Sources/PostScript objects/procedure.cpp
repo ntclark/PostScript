@@ -64,37 +64,6 @@ This is the MIT License
     }
 
 
-    procedure::procedure(dictionary *pDictionary) : procedure(pDictionary -> Job()) {
-
-    for ( long k = 0; k < pDictionary -> size(); k++ ) {
-
-        object *pValue = pDictionary -> retrieve(k);
-        char *pKey = pDictionary -> retrieveKey(k);
-
-        object *pKeyObject = new (pJob -> CurrentObjectHeap()) object(pJob,pKey);
-
-        pJob -> push(pKeyObject);
-        if ( pJob -> seekDefinition() ) 
-            pKeyObject= pJob -> pop();
-        else
-            pJob -> pop();
-
-        insert(pKeyObject);
-
-        pJob -> push(pValue);
-        if ( pJob -> seekDefinition() ) 
-            pValue= pJob -> pop();
-        else
-            pJob -> pop();
-
-        insert(pValue);
-
-    }
-
-    return;
-    }
-
-
     void procedure::insert(object *p) {
     entries.insert(entries.end(),p);
     return;

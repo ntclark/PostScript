@@ -28,7 +28,7 @@ This is the MIT License
 
     dictionary::dictionary(job *pj,char *pszName,long initialSize) :
         entryCount(0L),
-        object(pj,pszName,object::objectType::dictionaryObject,object::valueType::container,object::valueClassification::composite,object::executableAttribute::executable)
+        object(pj,pszName,object::objectType::dictionaryObject,object::valueType::container,object::valueClassification::composite)
     {
     entries.reserve(initialSize);
     return;

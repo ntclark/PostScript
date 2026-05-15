@@ -134,8 +134,6 @@ This is the MIT License
     tokenParsers[std::hash<std::string>()(RESOLVE_NOW_DELIMITER)] = &job::parseResolveNowString;
 
     collectionParsers[std::hash<std::string>()(PROC_DELIMITER_BEGIN)] = &job::parseProcedure;
-    collectionParsers[std::hash<std::string>()(DICTIONARY_DELIMITER_BEGIN)] = &job::parseDictionary;
-    collectionParsers[std::hash<std::string>()(ARRAY_DELIMITER_BEGIN)] = &job::parseArray;
 
     antiDelimiters[std::hash<std::string>()(DSC_DELIMITER)] = "";
     antiDelimiters[std::hash<std::string>()(COMMENT_DELIMITER)] = "";

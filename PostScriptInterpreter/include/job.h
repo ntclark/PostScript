@@ -131,9 +131,9 @@ This is the MIT License
         void parseLiteralName(char *apStart,char **ppEnd);
         void parseResolveNowString(char *pStart,char **ppEnd);
 
+        // parsing a procedure generally involves gathering up the
+        // contents without executing them. 
         void parseProcedure(char *pStart,char **ppEnd);
-        void parseDictionary(char *pStart,char **ppEnd);
-        void parseArray(char *pStart,char **ppEnd);
 
         struct executionLevel {
             executionLevel(char *pBegin,char *pe,char *pszFileName) : 
