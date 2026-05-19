@@ -7,7 +7,7 @@
 
 #include "resource.h"
 
-#include "CVPostscriptConverter_i.h"
+#include "CVPostscriptConverterII_i.h"
 
 #if __cplusplus
 

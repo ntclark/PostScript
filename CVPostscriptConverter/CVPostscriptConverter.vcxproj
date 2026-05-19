@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\CVPostscriptConverter.odl" />
+    <Midl Include="COM Implementation\CVPostscriptConverterII.odl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="COM Implementation\dllMain.cpp" />
@@ -43,6 +43,7 @@
     <ProjectGuid>{fcd3a238-382c-437e-b76d-bc2ca675225b}</ProjectGuid>
     <RootNamespace>CVPostscriptConverter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>CVPostscriptConverterII</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -106,7 +107,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psSupport.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
@@ -150,7 +151,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psSupport.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>CVPostscriptConverter.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>

@@ -21,7 +21,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="COM Implementation\CVPostscriptConverter.odl">
+    <Midl Include="COM Implementation\CVPostscriptConverterII.odl">
       <Filter>Source Files\COM Implementation</Filter>
     </Midl>
   </ItemGroup>

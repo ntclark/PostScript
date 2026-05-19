@@ -5,7 +5,7 @@
 
 #include "olectl.h"
 
-#include "CVPostscriptConverter_i.c"
+#include "CVPostscriptConverterII_i.c"
 
    extern "C" BOOL WINAPI DllMain(HINSTANCE hI, DWORD dwReason, LPVOID) {
 
@@ -65,7 +65,7 @@
   
    STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppObject) {
    *ppObject = NULL;
-   if ( CLSID_CVPostscriptConverter != rclsid  ) 
+   if ( CLSID_CVPostscriptConverterII != rclsid  ) 
       return CLASS_E_CLASSNOTAVAILABLE;
    return objectFactory.QueryInterface(riid,ppObject);
    }
@@ -81,14 +81,14 @@
    GUID OBJECT_LIBID;
    char *OBJECT_DESCRIPTION;
 
-   OBJECT_NAME = (char *)"EnVisioNateSW.CVPostscriptConverter";
-   OBJECT_NAME_V = (char *)"EnVisioNateSW.CVPostscriptConverter.1";
+   OBJECT_NAME = (char *)"EnVisioNateSW.CVPostscriptConverterII";
+   OBJECT_NAME_V = (char *)"EnVisioNateSW.CVPostscriptConverterII.1";
    OBJECT_VERSION = (char *)"1.0";
 
-   memcpy(&OBJECT_CLSID,&CLSID_CVPostscriptConverter,sizeof(GUID));
-   memcpy(&OBJECT_LIBID,&LIBID_CVPostscriptConverter,sizeof(GUID));
+   memcpy(&OBJECT_CLSID,&CLSID_CVPostscriptConverterII,sizeof(GUID));
+   memcpy(&OBJECT_LIBID,&LIBID_CVPostscriptConverterII,sizeof(GUID));
 
-   OBJECT_DESCRIPTION = (char *)"A COM object for Converting Postscript";
+   OBJECT_DESCRIPTION = (char *)"A COM object for Converting Postscript - generation 2";
 
    HRESULT rc = S_OK;
    ITypeLib *ptLib;
@@ -198,9 +198,9 @@
 
    CoInitialize(NULL);
 
-   OBJECT_NAME = (char *)"EnVisioNateSW.CVPostscriptConverter";
-   OBJECT_NAME_V = (char *)"EnVisioNateSW.CVPostscriptConverter.1";
-   memcpy(&OBJECT_CLSID,&CLSID_CVPostscriptConverter,sizeof(GUID));
+   OBJECT_NAME = (char *)"EnVisioNateSW.CVPostscriptConverterII";
+   OBJECT_NAME_V = (char *)"EnVisioNateSW.CVPostscriptConverterII.1";
+   memcpy(&OBJECT_CLSID,&CLSID_CVPostscriptConverterII,sizeof(GUID));
 
    HKEY keyHandle;
    char szCLSID[256];
