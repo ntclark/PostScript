@@ -39,7 +39,7 @@
 
 extern "C" {
     int __stdcall Initialize(void *instance,char *pszPostscriptFileName);
-    int __stdcall InitializeToPS(void *instance, char *pszPostscriptFileName);
+    int __stdcall InitializePS(void *instance, char *pszPDFFileName);
     void __stdcall newInterpreter(void **,void *);
     void __stdcall gsapi_delete_instance(void *);
     void __stdcall gsapi_exit(void *);

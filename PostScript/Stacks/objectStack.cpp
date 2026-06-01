@@ -20,8 +20,13 @@
 
 
    object *objectStack::pop() {
+   /*
+   NTC: 02-06-2026
+   See the note around line 840 in pdfOperators.cpp
+   */
    if ( 0 == size() ) 
-      throw stackunderflow("There was an underflow in the PostScript operand stack");
+      return NULL;
+      //throw stackunderflow("There was an underflow in the PostScript operand stack");
    object *pObject = std::stack<object *>::top();
    std::stack<object *>::pop();
    return pObject;

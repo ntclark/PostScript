@@ -26,14 +26,25 @@
 
     ICVPostscriptConverter *pICVPostscriptConverter = NULL;
 
-    CoCreateInstance(CLSID_CVPostscriptConverter,NULL,CLSCTX_ALL,IID_ICVPostscriptConverter,reinterpret_cast<void **>(&pICVPostscriptConverter));
+    HRESULT rc = CoCreateInstance(CLSID_CVPostscriptConverter,NULL,CLSCTX_ALL,IID_ICVPostscriptConverter,reinterpret_cast<void **>(&pICVPostscriptConverter));
 
-    if ( 3 == argc )
-        pICVPostscriptConverter -> ConvertToPS(argv[argc - 2]);
+    char *pszSource = argv[argc - 1];
+
+    char *px = strrchr(pszSource,'.');
+
+    long rv = 0;
+
+    if ( NULL == px )
+        rv = 1;
+
+    if ( 0 == _stricmp(px,".pdf") )
+        pICVPostscriptConverter -> ConvertToPS(pszSource);
+    else if ( 0 == _stricmp(px,".ps") )
+        pICVPostscriptConverter -> ConvertToPDF(pszSource);
     else
-        pICVPostscriptConverter -> ConvertToPDF(argv[argc - 1]);
+        rv = 1;
 
     pICVPostscriptConverter -> Release();
 
-    return 0;
+    return rv;
     }

@@ -63,7 +63,7 @@
         DeleteFile(szOld);
     }
 
-    Initialize(gsInstance,pszPDFFileName);
+    InitializePS(gsInstance,pszPDFFileName);
 
     gsapi_exit(gsInstance);
     gsapi_delete_instance(gsInstance);
